@@ -12,7 +12,29 @@ namespace WATA.LIS.Core.Common
 {
     public class Util
     {
-       
+
+        public static string GetStringLogRawData(byte[] HexData)
+        {
+            String strData = "";
+            for (int i = 0; i < HexData.Length; i++)
+            {
+                strData += String.Format("0x{0:x2} ", HexData[i]);
+            }
+            return strData;
+        }
+
+        public static string BytesToString(byte[] HexData)
+        {
+            String strData = "";
+            for (int i = 0; i < HexData.Length; i++)
+            {
+                //strData += String.Format("{0:x2} ", HexData[i]);
+                strData += (Convert.ToChar(HexData[i])).ToString();
+            }
+
+            return strData;
+        }
+
         public static int GetObjectSize(object obj)
         {
             return  Marshal.SizeOf(obj);

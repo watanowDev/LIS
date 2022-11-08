@@ -1,0 +1,37 @@
+﻿<Window x:Class="WATA.LIS.WPS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WATA.LIS.WPS"
+        mc:Ignorable="d"
+        Title="Windows Plafrom data Sender" Height="720" Width="1280">
+    <Grid>
+        <Button Content="Command U" HorizontalAlignment="Left" Margin="650,59,0,0" VerticalAlignment="Top" Width="83" Click="Button_Click"/>
+
+        <DataGrid x:Name="dgPairList" BorderBrush="#FFBBBBBB" BorderThickness="1" ItemsSource="{Binding}" TextBlock.TextAlignment="Center"  RowHeight="20" IsReadOnly="True" FontFamily="맑은고딕"  HorizontalAlignment="Left"  CanUserAddRows="False" CanUserSortColumns="False" AutoGenerateColumns="False" Width="347" OpacityMask="Black" Height="570" VerticalAlignment="Center" Margin="17,115,0,0" FontSize="10" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="0.3*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="0.7*" Foreground="Black"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <DataGrid x:Name="dgSendList" BorderBrush="#FFBBBBBB" BorderThickness="1" ItemsSource="{Binding}" TextBlock.TextAlignment="Center"  RowHeight="20" IsReadOnly="True" FontFamily="맑은고딕"  HorizontalAlignment="Left"  CanUserAddRows="False" CanUserSortColumns="False" AutoGenerateColumns="False" Width="858" OpacityMask="Black" Height="569" VerticalAlignment="Center" Margin="384,115,0,0" FontSize="8" RenderTransformOrigin="0.5,0.5" >
+            <DataGrid.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleX="-0.698"/>
+                    <RotateTransform/>
+                    <TranslateTransform X="-1.827"/>
+                </TransformGroup>
+            </DataGrid.RenderTransform>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="0.1*" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="0.9*" Foreground="Black"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Label Content="Pairing Status" HorizontalAlignment="Left" Height="34" Margin="17,76,0,0" VerticalAlignment="Top" Width="116" FontWeight="Bold"/>
+        <Label Content="ZMQ Status" HorizontalAlignment="Left" Height="34" Margin="386,75,0,0" VerticalAlignment="Top" Width="116" FontWeight="Bold"/>
+    </Grid>
+</Window>

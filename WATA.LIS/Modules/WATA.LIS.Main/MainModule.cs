@@ -1,8 +1,11 @@
 ﻿using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
+using System;
+using System.Diagnostics;
 using WATA.LIS.Core;
 using WATA.LIS.Main.Views;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WATA.LIS.Main
 {
@@ -13,6 +16,10 @@ namespace WATA.LIS.Main
         public MainModule(IRegionManager regionManager)
         {
             _regionManager = regionManager;
+            string dir = System.IO.Directory.GetCurrentDirectory() + "\\WPS\\WATA.LIS.WPS.exe";
+            // 실행파일 실행
+            Process.Start(dir);
+
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

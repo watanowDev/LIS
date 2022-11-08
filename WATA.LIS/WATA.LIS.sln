@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WATA.LIS.VISION.Camera", "M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WATA.LIS.Main", "Modules\WATA.LIS.Main\WATA.LIS.Main.csproj", "{53594326-B319-42E4-B3E3-4D0AA823C1C5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WATA.LIS.WPS", "WATA.LIS.WPS\WATA.LIS.WPS.csproj", "{CDE46495-EC8D-475B-B966-7999274C468E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{53594326-B319-42E4-B3E3-4D0AA823C1C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53594326-B319-42E4-B3E3-4D0AA823C1C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53594326-B319-42E4-B3E3-4D0AA823C1C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDE46495-EC8D-475B-B966-7999274C468E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDE46495-EC8D-475B-B966-7999274C468E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDE46495-EC8D-475B-B966-7999274C468E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDE46495-EC8D-475B-B966-7999274C468E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
