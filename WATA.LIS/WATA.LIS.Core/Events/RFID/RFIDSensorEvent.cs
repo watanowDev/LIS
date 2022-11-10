@@ -5,10 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Model;
+using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.RFID;
 
-namespace WATA.LIS.Core.Events
+namespace WATA.LIS.Core.Events.RFID
 {
-    public class DistanceSensorEvent : PubSubEvent <DistanceSensorModel>
+    public class RFIDSensorEvent : PubSubEvent<RFIDSensorModel>
     {
 
     }

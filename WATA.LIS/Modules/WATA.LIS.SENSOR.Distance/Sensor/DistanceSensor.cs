@@ -10,8 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
-using WATA.LIS.Core.Events;
+using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Model;
+using WATA.LIS.Core.Model.DistanceSensor;
+using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.SENSOR.Distance.Sensor
 {
@@ -19,28 +22,97 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
     {
         private readonly IEventAggregator _eventAggregator;
         SerialPort serial = new SerialPort();
+        SerialPort _port = new SerialPort();
         public DistanceSensor(IEventAggregator eventAggregator)
         {
 
             _eventAggregator = eventAggregator;
-            SerialInit();
+            //SerialInit();
+
         }
 
         private bool log_enable = true;
 
-        private void SerialInit()
+
+
+
+
+
+
+
+        public void SerialInit()
         {
-            serial.PortName = "COM3";
-            serial.BaudRate = 115200;
-            serial.DataBits = 8;
-            serial.StopBits = StopBits.One;
-            serial.Parity = Parity.None;
-            serial.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
-            serial.Open();
+            SerialThreadInit();
+            DispatcherTimer ReceiveTimer = new DispatcherTimer();
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            ReceiveTimer.Start();
         }
 
-        private void DataRecive(object sender, SerialDataReceivedEventArgs e) 
+
+        private void SerialThreadInit()
         {
+
+            try
+            {
+                string port = "COM3";
+                int bouadrate = 115200;
+                _port = new SerialPort(port, bouadrate, Parity.None, 8, StopBits.One);
+                if (_port != null)
+                {
+                    _port.Open();
+                    _port.Handshake = Handshake.None;
+                }
+            }
+            catch
+            {
+                _port = null;
+            }
+        }
+
+        
+    private void test()
+    {
+        serial.PortName = "COM3";
+        serial.BaudRate = 115200;
+        serial.DataBits = 8;
+        serial.StopBits = StopBits.One;
+        serial.Parity = Parity.None;
+        serial.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
+        serial.Open();
+    }
+
+    private void ReceiveTimerEvent(object sender, EventArgs e)
+    {
+            if (_port == null || _port.IsOpen == false)
+            {
+
+                return;
+            }
+
+            try
+            {
+                int bytesize = _port.BytesToRead;
+                byte[] buffer = new byte[bytesize];
+                _port.Read(buffer, 0, bytesize);
+                if (bytesize > 0)
+                {
+ 
+                    LogRawData(buffer);
+                    AverageData(buffer, bytesize);
+                }
+            }
+            catch
+            {
+                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.DistanceLog);
+            }
+
+    }
+
+
+
+    private void DataRecive(object sender, SerialDataReceivedEventArgs e) 
+    {
             try
             {
                 SerialPort sp = (SerialPort)sender;
@@ -90,7 +162,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             DistanceSensorModel DisTanceObject = new DistanceSensorModel();
             DisTanceObject.Distance_mm = AverageDistance;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Publish(DisTanceObject);
-          
+
             if (log_enable)
             {
                 Tools.Log($"Distance : {AverageDistance}", Tools.ELogType.DistanceLog);

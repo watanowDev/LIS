@@ -4,18 +4,23 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:core="clr-namespace:WATA.LIS.Core;assembly=WATA.LIS.Core"
-        Title="{Binding Title}" Height="720" Width="1280" >
+        Title="MainWindow" Height="800" Width="1280" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="1.0*"></RowDefinition>
             <RowDefinition Height="0.1*"></RowDefinition>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
+            <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.TopStatusBar}" />
+        </Border>
+
+        <Border Grid.Row="1" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
             <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.Content_Main}" />
         </Border>
 
-        <Border Grid.Row="1" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
+        <Border Grid.Row="2" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
             <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.BottomUIRegion}" />
         </Border>
 

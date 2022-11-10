@@ -35,7 +35,7 @@
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions >
-                <ColumnDefinition Width="2.*"></ColumnDefinition>
+                <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
@@ -53,7 +53,68 @@
                 </TabControl>
             </Grid>
             <Grid Grid.Column="1" RenderTransformOrigin="0.513,0.422">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
 
+                <Grid Grid.Row="0" Grid.Column="0" Margin="5">
+                        <Label Content="SYSTEM STATUS" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                </Grid>
+
+                <Grid Grid.Row="1" Grid.Column="0" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="V Distance(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding Distance_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                </Grid>
+
+                <Grid Grid.Row="2" Grid.Column="0" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="UHF RFID(EPC)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding RFID_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
+                    <Label Content="{Binding RFID_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                </Grid>
+
+                <Grid Grid.Row="3" Grid.Column="0" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="VISION" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding VISION_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
+                    <Label Content="{Binding VISION_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                </Grid>
+
+                <Grid Grid.Row="4" Grid.Column="0" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="200"></ColumnDefinition>
+                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Banck End" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding BACKEND_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
+                    <Label Content="{Binding BACKEND_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                </Grid>
             </Grid>
         </Grid>
     </Grid>

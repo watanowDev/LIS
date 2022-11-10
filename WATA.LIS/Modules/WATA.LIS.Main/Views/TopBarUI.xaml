@@ -1,0 +1,219 @@
+﻿<UserControl x:Class="WATA.LIS.Main.Views.TopBarUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i ="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             mc:Ignorable="d" 
+             d:DesignHeight="62" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <Style x:Key="btnBlink" TargetType="Button" >
+                <Style.Triggers>
+
+                    <DataTrigger Binding="{Binding RobotStatusManager.IsOnAlarm}" Value="true">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard x:Name="sb1">
+                                <BeginStoryboard.Storyboard>
+                                    <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)" >
+                                            <EasingColorKeyFrame KeyTime="0" Value="Lime"/>
+                                            <EasingColorKeyFrame KeyTime="0:0:1" Value="#FF75002A">
+                                                <EasingColorKeyFrame.EasingFunction>
+                                                    <QuinticEase EasingMode="EaseInOut"/>
+                                                </EasingColorKeyFrame.EasingFunction>
+                                            </EasingColorKeyFrame>
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard.Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="sb1"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Background" Value="#ff0051a5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style x:Key="lbBlink" TargetType="Label" >
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RobotStatusManager.IsRunning}" Value="true">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard x:Name="sb1">
+                                <BeginStoryboard.Storyboard>
+                                    <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Label.Foreground).(SolidColorBrush.Color)" >
+                                            <EasingColorKeyFrame KeyTime="0" Value="Lime"/>
+                                            <EasingColorKeyFrame KeyTime="0:0:0.8" Value="#FF75002A">
+                                                <EasingColorKeyFrame.EasingFunction>
+                                                    <QuinticEase EasingMode="EaseInOut"/>
+                                                </EasingColorKeyFrame.EasingFunction>
+                                            </EasingColorKeyFrame>
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard.Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="sb1"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Foreground" Value="#ff0051a5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="lbBlink2" TargetType="Label" >
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RobotStatusManager.AutoManual}" Value="true">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard x:Name="sb1">
+                                <BeginStoryboard.Storyboard>
+                                    <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Label.Foreground).(SolidColorBrush.Color)" >
+                                            <EasingColorKeyFrame KeyTime="0" Value="Lime"/>
+                                            <EasingColorKeyFrame KeyTime="0:0:0.8" Value="#FF75002A">
+                                                <EasingColorKeyFrame.EasingFunction>
+                                                    <QuinticEase EasingMode="EaseInOut"/>
+                                                </EasingColorKeyFrame.EasingFunction>
+                                            </EasingColorKeyFrame>
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard.Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="sb1"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+
+                    <Trigger Property="Content" Value="">
+                        <Setter Property="Foreground" Value="#ff0051a5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="lbBlink1" TargetType="Label" >
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding ProcessingJob}" Value="true">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard x:Name="sb1">
+                                <BeginStoryboard.Storyboard>
+                                    <Storyboard AutoReverse="True" RepeatBehavior="Forever">
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Label.Background).(SolidColorBrush.Color)" >
+                                            <EasingColorKeyFrame KeyTime="0" Value="#ff0051a5"/>
+                                            <EasingColorKeyFrame KeyTime="0:0:0.8" Value="White">
+                                                <EasingColorKeyFrame.EasingFunction>
+                                                    <QuinticEase EasingMode="EaseInOut"/>
+                                                </EasingColorKeyFrame.EasingFunction>
+                                            </EasingColorKeyFrame>
+                                        </ColorAnimationUsingKeyFrames>
+                                        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(Label.Foreground).(SolidColorBrush.Color)" >
+                                            <EasingColorKeyFrame KeyTime="0" Value="White"/>
+                                            <EasingColorKeyFrame KeyTime="0:0:0.8" Value="Black">
+                                                <EasingColorKeyFrame.EasingFunction>
+                                                    <QuinticEase EasingMode="EaseInOut"/>
+                                                </EasingColorKeyFrame.EasingFunction>
+                                            </EasingColorKeyFrame>
+                                        </ColorAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard.Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <StopStoryboard BeginStoryboardName="sb1"/>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                    <Trigger Property="IsEnabled" Value="false">
+                        <Setter Property="Background" Value="White"/>
+                        <Setter Property="Foreground" Value="Black"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Border >
+        <Grid Background="#FF75002A">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="1.*"></ColumnDefinition>
+
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+
+                <Image Source="/WATA.LIS.Main;component/Views/wata_logo.png" Visibility="Visible" Margin="10,6,7,5"/>
+            </Grid>
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Content="{Binding RobotStatusManager.Date}" Foreground="#FFDADADA" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+                <Label Grid.Row="1" Content="{Binding RobotStatusManager.Time}" Foreground="#FFDADADA" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" Margin="36,36,-1,2" Width="55" Height="24"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26"/>
+            </Grid>
+
+            <Grid Grid.Column="3">
+                <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109"  Content="EXIT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="861,6,0,5" />
+            </Grid>
+
+
+
+
+
+            <Grid Grid.Column="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.7*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="1"  VerticalAlignment="Center" HorizontalAlignment="Center" Content="{Binding RobotStatusManager.AutoManualKey}" Foreground="#FFDADADA" FontSize="20" FontWeight="Bold" Style="{StaticResource lbBlink2}"/>
+            </Grid>
+
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.7*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="1"  Content="{Binding RobotStatusManager.MachineStatus}" IsEnabled="{Binding RobotStatusManager.IsRunning}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" FontSize="20" FontWeight="Bold" IsHitTestVisible="False" Style="{StaticResource lbBlink}"/>
+            </Grid>
+
+            <Grid Grid.Column="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Rectangle Name="rtTowerRed"     Grid.Row="0" HorizontalAlignment="Center" Fill="{Binding UIMainStatus.TowerRedColor}" Width="45" Height="17"></Rectangle>
+
+            </Grid>
+
+            <Grid Grid.Column="6" Grid.ColumnSpan="2">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="74"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+
+
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
+

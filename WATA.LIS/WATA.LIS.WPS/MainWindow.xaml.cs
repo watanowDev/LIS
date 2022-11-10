@@ -83,8 +83,12 @@ namespace WATA.LIS.WPS
                     byte[] frame = ReqCommandU();
                     if (frame.Length > 20)
                     {
-                        pubSocket.SendMoreFrame("RFID").SendFrame(frame);
-                        AddSendLog(BytesToString(frame));
+                        byte[] RetTemp = new byte[24];
+                        System.Buffer.BlockCopy(frame, 6, RetTemp, 0, 24);
+
+
+                        pubSocket.SendMoreFrame("RFID").SendFrame(RetTemp);
+                        AddSendLog(BytesToString(RetTemp));
                     }
                     
                     Thread.Sleep(50);
@@ -192,7 +196,7 @@ namespace WATA.LIS.WPS
             {
                 AddParingLog("Connect Failed. : " + uuid);
                 _IBLE.EnumerateStop();
-                _IBLE.EnumerateStart();
+               // _IBLE.EnumerateStart();
             }
         }
 
@@ -214,7 +218,7 @@ namespace WATA.LIS.WPS
                 RecieveHex = this._IBLE.Receive();
                 
             }
-
+            
             return RecieveHex;
         }
 
@@ -223,8 +227,6 @@ namespace WATA.LIS.WPS
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             ReqCommandU();
-
-
         }
         private string BytesToString(byte[] HexData)
         {

@@ -2,6 +2,8 @@
 {
     public static class RegionNames
     {
+
+        public const string TopStatusBar = "TopStatusBar";
         public const string ContentRegion = "ContentRegion";
         public const string BottomUIRegion = "BottomUIRegion";
         public const string Content_Main = "Content_Main";

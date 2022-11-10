@@ -8,12 +8,18 @@
     <Compile Update="Views\MainUI.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\TopBarUI.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\BottomBarUI.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\MainUI.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TopBarUI.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

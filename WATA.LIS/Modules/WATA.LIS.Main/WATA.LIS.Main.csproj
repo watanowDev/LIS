@@ -4,9 +4,15 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\wata_logo.png" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Views\wata_logo.png" />
   </ItemGroup>
 </Project>

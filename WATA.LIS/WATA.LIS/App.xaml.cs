@@ -30,11 +30,12 @@ namespace WATA.LIS
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
-            moduleCatalog.AddModule<DistanceModule>();
-            moduleCatalog.AddModule<UHF_RFIDModule>();
             moduleCatalog.AddModule<BEModule>();
             moduleCatalog.AddModule<CameraModule>();
             moduleCatalog.AddModule<MainModule>();
+            moduleCatalog.AddModule<UHF_RFIDModule>();
+            moduleCatalog.AddModule<DistanceModule>();
+
         }
     }
 }

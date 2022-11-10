@@ -17,7 +17,6 @@ namespace WATA.LIS.Main
         {
             _regionManager = regionManager;
             string dir = System.IO.Directory.GetCurrentDirectory() + "\\WPS\\WATA.LIS.WPS.exe";
-            // 실행파일 실행
             Process.Start(dir);
 
         }
@@ -29,6 +28,8 @@ namespace WATA.LIS.Main
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+
+            _regionManager.RegisterViewWithRegion(RegionNames.TopStatusBar, typeof(TopBarUI));
 
             containerRegistry.RegisterForNavigation<MainUI>(); ;
             _regionManager.RequestNavigate(RegionNames.Content_Main, "MainUI");

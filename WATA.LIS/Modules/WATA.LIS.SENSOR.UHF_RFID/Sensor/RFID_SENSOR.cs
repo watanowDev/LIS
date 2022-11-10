@@ -11,21 +11,30 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Model.DistanceSensor;
+using WATA.LIS.Core.Model.RFID;
 
-namespace WATA.LIS.SENSOR.Sensor
+namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
     public class RFID_SENSOR
     {
         Thread RecvThread;
 
+        private readonly IEventAggregator _eventAggregator;
         public RFID_SENSOR(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
+        }
 
-
+        public void Init()
+        {
             RecvThread = new Thread(new ThreadStart(ZMQReceiveInit));
             RecvThread.Start();
-
         }
+
+
 
         private void ZMQReceiveInit()
         {
@@ -39,8 +48,21 @@ namespace WATA.LIS.SENSOR.Sensor
                 while (true)
                 {
                     byte[] messageReceived = subSocket.ReceiveFrameBytes();
-                    Tools.Log(Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
-                    Thread.Sleep(100);
+
+                    string RecieveStr = Util.BytesToString(messageReceived);
+                    if(RecieveStr.Length == 4)
+                    {
+                        Tools.Log("Topic : "+Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+
+                    }
+                    else
+                    {
+                        Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                        RFIDSensorModel rfidmodel = new RFIDSensorModel();
+                        rfidmodel.EPC_Data = RecieveStr;
+                        _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                    }
+                    Thread.Sleep(50);
                 }
             }
         }

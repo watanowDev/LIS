@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WATA.LIS.Core.Model
+namespace WATA.LIS.Core.Model.DistanceSensor
 {
-    public  class DistanceSensorModel
+    public class DistanceSensorModel
     {
         public int Distance_mm { get; set; }
     }
