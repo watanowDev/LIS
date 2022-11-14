@@ -55,18 +55,13 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator = eventAggregator;
             ListSystemLog = Tools.logInfo.ListSystemLog;
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.SystemLog);
-
-
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
-
             Distance_Active = Disable;
             RFID_Active = Disable;
             VISION_Active = Disable;
             BACKEND_Active = Disable;
-
-
         }
 
         public void OnDistanceSensorData(DistanceSensorModel obj)

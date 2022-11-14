@@ -79,18 +79,19 @@ namespace WATA.LIS.WPS
 
                 while (true)
                 {
+                    byte[] frame = ReqCommandQ();
 
-                    byte[] frame = ReqCommandU();
-                    if (frame.Length > 20)
+                    if (frame != null)
                     {
-                        byte[] RetTemp = new byte[24];
-                        System.Buffer.BlockCopy(frame, 6, RetTemp, 0, 24);
-
-
-                        pubSocket.SendMoreFrame("RFID").SendFrame(RetTemp);
-                        AddSendLog(BytesToString(RetTemp));
+                        if (frame.Length > 20)
+                        {
+                            byte[] RetTemp = new byte[24];
+                            System.Buffer.BlockCopy(frame, 6, RetTemp, 0, 24);
+                            pubSocket.SendMoreFrame("RFID").SendFrame(RetTemp);
+                            AddSendLog(BytesToString(frame));
+                        }
                     }
-                    
+
                     Thread.Sleep(50);
                 }
             }
@@ -195,8 +196,22 @@ namespace WATA.LIS.WPS
             else
             {
                 AddParingLog("Connect Failed. : " + uuid);
+                Retry();
+            }
+        }
+
+        private void Retry()
+        {
+            if (_IBLE != null)
+            {
                 _IBLE.EnumerateStop();
-               // _IBLE.EnumerateStart();
+                Thread.Sleep(1000);
+                _IBLE.Close();
+                Thread.Sleep(1000);
+
+                this._IBLE = new IBLE(DeviceSelector.BluetoothLeUnpairedOnly);
+                this._IBLE.DeviceAdded += OnBLEDeviceAdded;
+                _IBLE.EnumerateStart();
             }
         }
 
@@ -212,16 +227,47 @@ namespace WATA.LIS.WPS
         {
             byte[] RecieveHex = { 0, };
 
+
+            if (_IBLE == null)
+            {
+                return RecieveHex;
+            }
+
             if (_IBLE.IsConnected)
             {
                 this._IBLE.Send(this._ReaderService.CommandU(), ReaderModule.CommandType.Normal);
-                RecieveHex = this._IBLE.Receive();
-                
+                RecieveHex = this._IBLE.Receive();   
             }
-            
+            else
+            {
+                Retry();
+            }
             return RecieveHex;
         }
 
+        private byte[] ReqCommandQ()
+        {
+            byte[] RecieveHex = { 0, };
+
+            if(_IBLE == null)
+            {
+
+                return RecieveHex;
+            }
+
+
+            if (_IBLE.IsConnected)
+            {
+                this._IBLE.Send(this._ReaderService.CommandQ(), ReaderModule.CommandType.Normal);
+                RecieveHex = this._IBLE.Receive();
+            }
+            else
+            {
+                Retry();
+            }
+
+            return RecieveHex;
+        }
 
 
         private void Button_Click(object sender, RoutedEventArgs e)

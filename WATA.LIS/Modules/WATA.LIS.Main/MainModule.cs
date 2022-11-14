@@ -16,8 +16,7 @@ namespace WATA.LIS.Main
         public MainModule(IRegionManager regionManager)
         {
             _regionManager = regionManager;
-            string dir = System.IO.Directory.GetCurrentDirectory() + "\\WPS\\WATA.LIS.WPS.exe";
-            Process.Start(dir);
+
 
         }
 
