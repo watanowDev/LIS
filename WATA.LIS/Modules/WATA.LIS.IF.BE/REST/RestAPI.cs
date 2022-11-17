@@ -34,7 +34,9 @@ namespace WATA.LIS.IF.BE.REST
 
         public void OnClientPost(RestClientPostModel Model)
         {
-            Tools.Log($"Request Post URI : {Model.url}  Body : {Model.body}", Tools.ELogType.BackEndLog);
+            Tools.Log($"Request Post URI : {Model.url} ", Tools.ELogType.BackEndLog);
+            Tools.Log(Model.body, Tools.ELogType.BackEndLog);
+
             try
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Model.url);
@@ -53,15 +55,17 @@ namespace WATA.LIS.IF.BE.REST
                     using (StreamReader sr = new StreamReader(respStream))
                     {
                         string responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
                         Tools.Log($"REST Poist Client Response Data : {responseText} ", Tools.ELogType.BackEndLog);
                     }
                 }
+
+                
             }
             catch
             {
-
+                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
                 Tools.Log($"REST Poist Client Response Error", Tools.ELogType.BackEndLog);
-
             }
             
 
@@ -84,12 +88,14 @@ namespace WATA.LIS.IF.BE.REST
                     {
                         string responseText = sr.ReadToEnd();
                         responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
                         Tools.Log($"REST Get Client Response Data : {responseText} ", Tools.ELogType.BackEndLog);
                     }
                 }
             }
             catch
             {
+                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
                 Tools.Log($"REST Get Client Response Error", Tools.ELogType.BackEndLog);
             }
         }

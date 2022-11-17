@@ -22,7 +22,6 @@ namespace WATA.LIS.Core.Services
 
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
-        private int vision_status_check_count = 35;
         private int status_limit_count = 15;
 
         private string m_location = "INCHEON_CALT_001";
@@ -43,7 +42,6 @@ namespace WATA.LIS.Core.Services
             StatusClearTimer.Tick += new EventHandler(StatusClearEvent);
             StatusClearTimer.Start();
 
-
             DispatcherTimer AliveTimer = new DispatcherTimer();
             AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             AliveTimer.Tick += new EventHandler(AliveTimerEvent);
@@ -57,9 +55,9 @@ namespace WATA.LIS.Core.Services
         public void SendAliveEvent()
         {
             AliveModel alive_obj = new AliveModel();
-            alive_obj.alive.Work_Location_ID = m_location;
-            alive_obj.alive.Vehicle_ID = m_vihicle;
-            alive_obj.alive.ErrorCode = m_errorcode;
+            alive_obj.alive.workLocationId = m_location;
+            alive_obj.alive.vehicleId = m_vihicle;
+            alive_obj.alive.errorCode = m_errorcode;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "http://192.168.0.1";
@@ -67,18 +65,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
-        public void SendActionInfoEvent()
-        {
-            ActionInfoModel ActionObj = new ActionInfoModel();
-            ActionObj.ActionInfo.Work_Location_ID = m_location;
-            ActionObj.ActionInfo.Vehicle_ID = m_vihicle;
-            ActionObj.ActionInfo.Load_Rate = "100";
-            string json_body = Util.ObjectToJson(ActionObj);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "http://192.168.0.1";
-            post_obj.body = json_body;
-            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-        }
+     
 
 
 
@@ -95,7 +82,7 @@ namespace WATA.LIS.Core.Services
             else
             {
                 rifid_status_check_count++;
-                Tools.Log($"#######rifid Status Clear ####### Count {rifid_status_check_count}", Tools.ELogType.SystemLog);
+                Tools.Log($"Wait Count {rifid_status_check_count}", Tools.ELogType.SystemLog);
             }
 
             if (distance_status_check_count > status_limit_count)// 30초후 응답이 없으면 RFID 클리어
@@ -131,7 +118,106 @@ namespace WATA.LIS.Core.Services
 
         public void OnVISIONEvent(VISON_Model obj)
         {
-            Tools.Log("OnVISIONEvent {}", Tools.ELogType.SystemLog);   
+            bool IsSendBackEnd = false;
+
+
+            ActionInfoModel ActionObj = new ActionInfoModel();
+            ActionObj.actionInfo.workLocationId = m_location;
+
+
+
+
+            if (obj.status == "pickup")
+            {
+                ActionObj.actionInfo.action = "IN";
+
+            }
+            else if(obj.status == "drop")
+            {
+                ActionObj.actionInfo.action = "OUT";
+            }
+            else
+            {
+                ActionObj.actionInfo.action = "N/A";
+            }
+
+            if ((obj.status.Contains("drop") || obj.status.Contains("pickup")) && m_RFID_EPC_SenorData != "NA")
+            {
+                IsSendBackEnd = true;
+            }
+            else
+            {
+                IsSendBackEnd = false;
+            }
+
+
+            ActionObj.actionInfo.vehicleId = m_vihicle;
+            ActionObj.actionInfo.epc = m_RFID_EPC_SenorData;
+            ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
+            ActionObj.actionInfo.loadId = obj.qr;
+
+
+
+            int CalRate = CalcLoadRate(obj.area);
+            Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
+
+            ActionObj.actionInfo.loadRate = CalRate.ToString();
+            ActionObj.actionInfo.loadMatrixRaw = "10";
+            ActionObj.actionInfo.loadMatrixColumn = "10";
+
+
+           
+
+            if (CalRate > 0)
+            {
+
+                for (int i = 0; i < 100; i++)
+                {
+                    ActionObj.actionInfo.loadMatrix.Add(1);
+                }   
+            }
+            else
+            {
+                for (int i = 0; i < 100; i++)
+                {
+                    ActionObj.actionInfo.loadMatrix.Add(0);
+                }
+
+            }
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            post_obj.body = json_body;
+
+
+            if (IsSendBackEnd == true)
+            {
+                Tools.Log($"Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
+                Tools.Log($"LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
+
+
+                Tools.Log("Send Action Event", Tools.ELogType.SystemLog);
+                _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+            }
+            else
+            {
+
+            }
+             
+        }
+
+        private  int  CalcLoadRate(float area)
+        {
+            int nRet = 0;
+            nRet = (int)(area / 0.99) * 100;
+
+
+            if(nRet < 30)
+            {
+                nRet = 0;
+            }
+            return nRet;
         }
     }
 }

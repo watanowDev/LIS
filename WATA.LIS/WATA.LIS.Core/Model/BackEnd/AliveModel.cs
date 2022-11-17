@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
 
 namespace WATA.LIS.Core.Model.BackEnd
 {
     public class AliveModel
     {
-        public Alive alive = new Alive();
+        public alive alive = new alive();
     }
 
-    public class Alive
+    public class alive
     {
-        public string Work_Location_ID { get; set; }
-        public string Vehicle_ID { get; set; }
-        public string ErrorCode { get; set; }
+        public string workLocationId { get; set; }
+        public string vehicleId { get; set; }
+        public string errorCode { get; set; }
     }
 }

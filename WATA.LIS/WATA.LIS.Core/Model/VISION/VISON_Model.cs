@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,7 +9,11 @@ namespace WATA.LIS.Core.Model.VISION
 {
     public class VISON_Model
     {
-        public string EPC_Data { get; set; }
+        public float area { get; set; }
+        public float width { get; set; }
+        public float height { get; set; }
+        public string qr { get; set; }
+        public string status { get; set; }
     }
 }
 

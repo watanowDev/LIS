@@ -66,7 +66,6 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 string dir = System.IO.Directory.GetCurrentDirectory() + "\\WPS\\WATA.LIS.WPS.exe";
                 Process.Start(dir);
             }
-
         }
 
 

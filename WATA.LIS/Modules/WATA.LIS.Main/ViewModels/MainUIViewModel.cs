@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
@@ -58,10 +59,22 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             Distance_Active = Disable;
             RFID_Active = Disable;
-            VISION_Active = Disable;
-            BACKEND_Active = Disable;
+            VISION_Active = Active;
+            BACKEND_Active = Active;
+        }
+        public void OnBackEndStatus(int status)
+        {
+            if(status == -1)
+            {
+                BACKEND_Active = Disconnect;
+            }
+            else
+            {
+                BACKEND_Active = Active;
+            }
         }
 
         public void OnDistanceSensorData(DistanceSensorModel obj)

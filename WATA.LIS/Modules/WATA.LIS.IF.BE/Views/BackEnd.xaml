@@ -28,17 +28,22 @@
     <Grid Background="#FFDADADA">
         <Grid.RowDefinitions>
             <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="70"></RowDefinition>
             <RowDefinition Height="1.*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Label Content="BeckEnd Platform" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="40" FontWeight="Bold"></Label>
+            <Button Command="{Binding ButtonFunc}" CommandParameter="Post" Grid.Column="0" Grid.Row="0" Width="144"  Content="REST Post Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="0,0,0,549"  />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="Get" Grid.Column="0" Grid.Row="0" Width="156"  Content="REST Get Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="149,0,0,549"  />
+
         </Grid>
         <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions >
-                <ColumnDefinition Width="2.*"></ColumnDefinition>
-                <ColumnDefinition Width="1*"></ColumnDefinition>
-            </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
+            <Button Command="{Binding ButtonFunc}" CommandParameter="Post" Grid.Column="0" Grid.Row="0" Width="144"  Content="Action Post Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="Get" Grid.Column="0" Grid.Row="0" Width="156"  Content="Alive Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="149,0,0,0"   />
+
+        </Grid>
+        <Grid Grid.Row="2">
+          
                 <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
                     <TabControl.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -51,11 +56,8 @@
                         </ListBox>
                     </TabItem>
                 </TabControl>
-            </Grid>
-            <Grid Grid.Column="1" RenderTransformOrigin="0.513,0.422">
-
-            </Grid>
-
+           
+          
         </Grid>
     </Grid>
 </UserControl>    
