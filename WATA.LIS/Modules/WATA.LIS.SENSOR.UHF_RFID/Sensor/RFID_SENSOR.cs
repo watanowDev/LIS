@@ -28,13 +28,28 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
     public class RFID_SENSOR
     {
         Thread RecvThread;
+        DispatcherTimer rftag_valid_timer;
 
 
-        
+
+
         private readonly IEventAggregator _eventAggregator;
         public RFID_SENSOR(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
+
+            _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
+        }
+
+        public void OnRFIDSensorData(RFIDSensorModel obj)
+        {
+          if(obj.EPC_Data =="NA")
+          {
+                m_cnt = 0;
+                m_before_epc = "";
+
+            }
+
         }
 
         public void Init()
@@ -48,8 +63,21 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             WPS_Process_chk_Timer.Start();
 
 
+            rftag_valid_timer = new DispatcherTimer();
+            rftag_valid_timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            rftag_valid_timer.Tick += new EventHandler(rfTagVaildTimerEvent);
+            //rftag_valid_timer.Start();
+
+
             ExecuteWPS();
         }
+
+
+        private void rfTagVaildTimerEvent(object sender, EventArgs e)
+        {
+            //ExecuteWPS();
+        }
+
 
         private void AliveTimerEvent(object sender, EventArgs e)
         {
@@ -68,6 +96,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
         }
 
+        private string m_before_epc = "";
+        private int m_cnt = 0;
 
         private void ZMQReceiveInit()
         {
@@ -90,10 +120,32 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     }
                     else
                     {
+
+
                         Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                         RFIDSensorModel rfidmodel = new RFIDSensorModel();
                         rfidmodel.EPC_Data = RecieveStr;
-                        _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+
+
+
+                        if (m_before_epc == RecieveStr)
+                        {
+                            if (m_cnt > 10)
+                            {
+                                _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                                m_cnt = 0;
+                                m_before_epc = "";
+                            }
+                            m_cnt++;
+                        }
+                        else
+                        {
+                            m_cnt = 0;
+                            m_before_epc = "";
+                        }
+                        
+
+                        m_before_epc = RecieveStr;
                     }
                     Thread.Sleep(50);
                 }

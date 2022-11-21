@@ -1,5 +1,6 @@
 ﻿using Prism.Events;
 using System;
+using System.Runtime.Intrinsics.X86;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
@@ -60,7 +61,7 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.errorCode = m_errorcode;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "http://192.168.0.1";
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             post_obj.body = json_body;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
@@ -193,11 +194,9 @@ namespace WATA.LIS.Core.Services
 
             if (IsSendBackEnd == true)
             {
-                Tools.Log($"Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
-                Tools.Log($"LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
+                Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
 
-
-                Tools.Log("Send Action Event", Tools.ELogType.SystemLog);
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
             }
             else
@@ -209,15 +208,18 @@ namespace WATA.LIS.Core.Services
 
         private  int  CalcLoadRate(float area)
         {
-            int nRet = 0;
-            nRet = (int)(area / 0.99) * 100;
+            Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
+
+            double nRet = (area / 0.99) * 100;
+            Tools.Log($"##nRet  : {nRet}", Tools.ELogType.BackEndLog);
 
 
-            if(nRet < 30)
+            if (nRet < 30)
             {
+                Tools.Log($"##Low  : {nRet}", Tools.ELogType.BackEndLog);
                 nRet = 0;
             }
-            return nRet;
+            return (int)nRet;
         }
     }
 }
