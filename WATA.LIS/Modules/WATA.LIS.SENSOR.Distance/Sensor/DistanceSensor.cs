@@ -34,12 +34,6 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         private bool log_enable = true;
 
 
-
-
-
-
-
-
         public void SerialInit()
         {
             SerialThreadInit();

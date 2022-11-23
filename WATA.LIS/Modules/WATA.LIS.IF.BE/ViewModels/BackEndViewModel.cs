@@ -25,14 +25,21 @@ namespace WATA.LIS.IF.BE.ViewModels
         private string m_vihicle = "fork_lift001";
         private string m_errorcode = "0000";
 
+        
+        private string _TagInfo;
+        public string TagInfo { get { return _TagInfo; } set { SetProperty(ref _TagInfo, value); } }
+
+
+        private string _DistanceInfo;
+        public string DistanceInfo { get { return _DistanceInfo; } set { SetProperty(ref _DistanceInfo, value); } }
+
+
         public BackEndViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-
             ListBackEndLog = Tools.logInfo.ListBackEndLog;
-            Tools.Log($"Init BackEndViewModel", Tools.ELogType.BackEndLog);
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
-
+            Tools.Log($"##########################Action Failed", Tools.ELogType.BackEndLog);
         }
 
         public void SendAliveEvent()
@@ -48,10 +55,61 @@ namespace WATA.LIS.IF.BE.ViewModels
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
-        public void SendActionInfoEvent()
+        private void SendAction_IN_InfoEvent(string Tag, string Distance)
         {
+            ActionInfoModel action_obj = new ActionInfoModel();
+            action_obj.actionInfo.workLocationId = m_location;
+            action_obj.actionInfo.vehicleId = m_vihicle;
+
+            action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.epc = Tag;
+            action_obj.actionInfo.height = Distance;
+            action_obj.actionInfo.loadRate = "0";
            
+
+            for (int i = 0; i < 100; i++)
+            {
+                action_obj.actionInfo.loadMatrix.Add(0);
+            }
+
+
+
+            string json_body = Util.ObjectToJson(action_obj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            post_obj.body = json_body;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+
         }
+
+        private void SendAction_OUT_InfoEvent(string Tag, string Distance)
+        {
+
+
+            ActionInfoModel action_obj = new ActionInfoModel();
+            action_obj.actionInfo.workLocationId = m_location;
+            action_obj.actionInfo.vehicleId = m_vihicle;
+
+            action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.epc = Tag;
+            action_obj.actionInfo.height = Distance;
+            action_obj.actionInfo.loadRate = "90";
+
+
+            for (int i = 0; i < 100; i++)
+            {
+                action_obj.actionInfo.loadMatrix.Add(1);
+            }
+
+            string json_body = Util.ObjectToJson(action_obj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            post_obj.body = json_body;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+        }
+
+
 
         private void ButtonFuncClick(string command)
         {
@@ -66,9 +124,13 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                         break;
 
-                    case "Post":
+                    case "ActionIN":
 
-                        SendActionInfoEvent();
+                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo);
+                        break;
+
+                    case "ActionOUT":
+                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo);
                         break;
 
                     default:

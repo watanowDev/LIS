@@ -117,74 +117,50 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"!! :  {m_RFID_EPC_SenorData}", Tools.ELogType.SystemLog);
         }
 
+
+        private int m_CalRate = 0;
+
         public void OnVISIONEvent(VISON_Model obj)
         {
-            bool IsSendBackEnd = false;
-
+            
 
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
-
-
-
-
-            if (obj.status == "pickup")
-            {
-                ActionObj.actionInfo.action = "IN";
-
-            }
-            else if(obj.status == "drop")
-            {
-                ActionObj.actionInfo.action = "OUT";
-            }
-            else
-            {
-                ActionObj.actionInfo.action = "N/A";
-            }
-
-            if ((obj.status.Contains("drop") || obj.status.Contains("pickup")) && m_RFID_EPC_SenorData != "NA")
-            {
-                IsSendBackEnd = true;
-            }
-            else
-            {
-                IsSendBackEnd = false;
-            }
-
-
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.epc = m_RFID_EPC_SenorData;
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
             ActionObj.actionInfo.loadId = obj.qr;
 
-
-
-            int CalRate = CalcLoadRate(obj.area);
-            Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
-
-            ActionObj.actionInfo.loadRate = CalRate.ToString();
-            ActionObj.actionInfo.loadMatrixRaw = "10";
-            ActionObj.actionInfo.loadMatrixColumn = "10";
-
-
-           
-
-            if (CalRate > 0)
+            if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
-
-                for (int i = 0; i < 100; i++)
-                {
-                    ActionObj.actionInfo.loadMatrix.Add(1);
-                }   
-            }
-            else
-            {
+                ActionObj.actionInfo.action = "IN";
+                m_CalRate = CalcLoadRate(obj.area);
+                Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
+                ActionObj.actionInfo.loadRate = "0";
+                ActionObj.actionInfo.loadMatrixRaw = "10";
+                ActionObj.actionInfo.loadMatrixColumn = "10";
                 for (int i = 0; i < 100; i++)
                 {
                     ActionObj.actionInfo.loadMatrix.Add(0);
                 }
-
             }
+            else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
+            {
+                ActionObj.actionInfo.action = "OUT";
+                ActionObj.actionInfo.loadRate = m_CalRate.ToString();
+                ActionObj.actionInfo.loadMatrixRaw = "10";
+                ActionObj.actionInfo.loadMatrixColumn = "10";
+                for (int i = 0; i < 100; i++)
+                {
+                    ActionObj.actionInfo.loadMatrix.Add(1);
+                }
+            }
+            else
+            {
+                ActionObj.actionInfo.action = "N/A";
+               
+            }
+           
 
             string json_body = Util.ObjectToJson(ActionObj);
             RestClientPostModel post_obj = new RestClientPostModel();
@@ -194,28 +170,26 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
 
 
-            if (IsSendBackEnd == true)
+
+            //1) VISION 이벤트가 발생 했을 경우 2)선반에 위치 했음을 알리는 RFTAG가 인식 알렸을경우
+            if ((obj.status.Contains("drop") || obj.status.Contains("pickup")) && m_RFID_EPC_SenorData != "NA")
             {
+                //Back End로 전송
                 Tools.Log($"##########################Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
                 Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
-
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
             }
             else
             {
                 Tools.Log($"##########################Action Failed", Tools.ELogType.BackEndLog);
-
             }
-
         }
 
         private  int  CalcLoadRate(float area)
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
-
             double nRet = (area / 0.99) * 100;
             Tools.Log($"##nRet  : {nRet}", Tools.ELogType.BackEndLog);
-
 
             if (nRet < 30)
             {
