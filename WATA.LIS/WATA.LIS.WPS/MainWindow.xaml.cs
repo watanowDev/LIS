@@ -38,7 +38,8 @@ namespace WATA.LIS.WPS
         private ReaderService _ReaderService;
         private IBLE _IBLE;
         private Thread SearchThread;
-        private string target_uuid = "0C:DC:7E:1D:C5:B6";
+        //private string target_uuid = "0C:DC:7E:1D:C5:B6";
+        private string target_uuid = "34:86:5D:71:98:7A";
 
         DataTable ParingLogTable = new DataTable();
         DataTable SendLogTable = new DataTable();

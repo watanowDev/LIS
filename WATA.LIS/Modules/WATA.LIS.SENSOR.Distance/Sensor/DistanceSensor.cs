@@ -55,7 +55,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
             try
             {
-                string port = "COM3";
+                string port = "COM7";
                 int bouadrate = 115200;
                 _port = new SerialPort(port, bouadrate, Parity.None, 8, StopBits.One);
                 if (_port != null)

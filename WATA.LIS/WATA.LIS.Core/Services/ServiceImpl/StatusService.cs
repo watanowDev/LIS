@@ -191,6 +191,8 @@ namespace WATA.LIS.Core.Services
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             post_obj.body = json_body;
 
+            Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
+
 
             if (IsSendBackEnd == true)
             {
@@ -201,9 +203,10 @@ namespace WATA.LIS.Core.Services
             }
             else
             {
+                Tools.Log($"##########################Action Failed", Tools.ELogType.BackEndLog);
 
             }
-             
+
         }
 
         private  int  CalcLoadRate(float area)

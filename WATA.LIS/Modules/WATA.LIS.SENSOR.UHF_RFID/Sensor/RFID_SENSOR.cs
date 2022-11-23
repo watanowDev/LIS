@@ -130,7 +130,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
                         if (m_before_epc == RecieveStr)
                         {
-                            if (m_cnt > 10)
+                            if (m_cnt > 5)
                             {
                                 _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
                                 m_cnt = 0;
@@ -140,8 +140,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                         }
                         else
                         {
-                            m_cnt = 0;
-                            m_before_epc = "";
+                            //m_cnt = 0;
+                            //m_before_epc = "";
                         }
                         
 
