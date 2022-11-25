@@ -46,15 +46,35 @@
         </Grid>
         <Grid Grid.Row="2">
 
-            <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.6*"></ColumnDefinition>
+                <ColumnDefinition Width="0.4*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+
+            <TabControl  Grid.Column="0" BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
                 <TabControl.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="Black"/>
                         <GradientStop Color="#FF0C0202" Offset="1"/>
                     </LinearGradientBrush>
                 </TabControl.Background>
-                <TabItem Header="Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                    <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" >
+                <TabItem Header="Action Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                    <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True"  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    </ListBox>
+                </TabItem>
+            </TabControl>
+
+            <TabControl  Grid.Column="1" BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
+                <TabControl.Background>
+                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                        <GradientStop Color="Black"/>
+                        <GradientStop Color="#FF0C0202" Offset="1"/>
+                    </LinearGradientBrush>
+                </TabControl.Background>
+                <TabItem Header="Current Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                    <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndCurrentLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
                     </ListBox>
                 </TabItem>
             </TabControl>

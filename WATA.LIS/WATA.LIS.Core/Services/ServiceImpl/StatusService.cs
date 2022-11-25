@@ -47,7 +47,29 @@ namespace WATA.LIS.Core.Services
             AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             AliveTimer.Tick += new EventHandler(AliveTimerEvent);
             AliveTimer.Start();
+
+
+            DispatcherTimer CurrentTimer = new DispatcherTimer();
+            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
+            CurrentTimer.Start();
+
         }
+
+        private void CurrentLocationTimerEvent(object sender, EventArgs e)
+        {
+            AliveModel alive_obj = new AliveModel();
+            alive_obj.alive.workLocationId = m_location;
+            alive_obj.alive.vehicleId = m_vihicle;
+            alive_obj.alive.errorCode = m_errorcode;
+            string json_body = Util.ObjectToJson(alive_obj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndCurrent;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+        }
+
         private void AliveTimerEvent(object sender, EventArgs e)
         {
             SendAliveEvent();
@@ -63,6 +85,7 @@ namespace WATA.LIS.Core.Services
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
@@ -166,6 +189,7 @@ namespace WATA.LIS.Core.Services
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
 
             Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
 

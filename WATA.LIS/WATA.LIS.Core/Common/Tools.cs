@@ -23,7 +23,8 @@ namespace WATA.LIS.Core.Common
         static ILog DistanceLog;
         static ILog VisionLog;
         static ILog BackEndLog;
-        
+        static ILog BackEndCurrentELog;
+
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
         static Tools()
@@ -34,10 +35,10 @@ namespace WATA.LIS.Core.Common
             DistanceLog = LogManager.GetLogger("DistanceLogEx");
             VisionLog = LogManager.GetLogger("VisionLogEx");
             BackEndLog = LogManager.GetLogger("BackEndLogEx");
+            BackEndCurrentELog = LogManager.GetLogger("BackEndCurrentLogEx");
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
-            
         }
 
         public static byte[] UShortToByte(ushort value)
@@ -57,6 +58,30 @@ namespace WATA.LIS.Core.Common
                 {
                     switch (logType)
                     {
+                        case ELogType.BackEndCurrentLog:
+                            BackEndCurrentELog.Info(msg);//Point
+                            if (logInfo.ListBackEndCurrentLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListBackEndCurrentLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListBackEndCurrentLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListBackEndCurrentLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListBackEndCurrentLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         case ELogType.SystemLog:
@@ -434,6 +459,7 @@ namespace WATA.LIS.Core.Common
             DistanceLog,
             VisionLog,
             BackEndLog,
+            BackEndCurrentLog,
         }
 
         public struct SYSTEMTIME

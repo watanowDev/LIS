@@ -11,4 +11,9 @@ namespace WATA.LIS.Core.Common
         sample_1 = 1,
         sample_2
     }
+    public enum eMessageType : Int32
+    {
+        BackEndAction,
+        BackEndCurrent
+    }
 }

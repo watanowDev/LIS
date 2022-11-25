@@ -17,6 +17,7 @@ namespace WATA.LIS.IF.BE.ViewModels
     public class BackEndViewModel : BindableBase
     {
         public ObservableCollection<Log> ListBackEndLog { get; set; }
+        public ObservableCollection<Log> ListBackEndCurrentLog { get; set; }
         public DelegateCommand<string> ButtonFunc { get; set; }
 
         private readonly IEventAggregator _eventAggregator;
@@ -38,8 +39,11 @@ namespace WATA.LIS.IF.BE.ViewModels
         {
             _eventAggregator = eventAggregator;
             ListBackEndLog = Tools.logInfo.ListBackEndLog;
+            ListBackEndCurrentLog = Tools.logInfo.ListBackEndCurrentLog;
+
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
-            Tools.Log($"##########################Action Failed", Tools.ELogType.BackEndLog);
+            Tools.Log($"##########################Init", Tools.ELogType.BackEndLog);
+            Tools.Log($"##########################Init", Tools.ELogType.BackEndCurrentLog);
         }
 
         public void SendAliveEvent()
@@ -52,6 +56,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
@@ -60,12 +65,15 @@ namespace WATA.LIS.IF.BE.ViewModels
             ActionInfoModel action_obj = new ActionInfoModel();
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
-
             action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.action = "IN";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
             action_obj.actionInfo.loadRate = "0";
-           
+            action_obj.actionInfo.loadMatrixColumn = "10";
+            action_obj.actionInfo.loadMatrixRaw = "10";
+
+
 
             for (int i = 0; i < 100; i++)
             {
@@ -78,6 +86,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
 
 
@@ -92,9 +101,12 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.vehicleId = m_vihicle;
 
             action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.action = "OUT";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
             action_obj.actionInfo.loadRate = "90";
+            action_obj.actionInfo.loadMatrixColumn = "10";
+            action_obj.actionInfo.loadMatrixRaw = "10";
 
 
             for (int i = 0; i < 100; i++)
@@ -106,6 +118,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 

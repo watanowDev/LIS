@@ -17,21 +17,12 @@ using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.RFID;
 
-
-
-
-
-
-
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
     public class RFID_SENSOR
     {
-        Thread RecvThread;
-        DispatcherTimer rftag_valid_timer;
-
-
-
+        Thread TableRFIDRecvThread;
+        Thread LocationRFIDRecvThread;
 
         private readonly IEventAggregator _eventAggregator;
         public RFID_SENSOR(IEventAggregator eventAggregator)
@@ -47,36 +38,32 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
           {
                 m_cnt = 0;
                 m_before_epc = "";
-
-            }
+          }
 
         }
 
         public void Init()
         {
-            RecvThread = new Thread(new ThreadStart(ZMQReceiveInit));
-            RecvThread.Start();
+            TableRFIDRecvThread = new Thread(new ThreadStart(TableRFID_ZMQReceiveInit));
+            TableRFIDRecvThread.Start();
 
+            LocationRFIDRecvThread = new Thread(new ThreadStart(LocationRFID_ZMQReceiveInit));
+            LocationRFIDRecvThread.Start();
+
+
+            
             DispatcherTimer WPS_Process_chk_Timer = new DispatcherTimer();
             WPS_Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 10000);
             WPS_Process_chk_Timer.Tick += new EventHandler(AliveTimerEvent);
             WPS_Process_chk_Timer.Start();
 
 
-            rftag_valid_timer = new DispatcherTimer();
-            rftag_valid_timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            rftag_valid_timer.Tick += new EventHandler(rfTagVaildTimerEvent);
-            //rftag_valid_timer.Start();
-
 
             ExecuteWPS();
         }
 
 
-        private void rfTagVaildTimerEvent(object sender, EventArgs e)
-        {
-            //ExecuteWPS();
-        }
+ 
 
 
         private void AliveTimerEvent(object sender, EventArgs e)
@@ -99,23 +86,23 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         private string m_before_epc = "";
         private int m_cnt = 0;
 
-        private void ZMQReceiveInit()
+        private void TableRFID_ZMQReceiveInit()
         {
             Tools.Log($"InitZMQ", Tools.ELogType.RFIDLog);
             using (var subSocket = new SubscriberSocket())
             {
                 subSocket.Options.ReceiveHighWatermark = 10000;
                 subSocket.Connect("tcp://localhost:8051");
-                subSocket.Subscribe("RFID");
+                subSocket.Subscribe("TABLE");
 
                 while (true)
                 {
                     byte[] messageReceived = subSocket.ReceiveFrameBytes();
 
                     string RecieveStr = Util.BytesToString(messageReceived);
-                    if(RecieveStr.Length == 4)
+                    if(RecieveStr == "TABLE")
                     {
-                        Tools.Log("Topic : "+ Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                        //Tools.Log("Topic : "+ Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
 
                     }
                     else
@@ -147,6 +134,36 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                         
 
                         m_before_epc = RecieveStr;
+                    }
+                    Thread.Sleep(50);
+                }
+            }
+        }
+
+
+
+        private void LocationRFID_ZMQReceiveInit()
+        {
+            Tools.Log($"InitZMQ", Tools.ELogType.RFIDLog);
+            using (var subSocket = new SubscriberSocket())
+            {
+                subSocket.Options.ReceiveHighWatermark = 10000;
+                subSocket.Connect("tcp://localhost:8052");
+                subSocket.Subscribe("LOCATION");
+
+                while (true)
+                {
+                    byte[] messageReceived = subSocket.ReceiveFrameBytes();
+
+                    string RecieveStr = Util.BytesToString(messageReceived);
+                    if (RecieveStr == "LOCATION")
+                    {
+                        //Tools.Log("Topic : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+
+                    }
+                    else
+                    {
+                        Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                     }
                     Thread.Sleep(50);
                 }
