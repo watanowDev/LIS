@@ -98,6 +98,8 @@ namespace WATA.LIS.Core.Services
             if(rifid_status_check_count >  status_limit_count)
             {
                 RFIDSensorModel rfidmodel = new RFIDSensorModel();
+                m_RFID_EPC_SenorData = "NA";
+                Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
                 rfidmodel.EPC_Data = m_RFID_EPC_SenorData;
                 _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
             }
@@ -143,26 +145,42 @@ namespace WATA.LIS.Core.Services
 
         public void OnVISIONEvent(VISON_Model obj)
         {
-            
-
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.epc = m_RFID_EPC_SenorData;
+            Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
             ActionObj.actionInfo.loadId = obj.qr;
+            Tools.Log($"##########################pick up Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
 
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 ActionObj.actionInfo.action = "IN";
                 m_CalRate = CalcLoadRate(obj.area);
                 Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Copy Before LoadRate  : {m_CalRate}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.loadRate = "0";
                 ActionObj.actionInfo.loadMatrixRaw = "10";
                 ActionObj.actionInfo.loadMatrixColumn = "10";
                 for (int i = 0; i < 100; i++)
                 {
                     ActionObj.actionInfo.loadMatrix.Add(0);
+                }
+
+                string json_body = Util.ObjectToJson(ActionObj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
+         
+                if (m_RFID_EPC_SenorData != "NA")
+                {
+                    _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+                }
+                else
+                {
+                    Tools.Log("[do not Tray]Pick Up Empty EPC #######", Tools.ELogType.BackEndLog);
                 }
             }
             else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
@@ -176,51 +194,31 @@ namespace WATA.LIS.Core.Services
                     ActionObj.actionInfo.loadMatrix.Add(1);
                 }
 
+                string json_body = Util.ObjectToJson(ActionObj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
 
-            }
-            else
-            {
-                ActionObj.actionInfo.action = "N/A";
-               
-            }
-           
+                Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
 
-            string json_body = Util.ObjectToJson(ActionObj);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-            post_obj.body = json_body;
-            post_obj.type = eMessageType.BackEndAction;
-
-            Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
-
-
-
-            //1) VISION 이벤트가 발생 했을 경우 2)선반에 위치 했음을 알리는 RFTAG가 인식 알렸을경우
-            if (obj.status.Contains("drop"))
-            {
-                //Back End로 전송
-                Tools.Log($"##########################drop Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
-                Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
-                _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-                m_RFID_EPC_SenorData = "NA";
-                Tools.Log("#######rifid Status Clear #######", Tools.ELogType.SystemLog);
-            }
-            else if (obj.status.Contains("pickup"))
-            {
-                if(m_RFID_EPC_SenorData != "NA")
+                if (m_RFID_EPC_SenorData != "NA")
                 {
-                    Tools.Log($"##########################pick up Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
                     Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
                 }
                 else
                 {
-                    Tools.Log("#######Pickup Send Fail Empty EPC #######", Tools.ELogType.SystemLog);
-                }     
+                    Tools.Log("[do not Tray]Drop Empty EPC #######", Tools.ELogType.BackEndLog);
+                }
+                m_RFID_EPC_SenorData = "NA";
+                Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+                m_CalRate = 0;
+                Tools.Log("Clear LodRate", Tools.ELogType.BackEndLog);
             }
             else
             {
-                Tools.Log($"##########################Action Failed", Tools.ELogType.BackEndLog);
+                Tools.Log("Action Idle", Tools.ELogType.BackEndLog);
             }
         }
 
@@ -228,18 +226,16 @@ namespace WATA.LIS.Core.Services
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
             double nRet = (area / 0.99) * 100;
-            Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
-
-            if (nRet < 30)
+        
+            if (nRet <= 0)
             {
-                Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
-                nRet = 0;
+                 nRet = 0;
             }
-
-            if(nRet>= 100)
+            if(nRet>= 97)
             {
-                nRet = 100;
-            }    
+                nRet = 97;
+            }
+            Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
 
 
             return (int)nRet;
