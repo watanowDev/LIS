@@ -154,7 +154,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
             int AverageDistance = (int)list_distance.Average();
             DistanceSensorModel DisTanceObject = new DistanceSensorModel();
-            DisTanceObject.Distance_mm = AverageDistance;
+            DisTanceObject.Distance_mm = Math.Abs(AverageDistance);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Publish(DisTanceObject);
 
             if (log_enable)
