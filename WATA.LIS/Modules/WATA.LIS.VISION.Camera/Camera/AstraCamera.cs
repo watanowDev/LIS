@@ -65,6 +65,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                     procInfo.ArgumentList.Add("WATA");
                     procInfo.ArgumentList.Add("vision");
                     procInfo.ArgumentList.Add("1.25");
+                    procInfo.ArgumentList.Add("0");
                     Process.Start(procInfo);
                 }
                 catch (Exception ex)
