@@ -95,13 +95,11 @@ namespace WATA.LIS.Core.Services
 
         private void StatusClearEvent(object sender, EventArgs e)
         {
-            if(rifid_status_check_count >  status_limit_count)// 30초후 응답이 없으면 RFID 클리어
+            if(rifid_status_check_count >  status_limit_count)
             {
-                m_RFID_EPC_SenorData = "NA";
                 RFIDSensorModel rfidmodel = new RFIDSensorModel();
                 rfidmodel.EPC_Data = m_RFID_EPC_SenorData;
                 _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
-                Tools.Log("#######rifid Status Clear #######", Tools.ELogType.SystemLog);
             }
             else
             {
@@ -177,6 +175,8 @@ namespace WATA.LIS.Core.Services
                 {
                     ActionObj.actionInfo.loadMatrix.Add(1);
                 }
+
+
             }
             else
             {
@@ -196,12 +196,27 @@ namespace WATA.LIS.Core.Services
 
 
             //1) VISION 이벤트가 발생 했을 경우 2)선반에 위치 했음을 알리는 RFTAG가 인식 알렸을경우
-            if ((obj.status.Contains("drop") || obj.status.Contains("pickup")) && m_RFID_EPC_SenorData != "NA")
+            if (obj.status.Contains("drop"))
             {
                 //Back End로 전송
-                Tools.Log($"##########################Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################drop Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
                 Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+                m_RFID_EPC_SenorData = "NA";
+                Tools.Log("#######rifid Status Clear #######", Tools.ELogType.SystemLog);
+            }
+            else if (obj.status.Contains("pickup"))
+            {
+                if(m_RFID_EPC_SenorData != "NA")
+                {
+                    Tools.Log($"##########################pick up Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
+                    Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
+                    _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+                }
+                else
+                {
+                    Tools.Log("#######Pickup Send Fail Empty EPC #######", Tools.ELogType.SystemLog);
+                }     
             }
             else
             {
@@ -213,13 +228,20 @@ namespace WATA.LIS.Core.Services
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
             double nRet = (area / 0.99) * 100;
-            Tools.Log($"##nRet  : {nRet}", Tools.ELogType.BackEndLog);
+            Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
 
             if (nRet < 30)
             {
-                Tools.Log($"##Low  : {nRet}", Tools.ELogType.BackEndLog);
+                Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
                 nRet = 0;
             }
+
+            if(nRet>= 100)
+            {
+                nRet = 100;
+            }    
+
+
             return (int)nRet;
         }
     }
