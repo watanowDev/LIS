@@ -105,6 +105,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
             action_obj.actionInfo.loadRate = "";
+            action_obj.actionInfo.loadRate = "90";
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
 

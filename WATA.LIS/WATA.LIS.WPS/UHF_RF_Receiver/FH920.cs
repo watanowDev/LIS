@@ -239,7 +239,7 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
                             AddSendLog(BytesToString(frame));
                         }
                     }
-                    Thread.Sleep(50);
+                    Thread.Sleep(10);
                 }
             }
         }

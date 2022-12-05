@@ -113,7 +113,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
                         if (m_before_epc == RecieveStr)
                         {
-                            if (m_cnt >= 10)
+                            if (m_cnt >= 3)
                             {
 
                                 _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
@@ -122,20 +122,22 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
 
                                 Tools.Log($"##Enable RFTAG {RecieveStr} ", Tools.ELogType.BackEndLog);
+
                             }
                             m_cnt++;
+                            Tools.Log($"##Checking Count {m_cnt} ", Tools.ELogType.BackEndLog);
+
                         }
                         else
                         {
-                            m_cnt = 0;
-                            m_before_epc = "";
-                            Tools.Log($"##Clear Rest RFTAG {RecieveStr} ", Tools.ELogType.BackEndLog);
+                            //m_before_epc = "";
+                            //Tools.Log($"##diffrent EPC ", Tools.ELogType.BackEndLog);
                         }
-                        
+
 
                         m_before_epc = RecieveStr;
                     }
-                    Thread.Sleep(50);
+                    Thread.Sleep(10);
                 }
             }
         }

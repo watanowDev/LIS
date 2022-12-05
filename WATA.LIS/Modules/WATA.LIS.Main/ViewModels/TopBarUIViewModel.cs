@@ -13,10 +13,18 @@ namespace WATA.LIS.Main.ViewModels
 {
     public class TopBarUIViewModel : BindableBase
     {
+        
+
+        private string _VersionContext;
+        public string VersionContext { get { return _VersionContext; } set { SetProperty(ref _VersionContext, value); } }
+
+
         public DelegateCommand<string> ButtonFunc { get; set; }
 
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
+            VersionContext = "2022.12.05 ver 0001";
+
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
         }
 

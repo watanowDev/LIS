@@ -141,8 +141,8 @@
         <Grid Background="#FF75002A">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="10"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
 
             </Grid.ColumnDefinitions>
@@ -161,8 +161,8 @@
             </Grid>
 
             <Grid Grid.Column="2">
-                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" Margin="36,36,-1,2" Width="55" Height="24"/>
-                <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="36,36,0,0" Width="154" Height="24"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26"/>
             </Grid>
 
             <Grid Grid.Column="3">
