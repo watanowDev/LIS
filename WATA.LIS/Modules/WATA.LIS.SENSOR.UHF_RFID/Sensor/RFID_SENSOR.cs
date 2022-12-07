@@ -29,19 +29,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         {
             _eventAggregator = eventAggregator;
 
-            _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
         }
 
-        public void OnRFIDSensorData(RFIDSensorModel obj)
-        {
-          if(obj.EPC_Data =="NA")
-          {
-                m_cnt = 0;
-                m_before_epc = "";
-          }
-
-        }
-
+       
         public void Init()
         {
             TableRFIDRecvThread = new Thread(new ThreadStart(TableRFID_ZMQReceiveInit));
@@ -83,8 +73,6 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
         }
 
-        private string m_before_epc = "";
-        private int m_cnt = 0;
 
         private void TableRFID_ZMQReceiveInit()
         {
@@ -111,31 +99,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                         RFIDSensorModel rfidmodel = new RFIDSensorModel();
                         rfidmodel.EPC_Data = RecieveStr;
 
-                        if (m_before_epc == RecieveStr)
-                        {
-                            if (m_cnt >= 3)
-                            {
-
-                                _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
-                                m_cnt = 0;
-                                m_before_epc = "";
-
-
-                                Tools.Log($"##Enable RFTAG {RecieveStr} ", Tools.ELogType.BackEndLog);
-
-                            }
-                            m_cnt++;
-                            Tools.Log($"##Checking Count {m_cnt} ", Tools.ELogType.BackEndLog);
-
-                        }
-                        else
-                        {
-                            //m_before_epc = "";
-                            //Tools.Log($"##diffrent EPC ", Tools.ELogType.BackEndLog);
-                        }
-
-
-                        m_before_epc = RecieveStr;
+                        _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
                     }
                     Thread.Sleep(10);
                 }

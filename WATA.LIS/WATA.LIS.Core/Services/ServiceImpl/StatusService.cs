@@ -1,5 +1,8 @@
-﻿using Prism.Events;
+﻿using MaterialDesignThemes.Wpf;
+using Prism.Events;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
@@ -19,8 +22,7 @@ namespace WATA.LIS.Core.Services
         IEventAggregator _eventAggregator;
 
         public int      m_Height_Distance_mm { get; set; }
-        public string   m_RFID_EPC_SenorData { get; set; }
-
+ 
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
         private int status_limit_count = 15;
@@ -98,9 +100,9 @@ namespace WATA.LIS.Core.Services
             if(rifid_status_check_count >  status_limit_count)
             {
                 RFIDSensorModel rfidmodel = new RFIDSensorModel();
-                m_RFID_EPC_SenorData = "NA";
+                ClearEpc();
                 Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
-                rfidmodel.EPC_Data = m_RFID_EPC_SenorData;
+                rfidmodel.EPC_Data = "NA";
                 _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
             }
             else
@@ -133,11 +135,103 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
         }
 
+        private static List<EPCModel> m_epclist = new List<EPCModel>();
+       
+        private void AddEpcList(string epc , 
+                                ref Dictionary<string, int> dicEPClist, 
+                                ref List<int> listCount)
+        {
+            if (dicEPClist.ContainsKey(epc))
+            {
+                int idx = Array.IndexOf(dicEPClist.Keys.ToArray(), epc);
+                listCount[idx] ++;
+                dicEPClist[epc] = listCount[idx];
+            }
+            else
+            {
+                dicEPClist.Add(epc, 1);
+                listCount.Add(1);
+
+            }
+        }
+
+        private string GetMostCountEPC()
+        {
+            string retKeys = "NA";
+            
+          
+          
+
+
+            if (m_epclist.Count > 0)
+            {
+                DateTime CurrentTime = DateTime.Now;
+                Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndLog);
+                for (int i = 0; i < m_epclist.Count; i++)
+                {
+
+                    
+                }
+
+                int idx = 0;
+                while (idx < m_epclist.Count)
+                {
+                    TimeSpan Diff = CurrentTime - m_epclist[idx].Time;
+                    int nDiff = Diff.Seconds;
+
+
+                    if (nDiff > 2)
+                    {
+                        Tools.Log($"delete DiffTime {nDiff}  epc {m_epclist[idx].EPC} Time {m_epclist[idx].Time}  ", Tools.ELogType.BackEndLog);
+                        m_epclist.Remove(m_epclist[idx]);
+
+                    }
+                    else
+                    {
+                        ++idx;
+                    }
+                }
+
+
+
+
+                Dictionary<string, int> dicEPClist = new Dictionary<string, int>();
+                List<int> listCount = new List<int>();
+
+
+                for (int i = 0; i < m_epclist.Count; i++)
+                {
+                    Tools.Log($"Query  epc {m_epclist[i].EPC} Time {m_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
+                    AddEpcList(m_epclist[i].EPC, ref dicEPClist, ref listCount);
+                }
+
+                PrintDict(dicEPClist);
+                retKeys = dicEPClist.Aggregate((x, y) => x.Value > y.Value ? x : y).Key;
+            }
+            else
+            {
+                Tools.Log("EPC List Empty", Tools.ELogType.BackEndLog);
+            }
+            return retKeys;
+        }
+
+        private void ClearEpc()
+        {
+            m_epclist.Clear();
+            Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+        }
+        
+
+
         public void OnRFIDSensorData(RFIDSensorModel obj)
         {
             rifid_status_check_count = 0;
-            m_RFID_EPC_SenorData = obj.EPC_Data;
-            Tools.Log($"!! :  {m_RFID_EPC_SenorData}", Tools.ELogType.SystemLog);
+            EPCModel epcModel = new EPCModel();
+            epcModel.EPC = obj.EPC_Data;
+            epcModel.Time = DateTime.Now;
+            m_epclist.Add(epcModel);
+
+            Tools.Log($"EPC Recieve :  {obj.EPC_Data}", Tools.ELogType.SystemLog);
         }
 
 
@@ -145,11 +239,15 @@ namespace WATA.LIS.Core.Services
 
         public void OnVISIONEvent(VISON_Model obj)
         {
+            string epc_data = GetMostCountEPC();
+
+
+
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
-            ActionObj.actionInfo.epc = m_RFID_EPC_SenorData;
-            Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
+            ActionObj.actionInfo.epc = epc_data;
+            Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
             ActionObj.actionInfo.loadId = obj.qr;
             Tools.Log($"##########################pick up Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
@@ -174,7 +272,7 @@ namespace WATA.LIS.Core.Services
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
          
-                if (m_RFID_EPC_SenorData != "NA")
+                if (epc_data != "NA")
                 {
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
                 }
@@ -182,6 +280,7 @@ namespace WATA.LIS.Core.Services
                 {
                     Tools.Log("[do not Tray]Pick Up Empty EPC #######", Tools.ELogType.BackEndLog);
                 }
+                ClearEpc();
             }
             else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
             {
@@ -200,9 +299,9 @@ namespace WATA.LIS.Core.Services
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
 
-                Tools.Log($"##rftag epc  : {m_RFID_EPC_SenorData}", Tools.ELogType.BackEndLog);
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
 
-                if (m_RFID_EPC_SenorData != "NA")
+                if (epc_data != "NA")
                 {
                     Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
@@ -211,14 +310,22 @@ namespace WATA.LIS.Core.Services
                 {
                     Tools.Log("[do not Tray]Drop Empty EPC #######", Tools.ELogType.BackEndLog);
                 }
-                m_RFID_EPC_SenorData = "NA";
-                Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+                ClearEpc();
                 m_CalRate = 0;
-                Tools.Log("Clear LodRate", Tools.ELogType.BackEndLog);
+                Tools.Log("Clear LoadRate", Tools.ELogType.BackEndLog);
             }
             else
             {
                 Tools.Log("Action Idle", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public static void PrintDict<K, V>(Dictionary<K, V> dict)
+        {
+            for (int i = 0; i < dict.Count; i++)
+            {
+                KeyValuePair<K, V> entry = dict.ElementAt(i);
+                Tools.Log("Key: " + entry.Key + ", Value: " + entry.Value, Tools.ELogType.BackEndLog);
             }
         }
 

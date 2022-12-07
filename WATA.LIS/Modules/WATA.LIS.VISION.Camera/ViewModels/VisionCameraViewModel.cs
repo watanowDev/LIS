@@ -1,6 +1,7 @@
 ﻿using NetMQ;
 using NetMQ.Sockets;
 using Prism.Commands;
+using Prism.Events;
 using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,9 @@ using System.Linq;
 using System.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.RFID;
+using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.VISION.Camera.ViewModels
 {
@@ -17,13 +20,48 @@ namespace WATA.LIS.VISION.Camera.ViewModels
     {
         Thread RecvThread;
         public ObservableCollection<Log> VisionLog { get; set; }
-        public VisionCameraViewModel()
+        private readonly IEventAggregator _eventAggregator;
+        public DelegateCommand<string> ButtonFunc { get; set; }
+        public VisionCameraViewModel(IEventAggregator eventAggregator)
         {
+            _eventAggregator = eventAggregator;
             VisionLog = Tools.logInfo.ListVisionLog;
             Tools.Log($"Init VisionCameraViewModel", Tools.ELogType.VisionLog);
 
-            
 
+            ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
+
+        }
+
+        private void ButtonFuncClick(string command)
+        {
+            try
+            {
+                if (command == null) return;
+                switch (command)
+                {
+                    case "Vision":
+
+                        VISON_Model visionModel = new VISON_Model();
+                        visionModel.area = (float)0.88;
+                        visionModel.status = "pickup";
+                        visionModel.width =  (float)0.88;
+                        visionModel.height = (float)0.88;
+                        visionModel.qr = "test";
+
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
+                        break;
+
+                    
+
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
 

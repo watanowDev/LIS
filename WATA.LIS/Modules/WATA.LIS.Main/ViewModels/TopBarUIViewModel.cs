@@ -23,7 +23,7 @@ namespace WATA.LIS.Main.ViewModels
 
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
-            VersionContext = "2022.12.05 ver 0001";
+            VersionContext = "2022.12.06 ver 0001";
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
         }

@@ -52,7 +52,8 @@
                     </TabItem>
                 </TabControl>
             </Grid>
-            <Grid Grid.Column="1" RenderTransformOrigin="0.513,0.422">
+            <Grid Grid.Column="1">
+                <Button Command="{Binding ButtonFunc}" CommandParameter="Vision" Width="156"  Content="Vision Event" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"    />
 
             </Grid>
         </Grid>
