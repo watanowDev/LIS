@@ -25,7 +25,7 @@ namespace WATA.LIS.Core.Services
  
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
-        private int status_limit_count = 15;
+        private int status_limit_count = 8;
 
         private string m_location = "INCHEON_CALT_001";
         private string m_vihicle = "fork_lift001";
@@ -155,14 +155,10 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        private string GetMostCountEPC()
+        private string GetMostCountEPC(int TimeSec,int Threshold)
         {
             string retKeys = "NA";
-            
-          
-          
-
-
+           
             if (m_epclist.Count > 0)
             {
                 DateTime CurrentTime = DateTime.Now;
@@ -180,7 +176,7 @@ namespace WATA.LIS.Core.Services
                     int nDiff = Diff.Seconds;
 
 
-                    if (nDiff > 2)
+                    if (nDiff > TimeSec)
                     {
                         Tools.Log($"delete DiffTime {nDiff}  epc {m_epclist[idx].EPC} Time {m_epclist[idx].Time}  ", Tools.ELogType.BackEndLog);
                         m_epclist.Remove(m_epclist[idx]);
@@ -205,8 +201,26 @@ namespace WATA.LIS.Core.Services
                     AddEpcList(m_epclist[i].EPC, ref dicEPClist, ref listCount);
                 }
 
-                PrintDict(dicEPClist);
-                retKeys = dicEPClist.Aggregate((x, y) => x.Value > y.Value ? x : y).Key;
+                if (dicEPClist.Count > 0)
+                {
+                    PrintDict(dicEPClist);
+                    retKeys = dicEPClist.Aggregate((x, y) => x.Value > y.Value ? x : y).Key;
+
+                    if (dicEPClist.TryGetValue(retKeys, out int Count))
+                    {
+                        Tools.Log($"EPCKey Count {Count}", Tools.ELogType.BackEndLog);
+                        if (Count <= Threshold)
+                        {
+                            retKeys = "NA";
+                            Tools.Log($"Low Count {Count}", Tools.ELogType.BackEndLog);
+
+                        }
+                    }
+                }
+                else
+                {
+                    Tools.Log("Dic List Empty", Tools.ELogType.BackEndLog);
+                }
             }
             else
             {
@@ -236,24 +250,27 @@ namespace WATA.LIS.Core.Services
 
 
         private int m_CalRate = 0;
+        private byte[] m_LoadMatrix = new byte[10];
 
         public void OnVISIONEvent(VISON_Model obj)
         {
-            string epc_data = GetMostCountEPC();
 
 
 
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
-            ActionObj.actionInfo.epc = epc_data;
-            Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
             ActionObj.actionInfo.loadId = obj.qr;
-            Tools.Log($"##########################pick up Action : {ActionObj.actionInfo.action}", Tools.ELogType.BackEndLog);
-
+           
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
+                Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);
+                string epc_data = GetMostCountEPC(4,3);
+                ActionObj.actionInfo.epc = epc_data;
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
+
+
                 ActionObj.actionInfo.action = "IN";
                 m_CalRate = CalcLoadRate(obj.area);
                 Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
@@ -261,10 +278,20 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadRate = "0";
                 ActionObj.actionInfo.loadMatrixRaw = "10";
                 ActionObj.actionInfo.loadMatrixColumn = "10";
-                for (int i = 0; i < 100; i++)
-                {
-                    ActionObj.actionInfo.loadMatrix.Add(0);
-                }
+
+                m_LoadMatrix = obj.matrix;
+             
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
@@ -272,7 +299,7 @@ namespace WATA.LIS.Core.Services
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
          
-                if (epc_data != "NA")
+                if (epc_data != "TEST")
                 {
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
                 }
@@ -284,14 +311,24 @@ namespace WATA.LIS.Core.Services
             }
             else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
             {
+                Tools.Log($"OUT##########################Drop Action", Tools.ELogType.BackEndLog);
+                string epc_data = GetMostCountEPC(5,3);
+                ActionObj.actionInfo.epc = epc_data;
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "OUT";
                 ActionObj.actionInfo.loadRate = m_CalRate.ToString();
                 ActionObj.actionInfo.loadMatrixRaw = "10";
                 ActionObj.actionInfo.loadMatrixColumn = "10";
-                for (int i = 0; i < 100; i++)
-                {
-                    ActionObj.actionInfo.loadMatrix.Add(1);
-                }
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[0]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[1]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[2]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[3]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[4]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[5]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[6]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
+                ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
@@ -301,7 +338,7 @@ namespace WATA.LIS.Core.Services
 
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
 
-                if (epc_data != "NA")
+                if (epc_data != "TEST")
                 {
                     Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);

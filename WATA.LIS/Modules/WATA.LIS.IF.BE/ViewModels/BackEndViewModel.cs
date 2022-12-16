@@ -73,13 +73,16 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
 
-
-
-            for (int i = 0; i < 100; i++)
-            {
-                action_obj.actionInfo.loadMatrix.Add(0);
-            }
-
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(0);
 
 
             string json_body = Util.ObjectToJson(action_obj);
@@ -109,11 +112,18 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
 
+            action_obj.actionInfo.loadMatrix.Add(0);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(10);
+            action_obj.actionInfo.loadMatrix.Add(0);
 
-            for (int i = 0; i < 100; i++)
-            {
-                action_obj.actionInfo.loadMatrix.Add(1);
-            }
+
 
             string json_body = Util.ObjectToJson(action_obj);
             RestClientPostModel post_obj = new RestClientPostModel();

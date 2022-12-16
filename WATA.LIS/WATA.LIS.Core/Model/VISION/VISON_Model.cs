@@ -14,6 +14,8 @@ namespace WATA.LIS.Core.Model.VISION
         public float height { get; set; }
         public string qr { get; set; }
         public string status { get; set; }
+
+        public byte[] matrix { get; set; }
     }
 }
 

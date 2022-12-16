@@ -20,6 +20,8 @@ namespace WATA.LIS.Main.ViewModels
     public class MainUIViewModel : BindableBase
     {
         public ObservableCollection<Log> ListSystemLog { get; set; }
+        public ObservableCollection<Log> ListBackEndLog { get; set; }
+        public ObservableCollection<Log> ListRFIDLog { get; set; }
 
         //Elips
         private string _Distance_Active;
@@ -55,7 +57,13 @@ namespace WATA.LIS.Main.ViewModels
         {
             _eventAggregator = eventAggregator;
             ListSystemLog = Tools.logInfo.ListSystemLog;
+            ListBackEndLog = Tools.logInfo.ListBackEndLog;
+            ListRFIDLog = Tools.logInfo.ListRFIDLog;
+
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.SystemLog);
+            Tools.Log($"Init MainUIViewModel", Tools.ELogType.RFIDLog);
+            Tools.Log($"Init MainUIViewModel", Tools.ELogType.BackEndLog);
+
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);

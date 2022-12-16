@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WATA.LIS.WPS"
         mc:Ignorable="d"
-        Title="Windows Plafrom data Sender" Height="720" Width="1280">
+        Title="Windows Plafrom data Sender" Height="720" Width="1280"  Left="1280" Top="10">
     <Grid>
 
         <Label Content="Table RFTAG" HorizontalAlignment="Left" Height="34" Margin="17,4,0,0" VerticalAlignment="Top" Width="116" FontWeight="Bold"/>

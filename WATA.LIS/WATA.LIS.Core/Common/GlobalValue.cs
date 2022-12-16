@@ -8,8 +8,9 @@ namespace WATA.LIS.Core.Common
 {
     public class GlobalValue
     {
-        public static int sample1 = 0;
-        
+        public static string SystemVersion = "";
+
+
     }
     
 }

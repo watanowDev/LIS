@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 
 namespace WATA.LIS.Main.ViewModels
@@ -19,14 +20,37 @@ namespace WATA.LIS.Main.ViewModels
         public string VersionContext { get { return _VersionContext; } set { SetProperty(ref _VersionContext, value); } }
 
 
+        private string _Date;
+        public string Date { get { return _Date; } set { SetProperty(ref _Date, value); } }
+
+        private string _Time;
+        public string Time { get { return _Time; } set { SetProperty(ref _Time, value); } }
+
+
+
         public DelegateCommand<string> ButtonFunc { get; set; }
 
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
-            VersionContext = "2022.12.06 ver 0001";
+            VersionContext = "(LIS)" + GlobalValue.SystemVersion;
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
+
+
+            DispatcherTimer DateTimer = new DispatcherTimer();
+            DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            DateTimer.Tick += new EventHandler(Timer);
+            DateTimer.Start();
+
+
         }
+
+        private void Timer(object sender, EventArgs e)
+        {
+            Date = DateTime.Now.ToString("yyyy-MM-dd");
+            Time = DateTime.Now.ToString("HH:mm:ss");
+        }
+
 
         private void ClearProcess()
         {

@@ -58,13 +58,37 @@ namespace WATA.LIS.VISION.Camera.Camera
                 string dir = System.IO.Directory.GetCurrentDirectory() + "\\VISION\\";
                 try
                 {
-                    ProcessStartInfo procInfo = new ProcessStartInfo();
-                    procInfo.UseShellExecute = true;
-                    procInfo.FileName = "vision_forklift.exe";
-                    procInfo.WorkingDirectory = dir;
-                    procInfo.ArgumentList.Add("vision");
-                    procInfo.ArgumentList.Add("1.25");
-                    Process.Start(procInfo);
+
+
+
+
+                   
+                    if (true)
+                    {
+                        ProcessStartInfo procInfo = new ProcessStartInfo();
+
+                        procInfo.UseShellExecute = true;
+                        procInfo.FileName = "vision_forklift.exe";
+                        procInfo.WorkingDirectory = dir;
+                        procInfo.ArgumentList.Add("vision");
+                        procInfo.ArgumentList.Add("1.25");
+                        Process.Start(procInfo);
+                    }
+                    else
+                    {
+                        ProcessStartInfo procInfoOld = new ProcessStartInfo();
+                        procInfoOld.UseShellExecute = true;
+                        procInfoOld.FileName = "vision_forklift.exe";
+                        procInfoOld.WorkingDirectory = dir;
+                        procInfoOld.ArgumentList.Add("WATA");
+                        procInfoOld.ArgumentList.Add("vision");
+                        procInfoOld.ArgumentList.Add("1.25");
+                        procInfoOld.ArgumentList.Add("0");
+                        Process.Start(procInfoOld);
+                    }
+                    
+            
+                  
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +152,13 @@ namespace WATA.LIS.VISION.Camera.Camera
                                 visionModel.status = jObject["status"].ToString();
                             }
 
-                            if(visionModel.status == "drop" || visionModel.status == "pickup")
+                            if (jObject.ContainsKey("matrix") == true)
+                            {
+                                visionModel.matrix = jObject["matrix"].ToObject<byte[]>();
+
+                            }
+
+                            if (visionModel.status == "drop" || visionModel.status == "pickup")
                             {
                                 _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
                                 Tools.Log("### Send Vision Event Action ###", Tools.ELogType.VisionLog);

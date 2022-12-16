@@ -141,9 +141,10 @@
         <Grid Background="#FF75002A">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="10"></ColumnDefinition>
+                <ColumnDefinition Width="300"></ColumnDefinition>
                 <ColumnDefinition Width="200"></ColumnDefinition>
-                <ColumnDefinition Width="1.*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+ 
 
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
@@ -155,64 +156,26 @@
                     <RowDefinition Height="1.*"></RowDefinition>
                     <RowDefinition Height="1.*"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="{Binding RobotStatusManager.Date}" Foreground="#FFDADADA" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
-                <Label Grid.Row="1" Content="{Binding RobotStatusManager.Time}" Foreground="#FFDADADA" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center"></Label>
+                <Label Grid.Row="0" Content="{Binding Date}" Foreground="#FFDADADA" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
+                <Label Grid.Row="1" Content="{Binding Time}" Foreground="#FFDADADA" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
 
             </Grid>
 
             <Grid Grid.Column="2">
-                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="36,36,0,0" Width="154" Height="24"/>
-                <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="36,36,0,0" Width="154" Height="24" FontWeight="Bold" FontSize="15"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26" FontWeight="Bold" FontSize="15"/>
             </Grid>
 
             <Grid Grid.Column="3">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109"  Content="EXIT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="861,6,0,5" />
+                <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109"  Content="EXIT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
             </Grid>
 
 
 
 
 
-            <Grid Grid.Column="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="0.7*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Label Grid.Row="1"  VerticalAlignment="Center" HorizontalAlignment="Center" Content="{Binding RobotStatusManager.AutoManualKey}" Foreground="#FFDADADA" FontSize="20" FontWeight="Bold" Style="{StaticResource lbBlink2}"/>
-            </Grid>
-
-            <Grid Grid.Column="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="0.7*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Label Grid.Row="1"  Content="{Binding RobotStatusManager.MachineStatus}" IsEnabled="{Binding RobotStatusManager.IsRunning}" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFDADADA" FontSize="20" FontWeight="Bold" IsHitTestVisible="False" Style="{StaticResource lbBlink}"/>
-            </Grid>
-
-            <Grid Grid.Column="5">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                </Grid.RowDefinitions>
-                <Rectangle Name="rtTowerRed"     Grid.Row="0" HorizontalAlignment="Center" Fill="{Binding UIMainStatus.TowerRedColor}" Width="45" Height="17"></Rectangle>
-
-            </Grid>
-
-            <Grid Grid.Column="6" Grid.ColumnSpan="2">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="74"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="60"/>
-                    </Grid.ColumnDefinitions>
-
-
-                </Grid>
-            </Grid>
+       
+          
         </Grid>
     </Border>
 </UserControl>

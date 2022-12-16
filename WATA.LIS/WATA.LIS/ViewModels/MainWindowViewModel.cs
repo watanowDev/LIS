@@ -1,4 +1,5 @@
 ﻿using Prism.Mvvm;
+using WATA.LIS.Core.Common;
 
 namespace WATA.LIS.ViewModels
 {
@@ -13,6 +14,7 @@ namespace WATA.LIS.ViewModels
 
         public MainWindowViewModel()
         {
+            GlobalValue.SystemVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
         }
     }
