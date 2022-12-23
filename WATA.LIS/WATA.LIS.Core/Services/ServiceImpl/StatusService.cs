@@ -299,7 +299,7 @@ namespace WATA.LIS.Core.Services
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
          
-                if (epc_data != "TEST")
+                if (epc_data != "NA")
                 {
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
                 }
@@ -335,10 +335,9 @@ namespace WATA.LIS.Core.Services
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
-
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
 
-                if (epc_data != "TEST")
+                if (epc_data != "NA")
                 {
                     Tools.Log($"##LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                     _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);

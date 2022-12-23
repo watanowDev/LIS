@@ -97,9 +97,24 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     {
                         Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                         RFIDSensorModel rfidmodel = new RFIDSensorModel();
-                        rfidmodel.EPC_Data = RecieveStr;
 
-                        _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                        if(RecieveStr.Length == 24)
+                        {
+                            string stx = RecieveStr.Substring(0, 2);
+                            string etx = RecieveStr.Substring(22, 2);
+
+                            if(stx == "DA" && etx == "ED")
+                            {
+                                rfidmodel.EPC_Data = RecieveStr;
+                                _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                            }
+                            else
+                            {
+
+                                Tools.Log("Not Contained EPC : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                            }
+                        }
+
                     }
                     Thread.Sleep(10);
                 }

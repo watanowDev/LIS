@@ -58,20 +58,17 @@ namespace WATA.LIS.VISION.Camera.Camera
                 string dir = System.IO.Directory.GetCurrentDirectory() + "\\VISION\\";
                 try
                 {
-
-
-
-
-                   
                     if (true)
                     {
                         ProcessStartInfo procInfo = new ProcessStartInfo();
-
                         procInfo.UseShellExecute = true;
                         procInfo.FileName = "vision_forklift.exe";
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
-                        procInfo.ArgumentList.Add("1.25");
+                        procInfo.ArgumentList.Add("0.3");
+                        procInfo.ArgumentList.Add("50");
+                        procInfo.ArgumentList.Add("0.02");
+                        procInfo.ArgumentList.Add("1");
                         Process.Start(procInfo);
                     }
                     else

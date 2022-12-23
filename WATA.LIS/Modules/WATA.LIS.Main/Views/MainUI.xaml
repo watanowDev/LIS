@@ -73,7 +73,7 @@
                                 </LinearGradientBrush>
                             </TabControl.Background>
                             <TabItem Header="Tag" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox Background="DarkGray" ItemsSource="{Binding ListRFIDLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
+                                <ListBox Background="DarkGray" ItemsSource="{Binding ListRFIDLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="10" >
                                 </ListBox>
                             </TabItem>
                         </TabControl>
@@ -89,8 +89,8 @@
                                     <GradientStop Color="#FF0C0202" Offset="1"/>
                                 </LinearGradientBrush>
                             </TabControl.Background>
-                            <TabItem Header="System" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
+                            <TabItem Header="Vision" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                                <ListBox Background="DarkGray" ItemsSource="{Binding VisionLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="10" >
                                 </ListBox>
                             </TabItem>
                         </TabControl>
@@ -104,10 +104,7 @@
                     <RowDefinition Height="1.*"></RowDefinition>
                     <RowDefinition Height="1.*"></RowDefinition>
                     <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="5.*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.*"></ColumnDefinition>
@@ -125,7 +122,7 @@
                     </Grid.ColumnDefinitions>
                     <Label Content="H(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding Distance_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
-                    <Label Content="{Binding Distance_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
                 </Grid>
 
                 <Grid Grid.Row="2" Grid.Column="0" Margin="5">
@@ -160,6 +157,23 @@
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding BACKEND_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
                     <Label Content="{Binding BACKEND_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
                 </Grid>
+
+                <Grid Grid.Row="5">
+                    <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
+                        <TabControl.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="Black"/>
+                                <GradientStop Color="#FF0C0202" Offset="1"/>
+                            </LinearGradientBrush>
+                        </TabControl.Background>
+                        <TabItem Header="System" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                            <ListBox Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
+                            </ListBox>
+                        </TabItem>
+                    </TabControl>
+                </Grid>
+
+
             </Grid>
         </Grid>
     </Grid>
