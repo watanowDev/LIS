@@ -1,4 +1,4 @@
-﻿    <UserControl x:Class="WATA.LIS.VISION.Camera.Views.VisionCamera"
+﻿<UserControl x:Class="WATA.LIS.VISION.Camera.Views.VisionCamera"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -53,7 +53,8 @@
                 </TabControl>
             </Grid>
             <Grid Grid.Column="1">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="Vision" Width="156"  Content="Vision Event" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"    />
+                <Button Command="{Binding ButtonFunc}" CommandParameter="pickup" Width="156"  Content="pickup" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"    />
+                <Button Command="{Binding ButtonFunc}" CommandParameter="drop" Width="156"  Content="drop" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="161,0,0,0"    />
 
             </Grid>
         </Grid>

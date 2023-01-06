@@ -35,14 +35,15 @@ namespace WATA.LIS.VISION.Camera.ViewModels
 
         private void ButtonFuncClick(string command)
         {
+            VISON_Model visionModel = new VISON_Model();
+
             try
             {
                 if (command == null) return;
                 switch (command)
                 {
-                    case "Vision":
+                    case "pickup":
 
-                        VISON_Model visionModel = new VISON_Model();
                         visionModel.area = (float)0.88;
                         visionModel.status = "pickup";
                         visionModel.width =  (float)0.88;
@@ -52,7 +53,19 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
                         break;
 
-                    
+
+                    case "drop":
+
+                        visionModel.area = (float)0.88;
+                        visionModel.status = "drop";
+                        visionModel.width = (float)0.88;
+                        visionModel.height = (float)0.88;
+                        visionModel.qr = "test";
+
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
+                        break;
+
+
 
                     default:
                         break;

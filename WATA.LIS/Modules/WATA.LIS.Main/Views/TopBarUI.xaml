@@ -143,8 +143,11 @@
                 <ColumnDefinition Width="100"></ColumnDefinition>
                 <ColumnDefinition Width="300"></ColumnDefinition>
                 <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+
+
                 <ColumnDefinition Width="1*"></ColumnDefinition>
- 
+
 
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0">
@@ -166,7 +169,16 @@
                 <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Center" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,48,0" Width="42" Height="26" FontWeight="Bold" FontSize="15"/>
             </Grid>
 
+
             <Grid Grid.Column="3">
+                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding LivingTime}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="96,37,0,0" Width="154" Height="24" FontWeight="Bold" FontSize="15"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="Living Time" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,0,0" Width="96" Height="26" FontWeight="Bold" FontSize="15"/>
+
+                <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VisionEvent}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="96,8,0,0" Width="154" Height="24" FontWeight="Bold" FontSize="15"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="Vision" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="15" Margin="0,6,0,0"/>
+            </Grid>
+
+            <Grid Grid.Column="4">
                 <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109"  Content="EXIT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
             </Grid>
 
@@ -174,8 +186,10 @@
 
 
 
-       
-          
+
+
+
+
         </Grid>
     </Border>
 </UserControl>

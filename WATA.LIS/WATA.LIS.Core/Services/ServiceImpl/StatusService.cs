@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
+using System.Threading;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
@@ -38,6 +39,10 @@ namespace WATA.LIS.Core.Services
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LocationEvent>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
+
+
+
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer StatusClearTimer = new DispatcherTimer();
@@ -52,7 +57,7 @@ namespace WATA.LIS.Core.Services
 
 
             DispatcherTimer CurrentTimer = new DispatcherTimer();
-            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
 
@@ -60,16 +65,23 @@ namespace WATA.LIS.Core.Services
 
         private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
-            AliveModel alive_obj = new AliveModel();
-            alive_obj.alive.workLocationId = m_location;
-            alive_obj.alive.vehicleId = m_vihicle;
-            alive_obj.alive.errorCode = m_errorcode;
-            string json_body = Util.ObjectToJson(alive_obj);
+
+
+            LocationInfoModel location_obj = new LocationInfoModel();
+
+            location_obj.locationInfo.vehicleId = m_vihicle;
+            location_obj.locationInfo.workLocationId = m_location;
+            location_obj.locationInfo.epc = m_Location_epc;
+
+            string json_body = Util.ObjectToJson(location_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+
+
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
@@ -209,11 +221,10 @@ namespace WATA.LIS.Core.Services
                     if (dicEPClist.TryGetValue(retKeys, out int Count))
                     {
                         Tools.Log($"EPCKey Count {Count}", Tools.ELogType.BackEndLog);
-                        if (Count <= Threshold)
+                        if (Count < Threshold)
                         {
                             retKeys = "NA";
                             Tools.Log($"Low Count {Count}", Tools.ELogType.BackEndLog);
-
                         }
                     }
                 }
@@ -234,8 +245,14 @@ namespace WATA.LIS.Core.Services
             m_epclist.Clear();
             Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
         }
-        
 
+        private string m_Location_epc = "";
+
+        public void OnLocationData(LocationModel obj)
+        {
+            m_Location_epc = obj.EPC;
+            Tools.Log($"Location EPC {m_Location_epc}", Tools.ELogType.SystemLog);
+        }
 
         public void OnRFIDSensorData(RFIDSensorModel obj)
         {
@@ -252,6 +269,7 @@ namespace WATA.LIS.Core.Services
         private int m_CalRate = 0;
         private byte[] m_LoadMatrix = new byte[10];
 
+        private string m_qr = "";
         public void OnVISIONEvent(VISON_Model obj)
         {
 
@@ -261,12 +279,16 @@ namespace WATA.LIS.Core.Services
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
-            ActionObj.actionInfo.loadId = obj.qr;
-           
+            
+
+
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);
-                string epc_data = GetMostCountEPC(4,3);
+
+                Tools.Log($"Wait Sleep 3000 Secound", Tools.ELogType.BackEndLog);
+                Thread.Sleep(3000);
+                string epc_data = GetMostCountEPC(5,3);
                 ActionObj.actionInfo.epc = epc_data;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
 
@@ -292,6 +314,8 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
 
+                m_qr = ActionObj.actionInfo.containerId = obj.qr;
+                Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
@@ -312,7 +336,7 @@ namespace WATA.LIS.Core.Services
             else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
             {
                 Tools.Log($"OUT##########################Drop Action", Tools.ELogType.BackEndLog);
-                string epc_data = GetMostCountEPC(5,3);
+                string epc_data = GetMostCountEPC(8,3);
                 ActionObj.actionInfo.epc = epc_data;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "OUT";
@@ -329,6 +353,10 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
+                ActionObj.actionInfo.containerId = m_qr;
+
+                Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
+                m_qr = "";
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
@@ -368,8 +396,11 @@ namespace WATA.LIS.Core.Services
         private  int  CalcLoadRate(float area)
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
-            double nRet = (area / 0.99) * 100;
-        
+            double nRet = (area / 1.62) * 100;
+
+            Tools.Log($"##Convert  : {area}", Tools.ELogType.BackEndLog);
+
+
             if (nRet <= 0)
             {
                  nRet = 0;

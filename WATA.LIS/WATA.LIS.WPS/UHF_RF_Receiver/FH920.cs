@@ -131,7 +131,7 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
 
         private async Task RunOnUiThread(Action a)
         {
-            await this.dispatcher.InvokeAsync(() =>
+          await this.dispatcher.InvokeAsync(() =>
             {
                 a();
             });
@@ -163,6 +163,29 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
         }
 
 
+        
+
+        private byte[] ReqCommandR()
+        {
+            byte[] RecieveHex = { 0, };
+
+
+            if (_IBLE == null)
+            {
+                return RecieveHex;
+            }
+
+            if (_IBLE.IsConnected)
+            {
+                this._IBLE.Send(this._ReaderService.CommandR("1","0","9"), ReaderModule.CommandType.Normal);
+                RecieveHex = this._IBLE.Receive();
+            }
+            else
+            {
+                Retry();
+            }
+            return RecieveHex;
+        }
 
 
 
@@ -187,6 +210,54 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
             }
             return RecieveHex;
         }
+
+
+        private byte[] ReqCommandQR()
+        {
+            byte[] RecieveHex = { 0, };
+
+
+            if (_IBLE == null)
+            {
+                return RecieveHex;
+            }
+
+            if (_IBLE.IsConnected)
+            {
+                this._IBLE.Send(this._ReaderService.CommandQR("1", "0", "6"), ReaderModule.CommandType.Normal);
+                RecieveHex = this._IBLE.Receive();
+            }
+            else
+            {
+                Retry();
+            }
+            return RecieveHex;
+        }
+
+
+        private byte[] ReqCommandUR()
+        {
+            byte[] RecieveHex = { 0, };
+
+
+            if (_IBLE == null)
+            {
+                return RecieveHex;
+            }
+
+            if (_IBLE.IsConnected)
+            {
+                this._IBLE.Send(this._ReaderService.CommandUR("0" ,"1", "0", "6"), ReaderModule.CommandType.Normal);
+                RecieveHex = this._IBLE.Receive();
+            }
+            else
+            {
+                Retry();
+            }
+            return RecieveHex;
+        }
+
+
 
         private byte[] ReqCommandQ()
         {
@@ -227,18 +298,32 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
 
                 while (true)
                 {
-                    byte[] frame = ReqCommandQ();
-
-                    if (frame != null)
+                   // byte[] frame = ReqCommandQR();
+                   //byte[] frame =  ReqCommandUR();
+                   byte[] frame = ReqCommandQ();
+                   //byte[] frame = ReqCommandU();
+                   
+                    try
                     {
-                        if (frame.Length > 20)
+                        if (frame != null)
                         {
-                            byte[] RetTemp = new byte[24];
-                            System.Buffer.BlockCopy(frame, 6, RetTemp, 0, 24);
-                            pubSocket.SendMoreFrame(m_topic).SendFrame(RetTemp);
-                            AddSendLog(BytesToString(frame));
+                            if (frame.Length == 36)
+                            {
+                                byte[] RetTemp = new byte[24];
+                                System.Buffer.BlockCopy(frame, 6, RetTemp, 0, 24);
+                                pubSocket.SendMoreFrame(m_topic).SendFrame(RetTemp);
+                                AddSendLog(BytesToString(RetTemp));
+                            }
                         }
                     }
+                    catch
+                    {
+
+
+                    }
+
+                    
+                  
                     Thread.Sleep(10);
                 }
             }

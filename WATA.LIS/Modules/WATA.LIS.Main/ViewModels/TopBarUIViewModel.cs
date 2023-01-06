@@ -9,6 +9,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.Main.ViewModels
 {
@@ -26,15 +29,22 @@ namespace WATA.LIS.Main.ViewModels
         private string _Time;
         public string Time { get { return _Time; } set { SetProperty(ref _Time, value); } }
 
+        private string _LivingTime;
+        public string LivingTime { get { return _LivingTime; } set { SetProperty(ref _LivingTime, value); } }
 
+        private string _VisionEvent;
+
+        public string VisionEvent { get { return _VisionEvent; } set { SetProperty(ref _VisionEvent, value); } }
 
         public DelegateCommand<string> ButtonFunc { get; set; }
-
+        IEventAggregator _eventAggregator;
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
             VersionContext = "(LIS)" + GlobalValue.SystemVersion;
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
+            _eventAggregator = eventAggregator;
+            _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
 
 
             DispatcherTimer DateTimer = new DispatcherTimer();
@@ -43,12 +53,32 @@ namespace WATA.LIS.Main.ViewModels
             DateTimer.Start();
 
 
+            VisionEvent = "None";
+
         }
+
+        public void OnVISIONEvent(VISON_Model obj)
+        {
+            if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            {
+                VisionEvent = "pickup";
+
+            }
+            else if (obj.status == "drop")
+            {
+                VisionEvent = "drop";
+
+            }
+        }
+
+        private static int LivingCount = 0;
 
         private void Timer(object sender, EventArgs e)
         {
             Date = DateTime.Now.ToString("yyyy-MM-dd");
             Time = DateTime.Now.ToString("HH:mm:ss");
+            LivingTime = LivingCount.ToString();
+            LivingCount++;
         }
 
 

@@ -66,8 +66,6 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
                         procInfo.ArgumentList.Add("0.3");
-                        procInfo.ArgumentList.Add("50");
-                        procInfo.ArgumentList.Add("0.02");
                         procInfo.ArgumentList.Add("1");
                         Process.Start(procInfo);
                     }

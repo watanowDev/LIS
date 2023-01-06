@@ -11,6 +11,7 @@ using System.Windows;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Model.BackEnd;
+using static System.Net.WebRequestMethods;
 
 namespace WATA.LIS.IF.BE.ViewModels
 {
@@ -65,7 +66,8 @@ namespace WATA.LIS.IF.BE.ViewModels
             ActionInfoModel action_obj = new ActionInfoModel();
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
-            action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.loadId = "";
+            action_obj.actionInfo.containerId = "{750.0;Activize;323525.0}";
             action_obj.actionInfo.action = "IN";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -103,7 +105,8 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
 
-            action_obj.actionInfo.loadId = "test";
+            action_obj.actionInfo.loadId = "";
+            action_obj.actionInfo.containerId = "";
             action_obj.actionInfo.action = "OUT";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -111,6 +114,9 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.loadRate = "90";
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
+
+
+
 
             action_obj.actionInfo.loadMatrix.Add(0);
             action_obj.actionInfo.loadMatrix.Add(10);
@@ -133,7 +139,21 @@ namespace WATA.LIS.IF.BE.ViewModels
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
+        private void SendLocationInfoEvent(string Tag)
+        {
+            LocationInfoModel location_obj = new LocationInfoModel();
 
+            location_obj.locationInfo.vehicleId = m_vihicle;
+            location_obj.locationInfo.workLocationId = m_location;
+            location_obj.locationInfo.epc = Tag;
+
+            string json_body = Util.ObjectToJson(location_obj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+        }
 
         private void ButtonFuncClick(string command)
         {
@@ -155,6 +175,12 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                     case "ActionOUT":
                         SendAction_OUT_InfoEvent(TagInfo, DistanceInfo);
+                        break;
+
+                    case "Location":
+
+                        SendLocationInfoEvent(TagInfo);
+
                         break;
 
                     default:

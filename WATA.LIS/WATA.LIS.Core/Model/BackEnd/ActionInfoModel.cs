@@ -19,6 +19,7 @@ namespace WATA.LIS.Core.Model.BackEnd
         public string epc { get; set; }
         public string height { get; set; }
         public string loadId { get; set; }
+        public string containerId { get; set; }
         public string loadRate { get; set; }
         public string loadMatrixRaw { get; set; }
         public string loadMatrixColumn { get; set; }

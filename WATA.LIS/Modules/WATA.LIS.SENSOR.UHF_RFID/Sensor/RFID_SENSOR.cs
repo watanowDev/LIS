@@ -136,17 +136,39 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 {
                     byte[] messageReceived = subSocket.ReceiveFrameBytes();
 
+
+
                     string RecieveStr = Util.BytesToString(messageReceived);
+                    
                     if (RecieveStr == "LOCATION")
                     {
-                        //Tools.Log("Topic : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                           
 
                     }
                     else
                     {
-                        Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                        if (RecieveStr.Length == 24)
+                        {
+
+                            string stx = RecieveStr.Substring(0, 2);
+                            string etx = RecieveStr.Substring(22, 2);
+
+
+                            if (stx == "DA" && etx == "ED")
+                            {
+                                LocationModel location = new LocationModel();
+                                location.EPC = RecieveStr;
+                                _eventAggregator.GetEvent<LocationEvent>().Publish(location);
+
+                                //Tools.Log("Topic : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                            }
+
+
+
+                            Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                        }
                     }
-                    Thread.Sleep(50);
+                    //Thread.Sleep(10);
                 }
             }
         }

@@ -52,6 +52,9 @@ namespace WATA.LIS.Main.ViewModels
         private string _BACKEND_Value;
         public string BACKEND_Value { get { return _BACKEND_Value; } set { SetProperty(ref _BACKEND_Value, value); } }
 
+
+        
+
         private string Active = "#FF5DF705";//light Green color
         private string Disable = "DimGray";
         private string Disconnect = "Red";
