@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
+using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
@@ -18,7 +19,14 @@ using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.Core.Services
 {
-    public class StatusService : IStatusService
+    /*
+     * StatusService_V1 구성요소
+     * 거리센서 : TeraBee EVO-60 (높이 측정)
+     * RFID : FH920 (중국산 RFID 수신기)
+     * VISION : Astra-S, Astra-Plus
+     */
+
+    public class StatusService_V1 : IStatusService
     {
         IEventAggregator _eventAggregator;
 
@@ -34,12 +42,12 @@ namespace WATA.LIS.Core.Services
 
         
 
-        public StatusService(IEventAggregator eventAggregator)
+        public StatusService_V1(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<RFIDSensorEvent>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<LocationEvent>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<WPS_Table_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<WPS_Location_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
 
 
 
@@ -50,16 +58,17 @@ namespace WATA.LIS.Core.Services
             StatusClearTimer.Tick += new EventHandler(StatusClearEvent);
             StatusClearTimer.Start();
 
-            DispatcherTimer AliveTimer = new DispatcherTimer();
-            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            AliveTimer.Start();
+            //DispatcherTimer AliveTimer = new DispatcherTimer();
+            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            //AliveTimer.Start();
 
 
             DispatcherTimer CurrentTimer = new DispatcherTimer();
-            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
+
 
         }
 
@@ -115,7 +124,7 @@ namespace WATA.LIS.Core.Services
                 ClearEpc();
                 Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
                 rfidmodel.EPC_Data = "NA";
-                _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                _eventAggregator.GetEvent<WPS_Table_Event>().Publish(rfidmodel);
             }
             else
             {
@@ -294,8 +303,9 @@ namespace WATA.LIS.Core.Services
 
 
                 ActionObj.actionInfo.action = "IN";
-                m_CalRate = CalcLoadRate(obj.area);
-                Tools.Log($"Area : {obj.area}", Tools.ELogType.BackEndLog);
+                //m_CalRate = CalcLoadRate(obj.area);
+                m_CalRate = CalcHeightLoadRate((int)obj.height);
+                Tools.Log($"Rate : {obj.area}", Tools.ELogType.BackEndLog);
                 Tools.Log($"Copy Before LoadRate  : {m_CalRate}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.loadRate = "0";
                 ActionObj.actionInfo.loadMatrixRaw = "10";
@@ -314,7 +324,9 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
 
-                m_qr = ActionObj.actionInfo.containerId = obj.qr;
+                m_qr = ActionObj.actionInfo.containerId = "";// obj.qr;
+                ActionObj.actionInfo.loadId = "";
+               
                 Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
 
                 string json_body = Util.ObjectToJson(ActionObj);
@@ -353,7 +365,9 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
-                ActionObj.actionInfo.containerId = m_qr;
+                ActionObj.actionInfo.containerId = "";//m_qr;
+                ActionObj.actionInfo.loadId = "";
+
 
                 Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
                 m_qr = "";
@@ -391,6 +405,26 @@ namespace WATA.LIS.Core.Services
                 KeyValuePair<K, V> entry = dict.ElementAt(i);
                 Tools.Log("Key: " + entry.Key + ", Value: " + entry.Value, Tools.ELogType.BackEndLog);
             }
+        }
+
+
+        private int CalcHeightLoadRate(int height)
+        {
+            Tools.Log($"##height  : {height}", Tools.ELogType.BackEndLog);
+            float A = (height / (float)180.0);
+            float nRet = A * (float)100.0;
+
+            Tools.Log($"##Convert  : {height}", Tools.ELogType.BackEndLog);
+            if (nRet <= 0)
+            {
+                nRet = 0;
+            }
+            if (nRet >= 97)
+            {
+                nRet = 97;
+            }
+            Tools.Log($"##Height Rate  : {nRet}", Tools.ELogType.BackEndLog);
+            return (int)nRet;
         }
 
         private  int  CalcLoadRate(float area)

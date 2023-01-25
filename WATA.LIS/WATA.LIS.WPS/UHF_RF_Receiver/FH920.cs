@@ -322,9 +322,14 @@ namespace WATA.LIS.WPS.UHF_RF_Receiver
 
                     }
 
-                    
-                  
-                    Thread.Sleep(10);
+                    if (m_topic == "TABLE")
+                    {
+                        Thread.Sleep(10);
+                    }
+                    else
+                    {
+                        Thread.Sleep(50);
+                    }
                 }
             }
         }

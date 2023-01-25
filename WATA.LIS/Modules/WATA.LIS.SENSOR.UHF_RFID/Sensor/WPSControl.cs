@@ -19,13 +19,13 @@ using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
-    public class RFID_SENSOR
+    public class WPSControl
     {
         Thread TableRFIDRecvThread;
         Thread LocationRFIDRecvThread;
 
         private readonly IEventAggregator _eventAggregator;
-        public RFID_SENSOR(IEventAggregator eventAggregator)
+        public WPSControl(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
 
@@ -106,12 +106,12 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             if(stx == "DA" && etx == "ED")
                             {
                                 rfidmodel.EPC_Data = RecieveStr;
-                                _eventAggregator.GetEvent<RFIDSensorEvent>().Publish(rfidmodel);
+                                _eventAggregator.GetEvent<WPS_Table_Event>().Publish(rfidmodel);
                             }
                             else
                             {
 
-                                Tools.Log("Not Contained EPC : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
+                               
                             }
                         }
 
@@ -158,7 +158,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             {
                                 LocationModel location = new LocationModel();
                                 location.EPC = RecieveStr;
-                                _eventAggregator.GetEvent<LocationEvent>().Publish(location);
+                                _eventAggregator.GetEvent<WPS_Location_Event>().Publish(location);
 
                                 //Tools.Log("Topic : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                             }
@@ -168,7 +168,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                         }
                     }
-                    //Thread.Sleep(10);
+                    Thread.Sleep(10);
                 }
             }
         }

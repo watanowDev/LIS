@@ -10,7 +10,7 @@ using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.Core.Events.RFID
 {
-    public class RFIDSensorEvent : PubSubEvent<RFIDSensorModel>
+    public class WPS_Table_Event : PubSubEvent<RFIDSensorModel>
     {
 
     }

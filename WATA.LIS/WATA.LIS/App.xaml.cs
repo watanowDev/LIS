@@ -24,7 +24,8 @@ namespace WATA.LIS
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterSingleton<IStatusService, StatusService>();
+            //containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();
+            containerRegistry.RegisterSingleton<IStatusService, StatusService_V2>();
 
         }
 

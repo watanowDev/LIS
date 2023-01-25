@@ -47,7 +47,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                         visionModel.area = (float)0.88;
                         visionModel.status = "pickup";
                         visionModel.width =  (float)0.88;
-                        visionModel.height = (float)0.88;
+                        visionModel.height = (int)0.88;
                         visionModel.qr = "test";
 
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
@@ -59,7 +59,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                         visionModel.area = (float)0.88;
                         visionModel.status = "drop";
                         visionModel.width = (float)0.88;
-                        visionModel.height = (float)0.88;
+                        visionModel.height = (int)0.88;
                         visionModel.qr = "test";
 
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);

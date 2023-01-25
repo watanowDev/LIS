@@ -4,7 +4,7 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:core="clr-namespace:WATA.LIS.Core;assembly=WATA.LIS.Core"
-        Title="WATA LIS" Height="980" Width="1700" Topmost="True" WindowStyle="ToolWindow"   Left="650" Top="10">
+        Title="WATA LIS" Height="980" Width="1700" WindowStyle="ToolWindow"   Left="650" Top="10">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.1*"></RowDefinition>

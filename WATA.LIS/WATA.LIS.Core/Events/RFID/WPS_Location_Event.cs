@@ -10,7 +10,7 @@ using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.Core.Events.RFID
 {
-    public class LocationEvent : PubSubEvent<LocationModel>
+    public class WPS_Location_Event : PubSubEvent<LocationModel>
     {
 
     }

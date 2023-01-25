@@ -18,8 +18,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID
         public UHF_RFIDModule(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
-            RFID_SENSOR rfid = new RFID_SENSOR(_eventAggregator);
+            // WPSControl rfid = new WPSControl(_eventAggregator);
+            // rfid.Init();
+
+            ApulseTechControl rfid = new ApulseTechControl(_eventAggregator);
             rfid.Init();
+
+            
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

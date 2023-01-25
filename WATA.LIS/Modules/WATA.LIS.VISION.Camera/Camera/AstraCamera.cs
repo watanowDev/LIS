@@ -38,14 +38,13 @@ namespace WATA.LIS.VISION.Camera.Camera
             DispatcherTimer Process_chk_Timer = new DispatcherTimer();
             Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
             Process_chk_Timer.Tick += new EventHandler(AliveTimerEvent);
-            // Process_chk_Timer.Start();
+            //Process_chk_Timer.Start();
 
             StartProcess();
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
         {
-
             StartProcess();
         }
 
@@ -65,7 +64,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfo.FileName = "vision_forklift.exe";
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
-                        procInfo.ArgumentList.Add("0.3");
+                        procInfo.ArgumentList.Add("1.15");
                         procInfo.ArgumentList.Add("1");
                         Process.Start(procInfo);
                     }
@@ -75,10 +74,11 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfoOld.UseShellExecute = true;
                         procInfoOld.FileName = "vision_forklift.exe";
                         procInfoOld.WorkingDirectory = dir;
-                        procInfoOld.ArgumentList.Add("WATA");
                         procInfoOld.ArgumentList.Add("vision");
-                        procInfoOld.ArgumentList.Add("1.25");
+                        procInfoOld.ArgumentList.Add("0.3");
+                        procInfoOld.ArgumentList.Add("45");
                         procInfoOld.ArgumentList.Add("0");
+
                         Process.Start(procInfoOld);
                     }
                     
@@ -134,7 +134,7 @@ namespace WATA.LIS.VISION.Camera.Camera
 
                             if (jObject.ContainsKey("height") == true)
                             {
-                                visionModel.height = (float)jObject["height"];
+                                visionModel.height = (int)jObject["height"];
                             }
 
                             if (jObject.ContainsKey("qr") == true)

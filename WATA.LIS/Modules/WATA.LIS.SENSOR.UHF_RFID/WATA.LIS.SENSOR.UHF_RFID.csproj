@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
     <BaseOutputPath></BaseOutputPath>
@@ -11,5 +11,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ApulsetechNet">
+      <HintPath>Libary\ApulsetechNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

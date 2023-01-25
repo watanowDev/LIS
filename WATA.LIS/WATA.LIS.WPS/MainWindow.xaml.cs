@@ -42,11 +42,9 @@ namespace WATA.LIS.WPS
             InitializeComponent();//0C:DC:7E:1D:C5:B6
 
             FH920 TableRFID = new FH920("TABLE", "34:86:5D:71:98:7A", "8051", dgPairListTable, dgSendListTable, this.Dispatcher);
-            //FH920 TableRFID = new FH920("TABLE","34:86:5D:76:CC:1A", "8051", dgPairListTable, dgSendListTable, this.Dispatcher);
-            //FH920 TableRFID = new FH920("TABLE", "0C:DC:7E:1D:C5:B6", "8051", dgPairListTable, dgSendListTable, this.Dispatcher);
             TableRFID.Init();
 
-            FH920 LocationRFID = new FH920("LOCATION", "34:86:5D:76:CC:1A", "8052", dgPairListLocation, dgSendListLocation, this.Dispatcher);
+            FH920 LocationRFID = new FH920("LOCATION", "0C:DC:7E:1D:C5:B6", "8052", dgPairListLocation, dgSendListLocation, this.Dispatcher);
             LocationRFID.Init();
         }
        

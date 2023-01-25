@@ -67,7 +67,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
             action_obj.actionInfo.loadId = "";
-            action_obj.actionInfo.containerId = "{750.0;Activize;323525.0}";
+            action_obj.actionInfo.containerId = "";
             action_obj.actionInfo.action = "IN";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -106,7 +106,10 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.vehicleId = m_vihicle;
 
             action_obj.actionInfo.loadId = "";
+
+            // action_obj.actionInfo.containerId = "{750.0;Activize;323525.0}";
             action_obj.actionInfo.containerId = "";
+
             action_obj.actionInfo.action = "OUT";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -114,7 +117,6 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.loadRate = "90";
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
-
 
 
 
