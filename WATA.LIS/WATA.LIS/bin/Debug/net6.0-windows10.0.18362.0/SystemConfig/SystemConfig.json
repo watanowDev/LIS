@@ -1,0 +1,28 @@
+{
+	"main": 
+	{
+		"fork_lift_id": "fork001"
+	},
+	
+	"distancesensor": 
+	{
+		"comport": "COM3"
+	},
+	
+	"visioncamera": 
+	{
+		"camera_height": "1.05",
+		"qr_enable" : "1"
+	},
+	
+	"rfid_receiver": 
+	{
+		"SPP_MAC" : "00:05:C4:C1:01:33",
+		//"SPP_MAC" : "00:05:C4:C1:01:2C",
+		"radio_power": 27,
+		"tx_on_time": 100,
+		"tx_off_time" : 100,
+		"toggle" : 0,
+		"speaker_enable" : 1
+	}
+}

@@ -46,11 +46,8 @@ namespace WATA.LIS.Core.Services
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WPS_Table_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WPS_Location_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
-
-
-
+            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer StatusClearTimer = new DispatcherTimer();
@@ -74,23 +71,16 @@ namespace WATA.LIS.Core.Services
 
         private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
-
-
             LocationInfoModel location_obj = new LocationInfoModel();
-
             location_obj.locationInfo.vehicleId = m_vihicle;
             location_obj.locationInfo.workLocationId = m_location;
             location_obj.locationInfo.epc = m_Location_epc;
-
             string json_body = Util.ObjectToJson(location_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-
-
-
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
@@ -112,19 +102,15 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
-     
-
-
-
         private void StatusClearEvent(object sender, EventArgs e)
         {
             if(rifid_status_check_count >  status_limit_count)
             {
-                RFIDSensorModel rfidmodel = new RFIDSensorModel();
+                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
                 ClearEpc();
                 Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
-                rfidmodel.EPC_Data = "NA";
-                _eventAggregator.GetEvent<WPS_Table_Event>().Publish(rfidmodel);
+                rfidmodel.EPC = "NA";
+                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
             }
             else
             {
@@ -156,7 +142,7 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
         }
 
-        private static List<EPCModel> m_epclist = new List<EPCModel>();
+        private static List<QueryRFIDModel> m_epclist = new List<QueryRFIDModel>();
        
         private void AddEpcList(string epc , 
                                 ref Dictionary<string, int> dicEPClist, 
@@ -257,21 +243,21 @@ namespace WATA.LIS.Core.Services
 
         private string m_Location_epc = "";
 
-        public void OnLocationData(LocationModel obj)
+        public void OnLocationData(LocationRFIDEventModel obj)
         {
             m_Location_epc = obj.EPC;
             Tools.Log($"Location EPC {m_Location_epc}", Tools.ELogType.SystemLog);
         }
 
-        public void OnRFIDSensorData(RFIDSensorModel obj)
+        public void OnRFIDSensorData(RackRFIDEventModel obj)
         {
             rifid_status_check_count = 0;
-            EPCModel epcModel = new EPCModel();
-            epcModel.EPC = obj.EPC_Data;
+            QueryRFIDModel epcModel = new QueryRFIDModel();
+            epcModel.EPC = obj.EPC;
             epcModel.Time = DateTime.Now;
             m_epclist.Add(epcModel);
 
-            Tools.Log($"EPC Recieve :  {obj.EPC_Data}", Tools.ELogType.SystemLog);
+            Tools.Log($"EPC Recieve :  {obj.EPC}", Tools.ELogType.SystemLog);
         }
 
 

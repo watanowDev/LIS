@@ -16,6 +16,8 @@ using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.VISION.Camera.Camera
@@ -25,9 +27,13 @@ namespace WATA.LIS.VISION.Camera.Camera
         Thread RecvThread;
 
         private readonly IEventAggregator _eventAggregator;
-        public AstraCamera(IEventAggregator eventAggregator)
+        private readonly IVisionModel _visonModel;
+        VisionConfigModel visionConfig;
+        public AstraCamera(IEventAggregator eventAggregator, IVisionModel visionModel)
         {
             _eventAggregator = eventAggregator;
+            _visonModel = visionModel;
+            visionConfig = (VisionConfigModel)_visonModel;
         }
 
         public void Init()
@@ -64,9 +70,10 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfo.FileName = "vision_forklift.exe";
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
-                        procInfo.ArgumentList.Add("1.15");
-                        procInfo.ArgumentList.Add("1");
+                        procInfo.ArgumentList.Add(visionConfig.CameraHeight);
+                        procInfo.ArgumentList.Add(visionConfig.QRValue);
                         Process.Start(procInfo);
+                        Tools.Log($"Vision Parameter QRValue {visionConfig.QRValue} CameraHeight {visionConfig.CameraHeight} ", Tools.ELogType.VisionLog);
                     }
                     else
                     {
@@ -78,7 +85,6 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfoOld.ArgumentList.Add("0.3");
                         procInfoOld.ArgumentList.Add("45");
                         procInfoOld.ArgumentList.Add("0");
-
                         Process.Start(procInfoOld);
                     }
                     
@@ -165,7 +171,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                     }
                     catch
                     {
-                        //Tools.Log($"Exception!!!", Tools.ELogType.VisionLog);
+                        Tools.Log($"Exception!!!", Tools.ELogType.VisionLog);
                     }
                     Thread.Sleep(50);
                 }

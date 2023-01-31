@@ -46,8 +46,8 @@ namespace WATA.LIS.Core.Services
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WPS_Table_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WPS_Location_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDLackData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer StatusClearTimer = new DispatcherTimer();
@@ -55,24 +55,14 @@ namespace WATA.LIS.Core.Services
             StatusClearTimer.Tick += new EventHandler(StatusClearEvent);
             StatusClearTimer.Start();
 
-            //DispatcherTimer AliveTimer = new DispatcherTimer();
-            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            //AliveTimer.Start();
-
-
             DispatcherTimer CurrentTimer = new DispatcherTimer();
             CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
-
-
         }
 
         private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
-
-
             LocationInfoModel location_obj = new LocationInfoModel();
 
             location_obj.locationInfo.vehicleId = m_vihicle;
@@ -85,9 +75,6 @@ namespace WATA.LIS.Core.Services
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-
-
-
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
@@ -117,11 +104,11 @@ namespace WATA.LIS.Core.Services
         {
             if(rifid_status_check_count >  status_limit_count)
             {
-                RFIDSensorModel rfidmodel = new RFIDSensorModel();
+                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
                 ClearEpc();
                 Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
-                rfidmodel.EPC_Data = "NA";
-                _eventAggregator.GetEvent<WPS_Table_Event>().Publish(rfidmodel);
+                rfidmodel.EPC = "NA";
+                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
             }
             else
             {
@@ -142,9 +129,8 @@ namespace WATA.LIS.Core.Services
             {
                 distance_status_check_count++;
             }
-
-
         }
+
 
         public void OnDistanceSensorData(DistanceSensorModel obj)
         {
@@ -153,7 +139,7 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
         }
 
-        private static List<EPCModel> m_epclist = new List<EPCModel>();
+        private static List<QueryRFIDModel> m_epclist = new List<QueryRFIDModel>();
        
         private void AddEpcList(string epc , 
                                 ref Dictionary<string, int> dicEPClist, 
@@ -254,21 +240,21 @@ namespace WATA.LIS.Core.Services
 
         private string m_Location_epc = "";
 
-        public void OnLocationData(LocationModel obj)
+        public void OnLocationData(LocationRFIDEventModel obj)
         {
             m_Location_epc = obj.EPC;
-            Tools.Log($"Location EPC {m_Location_epc}", Tools.ELogType.SystemLog);
+            Tools.Log($"Location EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
         }
 
-        public void OnRFIDSensorData(RFIDSensorModel obj)
+        public void OnRFIDLackData(RackRFIDEventModel obj)
         {
             rifid_status_check_count = 0;
-            EPCModel epcModel = new EPCModel();
-            epcModel.EPC = obj.EPC_Data;
+            QueryRFIDModel epcModel = new QueryRFIDModel();
+            epcModel.EPC = obj.EPC;
             epcModel.Time = DateTime.Now;
             m_epclist.Add(epcModel);
 
-            Tools.Log($"EPC Recieve :  {obj.EPC_Data}", Tools.ELogType.SystemLog);
+            Tools.Log($"Lack EPC Recieve :  {obj.EPC}", Tools.ELogType.SystemLog);
         }
 
 
@@ -278,16 +264,11 @@ namespace WATA.LIS.Core.Services
         private string m_qr = "";
         public void OnVISIONEvent(VISON_Model obj)
         {
-
-
-
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
             
-
-
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);

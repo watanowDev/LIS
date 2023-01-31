@@ -1,22 +1,24 @@
 ﻿using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Regions;
 using WATA.LIS.Core;
-using WATA.LIS.SENSOR.Distance.Views;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model;
 using WATA.LIS.SENSOR.Distance.Sensor;
-using WATA.LIS.SENSOR.UHF_RFID.Sensor;
+using WATA.LIS.SENSOR.Distance.Views;
 
 namespace WATA.LIS.SENSOR.Distance
 {
     public class DistanceModule : IModule
     {
-  
+ 
         private readonly IEventAggregator _eventAggregator;
-        public DistanceModule(IEventAggregator eventAggregator)
+        private readonly IDistanceModel _distancemodel;
+        public DistanceModule(IEventAggregator eventAggregator, IDistanceModel distancemodel)
         {
             _eventAggregator = eventAggregator;
-            DistanceSensor TeraBeeSensor = new DistanceSensor(_eventAggregator);
+            _distancemodel = distancemodel;
+            DistanceSensor TeraBeeSensor = new DistanceSensor(_eventAggregator, _distancemodel);
             TeraBeeSensor.SerialInit();
         }
 

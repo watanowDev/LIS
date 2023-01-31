@@ -74,7 +74,7 @@ namespace WATA.LIS.Main.ViewModels
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.VisionLog);
 
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WPS_Table_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             Distance_Active = Disable;
@@ -108,9 +108,9 @@ namespace WATA.LIS.Main.ViewModels
             Distance_Value = obj.Distance_mm.ToString();
         }
 
-        public void OnRFIDSensorData(RFIDSensorModel obj)
+        public void OnRFIDSensorData(RackRFIDEventModel obj)
         {
-            if(obj.EPC_Data == "NA")
+            if(obj.EPC == "NA")
             {
                 RFID_Active = Disable;
             }
@@ -121,7 +121,7 @@ namespace WATA.LIS.Main.ViewModels
             }
 
 
-            RFID_Value = obj.EPC_Data;
+            RFID_Value = obj.EPC;
         }
 
         public void OnVISIONEvent(VISON_Model obj)

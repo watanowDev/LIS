@@ -1,35 +1,44 @@
 ﻿using Prism.Events;
 using System;
 using System.Collections.Generic;
-using System.IO.Packaging;
 using System.IO.Ports;
 using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.DistanceSensor;
-using WATA.LIS.Core.Events.RFID;
-using WATA.LIS.Core.Model;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
-using WATA.LIS.Core.Model.RFID;
+using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Services;
 
 namespace WATA.LIS.SENSOR.Distance.Sensor
 {
     public class DistanceSensor
     {
         private readonly IEventAggregator _eventAggregator;
+        private readonly IDistanceModel  _distancemodel;
+
         SerialPort serial = new SerialPort();
         SerialPort _port = new SerialPort();
-        public DistanceSensor(IEventAggregator eventAggregator)
-        {
 
+
+        DistanceConfigModel _DistanceConfig;
+
+
+        //DistanceConfigModel _distaceConfig;
+
+        public DistanceSensor(IEventAggregator eventAggregator, IDistanceModel distancemodel)
+        {                          
             _eventAggregator = eventAggregator;
-            //SerialInit();
+            _distancemodel = distancemodel;
 
-        }
+            _DistanceConfig = (DistanceConfigModel)_distancemodel;
+
+
+
+            //distaceConfig(DistanceConfigModel) = ditanceModel;
+    }
 
         private bool log_enable = true;
 
@@ -49,22 +58,23 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
             try
             {
-                string port = "COM3";
+                string port = _DistanceConfig.ComPort;
                 int bouadrate = 115200;
                 _port = new SerialPort(port, bouadrate, Parity.None, 8, StopBits.One);
                 if (_port != null)
                 {
                     _port.Open();
                     _port.Handshake = Handshake.None;
+                    Tools.Log($"Init Success", Tools.ELogType.DistanceLog);
                 }
             }
             catch
             {
                 _port = null;
+                Tools.Log($"Serial Port Exception !!!", Tools.ELogType.DistanceLog);
             }
         }
 
-        
     private void test()
     {
         serial.PortName = "COM3";

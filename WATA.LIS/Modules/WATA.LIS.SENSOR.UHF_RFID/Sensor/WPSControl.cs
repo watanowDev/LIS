@@ -96,17 +96,17 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     else
                     {
                         Tools.Log("Body : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
-                        RFIDSensorModel rfidmodel = new RFIDSensorModel();
-
-                        if(RecieveStr.Length == 24)
+                        RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                        
+                        if (RecieveStr.Length == 24)
                         {
                             string stx = RecieveStr.Substring(0, 2);
                             string etx = RecieveStr.Substring(22, 2);
 
                             if(stx == "DA" && etx == "ED")
                             {
-                                rfidmodel.EPC_Data = RecieveStr;
-                                _eventAggregator.GetEvent<WPS_Table_Event>().Publish(rfidmodel);
+                                rfidmodel.EPC = RecieveStr;
+                                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
                             }
                             else
                             {
@@ -156,9 +156,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
                             if (stx == "DA" && etx == "ED")
                             {
-                                LocationModel location = new LocationModel();
+                                LocationRFIDEventModel location = new LocationRFIDEventModel();
                                 location.EPC = RecieveStr;
-                                _eventAggregator.GetEvent<WPS_Location_Event>().Publish(location);
+                                _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
 
                                 //Tools.Log("Topic : " + Util.BytesToString(messageReceived), Tools.ELogType.RFIDLog);
                             }

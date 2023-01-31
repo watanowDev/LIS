@@ -19,7 +19,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.ViewModels
         public UHFRfidViewModel()
         {
             ListRFIDLog = Tools.logInfo.ListRFIDLog;
-            //Tools.Log($"Init UHFRfidViewModel", Tools.ELogType.RFIDLog);
+            Tools.Log($"Init UHFRfidViewModel", Tools.ELogType.RFIDLog);
 
         }
     }

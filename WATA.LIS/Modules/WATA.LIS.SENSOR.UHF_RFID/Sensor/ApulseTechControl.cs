@@ -28,32 +28,42 @@ using Msg = Apulsetech.Remote.Type.Msg;
 using System.Windows;
 using Apulsetech.Remote.Thread;
 using Apulsetech.Rfid.Type;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
+using java.lang;
+using Thread = System.Threading.Thread;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
     public class ApulseTechControl : ScannerEventListener, ReaderEventListener
     {
         private readonly IEventAggregator _eventAggregator;
-
-
         private RemoteDeviceScanner mRemoteDeviceScanner;
         private readonly MsgEvent mMsgEvent = new MsgEvent();
         private DispatcherTimer mScanTimeoutTimer;
         private DispatcherTimer mConnectionTimer;
         private int mTimeout = 30000;
-        private int mSelectedRemoteDeviceIndex = -1;
         private RemoteDevice mRemoteDevice;
         private Scanner mScanner;
         private Reader mReader;
         private bool mConnected = false;
-        private bool mBarcodeScanStarted = false;
         private bool mRfidInventoryStarted = false;
+        private readonly IRFIDModel _rfidmodel;
+
+        RFIDConfigModel rfidConfig;
+        private  string TargetMAC = "00:05:C4:C1:01:33";
 
 
-
-        public ApulseTechControl(IEventAggregator eventAggregator)
+        public ApulseTechControl(IEventAggregator eventAggregator, IRFIDModel rfidmodel)
         {
             _eventAggregator = eventAggregator;
+            _rfidmodel = rfidmodel;
+            rfidConfig = (RFIDConfigModel)_rfidmodel;
+
+            TargetMAC = rfidConfig.SPP_MAC;
+
+
+
         }
 
         public void Init()
@@ -65,13 +75,12 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             mScanTimeoutTimer = new DispatcherTimer();
             mScanTimeoutTimer.Interval = new TimeSpan(0, 0, 0, 0, mTimeout);
             mScanTimeoutTimer.Tick += new EventHandler(ScanTimeoutTimerTask);
-            mScanTimeoutTimer.Start();
 
+            mScanTimeoutTimer.Start();
             mConnectionTimer = new DispatcherTimer();
             mConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
             mConnectionTimer.Tick += new EventHandler(TestTimer);
      
-
             if (mRemoteDeviceScanner.Started)
             {
                 StopScanTimeoutTimer();
@@ -86,6 +95,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
         private void ToggleRfidInventory()
         {
+            Tools.Log("Start Toggle Inventory", Tools.ELogType.RFIDLog);
+
+
             if (mReader != null)
             {
                 if (mRfidInventoryStarted)
@@ -117,8 +129,6 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     if (mRemoteDevice.RfidSupported)
                     {
                         mReader = Reader.GetReader(mRemoteDevice, false, 10000);
-
-                        //mReader = await Reader.GetReaderAsync(mRemoteDevice, false, 10000);
                     }
                     if (mReader != null)
                     {
@@ -127,30 +137,22 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                         
                         if (mReader != null)
                         {
-                            try
-                            {
-                                
+                           try
+                           {
                                 mReader.SetEventListener(this);
                                 Tools.Log("Connect Start", Tools.ELogType.RFIDLog);
-
-                                //if (await mReader.StartAsync())
                                 if (mReader.Start())
-
-                                {
+                                { 
                                     Tools.Log("Start", Tools.ELogType.RFIDLog);
-                                }
-                                
+                                }   
                             }
                             catch
                             {
                                 Tools.Log("Excepiton Connect Device!!!", Tools.ELogType.RFIDLog);
-
                             }
 
                             Tools.Log("Success Connect Device!!!", Tools.ELogType.RFIDLog);
-
                             mConnectionTimer.Stop();
-
                             Tools.Log("Stop Connect Timer", Tools.ELogType.RFIDLog);
                         }
                     }
@@ -166,7 +168,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
             catch
             {
-                     Tools.Log("Exception Connect!!!", Tools.ELogType.RFIDLog);
+               Tools.Log("Exception Connect!!!", Tools.ELogType.RFIDLog);
             }
         }
 
@@ -243,27 +245,67 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         private void ConnectSequence()
         {
             
-            Thread.Sleep(1000);
-
+            Thread.Sleep(500);
             if (mRemoteDeviceScanner.Started)
             {
-                mRemoteDeviceScanner.ScanRemoteDevice(false);
+                mRemoteDeviceScanner.ScanRemoteDevice(false);  
+            }
+            TryConnect();
+            Thread.Sleep(500);
+
+            if (rfidConfig.nSpeakerEnable == 0)
+            {
+                RemoteController.Controller?.ControlRemoteDeviceVibrator(false, 1, 2, 100);
+                RemoteController.Controller?.SetRemoteDeviceSoundState(false);// Sound ON/OFF
+                RemoteController.Controller?.SetRemoteDeviceBootSoundState(false);
+                RemoteController.Controller?.SetRemoteDeviceSoundVolume(0);
+
+            }
+            else
+            {
+                RemoteController.Controller?.ControlRemoteDeviceVibrator(true, 1, 2, 100);
+                RemoteController.Controller?.SetRemoteDeviceSoundState(true);// Sound ON/OFF
+                RemoteController.Controller?.SetRemoteDeviceBootSoundState(true);
+                RemoteController.Controller?.SetRemoteDeviceSoundVolume(10);
+
             }
 
-            TryConnect();
-
-            Thread.Sleep(1000);
-
             RemoteController.Controller?.SetRemoteDeviceTriggerActiveModule(Module.RFID);
+            Thread.Sleep(500);
 
-            Thread.Sleep(1000);
+            mReader.SetInventoryAntennaPortReportState(1);
+
+            if(rfidConfig.nRadioPower > 30)
+            {
+                rfidConfig.nRadioPower = 30;
+            }
+
+            if (rfidConfig.nRadioPower < 0)
+            {
+                rfidConfig.nRadioPower = 5;
+            }
+
+            mReader.SetRadioPower(rfidConfig.nRadioPower);
+            mReader.SetTxOnTime(rfidConfig.nTxOnTime); //100,300
+            mReader.SetTxOffTime(rfidConfig.nTxOffTime);
+            mReader.SetToggle(rfidConfig.nToggle);
+
+            Tools.Log($"Config nTxOffTime [{rfidConfig.nTxOffTime}] nTxOnTime [{rfidConfig.nTxOnTime}] nToggle [{rfidConfig.nToggle}] nRadioPower [{rfidConfig.nRadioPower}]", Tools.ELogType.RFIDLog);
 
             ToggleRfidInventory();
         }
+      
+        //private const string TargetMAC = "00:05:C4:C1:01:32";
+        //private const string TargetMAC = "00:05:C1:C1:00:01";
+        //private const string TargetMAC = "00:05:C4:C1:01:2C";
+
 
 
         public void HandleEvent(object sender, MsgEventArg e)
         {
+            string ConnectMAC = "";
+
+
             if (e == null)
             {
                 return;
@@ -280,7 +322,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 case Msg.E2S_ADD_DEVICE:
                     {
                         RemoteDevice device = (RemoteDevice)e.Arg4;
-                        mRemoteDevice = device;
+                        ConnectMAC = device.Address.ToUpper();
+                        Tools.Log($"Scan BlueTooth SPP MAC .. {ConnectMAC}", Tools.ELogType.RFIDLog);
+                        if (ConnectMAC == TargetMAC)
+                        {
+                            mRemoteDevice = device;
+                            Tools.Log($"Try Connect Bluetooth MAC .. {ConnectMAC}", Tools.ELogType.RFIDLog);
+                        }
                     }
                     break;
 
@@ -292,7 +340,6 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 case Msg.WIFI_P2P_DELETE_DEVICE:
                 case Msg.E2S_DELETE_DEVICE:
                     string deviceId = (string)e.Arg4;
-                    
                     break;
 
                 case Msg.SERIAL_DEVICE_INFO_RECEIVED:
@@ -304,9 +351,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 case Msg.E2S_DEVICE_INFO_RECEIVED:
                     {
                         RemoteDevice.Detail detail = (RemoteDevice.Detail)e.Arg4;
-                        mRemoteDevice.DeviceDetail = detail;
-                        mConnectionTimer.Start();
                         
+                        if(mRemoteDevice != null && detail.RfidStatus == RemoteStatus.STATE_IDLE)
+                        {
+                            Tools.Log($"Connect Start", Tools.ELogType.RFIDLog);
+                            mRemoteDevice.DeviceDetail = detail;
+                            mConnectionTimer.Start();
+                        }
                     }
                     break;
             }
@@ -389,6 +440,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             string fastID = "";
             string channel = "";
             string port = "";
+           // Tools.Log($"data : {data}", Tools.ELogType.RFIDLog);
+
+
 
             string[] dataItems = data.Split(';');
             foreach (string dataItem in dataItems)
@@ -429,10 +483,42 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             items[0] = epc;
             items[1] = rssi;
 
-            Tools.Log($"RSSI {rssi}", Tools.ELogType.RFIDLog);
-            Thread.Sleep(1000);
+            Tools.Log($"epc {epc} RSSI {rssi} phaseDegree {phaseDegree} fastID {fastID} channel {channel} port {port}", Tools.ELogType.RFIDLog);
 
 
+            string stx = epc.Substring(0, 2);
+            string etx = epc.Substring(22, 2);
+            
+            /*
+            if (epc.Length == 28 && stx == "DA" && etx == "ED")
+            {
+                
+                    
+                
+            }
+            else
+            {
+
+                Tools.Log($"Format Missing EPC Data", Tools.ELogType.RFIDLog);
+                return;
+            }
+            */
+
+            if (port == "1") // 정면 안테나
+            {
+                LocationRFIDEventModel location = new LocationRFIDEventModel();
+                location.EPC = epc;
+                location.RSSI = Float.parseFloat(rssi);
+                _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
+            }
+            else //측면 안테나
+            {
+
+                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                rfidmodel.EPC = epc;
+                rfidmodel.RSSI = Float.parseFloat(rssi);
+                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+            }
         }
 
 
