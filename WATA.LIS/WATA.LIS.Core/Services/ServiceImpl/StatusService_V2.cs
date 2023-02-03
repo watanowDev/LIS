@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
 using System.Threading;
+using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
@@ -96,10 +97,6 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
-     
-
-
-
         private void StatusClearEvent(object sender, EventArgs e)
         {
             if(rifid_status_check_count >  status_limit_count)
@@ -140,22 +137,44 @@ namespace WATA.LIS.Core.Services
         }
 
         private static List<QueryRFIDModel> m_epclist = new List<QueryRFIDModel>();
-       
-        private void AddEpcList(string epc , 
-                                ref Dictionary<string, int> dicEPClist, 
-                                ref List<int> listCount)
+
+
+
+
+        private void AddEpcList(string key_epc,
+                                float value_rssi,
+                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, 
+                                ref List<int> listCount,
+                                ref List<float> listRSSI)
         {
-            if (dicEPClist.ContainsKey(epc))
+            if (retRFIDInfoList.ContainsKey(key_epc))
             {
-                int idx = Array.IndexOf(dicEPClist.Keys.ToArray(), epc);
+                int idx = Array.IndexOf(retRFIDInfoList.Keys.ToArray(), key_epc);
                 listCount[idx] ++;
-                dicEPClist[epc] = listCount[idx];
+                listRSSI[idx] += value_rssi;
+                retRFIDInfoList[key_epc].EPC_Check_Count = listCount[idx];
+                retRFIDInfoList[key_epc].RSSI = listRSSI[idx];
+                
             }
             else
             {
-                dicEPClist.Add(epc, 1);
+                EPC_Value_Model temp = new EPC_Value_Model();
+                temp.EPC_Check_Count = 1;
+                temp.RSSI = value_rssi;
+                retRFIDInfoList.Add(key_epc, temp);
                 listCount.Add(1);
+                listRSSI.Add(value_rssi);
+            }
+        }
 
+        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList)
+        {
+            foreach (EPC_Value_Model Value in retRFIDInfoList.Values)
+            {
+                Tools.Log($"Before RSSI : {Value.RSSI} Count {Value.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                float avg = Value.RSSI / Value.EPC_Check_Count;
+                Tools.Log($"afer RSSI Average :  {avg}", Tools.ELogType.BackEndLog);
+                Value.RSSI = avg;
             }
         }
 
@@ -192,32 +211,33 @@ namespace WATA.LIS.Core.Services
                     }
                 }
 
-
-
-
-                Dictionary<string, int> dicEPClist = new Dictionary<string, int>();
-                List<int> listCount = new List<int>();
+                Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
+                List<int>   listCount   = new List<int>();
+                List<float> listRSSI    = new List<float>();
 
 
                 for (int i = 0; i < m_epclist.Count; i++)
                 {
-                    Tools.Log($"Query  epc {m_epclist[i].EPC} Time {m_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
-                    AddEpcList(m_epclist[i].EPC, ref dicEPClist, ref listCount);
+                    Tools.Log($"Query  epc {m_epclist[i].EPC} RSSI {m_epclist[i].RSSI} Time {m_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
+                    AddEpcList(m_epclist[i].EPC, m_epclist[i].RSSI , ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
-                if (dicEPClist.Count > 0)
+                RSSI_AverageEPCList(ref retRFIDInfoList);
+                
+                if (retRFIDInfoList.Count > 0)
                 {
-                    PrintDict(dicEPClist);
-                    retKeys = dicEPClist.Aggregate((x, y) => x.Value > y.Value ? x : y).Key;
+                    PrintDict(retRFIDInfoList);
+                    retKeys = retRFIDInfoList.Aggregate((x, y) => x.Value.RSSI > y.Value.RSSI ? x : y).Key;
 
-                    if (dicEPClist.TryGetValue(retKeys, out int Count))
+                    if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
                     {
-                        Tools.Log($"EPCKey Count {Count}", Tools.ELogType.BackEndLog);
-                        if (Count < Threshold)
-                        {
-                            retKeys = "NA";
-                            Tools.Log($"Low Count {Count}", Tools.ELogType.BackEndLog);
-                        }
+                        Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
+                        //if (Temp.EPC_Check_Count < Threshold)
+                        //{
+                        //    retKeys = "NA";
+                        //    Tools.Log($"Low Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                        //}
                     }
                 }
                 else
@@ -248,12 +268,14 @@ namespace WATA.LIS.Core.Services
 
         public void OnRFIDLackData(RackRFIDEventModel obj)
         {
-            rifid_status_check_count = 0;
+            rifid_status_check_count = 0;//erase status clear
+
+
             QueryRFIDModel epcModel = new QueryRFIDModel();
             epcModel.EPC = obj.EPC;
             epcModel.Time = DateTime.Now;
+            epcModel.RSSI = obj.RSSI;
             m_epclist.Add(epcModel);
-
             Tools.Log($"Lack EPC Recieve :  {obj.EPC}", Tools.ELogType.SystemLog);
         }
 

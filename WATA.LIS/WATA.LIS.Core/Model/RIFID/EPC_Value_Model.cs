@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace WATA.LIS.Core.Model.RFID
 {
-    public class QueryRFIDModel
+    public class EPC_Value_Model
     {
-        public string EPC { get; set; }
-        public DateTime Time { get; set; }
+        public int EPC_Check_Count { get; set; }
         public float RSSI { get; set; }
     }
 }
