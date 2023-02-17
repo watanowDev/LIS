@@ -32,6 +32,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
 
         }
+        private byte[] m_LoadMatrix = new byte[10];
 
         private void ButtonFuncClick(string command)
         {
@@ -49,6 +50,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                         visionModel.width =  (float)0.88;
                         visionModel.height = (int)0.88;
                         visionModel.qr = "test";
+                        visionModel.matrix = m_LoadMatrix;
 
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
                         break;
@@ -61,6 +63,8 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                         visionModel.width = (float)0.88;
                         visionModel.height = (int)0.88;
                         visionModel.qr = "test";
+
+                        visionModel.matrix = m_LoadMatrix;
 
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
                         break;

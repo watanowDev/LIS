@@ -16,6 +16,7 @@ namespace WATA.LIS.Core.Common
         public ObservableCollection<Log> ListVisionLog;
         public ObservableCollection<Log> ListBackEndLog;
         public ObservableCollection<Log> ListBackEndCurrentLog;
+        public ObservableCollection<Log> ListActionLog;
         public LogInfo()
         {
             ListSystemLog = new ObservableCollection<Log>();
@@ -24,6 +25,7 @@ namespace WATA.LIS.Core.Common
             ListVisionLog = new ObservableCollection<Log>();
             ListBackEndLog = new ObservableCollection<Log>();
             ListBackEndCurrentLog = new ObservableCollection<Log>();
+            ListActionLog = new ObservableCollection<Log>();
         }
     }
 }

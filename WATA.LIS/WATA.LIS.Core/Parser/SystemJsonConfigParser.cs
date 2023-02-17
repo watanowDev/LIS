@@ -31,7 +31,8 @@ namespace WATA.LIS.Core.Parser
                     using (JsonTextReader reader = new JsonTextReader(file))
                     {
                         JObject json = (JObject)JToken.ReadFrom(reader);
-                        main.forkLiftID = json["main"]["fork_lift_id"].ToString();
+                        main.forkLiftID = json["main"]["unit_id"].ToString();
+                        main.device_type = json["main"]["device_type"].ToString();
                         distance.ComPort  = json["distancesensor"]["comport"].ToString();
                         vision.CameraHeight = json["visioncamera"]["camera_height"].ToString();
                         vision.QRValue = json["visioncamera"]["qr_enable"].ToString();

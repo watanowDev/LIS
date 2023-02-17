@@ -42,6 +42,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         private readonly MsgEvent mMsgEvent = new MsgEvent();
         private DispatcherTimer mScanTimeoutTimer;
         private DispatcherTimer mConnectionTimer;
+        private DispatcherTimer mStatusCheckTimer;
+
         private int mTimeout = 30000;
         private RemoteDevice mRemoteDevice;
         private Scanner mScanner;
@@ -53,17 +55,23 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         RFIDConfigModel rfidConfig;
         private  string TargetMAC = "00:05:C4:C1:01:33";
 
+        private eDeviceType devicetype = eDeviceType.ForkLift_V2;
 
-        public ApulseTechControl(IEventAggregator eventAggregator, IRFIDModel rfidmodel)
+
+        public ApulseTechControl(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _rfidmodel = rfidmodel;
             rfidConfig = (RFIDConfigModel)_rfidmodel;
+            TargetMAC = rfidConfig.SPP_MAC;//Load Json System Config
 
-            TargetMAC = rfidConfig.SPP_MAC;
+            MainConfigModel main_config = (MainConfigModel)main;
 
+            if (main_config.device_type == "gate_checker")
+            {
+                devicetype = eDeviceType.GateChecker;
 
-
+            }
         }
 
         public void Init()
@@ -76,11 +84,19 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             mScanTimeoutTimer.Interval = new TimeSpan(0, 0, 0, 0, mTimeout);
             mScanTimeoutTimer.Tick += new EventHandler(ScanTimeoutTimerTask);
 
-            mScanTimeoutTimer.Start();
+         
             mConnectionTimer = new DispatcherTimer();
             mConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
-            mConnectionTimer.Tick += new EventHandler(TestTimer);
-     
+            mConnectionTimer.Tick += new EventHandler(ConnectTimer);
+
+
+            mStatusCheckTimer = new DispatcherTimer();
+            mStatusCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            mStatusCheckTimer.Tick += new EventHandler(StatusCheckTimer);
+            mStatusCheckTimer.Start();
+
+
+
             if (mRemoteDeviceScanner.Started)
             {
                 StopScanTimeoutTimer();
@@ -105,6 +121,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     if (mReader.StopOperation() == RfidResult.SUCCESS)
                     {
                         mRfidInventoryStarted = false;
+                        Tools.Log("StopOperation Toggle Inventory", Tools.ELogType.RFIDLog);
                     }
                 }
                 else
@@ -112,6 +129,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     if (mReader.StartInventory() == RfidResult.SUCCESS)
                     {
                         mRfidInventoryStarted = true;
+                        Tools.Log("StartInventory Toggle Inventory", Tools.ELogType.RFIDLog);
                     }
                 }
             }
@@ -223,13 +241,38 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
         }
 
-        private void TestTimer(object sender, EventArgs e)
+        private void ConnectTimer(object sender, EventArgs e)
         {
             StopScanTimeoutTimer();
 
             ConnectSequence();
 
         }
+
+        private void StatusCheckTimer(object sender, EventArgs e)
+        {
+            if (mConnected)
+            {
+                // Tools.Log($"Is Connect True", Tools.ELogType);
+             
+            }
+            else
+            {
+                if (mRemoteDeviceScanner.Started)
+                {
+                   // Tools.Log($"Scan Stop", Tools.ELogType.BackEndLog);
+                    StopScanTimeoutTimer();
+                    mRemoteDeviceScanner.ScanRemoteDevice(false);
+                }
+                else
+                {
+                  //  Tools.Log($"Scan Start", Tools.ELogType.BackEndLog);
+                    mRemoteDeviceScanner.ScanRemoteDevice(true);
+                    StartScanTimeoutTimer();
+                }
+            }
+        }
+
 
         private void ScanTimeoutTimerTask(object sender, EventArgs e)
         {
@@ -266,12 +309,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 RemoteController.Controller?.ControlRemoteDeviceVibrator(true, 1, 2, 100);
                 RemoteController.Controller?.SetRemoteDeviceSoundState(true);// Sound ON/OFF
                 RemoteController.Controller?.SetRemoteDeviceBootSoundState(true);
-                RemoteController.Controller?.SetRemoteDeviceSoundVolume(10);
+                RemoteController.Controller?.SetRemoteDeviceSoundVolume(50);
 
             }
 
             RemoteController.Controller?.SetRemoteDeviceTriggerActiveModule(Module.RFID);
             Thread.Sleep(500);
+
+
 
             mReader.SetInventoryAntennaPortReportState(1);
 
@@ -394,8 +439,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     mReader = null;
                     mRemoteDevice = null;
                     mConnected = false;
+                    mRfidInventoryStarted = false; 
 
-                    
+
                     break;
             }
         }
@@ -418,7 +464,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     if (!mRfidInventoryStarted)
                     {
                         mRfidInventoryStarted = true;
-                                            }
+                    }
                     break;
 
                 case Reader.READER_CALLBACK_EVENT_STOP_INVENTORY:
@@ -433,92 +479,117 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
         private void ProcessRfidTagData(string data)
         {
-            string epc = "";
-            string rssi = "";
-            string phase = "";
-            string phaseDegree = "";
-            string fastID = "";
-            string channel = "";
-            string port = "";
-           // Tools.Log($"data : {data}", Tools.ELogType.RFIDLog);
-
-
-
-            string[] dataItems = data.Split(';');
-            foreach (string dataItem in dataItems)
+          //  try
             {
-                if (dataItem.Contains("rssi"))
+                string epc = "";
+                string rssi = "";
+                string phase = "";
+                string phaseDegree = "";
+                string fastID = "";
+                string channel = "";
+                string port = "";
+                // Tools.Log($"data : {data}", Tools.ELogType.RFIDLog);
+
+
+
+                string[] dataItems = data.Split(';');
+                foreach (string dataItem in dataItems)
                 {
-                    int point = dataItem.IndexOf(':') + 1;
-                    rssi = dataItem.Substring(point, dataItem.Length - point);
+                    if (dataItem.Contains("rssi"))
+                    {
+                        int point = dataItem.IndexOf(':') + 1;
+                        rssi = dataItem.Substring(point, dataItem.Length - point);
+                    }
+                    else if (dataItem.Contains("phase"))
+                    {
+                        int point = dataItem.IndexOf(':') + 1;
+                        phase = dataItem.Substring(point, dataItem.Length - point);
+                        phaseDegree = phase + "˚";
+                    }
+                    else if (dataItem.Contains("fastID"))
+                    {
+                        int point = dataItem.IndexOf(':') + 1;
+                        fastID = dataItem.Substring(point, dataItem.Length - point);
+                    }
+                    else if (dataItem.Contains("channel"))
+                    {
+                        int point = dataItem.IndexOf(':') + 1;
+                        channel = dataItem.Substring(point, dataItem.Length - point);
+                    }
+                    else if (dataItem.Contains("antenna"))
+                    {
+                        int point = dataItem.IndexOf(':') + 1;
+                        port = dataItem.Substring(point, dataItem.Length - point);
+                    }
+                    else
+                    {
+                        epc = dataItem;
+                    }
                 }
-                else if (dataItem.Contains("phase"))
+
+                if(epc.Length > 28)
                 {
-                    int point = dataItem.IndexOf(':') + 1;
-                    phase = dataItem.Substring(point, dataItem.Length - point);
-                    phaseDegree = phase + "˚";
+                    Tools.Log($"length is short", Tools.ELogType.RFIDLog);
+
+                    return ;
                 }
-                else if (dataItem.Contains("fastID"))
+
+
+                string SendEPC = epc.Substring(4, 24);
+
+                Tools.Log($"epc {SendEPC} RSSI {rssi} phaseDegree {phaseDegree} fastID {fastID} channel {channel} port {port}", Tools.ELogType.RFIDLog);
+
+
+                string stx = SendEPC.Substring(0, 2);
+                string etx = SendEPC.Substring(22, 2);
+
+                
+                if (SendEPC.Length == 24 && stx == "DA" && etx == "ED")
                 {
-                    int point = dataItem.IndexOf(':') + 1;
-                    fastID = dataItem.Substring(point, dataItem.Length - point);
-                }
-                else if (dataItem.Contains("channel"))
-                {
-                    int point = dataItem.IndexOf(':') + 1;
-                    channel = dataItem.Substring(point, dataItem.Length - point);
-                }
-                else if (dataItem.Contains("antenna"))
-                {
-                    int point = dataItem.IndexOf(':') + 1;
-                    port = dataItem.Substring(point, dataItem.Length - point);
+
+
+
                 }
                 else
                 {
-                    epc = dataItem;
+
+                    Tools.Log($"Format Missing EPC Data", Tools.ELogType.RFIDLog);
+                    return;
+                }
+                
+                if (devicetype == eDeviceType.GateChecker)// 게이트 감지기
+                {
+                    GateRFIDEventModel gate = new GateRFIDEventModel();
+                    gate.GateValue = port;
+                    gate.EPC = SendEPC;
+                    gate.RSSI = Float.parseFloat(rssi);
+                    _eventAggregator.GetEvent<Gate_Event>().Publish(gate);
+                }
+                else //지게차 
+                {
+                    if (port == "0") // 측면(측위용) 안테나 안테나
+                    {
+                        LocationRFIDEventModel location = new LocationRFIDEventModel();
+                        location.EPC = SendEPC;
+                        location.RSSI = Float.parseFloat(rssi);
+                        _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
+                    }
+                    else //정면(선반용)  안테나
+                    {
+
+                        RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                        rfidmodel.EPC = SendEPC;
+                        rfidmodel.RSSI = Float.parseFloat(rssi);
+                        _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+                    }
                 }
             }
-
-            string[] items = new string[2];
-            items[0] = epc;
-            items[1] = rssi;
-
-            Tools.Log($"epc {epc} RSSI {rssi} phaseDegree {phaseDegree} fastID {fastID} channel {channel} port {port}", Tools.ELogType.RFIDLog);
-
-
-            string stx = epc.Substring(0, 2);
-            string etx = epc.Substring(22, 2);
-            
-            /*
-            if (epc.Length == 28 && stx == "DA" && etx == "ED")
-            {
-                
-                    
-                
-            }
-            else
+          //  catch
             {
 
-                Tools.Log($"Format Missing EPC Data", Tools.ELogType.RFIDLog);
-                return;
-            }
-            */
 
-            if (port == "1") // 정면 안테나
-            {
-                LocationRFIDEventModel location = new LocationRFIDEventModel();
-                location.EPC = epc;
-                location.RSSI = Float.parseFloat(rssi);
-                _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
             }
-            else //측면 안테나
-            {
 
-                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
-                rfidmodel.EPC = epc;
-                rfidmodel.RSSI = Float.parseFloat(rssi);
-                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
-            }
         }
 
 

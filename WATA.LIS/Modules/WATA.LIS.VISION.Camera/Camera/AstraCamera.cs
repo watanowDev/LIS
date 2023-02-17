@@ -26,6 +26,9 @@ namespace WATA.LIS.VISION.Camera.Camera
     {
         Thread RecvThread;
 
+        int statuscheckCount = 0;
+
+
         private readonly IEventAggregator _eventAggregator;
         private readonly IVisionModel _visonModel;
         VisionConfigModel visionConfig;
@@ -42,17 +45,52 @@ namespace WATA.LIS.VISION.Camera.Camera
             RecvThread.Start();
 
             DispatcherTimer Process_chk_Timer = new DispatcherTimer();
-            Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             Process_chk_Timer.Tick += new EventHandler(AliveTimerEvent);
-            //Process_chk_Timer.Start();
+            Process_chk_Timer.Start();
 
             StartProcess();
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
         {
-            StartProcess();
+            //StartProcess();
+
+
+            if(statuscheckCount  >=15)
+            {
+                RecoveryProcess();
+
+            }
+
+            statuscheckCount++;
         }
+
+        private void RecoveryProcess()
+        {
+            statuscheckCount = 0;
+
+            StopProcess();
+            Thread.Sleep(5000);
+            StartProcess();
+
+            Tools.Log($"Recovery Process ", Tools.ELogType.VisionLog);
+        }
+
+        private void StopProcess()
+        {
+
+            Process[] processList_vision = Process.GetProcessesByName("vision_forklift");
+            for (int i = processList_vision.Length - 1; i >= 0; i--)
+            {
+                // processList[i].CloseMainWindow();
+                processList_vision[i].Kill();
+                processList_vision[i].Close();
+            }
+
+            Tools.Log($"Stop Process ", Tools.ELogType.VisionLog);
+        }
+
 
         private void StartProcess()
         {
@@ -96,6 +134,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                    // MessageBox.Show(ex.Message.ToString());
                 }
             }
+            Tools.Log($"Start Process ", Tools.ELogType.VisionLog);
         }
 
         private void ZMQReceiveInit()
@@ -151,6 +190,18 @@ namespace WATA.LIS.VISION.Camera.Camera
                             if (jObject.ContainsKey("status") == true)
                             {
                                 visionModel.status = jObject["status"].ToString();
+
+                                if(visionModel.status == "dead")
+                                {
+                                    //StopProcess();
+                                    Tools.Log($"Receive dead", Tools.ELogType.VisionLog);
+                                }
+                                else
+                                {
+
+                                    statuscheckCount = 0;
+                                }
+
                             }
 
                             if (jObject.ContainsKey("matrix") == true)
@@ -174,6 +225,8 @@ namespace WATA.LIS.VISION.Camera.Camera
                         Tools.Log($"Exception!!!", Tools.ELogType.VisionLog);
                     }
                     Thread.Sleep(50);
+
+                  
                 }
             }
         }

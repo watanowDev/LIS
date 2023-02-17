@@ -27,21 +27,21 @@
 
     <Grid Background="#FFDADADA">
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
             <RowDefinition Height="1.*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <Label Content="Main" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="40" FontWeight="Bold"></Label>
+            <Label Content="Main" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
         </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions >
+                <ColumnDefinition Width="0.15*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
-                <ColumnDefinition Width="0.2*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="0">
+            <Grid Grid.Column="1">
 
                 <Grid.ColumnDefinitions >
-                    <ColumnDefinition Width="0.9*"></ColumnDefinition>
+                    <ColumnDefinition Width="0.7*"></ColumnDefinition>
                     <ColumnDefinition Width="0.5*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
@@ -97,7 +97,7 @@
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid Grid.Column="1" RenderTransformOrigin="0.513,0.422">
+            <Grid Grid.Column="0" RenderTransformOrigin="0.513,0.422">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1.*"></RowDefinition>
                     <RowDefinition Height="1.*"></RowDefinition>
@@ -113,30 +113,30 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid Grid.Row="0" Grid.Column="0" Margin="5">
-                    <Label Content="SYSTEM STATUS" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Label Content="SYSTEM STATUS" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                 </Grid>
 
                 <Grid Grid.Row="1" Grid.Column="0" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="H(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Label Content="H(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding Distance_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
                  </Grid>
 
                 <Grid Grid.Row="2" Grid.Column="0" Margin="5">
-                    <Label Content="{Binding Distance_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
                 </Grid>
 
                 <Grid Grid.Row="3" Grid.Column="0" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="EPC" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Label Content="EPC" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding RFID_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
              
                 </Grid>
@@ -147,24 +147,24 @@
 
                 <Grid Grid.Row="5" Grid.Column="0" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="VISION" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+                    <Label Content="VISION" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding VISION_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
                     <Label Content="{Binding VISION_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
                 </Grid>
 
                 <Grid Grid.Row="6" Grid.Column="0" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
-                        <ColumnDefinition Width="100"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
+                        <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Platform" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Margin="5,0,0,0"></Label>
+                    <Label Content="Platform" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" FontWeight="Bold" Margin="5,0,0,0"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding BACKEND_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
-                    <Label Content="{Binding BACKEND_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                    <Label Content="{Binding BACKEND_Value}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
                 </Grid>
 
                 <Grid Grid.Row="7">
@@ -176,7 +176,7 @@
                             </LinearGradientBrush>
                         </TabControl.Background>
                         <TabItem Header="System" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                            <ListBox Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
+                            <ListBox FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
                             </ListBox>
                         </TabItem>
                     </TabControl>

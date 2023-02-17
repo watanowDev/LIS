@@ -16,4 +16,11 @@ namespace WATA.LIS.Core.Common
         BackEndAction,
         BackEndCurrent
     }
+
+    public enum eDeviceType : Int32
+    {
+        ForkLift_V1,
+        ForkLift_V2,
+        GateChecker
+    }
 }

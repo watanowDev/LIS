@@ -4,6 +4,7 @@ using Prism.Modularity;
 using Prism.Regions;
 using WATA.LIS.Core;
 using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.VISION.Camera.Camera;
 using WATA.LIS.VISION.Camera.Views;
 
@@ -15,13 +16,20 @@ namespace WATA.LIS.VISION.Camera
         private readonly IEventAggregator _eventAggregator;
         private readonly IVisionModel _visionModel;
 
-        public CameraModule(IRegionManager regionManager, IEventAggregator eventAggregator, IVisionModel visionModel)
+        public CameraModule(IRegionManager regionManager, IEventAggregator eventAggregator, IVisionModel visionModel, IMainModel main)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             _visionModel = visionModel;
-            AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel);
-            camera.Init();
+
+
+            MainConfigModel main_config = (MainConfigModel)main;
+        
+            if (main_config.device_type == "fork_lift_v1" || main_config.device_type == "fork_lift_v2")
+            {
+                AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel);
+                camera.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

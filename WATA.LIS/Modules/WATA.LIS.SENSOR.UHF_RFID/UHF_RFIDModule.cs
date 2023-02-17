@@ -15,6 +15,7 @@ using System.Windows.Media;
 using WATA.LIS.Core.Interfaces;
 using System.Text.Json.Serialization;
 using WATA.LIS.Core.Model.VISION;
+using WATA.LIS.Core.Model.SystemConfig;
 //using WATA.LIS.Core.Interfaces;
 
 namespace WATA.LIS.SENSOR.UHF_RFID
@@ -27,17 +28,25 @@ namespace WATA.LIS.SENSOR.UHF_RFID
         private readonly IEventAggregator _eventAggregator;
         private readonly IRFIDModel _rfidmodel;
         
-        public UHF_RFIDModule(IEventAggregator eventAggregator, IRFIDModel rfidmodel)
+        public UHF_RFIDModule(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _rfidmodel = rfidmodel;
-           //WPSControl rfid = new WPSControl(_eventAggregator);
-           //rfid.Init();
-
-           ApulseTechControl rfid = new ApulseTechControl(_eventAggregator , _rfidmodel);
-           rfid.Init();
-
             
+            MainConfigModel main_config = (MainConfigModel)main;
+
+            if (main_config.device_type == "fork_lift_v1")
+            {
+                //WPSControl rfid = new WPSControl(_eventAggregator);
+                //rfid.Init();
+            }
+            else if (main_config.device_type == "fork_lift_v2" || main_config.device_type == "gate_checker")
+            {
+
+                ApulseTechControl rfid = new ApulseTechControl(_eventAggregator, _rfidmodel, main);
+                rfid.Init();
+            }
+  
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
