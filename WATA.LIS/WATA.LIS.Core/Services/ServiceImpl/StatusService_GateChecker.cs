@@ -30,35 +30,72 @@ namespace WATA.LIS.Core.Services
     {
         IEventAggregator _eventAggregator;
 
-        
-  
+        private int gate_in_cnt = 0;
+        private int gate_out_cnt = 0;
+
         public StatusService_GateChecker(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<Gate_Event>().Subscribe(OnGateData, ThreadOption.BackgroundThread, true);
-          
+
             Tools.Log($"StatusService_GateChecker", Tools.ELogType.SystemLog);
 
-
             DispatcherTimer StatusClearTimer = new DispatcherTimer();
-            StatusClearTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            StatusClearTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             StatusClearTimer.Tick += new EventHandler(GateCheckTimerEvent);
             StatusClearTimer.Start();
-
-
-
-
         }
 
         private void GateCheckTimerEvent(object sender, EventArgs e)
         {
+            float back_rssi =  (float)0.00; ;
+            string back_epc = GetMostBackAntEPC(1, 10, ref back_rssi);
+            Tools.Log($"back_epc {back_epc} rssi {back_rssi}", Tools.ELogType.BackEndCurrentLog);
 
+
+            float front_rssi = (float)0.00; ;
+            string front_epc = GetMostFrontAntEPC(1, 10, ref front_rssi);
+            Tools.Log($"front_epc {front_epc} rssi{front_rssi} ", Tools.ELogType.BackEndCurrentLog);
+
+
+
+            if(front_rssi > back_rssi)
+            {
+                Tools.Log($"##Gate OUT##", Tools.ELogType.BackEndCurrentLog);
+                gate_out_cnt++;
+
+          
+            }
+            else if(front_rssi < back_rssi)
+            {
+                Tools.Log($"##Gate IN##", Tools.ELogType.BackEndCurrentLog);
+                gate_in_cnt++;
+
+         
+            }
+
+
+            if(gate_in_cnt == 3)
+            {
+                Tools.Log($"##Gate IN##", Tools.ELogType.BackEndLog);
+                gate_out_cnt = 0;
+            }
+
+
+            if (gate_out_cnt == 3)
+            {
+                Tools.Log($"##Gate OUT##", Tools.ELogType.BackEndLog);
+                gate_in_cnt = 0;
+            }
 
         }
 
 
-        private static List<QueryRFIDModel> m_Gate_epclist = new List<QueryRFIDModel>();
-        
+        private static List<QueryRFIDModel> m_Gate_FrontAnt_epclist = new List<QueryRFIDModel>();
+        private static List<QueryRFIDModel> m_Gate_BackAnt_epclist = new List<QueryRFIDModel>();
+
+
+
 
         private void AddEpcList(string key_epc,
                                 float value_rssi,
@@ -98,30 +135,25 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        
-        
-     
 
-        private string GetMostlocationEPC(int TimeSec, int Threshold)
+        private string GetMostBackAntEPC(int TimeSec, int Threshold, ref float rssi)
         {
             string retKeys = "NA";
 
-            if (m_Gate_epclist.Count > 0)
+            if (m_Gate_BackAnt_epclist.Count > 0)
             {
                 DateTime CurrentTime = DateTime.Now;
-                //Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndCurrentLog);
-           
+        
                 int idx = 0;
-                while (idx < m_Gate_epclist.Count)
+                while (idx < m_Gate_BackAnt_epclist.Count)
                 {
-                    TimeSpan Diff = CurrentTime - m_Gate_epclist[idx].Time;
+                    TimeSpan Diff = CurrentTime - m_Gate_BackAnt_epclist[idx].Time;
                     int nDiff = Diff.Seconds;
 
 
                     if (nDiff > TimeSec)
                     {
-                        //Tools.Log($"delete DiffTime {nDiff}  epc {m_location_epclist[idx].EPC} Time {m_location_epclist[idx].Time}  ", Tools.ELogType.BackEndCurrentLog);
-                        m_Gate_epclist.Remove(m_Gate_epclist[idx]);
+                        m_Gate_BackAnt_epclist.Remove(m_Gate_BackAnt_epclist[idx]);
 
                     }
                     else
@@ -135,28 +167,85 @@ namespace WATA.LIS.Core.Services
                 List<float> listRSSI = new List<float>();
 
 
-                for (int i = 0; i < m_Gate_epclist.Count; i++)
+                for (int i = 0; i < m_Gate_BackAnt_epclist.Count; i++)
                 {
-                    //Tools.Log($"Query  epc {m_location_epclist[i].EPC} RSSI {m_location_epclist[i].RSSI} Time {m_location_epclist[i].Time}  ", Tools.ELogType.BackEndCurrentLog);
-                    AddEpcList(m_Gate_epclist[i].EPC, m_Gate_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
+                    AddEpcList(m_Gate_BackAnt_epclist[i].EPC, m_Gate_BackAnt_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
+                }
+
+                RSSI_AverageEPCList(ref retRFIDInfoList, Tools.ELogType.BackEndCurrentLog);
+
+                if (retRFIDInfoList.Count > 0)
+                {
+                    retKeys = retRFIDInfoList.Aggregate((x, y) => x.Value.RSSI > y.Value.RSSI ? x : y).Key;
+
+                    if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
+                    {
+                        rssi = Temp.RSSI;
+
+                        Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndCurrentLog);
+                        Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndCurrentLog);
+                    }
+                }
+                else
+                {
+                    Tools.Log("Dic List Empty", Tools.ELogType.BackEndCurrentLog);
+                }
+            }
+            else
+            {
+                Tools.Log("EPC List Empty", Tools.ELogType.BackEndCurrentLog);
+            }
+            return retKeys;
+        }
+
+
+        private string GetMostFrontAntEPC(int TimeSec, int Threshold,  ref float rssi)
+        {
+            string retKeys = "NA";
+
+            if (m_Gate_FrontAnt_epclist.Count > 0)
+            {
+                DateTime CurrentTime = DateTime.Now;
+            
+                int idx = 0;
+                while (idx < m_Gate_FrontAnt_epclist.Count)
+                {
+                    TimeSpan Diff = CurrentTime - m_Gate_FrontAnt_epclist[idx].Time;
+                    int nDiff = Diff.Seconds;
+
+
+                    if (nDiff > TimeSec)
+                    {
+                        m_Gate_FrontAnt_epclist.Remove(m_Gate_FrontAnt_epclist[idx]);
+
+                    }
+                    else
+                    {
+                        ++idx;
+                    }
+                }
+
+                Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
+                List<int> listCount = new List<int>();
+                List<float> listRSSI = new List<float>();
+
+
+                for (int i = 0; i < m_Gate_FrontAnt_epclist.Count; i++)
+                {
+                    AddEpcList(m_Gate_FrontAnt_epclist[i].EPC, m_Gate_FrontAnt_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
                 RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndCurrentLog);
 
                 if (retRFIDInfoList.Count > 0)
                 {
-                    //PrintDict(retRFIDInfoList);
                     retKeys = retRFIDInfoList.Aggregate((x, y) => x.Value.RSSI > y.Value.RSSI ? x : y).Key;
 
                     if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
                     {
+                        rssi = Temp.RSSI;
                         Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndCurrentLog);
                         Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndCurrentLog);
-                        //if (Temp.EPC_Check_Count < Threshold)
-                        //{
-                        //    retKeys = "NA";
-                        //    Tools.Log($"Low Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
-                        //}
                     }
                 }
                 else
@@ -175,11 +264,24 @@ namespace WATA.LIS.Core.Services
         public void OnGateData(GateRFIDEventModel obj)
         {
             QueryRFIDModel epcModel = new QueryRFIDModel();
-            epcModel.EPC = obj.EPC;
-            epcModel.Time = DateTime.Now;
-            epcModel.RSSI = obj.RSSI;
-            m_Gate_epclist.Add(epcModel);
-            Tools.Log($"Gate EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+
+            if (obj.GateValue == "0")
+            {
+                epcModel.EPC = obj.EPC;
+                epcModel.Time = DateTime.Now;
+                epcModel.RSSI = obj.RSSI;
+                m_Gate_FrontAnt_epclist.Add(epcModel);
+            //  Tools.Log($"front gate {epcModel.EPC} ", Tools.ELogType.BackEndLog);
+            }
+            else
+            {
+                epcModel.EPC = obj.EPC;
+                epcModel.Time = DateTime.Now;
+                epcModel.RSSI = obj.RSSI;
+                m_Gate_BackAnt_epclist.Add(epcModel);
+                //Tools.Log($"back gate {epcModel.EPC} ", Tools.ELogType.BackEndLog);
+            }
+            //Tools.Log($"Gate EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
         }
     }
 }

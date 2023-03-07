@@ -13,9 +13,11 @@ using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.RFID;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
 using static WATA.LIS.Core.Common.Tools;
 
@@ -45,7 +47,7 @@ namespace WATA.LIS.Core.Services
         private bool m_stop_rack_epc = true;
 
 
-        public StatusService_V2(IEventAggregator eventAggregator)
+        public StatusService_V2(IEventAggregator eventAggregator , IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
@@ -62,7 +64,8 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
-
+            MainConfigModel mainobj = (MainConfigModel)main;
+            m_vihicle = mainobj.forkLiftID;
             Tools.Log($"Start Status Service", Tools.ELogType.SystemLog);
         }
 
@@ -267,10 +270,14 @@ namespace WATA.LIS.Core.Services
             return retKeys;
         }
 
-        private string GetMostRackEPC(int TimeSec,float Threshold ,ref float rssi)
+        private string GetMostRackEPC(int TimeSec,float Threshold ,ref float rssi, int H_distance)
         {
             string retKeys = "field";
-           
+
+            Tools.Log($"Time {TimeSec} Threshold {Threshold}", Tools.ELogType.BackEndLog);
+
+
+
             if (m_rack_epclist.Count > 0)
             {
                 DateTime CurrentTime = DateTime.Now;
@@ -322,8 +329,15 @@ namespace WATA.LIS.Core.Services
                         rssi = Temp.RSSI;
                         if (rssi < Threshold)
                         {
-                            retKeys = "field";
-                            Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
+                            if (H_distance > 1500)
+                            {
+                                retKeys = "field";
+                                Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
+                            }
+                            else
+                            {
+                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);
+                            }
                         }
                         else
                         {
@@ -413,7 +427,7 @@ namespace WATA.LIS.Core.Services
                 m_stop_rack_epc = false;
                 float rssi = (float)0.00;
 
-                string epc_data = GetMostRackEPC(3,-70, ref rssi);
+                string epc_data = GetMostRackEPC(3,-72, ref rssi, m_Height_Distance_mm);
                 ActionObj.actionInfo.epc = epc_data;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "IN";
@@ -471,7 +485,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"Stop receive rack epc 33", Tools.ELogType.BackEndLog);
                 m_stop_rack_epc = false;
 
-                string epc_data = GetMostRackEPC(10, -70, ref rssi);
+                string epc_data = GetMostRackEPC(10, -68, ref rssi, m_Height_Distance_mm);
                 ActionObj.actionInfo.epc = epc_data;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "OUT";

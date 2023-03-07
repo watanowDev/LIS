@@ -41,7 +41,7 @@ namespace WATA.LIS.Core.Parser
                         rfid.nTxOnTime = (int)json["rfid_receiver"]["tx_on_time"];
                         rfid.nTxOffTime = (int)json["rfid_receiver"]["tx_off_time"];
                         rfid.nToggle = (int)json["rfid_receiver"]["toggle"];
-                        rfid.nSpeakerEnable = (int)json["rfid_receiver"]["speaker_enable"];
+                        rfid.nSpeakerlevel = (int)json["rfid_receiver"]["speaker_level"];
                         rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     } 

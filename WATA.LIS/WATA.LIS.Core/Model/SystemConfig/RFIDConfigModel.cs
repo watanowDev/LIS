@@ -11,7 +11,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public int nTxOffTime { get; set; }
 
         public int nToggle { get; set; }
-        public int nSpeakerEnable { get; set; }
+        public int nSpeakerlevel { get; set; }
     }
 }
 
