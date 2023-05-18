@@ -310,7 +310,6 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
 
-                m_qr = ActionObj.actionInfo.containerId = "";// obj.qr;
                 ActionObj.actionInfo.loadId = "";
                
                 Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
@@ -351,7 +350,6 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
-                ActionObj.actionInfo.containerId = "";//m_qr;
                 ActionObj.actionInfo.loadId = "";
 
 

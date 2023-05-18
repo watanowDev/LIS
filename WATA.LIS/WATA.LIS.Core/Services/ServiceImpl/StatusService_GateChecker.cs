@@ -17,6 +17,7 @@ using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.VISION;
+using Windows.Services.Maps;
 using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.Core.Services
@@ -32,6 +33,9 @@ namespace WATA.LIS.Core.Services
 
         private int gate_in_cnt = 0;
         private int gate_out_cnt = 0;
+
+        private string m_location = "INCHEON_CALT_001";
+        private string m_vihicle = "fork_lift003";
 
         public StatusService_GateChecker(IEventAggregator eventAggregator)
         {
@@ -57,21 +61,21 @@ namespace WATA.LIS.Core.Services
             string front_epc = GetMostFrontAntEPC(1, 10, ref front_rssi);
             Tools.Log($"front_epc {front_epc} rssi{front_rssi} ", Tools.ELogType.BackEndCurrentLog);
 
-
-
-            if(front_rssi > back_rssi)
+            eGateActionType action_type = eGateActionType.UnKnown;
+            if (front_rssi > back_rssi)
             {
                 Tools.Log($"##Gate OUT##", Tools.ELogType.BackEndCurrentLog);
                 gate_out_cnt++;
 
-          
+                //action_type = eGateActionType.IN;
             }
             else if(front_rssi < back_rssi)
             {
                 Tools.Log($"##Gate IN##", Tools.ELogType.BackEndCurrentLog);
                 gate_in_cnt++;
 
-         
+
+                //action_type = eGateActionType.OUT;
             }
 
 
@@ -79,6 +83,8 @@ namespace WATA.LIS.Core.Services
             {
                 Tools.Log($"##Gate IN##", Tools.ELogType.BackEndLog);
                 gate_out_cnt = 0;
+
+                action_type = eGateActionType.IN;
             }
 
 
@@ -86,8 +92,15 @@ namespace WATA.LIS.Core.Services
             {
                 Tools.Log($"##Gate OUT##", Tools.ELogType.BackEndLog);
                 gate_in_cnt = 0;
+
+                action_type = eGateActionType.OUT;
             }
 
+            if (action_type ==  eGateActionType.IN || action_type == eGateActionType.OUT)
+            {
+
+                GateAction(action_type);
+            }
         }
 
 
@@ -282,6 +295,31 @@ namespace WATA.LIS.Core.Services
                 //Tools.Log($"back gate {epcModel.EPC} ", Tools.ELogType.BackEndLog);
             }
             //Tools.Log($"Gate EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+        }
+
+        public void GateAction(eGateActionType action)
+        {
+            GateEventModel ActionObj = new GateEventModel();
+
+            ActionObj.gateEvent.workLocationId = m_location;
+            ActionObj.gateEvent.vehicleId = m_vihicle;
+            ActionObj.gateEvent.getLocation = "room1";
+
+            if (action == eGateActionType.IN)
+            {
+                ActionObj.gateEvent.eventType = "IN";
+            }
+            else
+            {
+                ActionObj.gateEvent.eventType = "OUT";
+            }
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/gate-event";
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
     }
 }

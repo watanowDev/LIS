@@ -45,7 +45,7 @@ namespace WATA.LIS.WPS
             TableRFID.Init();
 
             FH920 LocationRFID = new FH920("LOCATION", "0C:DC:7E:1D:C5:B6", "8052", dgPairListLocation, dgSendListLocation, this.Dispatcher);
-            LocationRFID.Init();
+            LocationRFID.Init ();
         }
        
     }

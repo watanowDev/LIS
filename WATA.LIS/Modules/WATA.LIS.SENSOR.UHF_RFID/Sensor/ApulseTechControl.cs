@@ -257,9 +257,15 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             {
                 // Tools.Log($"Is Connect True", Tools.ELogType);
 
+                GlobalValue.IS_ERROR.rfid = true;
+
             }
             else
             {
+
+                GlobalValue.IS_ERROR.rfid = false ;
+
+
                 if (mRemoteDeviceScanner.Started)
                 {
                     // Tools.Log($"Scan Stop", Tools.ELogType.BackEndLog);
@@ -614,27 +620,57 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             else
             {
 
-
                 Tools.Log($"Format Missing EPC Data", Tools.ELogType.RFIDLog);
                 return;
             }
 
 
-            if (port == "0") // 측면(측위용) 안테나 안테나
+            if (port == rfidConfig.front_ant_port) // 측면(측위용) 안테나 안테나
+            {
+                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                rfidmodel.EPC = SendEPC;
+                rfidmodel.RSSI = Float.parseFloat(rssi);
+                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+
+            }
+            else //정면(선반용)  안테나
             {
                 LocationRFIDEventModel location = new LocationRFIDEventModel();
                 location.EPC = SendEPC;
                 location.RSSI = Float.parseFloat(rssi);
                 _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
             }
-            else //정면(선반용)  안테나
-            {
 
-                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
-                rfidmodel.EPC = SendEPC;
-                rfidmodel.RSSI = Float.parseFloat(rssi);
-                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+
+
+
+            /*
+            if(rfidConfig.front_ant_port == "demo" )
+            {
+                
+
+                if (port == "0") // 측면(측위용) 안테나 안테나
+                {
+                    Tools.Log($"demo mode {port}", Tools.ELogType.RFIDLog);
+
+
+                    RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                    rfidmodel.EPC = SendEPC;
+                    rfidmodel.RSSI = Float.parseFloat(rssi);
+                    _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+
+                    LocationRFIDEventModel location = new LocationRFIDEventModel();
+                    location.EPC = SendEPC;
+                    location.RSSI = Float.parseFloat(rssi);
+                    _eventAggregator.GetEvent<LocationProcess_Event>().Publish(location);
+
+                }                
             }
+            */
+
+
+
+
         }
 
 

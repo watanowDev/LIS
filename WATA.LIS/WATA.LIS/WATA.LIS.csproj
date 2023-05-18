@@ -5,19 +5,21 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
     <BaseOutputPath></BaseOutputPath>
-    <AssemblyVersion>8.8.7.18</AssemblyVersion>
-    <FileVersion>8.8.7.18</FileVersion>
+    <AssemblyVersion>7.0.0.4</AssemblyVersion>
+    <FileVersion>7.0.0.4</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Modules\WATA.LIS.IF.BE\WATA.LIS.IF.BE.csproj" />
+    <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.LED\WATA.LIS.INDICATOR.LED.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.Main\WATA.LIS.Main.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.Distance\WATA.LIS.SENSOR.Distance.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.VISION.Camera\WATA.LIS.VISION.Camera.csproj" />
     <ProjectReference Include="..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
+    <ProjectReference Include="..\WATA.LIS.INDICATOR.LED\WATA.LIS.INDICATOR.LED.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resource\" />

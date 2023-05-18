@@ -15,6 +15,7 @@ using System.Windows.Interop;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.StatusLED;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
@@ -48,18 +49,14 @@ namespace WATA.LIS.VISION.Camera.Camera
             Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             Process_chk_Timer.Tick += new EventHandler(AliveTimerEvent);
             Process_chk_Timer.Start();
-
             StartProcess();
         }
 
         private void AliveTimerEvent(object sender, EventArgs e)
         {
-            //StartProcess();
-
-
             if(statuscheckCount  >=15)
             {
-                RecoveryProcess();
+               RecoveryProcess();
 
             }
 
@@ -68,10 +65,12 @@ namespace WATA.LIS.VISION.Camera.Camera
 
         private void RecoveryProcess()
         {
+            GlobalValue.IS_ERROR.camera = false;
+
             statuscheckCount = 0;
 
             StopProcess();
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
             StartProcess();
 
             Tools.Log($"Recovery Process ", Tools.ELogType.VisionLog);
@@ -108,10 +107,14 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfo.FileName = "vision_forklift.exe";
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
-                        procInfo.ArgumentList.Add(visionConfig.CameraHeight);
-                        procInfo.ArgumentList.Add(visionConfig.QRValue);
+                        procInfo.ArgumentList.Add(visionConfig.CameraHeight.ToString());
+                        procInfo.ArgumentList.Add(visionConfig.event_distance.ToString());
+                        procInfo.ArgumentList.Add(visionConfig.rack_with.ToString());
+                        procInfo.ArgumentList.Add(visionConfig.rack_height.ToString());
+                        procInfo.ArgumentList.Add(visionConfig.QRValue.ToString());
+                        procInfo.ArgumentList.Add(visionConfig.view_3d_enable.ToString());
                         Process.Start(procInfo);
-                        Tools.Log($"Vision Parameter QRValue {visionConfig.QRValue} CameraHeight {visionConfig.CameraHeight} ", Tools.ELogType.VisionLog);
+                        Tools.Log($"Vision Parameter CameraHeight {visionConfig.CameraHeight} event_distance {visionConfig.event_distance} 3D rack_with {visionConfig.rack_with}   rack_height {visionConfig.rack_height} QRValue {visionConfig.rack_height}", Tools.ELogType.VisionLog);
                     }
                     else
                     {
@@ -124,10 +127,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfoOld.ArgumentList.Add("45");
                         procInfoOld.ArgumentList.Add("0");
                         Process.Start(procInfoOld);
-                    }
-                    
-            
-                  
+                    }      
                 }
                 catch (Exception ex)
                 {
@@ -161,6 +161,10 @@ namespace WATA.LIS.VISION.Camera.Camera
                         }
                         else
                         {
+
+                            GlobalValue.IS_ERROR.camera = true;
+
+
                             Tools.Log("Body : " + RecieveStr, Tools.ELogType.VisionLog);
 
                             VISON_Model visionModel = new VISON_Model();
@@ -186,6 +190,14 @@ namespace WATA.LIS.VISION.Camera.Camera
                             {
                                 visionModel.qr = jObject["qr"].ToString();
                             }
+
+                            if (jObject.ContainsKey("has_roof") == true)
+                            {
+                                visionModel.has_roof = (bool)jObject["has_roof"];
+                            }
+
+
+
 
                             if (jObject.ContainsKey("status") == true)
                             {

@@ -16,6 +16,8 @@ namespace WATA.LIS.Core.Model.VISION
         public string status { get; set; }
 
         public byte[] matrix { get; set; }
+
+        public bool has_roof  { get; set; }
     }
 }
 

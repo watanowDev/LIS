@@ -126,7 +126,7 @@ namespace WATA.LIS.Main.ViewModels
 
         public void OnVISIONEvent(VISON_Model obj)
         {
-            Tools.Log("OnVISIONEvent {}", Tools.ELogType.SystemLog);
+      
         }
     }
 }

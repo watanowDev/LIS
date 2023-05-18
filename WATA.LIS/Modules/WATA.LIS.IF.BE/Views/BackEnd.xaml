@@ -27,13 +27,14 @@
 
     <Grid Background="#FFDADADA">
         <Grid.RowDefinitions>
-            <RowDefinition Height="70"></RowDefinition>
-            <RowDefinition Height="70"></RowDefinition>
-            <RowDefinition Height="70"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="1.*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <Label Content="BeckEnd Platform" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="40" FontWeight="Bold"></Label>
+            <Label Content="BeckEnd Platform" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
         </Grid>
         <Grid Grid.Row="1">
             <Button Command="{Binding ButtonFunc}" CommandParameter="ActionIN" Grid.Column="0" Grid.Row="0" Width="144"  Content="Action IN" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
@@ -43,11 +44,28 @@
             <Label Content="Distance(mm)" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Margin="668,0,0,0"></Label>
             <TextBox HorizontalAlignment="Left" Margin="813,0,0,0" TextWrapping="Wrap" Text="{Binding DistanceInfo}" VerticalAlignment="Center" Width="268"/>
         </Grid>
+
         <Grid Grid.Row="2">
+            <Button Command="{Binding ButtonFunc}" CommandParameter="F_IN" Grid.Column="0" Grid.Row="0" Width="144"  Content="F Action IN" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="F_OUT" Grid.Column="0" Grid.Row="0" Width="144"  Content="F Action OUT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="144,0,0,0"   />
+            <Label Content="Load ID" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="20" FontWeight="Bold" Margin="668,0,0,0"></Label>
+            <TextBox HorizontalAlignment="Left" Margin="813,0,0,0" TextWrapping="Wrap" Text="{Binding QRLoadID}" VerticalAlignment="Center" Width="268"/>
+
+
+        </Grid>
+
+
+        <Grid Grid.Row="3">
             <Button Command="{Binding ButtonFunc}" CommandParameter="Get" Grid.Column="0" Grid.Row="0" Width="144"  Content="Alive" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
             <Button Command="{Binding ButtonFunc}" CommandParameter="Location" Grid.Column="0" Grid.Row="0" Width="144"  Content="Location" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="144,0,0,0"/>
         </Grid>
-        <Grid Grid.Row="3">
+
+        <Grid Grid.Row="4">
+            <Button Command="{Binding ButtonFunc}" CommandParameter="GateIN" Grid.Column="0" Grid.Row="0" Width="144"  Content="Gate IN" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="GateOUT" Grid.Column="0" Grid.Row="0" Width="144"  Content="Gate Out" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="144,0,0,0"/>
+        </Grid>
+
+        <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.6*"></ColumnDefinition>
                 <ColumnDefinition Width="0.4*"></ColumnDefinition>

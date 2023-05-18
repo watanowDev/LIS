@@ -12,6 +12,19 @@ namespace WATA.LIS.Core.Model.SystemConfig
 
         public int nToggle { get; set; }
         public int nSpeakerlevel { get; set; }
+
+        public int nRssi_pickup_timeout { get; set; }
+
+        public int nRssi_pickup_threshold { get; set; }
+
+
+        public int nRssi_drop_timeout { get; set; }
+
+        public int nRssi_drop_threshold { get; set; }
+
+        public string front_ant_port;
+
+
     }
 }
 

@@ -9,6 +9,7 @@ using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Parser;
 using WATA.LIS.Core.Services;
 using WATA.LIS.IF.BE;
+using WATA.LIS.INDICATOR.LED;
 using WATA.LIS.Main;
 using WATA.LIS.SENSOR.Distance;
 using WATA.LIS.SENSOR.UHF_RFID;
@@ -72,11 +73,13 @@ namespace WATA.LIS
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
         {
+            moduleCatalog.AddModule<LEDModule>();
             moduleCatalog.AddModule<DistanceModule>();
             moduleCatalog.AddModule<BEModule>();
             moduleCatalog.AddModule<CameraModule>();
             moduleCatalog.AddModule<MainModule>();
             moduleCatalog.AddModule<UHF_RFIDModule>();
+           
         }
     }
 }

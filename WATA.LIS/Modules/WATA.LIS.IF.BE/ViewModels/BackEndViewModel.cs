@@ -36,6 +36,13 @@ namespace WATA.LIS.IF.BE.ViewModels
         public string DistanceInfo { get { return _DistanceInfo; } set { SetProperty(ref _DistanceInfo, value); } }
 
 
+
+        private string _QRLoadID;
+        public string QRLoadID { get { return _QRLoadID; } set { SetProperty(ref _QRLoadID, value); } }
+
+
+        
+
         public BackEndViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -61,19 +68,19 @@ namespace WATA.LIS.IF.BE.ViewModels
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
         }
 
-        private void SendAction_IN_InfoEvent(string Tag, string Distance)
+        private void SendAction_IN_InfoEvent(string Tag, string Distance, bool Shelf, string loadid)
         {
             ActionInfoModel action_obj = new ActionInfoModel();
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
-            action_obj.actionInfo.loadId = "";
-            action_obj.actionInfo.containerId = "";
+            action_obj.actionInfo.loadId = loadid;
             action_obj.actionInfo.action = "IN";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
             action_obj.actionInfo.loadRate = "0";
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
+            action_obj.actionInfo.shelf = Shelf;
 
             action_obj.actionInfo.loadMatrix.Add(0);
             action_obj.actionInfo.loadMatrix.Add(0);
@@ -97,7 +104,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
         }
 
-        private void SendAction_OUT_InfoEvent(string Tag, string Distance)
+        private void SendAction_OUT_InfoEvent(string Tag, string Distance, bool Shelf, string loadid)
         {
 
 
@@ -105,11 +112,9 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.workLocationId = m_location;
             action_obj.actionInfo.vehicleId = m_vihicle;
 
-            action_obj.actionInfo.loadId = "";
+            action_obj.actionInfo.loadId = loadid;
 
-            // action_obj.actionInfo.containerId = "{750.0;Activize;323525.0}";
-            action_obj.actionInfo.containerId = "";
-
+            
             action_obj.actionInfo.action = "OUT";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -117,7 +122,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             action_obj.actionInfo.loadRate = "90";
             action_obj.actionInfo.loadMatrixColumn = "10";
             action_obj.actionInfo.loadMatrixRaw = "10";
-
+            action_obj.actionInfo.shelf = Shelf;
 
 
             action_obj.actionInfo.loadMatrix.Add(0);
@@ -170,13 +175,29 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                         break;
 
-                    case "ActionIN":
+                    case "GateIN":
+                        GateAction(eGateActionType.IN);
+                        break;
 
-                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo);
+                    case "GateOUT" :
+                        GateAction(eGateActionType.OUT);
+                        break;
+
+
+                    case "ActionIN":
+                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo, true, QRLoadID);
                         break;
 
                     case "ActionOUT":
-                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo);
+                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo, true, QRLoadID);
+                        break;
+
+                    case "F_IN":
+                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo, false, QRLoadID);
+                        break;
+
+                    case "F_OUT":
+                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo, false, QRLoadID);
                         break;
 
                     case "Location":
@@ -194,5 +215,32 @@ namespace WATA.LIS.IF.BE.ViewModels
 
             }
         }
+
+
+        public void GateAction(eGateActionType action)
+        {
+            GateEventModel ActionObj = new GateEventModel();
+
+            ActionObj.gateEvent.workLocationId = m_location;
+            ActionObj.gateEvent.vehicleId = m_vihicle;
+            ActionObj.gateEvent.getLocation = "room1";
+
+            if (action == eGateActionType.IN)
+            {
+                ActionObj.gateEvent.eventType = "IN";
+            }
+            else
+            {
+                ActionObj.gateEvent.eventType = "OUT";
+            }
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/gate-event";
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+        }
+
     }
 }
