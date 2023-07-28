@@ -87,10 +87,12 @@ namespace WATA.LIS.Main.ViewModels
             if(status == -1)
             {
                 BACKEND_Active = Disconnect;
+                GlobalValue.IS_ERROR.backend = false;
             }
             else
             {
                 BACKEND_Active = Active;
+                GlobalValue.IS_ERROR.backend = true;
             }
         }
 

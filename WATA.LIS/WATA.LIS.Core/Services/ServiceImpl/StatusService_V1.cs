@@ -55,12 +55,6 @@ namespace WATA.LIS.Core.Services
             StatusClearTimer.Tick += new EventHandler(StatusClearEvent);
             StatusClearTimer.Start();
 
-            //DispatcherTimer AliveTimer = new DispatcherTimer();
-            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            //AliveTimer.Start();
-
-
             DispatcherTimer CurrentTimer = new DispatcherTimer();
             CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);

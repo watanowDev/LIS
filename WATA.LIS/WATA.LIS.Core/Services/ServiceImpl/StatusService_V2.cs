@@ -40,7 +40,7 @@ namespace WATA.LIS.Core.Services
  
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
-        private int status_limit_count = 30;
+        private int status_limit_count = 5;
 
         private string m_location = "INCHEON_CALT_001";
         private string m_vihicle = "fork_lift001";
@@ -79,6 +79,15 @@ namespace WATA.LIS.Core.Services
             ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 2000);
             ErrorCheckTimer.Tick += new EventHandler(StatusErrorCheckEvent);
             ErrorCheckTimer.Start();
+
+
+
+            DispatcherTimer AliveTimer = new DispatcherTimer();
+            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            AliveTimer.Start();
+
+
             Tools.Log($"Start Status Service", Tools.ELogType.SystemLog);
  
         }
@@ -93,9 +102,7 @@ namespace WATA.LIS.Core.Services
             string epc = GetMostlocationEPC(1, 0);
 
 
-            //jsk
-            //epc = "DA00025B00020000000200ED";
-            
+         
             LocationInfoModel location_obj = new LocationInfoModel();
 
             location_obj.locationInfo.vehicleId = m_vihicle;
@@ -209,7 +216,7 @@ namespace WATA.LIS.Core.Services
 
             if (distance_status_check_count > status_limit_count)// 30초후 응답이 없으면 RFID 클리어
             {
-                GlobalValue.IS_ERROR.distance = true;
+                GlobalValue.IS_ERROR.distance = false;
 
                 DistanceSensorModel DisTanceObject = new DistanceSensorModel();
                 m_Height_Distance_mm = -100;
@@ -219,7 +226,7 @@ namespace WATA.LIS.Core.Services
             }
             else
             {
-                GlobalValue.IS_ERROR.distance = false;
+                GlobalValue.IS_ERROR.distance = true;
                 distance_status_check_count++;
             }
 
@@ -416,7 +423,7 @@ namespace WATA.LIS.Core.Services
                             {
                                 //retKeys = "field";
                                 shelf = false;
-                                Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
+                                //Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
                             }
                             else
                             {
@@ -513,7 +520,10 @@ namespace WATA.LIS.Core.Services
             ActionObj.actionInfo.workLocationId = m_location;
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
-            
+
+            ActionObj.actionInfo.visionWidth = obj.width;
+            ActionObj.actionInfo.visionHeight = obj.height;
+
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 m_LoadMatrix = null;
@@ -622,6 +632,11 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadRate = m_CalRate.ToString();
                 ActionObj.actionInfo.loadMatrixRaw = "10";
                 ActionObj.actionInfo.loadMatrixColumn = "10";
+
+                ActionObj.actionInfo.visionWidth = obj.width;
+                ActionObj.actionInfo.visionHeight = obj.height;
+
+
                 if (m_LoadMatrix != null)
                 {
                     ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[0]);

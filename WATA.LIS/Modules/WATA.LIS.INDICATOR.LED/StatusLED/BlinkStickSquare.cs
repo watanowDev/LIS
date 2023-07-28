@@ -21,15 +21,35 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
 
         public void Init()
         {
-            led = BlinkStick.FindFirst();
-            led.OpenDevice();
-            _eventAggregator.GetEvent<StatusLED_Event>().Subscribe(OnLEDEvent, ThreadOption.BackgroundThread, true);
+            try
+            {
+                led = BlinkStick.FindFirst();
+
+                if(led != null)
+                {
+                    led.OpenDevice();
+                    _eventAggregator.GetEvent<StatusLED_Event>().Subscribe(OnLEDEvent, ThreadOption.BackgroundThread, true);
+                }
+
+     
+
+            }
+            catch
+            {
+
+
+            }
+    
         }
 
         public void OnLEDEvent(string status)
         {
-            Tools.Log($"SetLED {status}", Tools.ELogType.SystemLog);
-            led.SetColor(status);
+
+            if (led != null)
+            {
+                Tools.Log($"SetLED {status}", Tools.ELogType.SystemLog);
+                led.SetColor(status);
+            }
         }
    
     }
