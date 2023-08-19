@@ -59,6 +59,8 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDLackData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
+
 
             DispatcherTimer StatusClearTimer = new DispatcherTimer();
             StatusClearTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -94,10 +96,16 @@ namespace WATA.LIS.Core.Services
 
         private string m_Location_epc = "";
 
+        public void OnWeightSensor(string str)
+        {
 
-       
 
-        private void CurrentLocationTimerEvent(object sender, EventArgs e)
+            Tools.Log($"Weight {str}", Tools.ELogType.SystemLog);
+        }
+
+
+
+         private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
             string epc = GetMostlocationEPC(1, 0);
 
@@ -529,6 +537,8 @@ namespace WATA.LIS.Core.Services
                 m_LoadMatrix = null;
 
                 Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);
+                Tools.Log($"IN##########################pick up Action", Tools.ELogType.WeightLog);
+
                 Tools.Log($"Pickup Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
                 Thread.Sleep(visionConfig.pickup_wait_delay);
                 Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
@@ -621,7 +631,7 @@ namespace WATA.LIS.Core.Services
 
                 Tools.Log($"OUT##########################Drop Action", Tools.ELogType.BackEndLog);
 
-
+                Tools.Log($"OUT##########################Drop Action", Tools.ELogType.WeightLog);
                 Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
                 m_stop_rack_epc = false;
                 bool IsShelf = false;

@@ -16,6 +16,7 @@
             <ColumnDefinition Width="1.*"></ColumnDefinition>
             <ColumnDefinition Width="1.*"></ColumnDefinition>
             <ColumnDefinition Width="1.*"></ColumnDefinition>
+            <ColumnDefinition Width="1.*"></ColumnDefinition>
 
         </Grid.ColumnDefinitions>
         <Grid.Resources>
@@ -46,20 +47,27 @@
             </RadioButton>
         </Grid>
         <Grid Grid.Column="2">
+            <RadioButton IsChecked="{Binding WeightChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Weight" Cursor="Hand">
+                <TextBlock
+                    Text="WEIGHT"
+                    Width="Auto"/>
+            </RadioButton>
+        </Grid>
+        <Grid Grid.Column="3">
             <RadioButton IsChecked="{Binding DistanceChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Distance" Cursor="Hand">
                 <TextBlock
                     Text="DISTANCE"
                     Width="Auto"/>
             </RadioButton>
         </Grid>
-        <Grid Grid.Column="3">
+        <Grid Grid.Column="4">
             <RadioButton IsChecked="{Binding CameraChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Camera" Cursor="Hand">
                 <TextBlock
                     Text="CAMERA"
                     Width="Auto"/>
             </RadioButton>
         </Grid>
-        <Grid Grid.Column="4">
+        <Grid Grid.Column="5">
             <RadioButton IsChecked="{Binding BackEndChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_BackEnd" Cursor="Hand">
                 <TextBlock
                     Text="BACK END"

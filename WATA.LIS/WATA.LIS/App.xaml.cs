@@ -13,6 +13,7 @@ using WATA.LIS.INDICATOR.LED;
 using WATA.LIS.Main;
 using WATA.LIS.SENSOR.Distance;
 using WATA.LIS.SENSOR.UHF_RFID;
+using WATA.LIS.SENSOR.WEIGHT;
 using WATA.LIS.Views;
 using WATA.LIS.VISION.Camera;
 
@@ -33,13 +34,18 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            ( IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main) = parser.LoadJsonfile();
+            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main) = parser.LoadJsonfile();
 
+            containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
             containerRegistry.RegisterSingleton<IVisionModel>(x => vision);
             containerRegistry.RegisterSingleton<IRFIDModel>(x => rfid);
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
 
+
+
+            if (!containerRegistry.IsRegistered<IWeightModel>())
+                containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
 
 
             if (!containerRegistry.IsRegistered<IDistanceModel>())
@@ -75,11 +81,13 @@ namespace WATA.LIS
         {
             moduleCatalog.AddModule<LEDModule>();
             moduleCatalog.AddModule<DistanceModule>();
+            moduleCatalog.AddModule<WEIGHTModule>();
             moduleCatalog.AddModule<BEModule>();
             moduleCatalog.AddModule<CameraModule>();
             moduleCatalog.AddModule<MainModule>();
             moduleCatalog.AddModule<UHF_RFIDModule>();
            
+
         }
     }
 }

@@ -23,6 +23,12 @@ namespace WATA.LIS.Main.ViewModels
         private bool _RFIDChecked;
         public bool RFIDChecked { get { return _RFIDChecked; } set { SetProperty(ref _RFIDChecked, value); } }
 
+
+        private bool _WeightChecked;
+        public bool WeightChecked { get { return _WeightChecked; } set { SetProperty(ref _WeightChecked, value); } }
+
+
+
         private bool _DistanceChecked;
         public bool DistanceChecked { get { return _DistanceChecked; } set { SetProperty(ref _DistanceChecked, value); } }
 
@@ -44,7 +50,9 @@ namespace WATA.LIS.Main.ViewModels
             RFIDChecked = false;
             DistanceChecked = false;
             CameraChecked = false;
-          
+            WeightChecked = false;
+
+
 
             if (command != null)
             {
@@ -64,6 +72,10 @@ namespace WATA.LIS.Main.ViewModels
                     case "Content_Camera":
                         CameraChecked = true;
                         break;
+                    case "Content_Weight":
+                        WeightChecked = true;
+                        break;
+
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);
             }

@@ -15,9 +15,9 @@ namespace WATA.LIS.Core.Parser
 {
     public  class SystemJsonConfigParser
     {
-        public (DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel) LoadJsonfile()
         {
-
+            WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
             VisionConfigModel vision = new VisionConfigModel();
             MainConfigModel main = new MainConfigModel();
@@ -34,6 +34,7 @@ namespace WATA.LIS.Core.Parser
                         main.forkLiftID = json["main"]["unit_id"].ToString();
                         main.device_type = json["main"]["device_type"].ToString();
                         distance.ComPort  = json["distancesensor"]["comport"].ToString();
+                        weight.ComPort = json["weightsensor"]["comport"].ToString();
 
                         vision.CameraHeight = (float)json["visioncamera"]["camera_height"];
                         vision.QRValue = (int)json["visioncamera"]["qr_enable"];
@@ -69,7 +70,7 @@ namespace WATA.LIS.Core.Parser
                 Tools.Log($"Exception !!!", Tools.ELogType.DistanceLog);
             }
 
-            return (distance, vision, rfid, main);
+            return (weight, distance, vision, rfid, main);
         }
     }
 }

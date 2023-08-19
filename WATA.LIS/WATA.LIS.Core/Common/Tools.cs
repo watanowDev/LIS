@@ -25,8 +25,8 @@ namespace WATA.LIS.Core.Common
         static ILog BackEndLog;
         static ILog BackEndCurrentELog;
         static ILog ActionLog;
-
-
+        static ILog WeightLog;
+        
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
         static Tools()
@@ -39,7 +39,7 @@ namespace WATA.LIS.Core.Common
             BackEndLog = LogManager.GetLogger("BackEndLogEx");
             BackEndCurrentELog = LogManager.GetLogger("BackEndCurrentLogEx");
             ActionLog = LogManager.GetLogger("ActionLogEx");
-
+            WeightLog = LogManager.GetLogger("WeightLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -61,6 +61,31 @@ namespace WATA.LIS.Core.Common
                 {
                     switch (logType)
                     {
+                        case ELogType.WeightLog:
+                            WeightLog.Info(msg);//Point
+                            if (logInfo.ListWeightLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListWeightLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListWeightLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListWeightLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListWeightLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+
+
                         case ELogType.ActionLog:
                             ActionLog.Info(msg);//Point
                             if (logInfo.ListActionLog.Count > 300)
@@ -487,7 +512,8 @@ namespace WATA.LIS.Core.Common
             VisionLog,
             BackEndLog,
             BackEndCurrentLog,
-            ActionLog
+            ActionLog,
+            WeightLog
         }
 
         public struct SYSTEMTIME
