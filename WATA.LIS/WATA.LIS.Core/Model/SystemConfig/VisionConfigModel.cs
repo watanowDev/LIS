@@ -9,7 +9,9 @@ namespace WATA.LIS.Core.Model.SystemConfig
 {
     public class VisionConfigModel : IVisionModel
     {
-        public float CameraHeight { get; set; }
+        public int vision_enable { get; set; }
+
+        public double CameraHeight { get; set; }
         public int QRValue { get; set; }
 
         public int view_3d_enable { get; set; }
@@ -21,7 +23,6 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public float rack_with { get; set; }
 
         public float rack_height { get; set; }
-
     }
 }
 

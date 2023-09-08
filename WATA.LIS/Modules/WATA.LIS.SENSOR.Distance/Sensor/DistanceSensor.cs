@@ -45,6 +45,10 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         public void SerialInit()
         {
+
+            Tools.Log($"Init Wait", Tools.ELogType.DistanceLog);
+
+            Thread.Sleep(2000);
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
             ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
@@ -110,7 +114,6 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.DistanceLog);
             }
-
     }
 
 

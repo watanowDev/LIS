@@ -28,14 +28,58 @@ namespace WATA.LIS.IF.BE.REST
         public void init()
         {
             _eventAggregator.GetEvent<RestClientPostEvent>().Subscribe(OnClientPost, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Subscribe(OnClientPost_dev, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RestClientGetEvent>().Subscribe(OnClientGet, ThreadOption.BackgroundThread, true);
 
         }
 
+        public void OnClientPost_dev(RestClientPostModel Model)
+        {
+            Tools.ELogType logtype;
+            if (Model.type == eMessageType.BackEndAction)
+            {
+
+                logtype = Tools.ELogType.BackEndLog;
+            }
+            else
+            {
+                logtype = Tools.ELogType.BackEndCurrentLog;
+            }
+            Tools.Log($"Request Post URI : {Model.url} ", logtype);
+            Tools.Log(Model.body, logtype);
+
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Model.url);
+                request.Method = "POST";
+                request.ContentType = "application/json";
+                request.Timeout = 30 * 1000;
+                byte[] bytes = Encoding.ASCII.GetBytes(Model.body);
+                request.ContentLength = bytes.Length; // 바이트수 지정
+                using (Stream reqStream = request.GetRequestStream())
+                {
+                    reqStream.Write(bytes, 0, bytes.Length);
+                }
+                using (WebResponse resp = request.GetResponse())
+                {
+                    Stream respStream = resp.GetResponseStream();
+                    using (StreamReader sr = new StreamReader(respStream))
+                    {
+                        string responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
+                        Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+                    }
+                }
+            }
+            catch
+            {
+                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
+                Tools.Log($"REST Poist Client Response Error", logtype);
+            }
+        }
+
         public void OnClientPost(RestClientPostModel Model)
         {
-         
-
             Tools.ELogType logtype;
             if (Model.type == eMessageType.BackEndAction)
             {
@@ -77,9 +121,9 @@ namespace WATA.LIS.IF.BE.REST
                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
                 Tools.Log($"REST Poist Client Response Error", logtype);
             }
-            
-
         }
+
+
         public void OnClientGet(string URL)
         {
             Tools.Log($"Request Get URI : {URL}", Tools.ELogType.BackEndLog);

@@ -26,8 +26,14 @@ namespace WATA.LIS.Core.Model.BackEnd
         public string loadRate { get; set; }
         public string loadMatrixRaw { get; set; }
         public string loadMatrixColumn { get; set; }
+
+        public float loadWeight { get; set; }
+
         public float visionWidth { get; set; }
         public float visionHeight { get; set; }
+
+        
+
 
         public List<byte> loadMatrix { get; set; } = new List<byte>();
     }

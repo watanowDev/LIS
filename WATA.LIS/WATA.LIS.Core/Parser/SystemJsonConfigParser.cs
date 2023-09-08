@@ -31,11 +31,16 @@ namespace WATA.LIS.Core.Parser
                     using (JsonTextReader reader = new JsonTextReader(file))
                     {
                         JObject json = (JObject)JToken.ReadFrom(reader);
+
+
                         main.forkLiftID = json["main"]["unit_id"].ToString();
                         main.device_type = json["main"]["device_type"].ToString();
                         distance.ComPort  = json["distancesensor"]["comport"].ToString();
                         weight.ComPort = json["weightsensor"]["comport"].ToString();
+                        weight.loadweight_timeout = (int)json["weightsensor"]["loadweight_timeout"];
+                        weight.sensor_value = json["weightsensor"]["sensor_value"].ToString(); 
 
+                        vision.vision_enable = (int)json["visioncamera"]["vision_enable"];
                         vision.CameraHeight = (float)json["visioncamera"]["camera_height"];
                         vision.QRValue = (int)json["visioncamera"]["qr_enable"];
                         vision.view_3d_enable = (int)json["visioncamera"]["view_3d_enable"];
@@ -46,7 +51,8 @@ namespace WATA.LIS.Core.Parser
                         vision.rack_height = (float)json["visioncamera"]["rack_height"];
 
 
-
+                        
+                        rfid.rfid_enable = (int)json["rfid_receiver"]["rfid_enable"];
                         rfid.nRadioPower = (int)json["rfid_receiver"]["radio_power"];
                         rfid.nTxOnTime = (int)json["rfid_receiver"]["tx_on_time"];
                         rfid.nTxOffTime = (int)json["rfid_receiver"]["tx_off_time"];
@@ -67,6 +73,7 @@ namespace WATA.LIS.Core.Parser
             }
             catch (Exception Ex)
             {
+
                 Tools.Log($"Exception !!!", Tools.ELogType.DistanceLog);
             }
 

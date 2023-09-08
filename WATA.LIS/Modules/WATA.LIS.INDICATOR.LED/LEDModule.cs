@@ -13,6 +13,10 @@ namespace WATA.LIS.INDICATOR.LED
         {
             BlinkStickSquare LED = new BlinkStickSquare(eventAggregator);
             LED.Init();
+
+            Patlite_LED_Buzzer Patlite = new Patlite_LED_Buzzer(eventAggregator);
+            Patlite.Init();
+
         }
 
 

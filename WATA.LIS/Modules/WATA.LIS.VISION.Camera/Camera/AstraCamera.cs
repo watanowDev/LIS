@@ -33,6 +33,7 @@ namespace WATA.LIS.VISION.Camera.Camera
         private readonly IEventAggregator _eventAggregator;
         private readonly IVisionModel _visonModel;
         VisionConfigModel visionConfig;
+        DispatcherTimer Process_chk_Timer;
         public AstraCamera(IEventAggregator eventAggregator, IVisionModel visionModel)
         {
             _eventAggregator = eventAggregator;
@@ -45,7 +46,7 @@ namespace WATA.LIS.VISION.Camera.Camera
             RecvThread = new Thread(new ThreadStart(ZMQReceiveInit));
             RecvThread.Start();
 
-            DispatcherTimer Process_chk_Timer = new DispatcherTimer();
+            Process_chk_Timer = new DispatcherTimer();
             Process_chk_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             Process_chk_Timer.Tick += new EventHandler(AliveTimerEvent);
             Process_chk_Timer.Start();
@@ -93,6 +94,15 @@ namespace WATA.LIS.VISION.Camera.Camera
 
         private void StartProcess()
         {
+            if(visionConfig.vision_enable == 0)
+            {
+
+                Process_chk_Timer.Stop();
+                Tools.Log($"Start Process Disable", Tools.ELogType.VisionLog);
+                return;
+            }
+
+
             Process[] processes = Process.GetProcessesByName("vision_forklift.exe");
             if (processes.Length == 0)
             {
@@ -107,7 +117,10 @@ namespace WATA.LIS.VISION.Camera.Camera
                         procInfo.FileName = "vision_forklift.exe";
                         procInfo.WorkingDirectory = dir;
                         procInfo.ArgumentList.Add("vision");
-                        procInfo.ArgumentList.Add(visionConfig.CameraHeight.ToString());
+
+                        double height_temp = 0.00;
+                        height_temp = visionConfig.CameraHeight;
+                        procInfo.ArgumentList.Add(height_temp.ToString());
                         procInfo.ArgumentList.Add(visionConfig.event_distance.ToString());
                         procInfo.ArgumentList.Add(visionConfig.rack_with.ToString());
                         procInfo.ArgumentList.Add(visionConfig.rack_height.ToString());

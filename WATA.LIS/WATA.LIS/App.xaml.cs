@@ -63,15 +63,20 @@ namespace WATA.LIS
 
             MainConfigModel mainobj = (MainConfigModel)main;
 
-            if (mainobj.device_type == "fork_lift_v1") 
+            if (mainobj.device_type == "fork_lift_v1")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();//현재 안씀 FH-920 RF수신기
             }
-            else if(mainobj.device_type == "fork_lift_v2") 
+            else if (mainobj.device_type == "pantos")
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_V2>();//현재 지게차용  Apulse RF수신기
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();//현재 지게차용  Apulse RF수신기
             }
-            else if(mainobj.device_type == "gate_checker")//창고방 Gate Sender
+            else if (mainobj.device_type == "calt" )
+            { 
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();//현재 지게차용  Apulse RF수신기
+
+            }
+            else if (mainobj.device_type == "gate_checker")//창고방 Gate Sender
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_GateChecker>();
             }
@@ -86,8 +91,6 @@ namespace WATA.LIS
             moduleCatalog.AddModule<CameraModule>();
             moduleCatalog.AddModule<MainModule>();
             moduleCatalog.AddModule<UHF_RFIDModule>();
-           
-
         }
     }
 }

@@ -32,12 +32,12 @@ namespace WATA.LIS.Core.Services
      * VISION : Astra-S, Astra-Plus
      */
 
-    public class StatusService_V2 : IStatusService
+    public class StatusService_CALT : IStatusService
     {
         IEventAggregator _eventAggregator;
 
-        public int      m_Height_Distance_mm { get; set; }
- 
+        public int m_Height_Distance_mm { get; set; }
+
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
         private int status_limit_count = 5;
@@ -52,7 +52,7 @@ namespace WATA.LIS.Core.Services
         private VisionConfigModel visionConfig;
 
 
-        public StatusService_V2(IEventAggregator eventAggregator , IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel)
+        public StatusService_CALT(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
@@ -73,7 +73,7 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Start();
             MainConfigModel mainobj = (MainConfigModel)main;
             m_vihicle = mainobj.forkLiftID;
-            visionConfig =(VisionConfigModel) visionModel;
+            visionConfig = (VisionConfigModel)visionModel;
             rfidConfig = (RFIDConfigModel)rfidmodel;
 
 
@@ -91,7 +91,7 @@ namespace WATA.LIS.Core.Services
 
 
             Tools.Log($"Start Status Service", Tools.ELogType.SystemLog);
- 
+
         }
 
         private string m_Location_epc = "";
@@ -105,12 +105,12 @@ namespace WATA.LIS.Core.Services
 
 
 
-         private void CurrentLocationTimerEvent(object sender, EventArgs e)
+        private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
             string epc = GetMostlocationEPC(1, 0);
 
 
-         
+
             LocationInfoModel location_obj = new LocationInfoModel();
 
             location_obj.locationInfo.vehicleId = m_vihicle;
@@ -171,19 +171,19 @@ namespace WATA.LIS.Core.Services
 
                 if (GlobalValue.IS_ERROR.rfid == false)
                 {
-                    Tools.Log("rifid Error", Tools.ELogType.SystemLog);             
+                    Tools.Log("rifid Error", Tools.ELogType.SystemLog);
                 }
 
 
 
                 if (GlobalValue.IS_ERROR.distance == false)
                 {
-                    Tools.Log("distance Error", Tools.ELogType.SystemLog); 
+                    Tools.Log("distance Error", Tools.ELogType.SystemLog);
                 }
 
 
 
-                if(GlobalValue.IS_ERROR.distance == false || 
+                if (GlobalValue.IS_ERROR.distance == false ||
                    GlobalValue.IS_ERROR.backend == false ||
                    GlobalValue.IS_ERROR.rfid == false ||
                    GlobalValue.IS_ERROR.distance == false)
@@ -202,7 +202,7 @@ namespace WATA.LIS.Core.Services
 
         private void StatusClearEvent(object sender, EventArgs e)
         {
-            if(rifid_status_check_count >  status_limit_count)
+            if (rifid_status_check_count > status_limit_count)
             {
                 RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
                 ClearEpc();
@@ -245,7 +245,7 @@ namespace WATA.LIS.Core.Services
         {
             distance_status_check_count = 0;
             m_Height_Distance_mm = obj.Distance_mm;
-            Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
+            Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);
         }
 
         private static List<QueryRFIDModel> m_rack_epclist = new List<QueryRFIDModel>();
@@ -255,14 +255,14 @@ namespace WATA.LIS.Core.Services
 
         private void AddEpcList(string key_epc,
                                 float value_rssi,
-                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, 
+                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList,
                                 ref List<int> listCount,
                                 ref List<float> listRSSI)
         {
             if (retRFIDInfoList.ContainsKey(key_epc))
             {
                 int idx = Array.IndexOf(retRFIDInfoList.Keys.ToArray(), key_epc);
-                listCount[idx] ++;
+                listCount[idx]++;
                 listRSSI[idx] += value_rssi;
                 retRFIDInfoList[key_epc].EPC_Check_Count = listCount[idx];
                 retRFIDInfoList[key_epc].RSSI = listRSSI[idx];
@@ -278,11 +278,11 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList , ELogType logtype )
+        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, ELogType logtype)
         {
-            foreach (KeyValuePair<string, EPC_Value_Model> item  in retRFIDInfoList)
+            foreach (KeyValuePair<string, EPC_Value_Model> item in retRFIDInfoList)
             {
-               
+
                 //Tools.Log($"Before RSSI : {item.Value.RSSI} Count {item.Value.EPC_Check_Count}", logtype);
                 float avg = item.Value.RSSI / item.Value.EPC_Check_Count;
                 //Tools.Log($"After RSSI Average :  {avg}", logtype);
@@ -291,9 +291,9 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        
-        
-     
+
+
+
 
         private string GetMostlocationEPC(int TimeSec, int Threshold)
         {
@@ -303,7 +303,7 @@ namespace WATA.LIS.Core.Services
             {
                 DateTime CurrentTime = DateTime.Now;
                 //Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndCurrentLog);
-           
+
                 int idx = 0;
                 while (idx < m_location_epclist.Count)
                 {
@@ -334,7 +334,7 @@ namespace WATA.LIS.Core.Services
                     AddEpcList(m_location_epclist[i].EPC, m_location_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
-                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndCurrentLog);
+                RSSI_AverageEPCList(ref retRFIDInfoList, Tools.ELogType.BackEndCurrentLog);
 
                 if (retRFIDInfoList.Count > 0)
                 {
@@ -362,11 +362,11 @@ namespace WATA.LIS.Core.Services
                 Tools.Log("EPC List Empty", Tools.ELogType.BackEndCurrentLog);
             }
 
-            
+
             return retKeys;
         }
 
-        private string GetMostRackEPC(ref bool shelf, int TimeSec,float Threshold ,ref float rssi, int H_distance)
+        private string GetMostRackEPC(ref bool shelf, int TimeSec, float Threshold, ref float rssi, int H_distance)
         {
             string retKeys = "field";
 
@@ -400,17 +400,17 @@ namespace WATA.LIS.Core.Services
 
 
                 Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
-                List<int>   listCount   = new List<int>();
-                List<float> listRSSI    = new List<float>();
+                List<int> listCount = new List<int>();
+                List<float> listRSSI = new List<float>();
 
 
                 for (int i = 0; i < m_rack_epclist.Count; i++)
                 {
                     Tools.Log($"Query  epc {m_rack_epclist[i].EPC} RSSI {m_rack_epclist[i].RSSI} Time {m_rack_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
-                    AddEpcList(m_rack_epclist[i].EPC, m_rack_epclist[i].RSSI , ref retRFIDInfoList, ref listCount, ref listRSSI);
+                    AddEpcList(m_rack_epclist[i].EPC, m_rack_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
-                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndLog);
+                RSSI_AverageEPCList(ref retRFIDInfoList, Tools.ELogType.BackEndLog);
 
                 shelf = true;
 
@@ -424,7 +424,7 @@ namespace WATA.LIS.Core.Services
                         Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
                         Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
 
-                        if (rssi < Threshold )
+                        if (rssi < Threshold)
                         {
 
                             if (H_distance < 900)
@@ -435,7 +435,7 @@ namespace WATA.LIS.Core.Services
                             }
                             else
                             {
-                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);                             
+                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);
                             }
                         }
                         else
@@ -461,7 +461,7 @@ namespace WATA.LIS.Core.Services
                 shelf = false;
                 Tools.Log("EPC List Empty", Tools.ELogType.BackEndLog);
             }
-            
+
             return retKeys;
         }
 
@@ -471,10 +471,10 @@ namespace WATA.LIS.Core.Services
             Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
         }
 
-       
+
         public void OnLocationData(LocationRFIDEventModel obj)
         {
-            if(Is_front_ant_disable)
+            if (Is_front_ant_disable)
             {
                 QueryRFIDModel epcModel = new QueryRFIDModel();
                 epcModel.EPC = obj.EPC;
@@ -492,14 +492,14 @@ namespace WATA.LIS.Core.Services
 
             QueryRFIDModel epcModel = new QueryRFIDModel();
             epcModel.EPC = obj.EPC;
-;
-            
+            ;
+
             epcModel.Time = DateTime.Now;
             epcModel.RSSI = obj.RSSI;
 
             if (m_stop_rack_epc)
             {
-    
+
                 m_rack_epclist.Add(epcModel);
 
                 if (m_rack_epclist.Count >= 50)
@@ -545,7 +545,7 @@ namespace WATA.LIS.Core.Services
                 m_stop_rack_epc = false;
                 float rssi = (float)0.00;
                 bool IsShelf = false;
-                string epc_data =  GetMostRackEPC(ref IsShelf , rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
+                string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
                 ActionObj.actionInfo.epc = epc_data;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "IN";
@@ -557,7 +557,7 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrixColumn = "10";
 
                 m_LoadMatrix = obj.matrix;
-             
+
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
@@ -569,26 +569,26 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
 
-                m_qr =  obj.qr;
+                m_qr = obj.qr;
                 //m_qr = "6cf71590a6a544b091085bf72fb9b5b7";
                 m_qr = m_qr.Replace("{", "");
                 m_qr = m_qr.Replace("}", "");
-               
+
 
 
 
                 ActionObj.actionInfo.loadId = m_qr;
 
 
-              
-                if(m_Height_Distance_mm < 1500)
+
+                if (m_Height_Distance_mm < 1500)
                 {
 
 
                     Tools.Log($"@@shelf false", Tools.ELogType.BackEndLog);
 
 
-                    if(obj.has_roof)
+                    if (obj.has_roof)
                     {
                         Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
                         ActionObj.actionInfo.shelf = true;
@@ -602,11 +602,11 @@ namespace WATA.LIS.Core.Services
                 else
                 {
 
-                   Tools.Log($"@@shelf true", Tools.ELogType.BackEndLog);
+                    Tools.Log($"@@shelf true", Tools.ELogType.BackEndLog);
                     ActionObj.actionInfo.shelf = true;
                 }
 
-              
+
 
                 Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
 
@@ -615,8 +615,8 @@ namespace WATA.LIS.Core.Services
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
-         
-         
+
+
 
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
 
@@ -625,7 +625,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log("start receive rack epc", Tools.ELogType.BackEndLog);
                 Tools.Log($"Action : [pickup] EPC : [{epc_data}] Rssi : [{rssi}] ", Tools.ELogType.ActionLog);
             }
-            else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
+            else if (obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
             {
                 float rssi = (float)0.00;
 
@@ -663,7 +663,7 @@ namespace WATA.LIS.Core.Services
 
                 if (m_Height_Distance_mm < 1500)
                 {
-                    if(obj.has_roof)
+                    if (obj.has_roof)
                     {
                         Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
                         ActionObj.actionInfo.shelf = true;
@@ -684,11 +684,11 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"!####[drop Rack Event] {epc_data}", Tools.ELogType.BackEndLog);
                 Tools.Log($"!#### LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                 Tools.Log($"!#### QR  : {m_qr}", Tools.ELogType.BackEndLog);
-            
+
 
                 Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.loadId = m_qr;
-              
+
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
@@ -696,7 +696,7 @@ namespace WATA.LIS.Core.Services
                 post_obj.type = eMessageType.BackEndAction;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
 
-              
+
 
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
                 ClearEpc();
@@ -742,7 +742,7 @@ namespace WATA.LIS.Core.Services
             return (int)nRet;
         }
 
-        private  int  CalcLoadRate(float area)
+        private int CalcLoadRate(float area)
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
             double nRet = (area / 1.62) * 100;
@@ -752,9 +752,9 @@ namespace WATA.LIS.Core.Services
 
             if (nRet <= 0)
             {
-                 nRet = 0;
+                nRet = 0;
             }
-            if(nRet>= 97)
+            if (nRet >= 97)
             {
                 nRet = 97;
             }

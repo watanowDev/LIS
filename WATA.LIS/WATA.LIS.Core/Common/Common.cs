@@ -38,4 +38,50 @@ namespace WATA.LIS.Core.Common
         GREEN,
         BLUE,
     }
+
+    public enum eLEDColors
+    {
+        OFF = 0,
+        Red = 1,
+        Green = 2,
+        Amber = 3,
+        Blue = 4,
+        Purple = 5,
+        Cyan = 6,
+        Clear = 7,
+        Other = 0xF
+    }
+
+    public enum eLEDPatterns
+    {
+        OFF = 0,
+        Continuous = 1,
+        Pattern1 = 2,
+        Pattern2 = 3,
+        Pattern3 = 4,
+        Pattern4 = 5,
+        Pattern5 = 6,
+        Pattern6 = 7,
+        Other = 0xF
+    }
+
+    public enum eBuzzerPatterns
+    {
+        OFF = 0,
+        Continuous = 1,
+        Pattern1 = 2,
+        Pattern2 = 3,
+        Pattern3 = 4,
+        Pattern4 = 5,
+        Pattern5 = 6,
+        Pattern6 = 7,
+        Other = 0xF
+    }
+    public enum ePlayBuzzerLed
+    {
+        ACTION_FAIL,
+        ACTION_START,
+        ACTION_FINISH,
+        DROP
+    }
 }

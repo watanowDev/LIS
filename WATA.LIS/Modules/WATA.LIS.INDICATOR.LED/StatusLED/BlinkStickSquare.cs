@@ -23,6 +23,8 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
         {
             try
             {
+
+
                 led = BlinkStick.FindFirst();
 
                 if(led != null)

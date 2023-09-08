@@ -78,6 +78,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
         public void Init()
         {
+            if(rfidConfig.rfid_enable == 0)
+            {
+
+                Tools.Log("rftag disable", Tools.ELogType.RFIDLog);
+                return;
+            }
+
+
             mRemoteDeviceScanner = new RemoteDeviceScanner(mMsgEvent);
             mRemoteDeviceScanner.Timeout = mTimeout;
             mRemoteDeviceScanner.ScanEnabled = true;

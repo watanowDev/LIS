@@ -22,5 +22,8 @@
     <Reference Include="LibUsbDotNet">
       <HintPath>Libary\LibUsbDotNet.dll</HintPath>
     </Reference>
+    <Reference Include="NeUsbController">
+      <HintPath>Libary\NeUsbController.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

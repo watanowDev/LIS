@@ -1,0 +1,932 @@
+﻿using MaterialDesignThemes.Wpf;
+using Newtonsoft.Json.Linq;
+using Prism.Events;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Intrinsics.X86;
+using System.Threading;
+using System.Windows.Documents;
+using System.Windows.Media.Media3D;
+using System.Windows.Threading;
+using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.StatusLED;
+using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.DistanceSensor;
+using WATA.LIS.Core.Model.ErrorCheck;
+using WATA.LIS.Core.Model.RFID;
+using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Model.VISION;
+using static WATA.LIS.Core.Common.Tools;
+
+namespace WATA.LIS.Core.Services
+{
+    /*
+     * StatusService_V2 구성요소
+     * 거리센서 : TeraBee EVO-60 (높이 측정)
+     * RFID : A pluse RFID 수신기 
+     * VISION : Astra-S, Astra-Plus
+     */
+
+    public class StatusService_Pantos : IStatusService
+    {
+        IEventAggregator _eventAggregator;
+
+        public int      m_Height_Distance_mm { get; set; }
+ 
+        private int rifid_status_check_count = 0;
+        private int distance_status_check_count = 35;
+        private int status_limit_count = 5;
+
+        private string m_location = "PANTOS_001";
+        private string m_vihicle = "pantos_fork_lift_001";
+        private string m_errorcode = "0000";
+
+        private bool m_stop_rack_epc = true;
+        private RFIDConfigModel rfidConfig;
+
+        private VisionConfigModel visionConfig;
+
+        private string m_weight;
+        WeightConfigModel _weightConfig;
+ 
+
+
+        private readonly IWeightModel _weightmodel;
+
+        public StatusService_Pantos(IEventAggregator eventAggregator , IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel)
+        {
+            _eventAggregator = eventAggregator;
+            _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDLackData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
+
+
+            _weightmodel = weightmodel;
+
+
+            _weightConfig = (WeightConfigModel)_weightmodel;
+
+
+            DispatcherTimer StatusClearTimer = new DispatcherTimer();
+            StatusClearTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            StatusClearTimer.Tick += new EventHandler(StatusClearEvent);
+            StatusClearTimer.Start();
+
+            DispatcherTimer CurrentTimer = new DispatcherTimer();
+            CurrentTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
+            CurrentTimer.Start();
+            MainConfigModel mainobj = (MainConfigModel)main;
+            m_vihicle = mainobj.forkLiftID;
+            visionConfig =(VisionConfigModel) visionModel;
+            rfidConfig = (RFIDConfigModel)rfidmodel;
+
+
+            DispatcherTimer ErrorCheckTimer = new DispatcherTimer();
+            ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 2000);
+            ErrorCheckTimer.Tick += new EventHandler(StatusErrorCheckEvent);
+            ErrorCheckTimer.Start();
+
+
+
+            DispatcherTimer AliveTimer = new DispatcherTimer();
+            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            AliveTimer.Start();
+
+
+            Tools.Log($"Start Status Service", Tools.ELogType.SystemLog);
+ 
+        }
+
+        private string m_Location_epc = "";
+
+        public void OnWeightSensor(string str)
+        {
+
+            m_weight = str;
+            Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
+        }
+
+
+
+         private void CurrentLocationTimerEvent(object sender, EventArgs e)
+        {
+            string epc = GetMostlocationEPC(1, 0);
+
+
+         
+            LocationInfoModel location_obj = new LocationInfoModel();
+
+            location_obj.locationInfo.vehicleId = m_vihicle;
+            location_obj.locationInfo.workLocationId = m_location;
+
+            if (epc.Contains("DA"))
+            {
+                m_Location_epc = location_obj.locationInfo.epc = epc;
+
+
+                string json_body = Util.ObjectToJson(location_obj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndCurrent;
+                _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+                Thread.Sleep(10);
+
+
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
+
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            }
+        }
+
+        private void AliveTimerEvent(object sender, EventArgs e)
+        {
+            SendAliveEvent();
+        }
+
+        public void SendAliveEvent()
+        {
+            AliveModel alive_obj = new AliveModel();
+            alive_obj.alive.workLocationId = m_location;
+            alive_obj.alive.vehicleId = m_vihicle;
+            alive_obj.alive.errorCode = m_errorcode;
+            string json_body = Util.ObjectToJson(alive_obj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndCurrent;
+            _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+            Thread.Sleep(10);
+
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+        }
+
+        bool Is_front_ant_disable = false;
+
+
+
+        private void StatusErrorCheckEvent(object sender, EventArgs e)
+        {
+            do
+            {
+                if (GlobalValue.IS_ERROR.camera == false)
+                {
+                    Tools.Log("Camera Error", Tools.ELogType.SystemLog);
+                }
+
+
+                if (GlobalValue.IS_ERROR.backend == false)
+                {
+                    Tools.Log("BackEnd Error", Tools.ELogType.SystemLog);
+                }
+
+
+                if (GlobalValue.IS_ERROR.rfid == false)
+                {
+                    Tools.Log("rifid Error", Tools.ELogType.SystemLog);             
+                }
+
+
+
+                if (GlobalValue.IS_ERROR.distance == false)
+                {
+                    Tools.Log("distance Error", Tools.ELogType.SystemLog); 
+                }
+
+
+
+                if(GlobalValue.IS_ERROR.distance == false || 
+                   GlobalValue.IS_ERROR.backend == false ||
+                   GlobalValue.IS_ERROR.rfid == false ||
+                   GlobalValue.IS_ERROR.distance == false)
+                {
+
+                    _eventAggregator.GetEvent<StatusLED_Event>().Publish("red");
+
+                    
+                    /*
+                    Pattlite_LED_Buzzer_Model Pattlite = new Pattlite_LED_Buzzer_Model();
+
+                    Pattlite.LED_Pattern = eLEDPatterns.Continuous;
+                    Pattlite.LED_Color = eLEDColors.Red;
+                    Pattlite.BuzzerPattern = eBuzzerPatterns.OFF;
+                    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(Pattlite);
+                    */
+
+                    break;
+                }
+
+
+                _eventAggregator.GetEvent<StatusLED_Event>().Publish("green");
+
+                /*
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Green;
+                model.BuzzerPattern = eBuzzerPatterns.OFF;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                */
+                
+            }
+            while (false);
+
+        }
+
+        private void StatusClearEvent(object sender, EventArgs e)
+        {
+            if(rifid_status_check_count >  status_limit_count)
+            {
+                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                ClearEpc();
+            //    Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+                rfidmodel.EPC = "field";
+                rfidmodel.RSSI = -99;
+                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+
+                Is_front_ant_disable = true;
+
+            }
+            else
+            {
+                rifid_status_check_count++;
+                Tools.Log($"Wait Count {rifid_status_check_count}", Tools.ELogType.SystemLog);
+
+                Is_front_ant_disable = false;
+            }
+
+            if (distance_status_check_count > status_limit_count)// 30초후 응답이 없으면 RFID 클리어
+            {
+                GlobalValue.IS_ERROR.distance = false;
+
+                DistanceSensorModel DisTanceObject = new DistanceSensorModel();
+                m_Height_Distance_mm = -100;
+                DisTanceObject.Distance_mm = m_Height_Distance_mm;
+                _eventAggregator.GetEvent<DistanceSensorEvent>().Publish(DisTanceObject);
+                Tools.Log("#######Distance Status Clear #######", Tools.ELogType.SystemLog);
+            }
+            else
+            {
+                GlobalValue.IS_ERROR.distance = true;
+                distance_status_check_count++;
+            }
+
+        }
+
+
+        public void OnDistanceSensorData(DistanceSensorModel obj)
+        {
+            distance_status_check_count = 0;
+            m_Height_Distance_mm = obj.Distance_mm;
+            Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
+        }
+
+        private static List<QueryRFIDModel> m_rack_epclist = new List<QueryRFIDModel>();
+
+        private static List<QueryRFIDModel> m_location_epclist = new List<QueryRFIDModel>();
+
+
+        private void AddEpcList(string key_epc,
+                                float value_rssi,
+                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, 
+                                ref List<int> listCount,
+                                ref List<float> listRSSI)
+        {
+            if (retRFIDInfoList.ContainsKey(key_epc))
+            {
+                int idx = Array.IndexOf(retRFIDInfoList.Keys.ToArray(), key_epc);
+                listCount[idx] ++;
+                listRSSI[idx] += value_rssi;
+                retRFIDInfoList[key_epc].EPC_Check_Count = listCount[idx];
+                retRFIDInfoList[key_epc].RSSI = listRSSI[idx];
+            }
+            else//Dictionary first data
+            {
+                EPC_Value_Model temp = new EPC_Value_Model();
+                temp.EPC_Check_Count = 1;
+                temp.RSSI = value_rssi;
+                retRFIDInfoList.Add(key_epc, temp);
+                listCount.Add(1);
+                listRSSI.Add(value_rssi);
+            }
+        }
+
+        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList , ELogType logtype )
+        {
+            foreach (KeyValuePair<string, EPC_Value_Model> item  in retRFIDInfoList)
+            {
+               
+                //Tools.Log($"Before RSSI : {item.Value.RSSI} Count {item.Value.EPC_Check_Count}", logtype);
+                float avg = item.Value.RSSI / item.Value.EPC_Check_Count;
+                //Tools.Log($"After RSSI Average :  {avg}", logtype);
+                item.Value.RSSI = avg;
+                //Tools.Log($"EPC [{item.Key}] RSSI [{item.Value.RSSI}] Count [{item.Value.EPC_Check_Count}]", logtype);
+            }
+        }
+
+        
+        
+     
+
+        private string GetMostlocationEPC(int TimeSec, int Threshold)
+        {
+            string retKeys = "NA";
+
+            if (m_location_epclist.Count > 0)
+            {
+                DateTime CurrentTime = DateTime.Now;
+                //Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndCurrentLog);
+           
+                int idx = 0;
+                while (idx < m_location_epclist.Count)
+                {
+                    TimeSpan Diff = CurrentTime - m_location_epclist[idx].Time;
+                    int nDiff = Diff.Seconds;
+
+
+                    if (nDiff > TimeSec)
+                    {
+                        //Tools.Log($"delete DiffTime {nDiff}  epc {m_location_epclist[idx].EPC} Time {m_location_epclist[idx].Time}  ", Tools.ELogType.BackEndCurrentLog);
+                        m_location_epclist.Remove(m_location_epclist[idx]);
+
+                    }
+                    else
+                    {
+                        ++idx;
+                    }
+                }
+
+                Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
+                List<int> listCount = new List<int>();
+                List<float> listRSSI = new List<float>();
+
+
+                for (int i = 0; i < m_location_epclist.Count; i++)
+                {
+                    //Tools.Log($"Query  epc {m_location_epclist[i].EPC} RSSI {m_location_epclist[i].RSSI} Time {m_location_epclist[i].Time}  ", Tools.ELogType.BackEndCurrentLog);
+                    AddEpcList(m_location_epclist[i].EPC, m_location_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
+                }
+
+                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndCurrentLog);
+
+                if (retRFIDInfoList.Count > 0)
+                {
+                    //PrintDict(retRFIDInfoList);
+                    retKeys = retRFIDInfoList.Aggregate((x, y) => x.Value.RSSI > y.Value.RSSI ? x : y).Key;
+
+                    if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
+                    {
+                        Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndCurrentLog);
+                        Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndCurrentLog);
+                        //if (Temp.EPC_Check_Count < Threshold)
+                        //{
+                        //    retKeys = "NA";
+                        //    Tools.Log($"Low Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                        //}
+                    }
+                }
+                else
+                {
+                    Tools.Log("Dic List Empty", Tools.ELogType.BackEndCurrentLog);
+                }
+            }
+            else
+            {
+                Tools.Log("EPC List Empty", Tools.ELogType.BackEndCurrentLog);
+            }
+
+            
+            return retKeys;
+        }
+
+        private string GetMostRackEPC(ref bool shelf, int TimeSec,float Threshold ,ref float rssi, int H_distance)
+        {
+            string retKeys = "field";
+
+            Tools.Log($"Time {TimeSec} Threshold {Threshold}", Tools.ELogType.BackEndLog);
+
+
+
+            if (m_rack_epclist.Count > 0)
+            {
+                DateTime CurrentTime = DateTime.Now;
+                Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndLog);
+
+                int idx = 0;
+                while (idx < m_rack_epclist.Count)
+                {
+                    TimeSpan Diff = CurrentTime - m_rack_epclist[idx].Time;
+                    int nDiff = Diff.Seconds;
+
+
+                    if (nDiff > TimeSec)
+                    {
+                        Tools.Log($"delete DiffTime {nDiff}  epc {m_rack_epclist[idx].EPC} Time {m_rack_epclist[idx].Time}  ", Tools.ELogType.BackEndLog);
+                        m_rack_epclist.Remove(m_rack_epclist[idx]);
+
+                    }
+                    else
+                    {
+                        ++idx;
+                    }
+                }
+
+
+                Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
+                List<int>   listCount   = new List<int>();
+                List<float> listRSSI    = new List<float>();
+
+
+                for (int i = 0; i < m_rack_epclist.Count; i++)
+                {
+                    Tools.Log($"Query  epc {m_rack_epclist[i].EPC} RSSI {m_rack_epclist[i].RSSI} Time {m_rack_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
+                    AddEpcList(m_rack_epclist[i].EPC, m_rack_epclist[i].RSSI , ref retRFIDInfoList, ref listCount, ref listRSSI);
+                }
+
+                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndLog);
+
+                shelf = true;
+
+
+                if (retRFIDInfoList.Count > 0)
+                {
+                    retKeys = retRFIDInfoList.Aggregate((x, y) => x.Value.RSSI > y.Value.RSSI ? x : y).Key;
+
+                    if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
+                    {
+                        Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
+
+                        if (rssi < Threshold )
+                        {
+
+                            if (H_distance < 900)
+                            {
+                                //retKeys = "field";
+                                shelf = false;
+                                //Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
+                            }
+                            else
+                            {
+                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);                             
+                            }
+                        }
+                        else
+                        {
+                            Tools.Log("##rack## ##Event##", Tools.ELogType.BackEndLog);
+                        }
+
+                        if (retKeys == "field")
+                        {
+                            Tools.Log("##field## ##Event##", Tools.ELogType.BackEndLog);
+                            shelf = false;
+                        }
+                    }
+                }
+                else
+                {
+                    shelf = false;
+                    Tools.Log("Dic List Empty", Tools.ELogType.BackEndLog);
+                }
+            }
+            else
+            {
+                shelf = false;
+                Tools.Log("EPC List Empty", Tools.ELogType.BackEndLog);
+            }
+            
+            return retKeys;
+        }
+
+        private void ClearEpc()
+        {
+            m_rack_epclist.Clear();
+            //Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+        }
+
+       
+        public void OnLocationData(LocationRFIDEventModel obj)
+        {
+            if(Is_front_ant_disable)
+            {
+                QueryRFIDModel epcModel = new QueryRFIDModel();
+                epcModel.EPC = obj.EPC;
+                epcModel.Time = DateTime.Now;
+                epcModel.RSSI = obj.RSSI;
+                m_location_epclist.Add(epcModel);
+
+                Tools.Log($"Location EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+            }
+        }
+
+        public void OnRFIDLackData(RackRFIDEventModel obj)
+        {
+            rifid_status_check_count = 0;//erase status clear
+
+            QueryRFIDModel epcModel = new QueryRFIDModel();
+            epcModel.EPC = obj.EPC;
+;
+            
+            epcModel.Time = DateTime.Now;
+            epcModel.RSSI = obj.RSSI;
+
+            if (m_stop_rack_epc)
+            {
+    
+                m_rack_epclist.Add(epcModel);
+
+                if (m_rack_epclist.Count >= 50)
+                {
+                    m_rack_epclist.RemoveAt(0);
+                }
+                Tools.Log($"Lack EPC Recieve :  {obj.EPC}", Tools.ELogType.SystemLog);
+            }
+            else
+            {
+                Tools.Log($"Stop Rack EPC", Tools.ELogType.SystemLog);
+            }
+
+            m_location_epclist.Add(epcModel);
+            Tools.Log($"Location EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+        }
+
+        private int m_CalRate = 0;
+
+        private byte[] m_LoadMatrix = new byte[10];
+        private float m_vision_width = 0;
+        private float m_vision_height = 0;
+
+        private string m_qr = "";
+        public void OnVISIONEvent(VISON_Model obj)
+        {
+            ActionInfoModel ActionObj = new ActionInfoModel();
+            ActionObj.actionInfo.workLocationId = m_location;
+            ActionObj.actionInfo.vehicleId = m_vihicle;
+            ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
+
+
+         
+
+            if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
+
+                m_LoadMatrix = null;
+                Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);
+                Tools.Log($"IN##########################pick up Action", Tools.ELogType.WeightLog);
+                Tools.Log($"Pickup Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
+                Thread.Sleep(visionConfig.pickup_wait_delay);
+                Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
+                m_stop_rack_epc = false;
+                float rssi = (float)0.00;
+                bool IsShelf = false;
+                string epc_data =  GetMostRackEPC(ref IsShelf , rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
+                ActionObj.actionInfo.epc = epc_data;
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
+                ActionObj.actionInfo.action = "IN";
+                m_CalRate = CalcHeightLoadRate((int)obj.height);
+                Tools.Log($"Rate : {obj.area}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Copy Before LoadRate  : {m_CalRate}", Tools.ELogType.BackEndLog);
+                ActionObj.actionInfo.loadRate = "0";
+                ActionObj.actionInfo.loadMatrixRaw = "10";
+                ActionObj.actionInfo.loadMatrixColumn = "10";
+                m_LoadMatrix = obj.matrix;
+
+                if (obj.matrix != null)
+                {
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[0]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[1]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[2]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[3]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[4]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[5]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[6]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
+                }
+                /*
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                ActionObj.actionInfo.loadMatrix.Add(0);
+                */
+                m_vision_width =  ActionObj.actionInfo.visionWidth = obj.width;
+                m_vision_height = ActionObj.actionInfo.visionHeight = obj.height;
+
+
+                Thread.Sleep(_weightConfig.loadweight_timeout);
+
+                Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
+
+
+                ActionObj.actionInfo.loadWeight = float.Parse(m_weight);
+
+                bool IsSendBackend = true;
+
+                if(ActionObj.actionInfo.loadWeight <=3)
+                {
+
+                    IsSendBackend = false;
+                }
+
+
+                if(obj.height <=0)
+
+                {
+                    IsSendBackend = false;
+
+                }
+
+
+            
+
+                m_qr =  obj.qr;
+                m_qr = m_qr.Replace("{", "");
+                m_qr = m_qr.Replace("}", "");
+                m_qr = m_qr.Replace("wata", "");
+                if (m_qr.Length == 32)
+                {
+                    ActionObj.actionInfo.loadId = m_qr;
+                    Tools.Log($"QR Check OK", Tools.ELogType.BackEndLog);
+                }
+                else
+                {
+                    m_qr = "";
+                    Tools.Log($"QR Check Failed.", Tools.ELogType.BackEndLog);
+                }
+
+
+
+                if (m_Height_Distance_mm < 1500)
+                {
+
+
+                    Tools.Log($"@@shelf false", Tools.ELogType.BackEndLog);
+
+
+                    if(IsShelf == true)
+                    {
+                        Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = true;
+                    }
+                    else
+                    {
+                        Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = false;
+                    }
+                }
+                else
+                {
+
+                   Tools.Log($"@@shelf true", Tools.ELogType.BackEndLog);
+                    ActionObj.actionInfo.shelf = true;
+                }
+
+
+                if (IsSendBackend)
+                {
+                  
+
+                    Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
+
+                    string json_body = Util.ObjectToJson(ActionObj);
+                    RestClientPostModel post_obj = new RestClientPostModel();
+                    post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                    post_obj.body = json_body;
+                    post_obj.type = eMessageType.BackEndAction;
+                    _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+                   
+                    Thread.Sleep(10);
+                    post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                    _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+                   
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FINISH);
+
+
+                }
+                else
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
+
+                }
+                ClearEpc();
+                m_stop_rack_epc = true;
+                Tools.Log("start receive rack epc", Tools.ELogType.BackEndLog);
+                Tools.Log($"Action : [pickup] EPC : [{epc_data}] Rssi : [{rssi}] ", Tools.ELogType.ActionLog);
+            }
+            else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
+            {
+                float rssi = (float)0.00;
+
+
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+
+                Tools.Log($"OUT##########################Drop Action", Tools.ELogType.WeightLog);
+                Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
+                m_stop_rack_epc = false;
+                bool IsShelf = false;
+                string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_drop_timeout, rfidConfig.nRssi_drop_threshold, ref rssi, m_Height_Distance_mm);
+                ActionObj.actionInfo.epc = epc_data;
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
+                ActionObj.actionInfo.action = "OUT";
+                ActionObj.actionInfo.loadRate = m_CalRate.ToString();
+                ActionObj.actionInfo.loadMatrixRaw = "10";
+                ActionObj.actionInfo.loadMatrixColumn = "10";
+
+                ActionObj.actionInfo.visionWidth = obj.width;
+                ActionObj.actionInfo.visionHeight = obj.height;
+
+                if (m_LoadMatrix != null)
+                {
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[0]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[1]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[2]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[3]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[4]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[5]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[6]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[7]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[8]);
+                    ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
+                }
+
+                if (m_Height_Distance_mm < 1500)
+                {
+
+                    if (IsShelf == true) 
+                    {
+                        Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = true;
+                    }
+                    else
+                    {
+                        Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = false;
+                    }
+
+                }
+                else
+                {
+                    Tools.Log($"@@shelf true", Tools.ELogType.BackEndLog);
+                    ActionObj.actionInfo.shelf = true;
+                }
+
+                Tools.Log($"!####[drop Rack Event] {epc_data}", Tools.ELogType.BackEndLog);
+                Tools.Log($"!#### LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
+                Tools.Log($"!#### QR  : {m_qr}", Tools.ELogType.BackEndLog);
+            
+
+                Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
+                ActionObj.actionInfo.loadId = m_qr;
+
+
+                
+
+                string json_body = Util.ObjectToJson(ActionObj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
+                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
+                _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+
+               
+                Thread.Sleep(10);
+
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+               
+
+                ClearEpc();
+                m_CalRate = 0;
+                m_vision_width = 0;
+                m_vision_height = 0;
+                m_qr = "";
+                Tools.Log("Clear LoadRate", Tools.ELogType.BackEndLog);
+                m_stop_rack_epc = true;
+                Tools.Log("start receive rack epc", Tools.ELogType.BackEndLog);
+                Tools.Log($"Action : [drop] EPC : [{epc_data}] Rssi : [{rssi}] ", Tools.ELogType.ActionLog);
+            }
+            else
+            {
+                Tools.Log("Action Idle", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public static void PrintDict<K, V>(Dictionary<K, V> dict)
+        {
+            for (int i = 0; i < dict.Count; i++)
+            {
+                KeyValuePair<K, V> entry = dict.ElementAt(i);
+                Tools.Log("Key: " + entry.Key + ", Value: " + entry.Value, Tools.ELogType.BackEndLog);
+            }
+        }
+
+
+        private int CalcHeightLoadRate(int height)
+        {
+            Tools.Log($"##height  : {height}", Tools.ELogType.BackEndLog);
+            float A = (height / (float)090.0);
+            float nRet = A * (float)100.0;
+
+            Tools.Log($"##Convert  : {height}", Tools.ELogType.BackEndLog);
+            if (nRet <= 0)
+            {
+                nRet = 0;
+            }
+            if (nRet >= 97)
+            {
+                nRet = 97;
+            }
+            Tools.Log($"##Height Rate  : {nRet}", Tools.ELogType.BackEndLog);
+            return (int)nRet;
+        }
+
+        private  int  CalcLoadRate(float area)
+        {
+            Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
+            double nRet = (area / 1.62) * 100;
+
+            Tools.Log($"##Convert  : {area}", Tools.ELogType.BackEndLog);
+
+
+            if (nRet <= 0)
+            {
+                 nRet = 0;
+            }
+            if(nRet>= 97)
+            {
+                nRet = 97;
+            }
+            Tools.Log($"##Rate  : {nRet}", Tools.ELogType.BackEndLog);
+
+
+            return (int)nRet;
+        }
+
+        private void Pattlite_Buzzer_LED(ePlayBuzzerLed  value)
+        {
+            if(value == ePlayBuzzerLed.ACTION_FAIL)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Red;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+            else if (value == ePlayBuzzerLed.ACTION_START)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Blue;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+            else if(value == ePlayBuzzerLed.ACTION_FINISH)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern1;
+                model.LED_Color = eLEDColors.Purple;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern4;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+            else if (value == ePlayBuzzerLed.DROP)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern1;
+                model.LED_Color = eLEDColors.OFF;
+                model.BuzzerPattern = eBuzzerPatterns.OFF;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+        }
+    }
+}

@@ -40,9 +40,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void SerialInit()
         {
+            Tools.Log($"SerialInit Success", Tools.ELogType.WeightLog);
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
         }
