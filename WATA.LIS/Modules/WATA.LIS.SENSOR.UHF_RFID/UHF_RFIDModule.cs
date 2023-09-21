@@ -40,9 +40,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID
                 //WPSControl rfid = new WPSControl(_eventAggregator);
                 //rfid.Init();
             }
-            else if (main_config.device_type == "fork_lift_v2" || main_config.device_type == "gate_checker")
-            {
-
+            else
+            { 
                 ApulseTechControl rfid = new ApulseTechControl(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
             }

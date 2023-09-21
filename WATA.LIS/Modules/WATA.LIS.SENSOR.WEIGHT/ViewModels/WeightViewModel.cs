@@ -19,9 +19,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.ViewModels
         {
            ListWeightLog = Tools.logInfo.ListWeightLog;
            Tools.Log($"Init Weight View  Model", Tools.ELogType.WeightLog);
-
         }
-
-
     }
 }

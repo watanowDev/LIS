@@ -1,4 +1,5 @@
-﻿using Prism.Events;
+﻿using Newtonsoft.Json.Linq;
+using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -54,6 +55,7 @@ namespace WATA.LIS.IF.BE.REST
                 request.Method = "POST";
                 request.ContentType = "application/json";
                 request.Timeout = 30 * 1000;
+              
                 byte[] bytes = Encoding.ASCII.GetBytes(Model.body);
                 request.ContentLength = bytes.Length; // 바이트수 지정
                 using (Stream reqStream = request.GetRequestStream())
@@ -62,19 +64,45 @@ namespace WATA.LIS.IF.BE.REST
                 }
                 using (WebResponse resp = request.GetResponse())
                 {
+                   
                     Stream respStream = resp.GetResponseStream();
                     using (StreamReader sr = new StreamReader(respStream))
                     {
                         string responseText = sr.ReadToEnd();
                         _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
                         Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+
+                        if (Model.type == eMessageType.BackEndContainer)
+                        {
+                            ParseContainterJson(responseText);
+                        }
                     }
+
                 }
             }
-            catch
+            catch (WebException exception)
             {
-                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
-                Tools.Log($"REST Poist Client Response Error", logtype);
+                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
+                 Tools.Log($"REST Poist Client Response Error dev", logtype);
+
+                using (WebResponse resp = exception.Response)
+                {
+                    //var httpWebResponse = (HttpWebResponse)resp;
+                    //string characterSet = httpWebResponse.CharacterSet;
+
+                    Stream respStream = resp.GetResponseStream();
+                    using (StreamReader sr = new StreamReader(respStream))
+                    {
+                        string responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
+                        Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+
+                        if (Model.type == eMessageType.BackEndContainer)
+                        {
+                            ParseContainterJson(responseText);
+                        }
+                    }
+                }
             }
         }
 
@@ -98,7 +126,7 @@ namespace WATA.LIS.IF.BE.REST
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Model.url);
                 request.Method = "POST";
                 request.ContentType = "application/json";
-                request.Timeout = 30 * 1000;
+                request.Timeout = 3 * 1000;
                 byte[] bytes = Encoding.ASCII.GetBytes(Model.body);
                 request.ContentLength = bytes.Length; // 바이트수 지정
                 using (Stream reqStream = request.GetRequestStream())
@@ -107,20 +135,51 @@ namespace WATA.LIS.IF.BE.REST
                 }
                 using (WebResponse resp = request.GetResponse())
                 {
+                    //var httpWebResponse = (HttpWebResponse)resp;
+                   // string characterSet = httpWebResponse.CharacterSet;
                     Stream respStream = resp.GetResponseStream();
                     using (StreamReader sr = new StreamReader(respStream))
                     {
                         string responseText = sr.ReadToEnd();
                         _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
                         Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+                        if (Model.type == eMessageType.BackEndContainer)
+                        {
+                            ParseContainterJson(responseText);
+                        }
                     }
+                    
                 }    
             }
-            catch
+            catch (WebException exception)
             {
                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
-                Tools.Log($"REST Poist Client Response Error", logtype);
+                Tools.Log($"REST Poist Client Response Error smp", logtype);
+
+                using (WebResponse resp = exception.Response)
+                {
+                    Stream respStream = resp.GetResponseStream();
+                    using (StreamReader sr = new StreamReader(respStream))
+                    {
+                        string responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
+                        Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+
+                        if (Model.type == eMessageType.BackEndContainer)
+                        {
+                            ParseContainterJson(responseText);
+                        }
+                    }
+                }
             }
+        }
+
+
+        private void  ParseContainterJson(string str)
+        {
+            JObject json = (JObject)JToken.Parse(str);
+            int code = (int)json["status"];
+            _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Publish(code);
         }
 
 

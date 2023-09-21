@@ -14,6 +14,7 @@ using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
 using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
@@ -40,7 +41,7 @@ namespace WATA.LIS.Core.Services
 
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
-        private int status_limit_count = 5;
+        private int status_limit_count = 10;
 
         private string m_location = "INCHEON_CALT_001";
         private string m_vihicle = "fork_lift001";
@@ -204,14 +205,18 @@ namespace WATA.LIS.Core.Services
         {
             if (rifid_status_check_count > status_limit_count)
             {
-                RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
-                ClearEpc();
-                Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
-                rfidmodel.EPC = "field";
-                rfidmodel.RSSI = -99;
-                _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+                if (m_stop_rack_epc == true)
+                {
 
-                Is_front_ant_disable = true;
+                    RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
+                    ClearEpc();
+                    Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
+                    rfidmodel.EPC = "field";
+                    rfidmodel.RSSI = -99;
+                    _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
+
+                    Is_front_ant_disable = true;
+                }
 
             }
             else
@@ -421,8 +426,13 @@ namespace WATA.LIS.Core.Services
 
                     if (retRFIDInfoList.TryGetValue(retKeys, out EPC_Value_Model Temp))
                     {
-                        Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
-                        Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"Most EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"Most EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
+
+                        rssi = Temp.RSSI;
+
+                        Tools.Log($"## rssi {rssi} Threshold {Threshold}", Tools.ELogType.BackEndLog);
+
 
                         if (rssi < Threshold)
                         {
@@ -472,12 +482,14 @@ namespace WATA.LIS.Core.Services
         }
 
 
+        string m_location_epc = "";
+
         public void OnLocationData(LocationRFIDEventModel obj)
         {
             if (Is_front_ant_disable)
             {
                 QueryRFIDModel epcModel = new QueryRFIDModel();
-                epcModel.EPC = obj.EPC;
+                m_location_epc =  epcModel.EPC = obj.EPC;
                 epcModel.Time = DateTime.Now;
                 epcModel.RSSI = obj.RSSI;
                 m_location_epclist.Add(epcModel);
@@ -491,8 +503,7 @@ namespace WATA.LIS.Core.Services
             rifid_status_check_count = 0;//erase status clear
 
             QueryRFIDModel epcModel = new QueryRFIDModel();
-            epcModel.EPC = obj.EPC;
-            ;
+            m_location_epc = epcModel.EPC = obj.EPC;
 
             epcModel.Time = DateTime.Now;
             epcModel.RSSI = obj.RSSI;
@@ -536,13 +547,13 @@ namespace WATA.LIS.Core.Services
             {
                 m_LoadMatrix = null;
 
-                Tools.Log($"IN##########################pick up Action", Tools.ELogType.BackEndLog);
+                Tools.Log($"IN##########################pick up Action m_stop_rack_epc { m_stop_rack_epc}", Tools.ELogType.BackEndLog);
                 Tools.Log($"IN##########################pick up Action", Tools.ELogType.WeightLog);
+                m_stop_rack_epc = false;
 
                 Tools.Log($"Pickup Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
                 Thread.Sleep(visionConfig.pickup_wait_delay);
                 Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
-                m_stop_rack_epc = false;
                 float rssi = (float)0.00;
                 bool IsShelf = false;
                 string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
@@ -573,6 +584,7 @@ namespace WATA.LIS.Core.Services
                 //m_qr = "6cf71590a6a544b091085bf72fb9b5b7";
                 m_qr = m_qr.Replace("{", "");
                 m_qr = m_qr.Replace("}", "");
+                m_qr = m_qr.Replace("wata", "");
 
 
 
@@ -588,15 +600,15 @@ namespace WATA.LIS.Core.Services
                     Tools.Log($"@@shelf false", Tools.ELogType.BackEndLog);
 
 
-                    if (obj.has_roof)
+                    if (IsShelf)
                     {
-                        Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
+                        Tools.Log($"##rack is visible", Tools.ELogType.BackEndLog);
                         ActionObj.actionInfo.shelf = true;
                     }
                     else
                     {
-                        Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
-                        ActionObj.actionInfo.shelf = false;
+                        Tools.Log($"##rack is not visible", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = true;
                     }
                 }
                 else
@@ -663,7 +675,7 @@ namespace WATA.LIS.Core.Services
 
                 if (m_Height_Distance_mm < 1500)
                 {
-                    if (obj.has_roof)
+                    if (IsShelf)
                     {
                         Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
                         ActionObj.actionInfo.shelf = true;
@@ -671,9 +683,8 @@ namespace WATA.LIS.Core.Services
                     else
                     {
                         Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
-                        ActionObj.actionInfo.shelf = false;
+                        ActionObj.actionInfo.shelf = true;
                     }
-
                 }
                 else
                 {
@@ -687,7 +698,20 @@ namespace WATA.LIS.Core.Services
 
 
                 Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
+
+
                 ActionObj.actionInfo.loadId = m_qr;
+
+
+                if (ActionObj.actionInfo.shelf == false)
+                {
+
+                    ActionObj.actionInfo.epc = m_location_epc;
+
+                    Tools.Log($"##Rack Side ###  : {m_location_epc}", Tools.ELogType.BackEndLog);
+
+
+                }
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();

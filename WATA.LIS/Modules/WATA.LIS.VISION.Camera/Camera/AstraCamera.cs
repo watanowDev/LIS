@@ -57,7 +57,7 @@ namespace WATA.LIS.VISION.Camera.Camera
         {
             if(statuscheckCount  >=15)
             {
-               RecoveryProcess();
+              RecoveryProcess();
 
             }
 

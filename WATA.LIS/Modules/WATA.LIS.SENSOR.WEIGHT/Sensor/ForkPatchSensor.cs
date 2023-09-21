@@ -7,6 +7,7 @@ using System.Threading;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.SystemConfig;
@@ -19,6 +20,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         private readonly IEventAggregator _eventAggregator;
         private readonly IWeightModel  _weightmodel;
 
+        bool m_only_weight = true;
+
         SerialPort serial = new SerialPort();
         SerialPort _port = new SerialPort();
 
@@ -28,15 +31,16 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         //DistanceConfigModel _distaceConfig;
 
-        public ForkPatchSensor(IEventAggregator eventAggregator, IWeightModel weightmodel)
+        public ForkPatchSensor(IEventAggregator eventAggregator, IWeightModel weightmodel, bool onlyweight)
         {                          
             _eventAggregator = eventAggregator;
             _weightmodel = weightmodel;
             _weightConfig = (WeightConfigModel)_weightmodel;
+
+            m_only_weight = onlyweight;
         }
 
-        private bool log_enable = true;
-
+        
 
         public void SerialInit()
         {
@@ -84,12 +88,47 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 string recv_str = _port.ReadLine();
                 Tools.Log($"[DataRecive] {recv_str} ", Tools.ELogType.WeightLog);
                 _eventAggregator.GetEvent<WeightSensorEvent>().Publish(recv_str);
+                Tools.Log($"m_only_weight {m_only_weight}", Tools.ELogType.WeightLog);
+                if (m_only_weight == true)
+                {
+
+                    Process_Event(recv_str);
+                }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
             }
 
+    }
+
+    private bool event_trigger = false;
+    private const float refernce_value = 30;
+
+    private void Process_Event(string recv_str)
+    {
+            Tools.Log($"event_trigger {event_trigger}", Tools.ELogType.WeightLog);
+            Tools.Log($"refernce_value {refernce_value}", Tools.ELogType.WeightLog);
+
+            float data = float.Parse(recv_str);
+            Tools.Log($"data {data}", Tools.ELogType.WeightLog);
+ 
+
+
+            if (data <= refernce_value)
+            {
+                event_trigger = false;
+            }
+            
+
+            if(event_trigger == false && data > refernce_value)
+            {
+
+                _eventAggregator.GetEvent<WeightSensorTrigger>().Publish("start");
+
+                Tools.Log($"[Send] Event Trigger !!!", Tools.ELogType.WeightLog);
+                event_trigger = true;
+            }
     }
 
 

@@ -20,7 +20,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
            _eventAggregator = eventAggregator;
         }
 
-        int volume = 5;
+        int volume = 0;
 
         public void Init()
         {
@@ -39,7 +39,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             }
           
             NeUsbController.NeUsbController.NE_SetLight(NeUsbController.LEDColors.Green, NeUsbController.LEDPatterns.Continuous);
-            NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern5, volume, 1);
+            NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern6, volume, 1);
         }
 
 

@@ -25,11 +25,9 @@ namespace WATA.LIS.VISION.Camera
 
             MainConfigModel main_config = (MainConfigModel)main;
         
-            if (main_config.device_type == "fork_lift_v1" || main_config.device_type == "fork_lift_v2")
-            {
-                AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel);
-                camera.Init();
-            }
+            AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel);
+            camera.Init();
+        
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

@@ -8,6 +8,7 @@ using System.Windows.Markup;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.SystemConfig;

@@ -574,10 +574,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
             string SendEPC = epc.Substring(8, 24);
             string stx = SendEPC.Substring(0, 2);
-            string etx = SendEPC.Substring(22, 2);
+            
 
-
-            if (SendEPC.Length == 24 && stx == "DA" && etx == "ED")
+            if (SendEPC.Length == 24 && (stx == "DA" || stx == "DC"))
             {
 
 
@@ -619,7 +618,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             string etx = SendEPC.Substring(22, 2);
 
 
-            if (SendEPC.Length == 24 && stx == "DA" && etx == "ED")
+            if (SendEPC.Length == 24 && (stx == "DA" || stx == "DC"))
             {
 
 

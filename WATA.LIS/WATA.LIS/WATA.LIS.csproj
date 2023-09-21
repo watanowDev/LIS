@@ -5,8 +5,8 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
     <BaseOutputPath></BaseOutputPath>
-    <AssemblyVersion>7.0.0.23</AssemblyVersion>
-    <FileVersion>7.0.0.23</FileVersion>
+    <AssemblyVersion>7.0.0.72</AssemblyVersion>
+    <FileVersion>7.0.0.72</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />

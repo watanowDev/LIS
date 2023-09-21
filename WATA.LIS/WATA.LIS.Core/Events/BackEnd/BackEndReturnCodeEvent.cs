@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Model.BackEnd;
-using WATA.LIS.Core.Model.DistanceSensor;
 
-namespace WATA.LIS.Core.Events.WeightSensor
+namespace WATA.LIS.Core.Events.BackEnd
 {
-    public class WeightSensorEvent : PubSubEvent<string>
+    public class BackEndReturnCodeEvent : PubSubEvent<int>
     {
 
     }

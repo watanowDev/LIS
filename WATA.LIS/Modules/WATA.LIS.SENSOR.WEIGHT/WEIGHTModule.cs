@@ -16,14 +16,14 @@ namespace WATA.LIS.SENSOR.WEIGHT
         private readonly IWeightModel _weightmodel;
         public WEIGHTModule(IEventAggregator eventAggregator, IWeightModel weightmodel)
         {
-           
+
             _eventAggregator = eventAggregator;
             _weightmodel = weightmodel;
 
 
             WeightConfigModel _weightConfig = (WeightConfigModel)_weightmodel;
 
-            if(_weightConfig.sensor_value == "TJ")
+            if (_weightConfig.sensor_value == "TJ")
             {
                 Tools.Log($"TJ", Tools.ELogType.WeightLog);
                 LatchLoadCell china = new LatchLoadCell(_eventAggregator, _weightmodel);
@@ -31,11 +31,18 @@ namespace WATA.LIS.SENSOR.WEIGHT
 
 
             }
-            else
+            else if (_weightConfig.sensor_value == "SE")
             {
                 Tools.Log($"SystemEngineering", Tools.ELogType.WeightLog);
-                ForkPatchSensor SystemEngineering = new ForkPatchSensor(_eventAggregator, _weightmodel);
+                ForkPatchSensor SystemEngineering = new ForkPatchSensor(_eventAggregator, _weightmodel, false);
                 SystemEngineering.SerialInit();
+            }
+            else if (_weightConfig.sensor_value == "SE_ONLY_WEIGHT")
+            {
+                Tools.Log($"SystemEngineering", Tools.ELogType.WeightLog);
+                ForkPatchSensor SystemEngineering = new ForkPatchSensor(_eventAggregator, _weightmodel, true);
+                SystemEngineering.SerialInit();
+
             }
         }
 

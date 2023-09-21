@@ -14,7 +14,8 @@ namespace WATA.LIS.Core.Common
     public enum eMessageType : Int32
     {
         BackEndAction,
-        BackEndCurrent
+        BackEndCurrent,
+        BackEndContainer
     }
 
     public enum eDeviceType : Int32
@@ -82,6 +83,8 @@ namespace WATA.LIS.Core.Common
         ACTION_FAIL,
         ACTION_START,
         ACTION_FINISH,
-        DROP
+        DROP,
+        EMERGENCY,
+        EMERGENCY2
     }
 }

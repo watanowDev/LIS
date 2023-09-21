@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Events.RFID;
-
 namespace WATA.LIS.Core.Model.BackEnd
 {
     public class GateEventModel
@@ -18,8 +17,8 @@ namespace WATA.LIS.Core.Model.BackEnd
         public string vehicleId { get; set; }
         public string getLocation { get; set; }
 
-        public string eventType { get;set; }
-            
+        public string eventType { get; set; }
+
 
     }
 }

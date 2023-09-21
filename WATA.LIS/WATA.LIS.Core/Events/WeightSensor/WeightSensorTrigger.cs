@@ -9,8 +9,9 @@ using WATA.LIS.Core.Model.DistanceSensor;
 
 namespace WATA.LIS.Core.Events.WeightSensor
 {
-    public class WeightSensorEvent : PubSubEvent<string>
+    public class WeightSensorTrigger : PubSubEvent<string>
     {
+
 
     }
 }
