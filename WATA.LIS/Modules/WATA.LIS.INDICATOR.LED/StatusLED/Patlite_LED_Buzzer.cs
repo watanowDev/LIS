@@ -6,7 +6,9 @@ using System.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.StatusLED;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.ErrorCheck;
+using WATA.LIS.Core.Model.SystemConfig;
 
 namespace WATA.LIS.INDICATOR.LED.StatusLED
 {
@@ -14,13 +16,21 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
     {
         
         private readonly IEventAggregator _eventAggregator;
+        private Led_Buzzer_ConfigModel _ledBuzzer;
+        private int m_volume = 0;
 
-        public Patlite_LED_Buzzer(IEventAggregator eventAggregator)
+        public Patlite_LED_Buzzer(IEventAggregator eventAggregator, ILedBuzzertModel ledBuzzer)
         {
            _eventAggregator = eventAggregator;
+
+            _ledBuzzer = (Led_Buzzer_ConfigModel)ledBuzzer;
+
+            m_volume =  _ledBuzzer.volume;
+
+
         }
 
-        int volume = 0;
+
 
         public void Init()
         {
@@ -39,7 +49,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             }
           
             NeUsbController.NeUsbController.NE_SetLight(NeUsbController.LEDColors.Green, NeUsbController.LEDPatterns.Continuous);
-            NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern6, volume, 1);
+            NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern6, m_volume, 1);
         }
 
 
@@ -100,7 +110,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                  
 
 
-                NeUsbController.NeUsbController.NE_SetBuz((NeUsbController.BuzzerPatterns)Pattern, volume, count);
+                NeUsbController.NeUsbController.NE_SetBuz((NeUsbController.BuzzerPatterns)Pattern, m_volume, count);
 
                 
 

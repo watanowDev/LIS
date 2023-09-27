@@ -15,13 +15,14 @@ namespace WATA.LIS.Core.Parser
 {
     public  class SystemJsonConfigParser
     {
-        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
             VisionConfigModel vision = new VisionConfigModel();
             MainConfigModel main = new MainConfigModel();
             RFIDConfigModel rfid = new RFIDConfigModel();
+            Led_Buzzer_ConfigModel LedBuzzer = new Led_Buzzer_ConfigModel();
 
             try
             {
@@ -36,8 +37,9 @@ namespace WATA.LIS.Core.Parser
                         main.forkLiftID = json["main"]["unit_id"].ToString();
                         main.device_type = json["main"]["device_type"].ToString();
                         distance.ComPort  = json["distancesensor"]["comport"].ToString();
+                        LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
                         weight.ComPort = json["weightsensor"]["comport"].ToString();
-                        weight.loadweight_timeout = (int)json["weightsensor"]["loadweight_timeout"];
+                        weight.loadweight_timeout =(int)json["weightsensor"]["loadweight_timeout"];
                         weight.sensor_value = json["weightsensor"]["sensor_value"].ToString(); 
 
                         vision.vision_enable = (int)json["visioncamera"]["vision_enable"];
@@ -77,7 +79,7 @@ namespace WATA.LIS.Core.Parser
                 Tools.Log($"Exception !!!", Tools.ELogType.DistanceLog);
             }
 
-            return (weight, distance, vision, rfid, main);
+            return (weight, distance, vision, rfid, main , LedBuzzer);
         }
     }
 }

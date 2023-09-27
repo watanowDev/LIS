@@ -34,13 +34,14 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main) = parser.LoadJsonfile();
+            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
             containerRegistry.RegisterSingleton<IVisionModel>(x => vision);
             containerRegistry.RegisterSingleton<IRFIDModel>(x => rfid);
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
+            containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
 
 
 
@@ -57,17 +58,20 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<IRFIDModel>())
                 containerRegistry.RegisterSingleton<IRFIDModel, RFIDConfigModel>();
 
-               if (!containerRegistry.IsRegistered<IRFIDModel>())
+               if (!containerRegistry.IsRegistered<IMainModel>())
                 containerRegistry.RegisterSingleton<IMainModel, MainConfigModel>();
+
+            if (!containerRegistry.IsRegistered<ILedBuzzertModel>())
+                containerRegistry.RegisterSingleton<ILedBuzzertModel, Led_Buzzer_ConfigModel>();
 
 
             MainConfigModel mainobj = (MainConfigModel)main;
 
             if (mainobj.device_type == "fork_lift_v1")
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();//현재 안씀 FH-920 RF수신기
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();//현재 안씀 FH-920 RF수신기 2023.09.27 현재는 쓰지 않음
             }
-            else if (mainobj.device_type == "pantos")
+            else if (mainobj.device_type == "pantos")// 판토스향
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();//현재 지게차용  Apulse RF수신기
             }
