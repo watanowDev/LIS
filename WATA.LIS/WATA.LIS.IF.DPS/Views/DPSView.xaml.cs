@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WATA.LIS.INDICATOR.LED.Views
+namespace WATA.LIS.IF.DPS.Views
 {
     /// <summary>
     /// Interaction logic for ViewA.xaml
     /// </summary>
-    public partial class ViewA : UserControl
+    public partial class DPSView : UserControl
     {
-        public ViewA()
+        public DPSView()
         {
             InitializeComponent();
         }

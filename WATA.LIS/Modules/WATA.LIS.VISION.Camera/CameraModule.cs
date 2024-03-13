@@ -23,9 +23,7 @@ namespace WATA.LIS.VISION.Camera
             _visionModel = visionModel;
 
 
-            MainConfigModel main_config = (MainConfigModel)main;
-        
-            AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel);
+            AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel, main);
             camera.Init();
         
         }

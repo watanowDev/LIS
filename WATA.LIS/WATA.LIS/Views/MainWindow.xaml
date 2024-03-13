@@ -17,7 +17,8 @@
         </Border>
 
         <Border Grid.Row="1" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
-            <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.Content_Main}" />
+            <!--<ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.Content_Main}" /> -->
+            <ContentControl prism:RegionManager.RegionName="{Binding MainRegionName}" />
         </Border>
 
         <Border Grid.Row="2" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">

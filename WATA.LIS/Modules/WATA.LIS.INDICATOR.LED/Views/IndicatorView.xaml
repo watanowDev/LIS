@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="WATA.LIS.INDICATOR.LED.Views.IndicatorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WATA.LIS.INDICATOR.LED" 
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:i ="http://schemas.microsoft.com/expression/2010/interactiv1ity"
+             mc:Ignorable="d" 
+             d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+   </UserControl.Resources>
+
+</UserControl> 

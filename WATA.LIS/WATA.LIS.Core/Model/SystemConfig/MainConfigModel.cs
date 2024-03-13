@@ -11,6 +11,8 @@ namespace WATA.LIS.Core.Model.SystemConfig
     {
         public string forkLiftID { get; set; }   
         public string device_type { get; set; }
+
+
     }
 }
 

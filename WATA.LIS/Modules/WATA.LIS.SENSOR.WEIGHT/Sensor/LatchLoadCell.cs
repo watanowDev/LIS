@@ -12,6 +12,7 @@ using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Services;
 using Windows.Storage.Streams;
 
@@ -133,6 +134,12 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 int right_forkpower = RecvBytes[13];
                 int left_forkpower = RecvBytes[16];
 
+                WeightSensorModel model = new WeightSensorModel();
+
+                model.GrossWeight =  nGrossWeight;
+                model.RightWeight = nRightWeight;
+                model.LeftWeight = nLeftWeight;
+
                 Tools.Log($"nGrossWeight : {nGrossWeight}", Tools.ELogType.WeightLog);
                 Tools.Log($"nRightWeight : {nRightWeight}", Tools.ELogType.WeightLog);
                 Tools.Log($"nLeftWeight : {nLeftWeight}", Tools.ELogType.WeightLog);
@@ -140,7 +147,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 Tools.Log($"left_forkpower : {left_forkpower}", Tools.ELogType.WeightLog);
 
                 Tools.Log($"[DataRecive] {nGrossWeight} ", Tools.ELogType.WeightLog);
-                _eventAggregator.GetEvent<WeightSensorEvent>().Publish(nGrossWeight.ToString());
+                _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
             }
            
 

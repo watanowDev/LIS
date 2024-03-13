@@ -10,6 +10,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
     public class DistanceConfigModel : IDistanceModel
     {
         public string ComPort { get; set; }
+        public int pick_up_distance_threshold { get; set; }
     }
 }
 

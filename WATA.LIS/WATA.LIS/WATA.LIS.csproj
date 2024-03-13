@@ -5,14 +5,15 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
     <BaseOutputPath></BaseOutputPath>
-    <AssemblyVersion>7.0.0.72</AssemblyVersion>
-    <FileVersion>7.0.0.72</FileVersion>
+    <AssemblyVersion>9.0.0.3</AssemblyVersion>
+    <FileVersion>9.0.0.3</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Modules\WATA.LIS.IF.BE\WATA.LIS.IF.BE.csproj" />
+    <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.DISPLAY\WATA.LIS.INDICATOR.DISPLAY.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.LED\WATA.LIS.INDICATOR.LED.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.Main\WATA.LIS.Main.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.Distance\WATA.LIS.SENSOR.Distance.csproj" />
@@ -20,6 +21,7 @@
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.VISION.Camera\WATA.LIS.VISION.Camera.csproj" />
     <ProjectReference Include="..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
+    <ProjectReference Include="..\WATA.LIS.IF.DPS\WATA.LIS.IF.DPS.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resource\" />

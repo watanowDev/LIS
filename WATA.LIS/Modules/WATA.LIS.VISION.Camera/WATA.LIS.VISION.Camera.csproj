@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
+    <ProjectReference Include="..\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />
   </ItemGroup>
 </Project>

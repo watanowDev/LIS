@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace WATA.LIS.Core.Model.ErrorCheck
 {
-    public class ErrorCheck_Model
+    public class DPSAllClear
     {
         public bool camera { get; set; }
         public bool distance { get; set; }

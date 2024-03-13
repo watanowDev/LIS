@@ -18,6 +18,10 @@ namespace WATA.LIS.Core.Common
         public ObservableCollection<Log> ListBackEndCurrentLog;
         public ObservableCollection<Log> ListActionLog;
         public ObservableCollection<Log> ListWeightLog;
+        public ObservableCollection<Log> ListDisplayLog;
+        public ObservableCollection<Log> ListDPSLog;
+
+
         public LogInfo()
         {
             ListSystemLog = new ObservableCollection<Log>();
@@ -28,6 +32,9 @@ namespace WATA.LIS.Core.Common
             ListBackEndCurrentLog = new ObservableCollection<Log>();
             ListActionLog = new ObservableCollection<Log>();
             ListWeightLog = new ObservableCollection<Log>();
+            ListDisplayLog = new ObservableCollection<Log>();
+            ListDPSLog = new ObservableCollection<Log>();
+
         }
     }
 }

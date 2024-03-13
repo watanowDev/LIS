@@ -117,6 +117,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 mRemoteDeviceScanner.ScanRemoteDevice(true);
                 StartScanTimeoutTimer();
             }
+
+
         }
 
         private void ToggleRfidInventory()
@@ -169,9 +171,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             {
                                 mReader.SetEventListener(this);
                                 Tools.Log("Connect Start", Tools.ELogType.RFIDLog);
+
+                                Tools.Log($"RFID Version {mReader.GetRFIDVersion()}", Tools.ELogType.RFIDLog);
                                 if (mReader.Start())
                                 {
                                     Tools.Log("Start", Tools.ELogType.RFIDLog);
+
+
                                 }
                             }
                             catch

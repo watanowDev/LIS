@@ -34,11 +34,19 @@ namespace WATA.LIS.VISION.Camera.Camera
         private readonly IVisionModel _visonModel;
         VisionConfigModel visionConfig;
         DispatcherTimer Process_chk_Timer;
-        public AstraCamera(IEventAggregator eventAggregator, IVisionModel visionModel)
+        bool CameraDisable = false;
+
+        public AstraCamera(IEventAggregator eventAggregator, IVisionModel visionModel, IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _visonModel = visionModel;
             visionConfig = (VisionConfigModel)_visonModel;
+            MainConfigModel mainobj = (MainConfigModel)main;
+
+            if(mainobj.device_type == "DPS")
+            {
+                visionConfig.vision_enable = 0;
+            }
         }
 
         public void Init()

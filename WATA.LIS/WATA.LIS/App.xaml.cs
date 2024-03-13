@@ -9,6 +9,8 @@ using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Parser;
 using WATA.LIS.Core.Services;
 using WATA.LIS.IF.BE;
+using WATA.LIS.IF.DPS;
+using WATA.LIS.INDICATOR.DISPLAY;
 using WATA.LIS.INDICATOR.LED;
 using WATA.LIS.Main;
 using WATA.LIS.SENSOR.Distance;
@@ -34,7 +36,7 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer) = parser.LoadJsonfile();
+            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
@@ -42,8 +44,6 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<IRFIDModel>(x => rfid);
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
             containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
-
-
 
             if (!containerRegistry.IsRegistered<IWeightModel>())
                 containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
@@ -75,7 +75,7 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();//현재 지게차용  Apulse RF수신기
             }
-            else if (mainobj.device_type == "calt" )
+            else if (mainobj.device_type == "calt" )//칼트향
             { 
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();//현재 지게차용  Apulse RF수신기
 
@@ -84,10 +84,14 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_GateChecker>();
             }
+            else if (mainobj.device_type == "DPS")//DPS
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_DPS>();
+            }
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
-        {
+        { 
             moduleCatalog.AddModule<LEDModule>();
             moduleCatalog.AddModule<DistanceModule>();
             moduleCatalog.AddModule<WEIGHTModule>();
@@ -95,6 +99,8 @@ namespace WATA.LIS
             moduleCatalog.AddModule<CameraModule>();
             moduleCatalog.AddModule<MainModule>();
             moduleCatalog.AddModule<UHF_RFIDModule>();
+            moduleCatalog.AddModule<DISPLAYModule>();
+            moduleCatalog.AddModule<DPSModule>();
         }
     }
 }

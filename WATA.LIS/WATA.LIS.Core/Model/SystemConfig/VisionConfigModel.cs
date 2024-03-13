@@ -23,6 +23,8 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public float rack_with { get; set; }
 
         public float rack_height { get; set; }
+
+        public int onlyshelf { get; set; }
     }
 }
 

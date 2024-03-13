@@ -79,7 +79,7 @@
                     </LinearGradientBrush>
                 </TabControl.Background>
                 <TabItem Header="Action Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                    <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True"  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True"  ScrollViewer.HorizontalScrollBarVisibility="Auto" d:ItemsSource="{d:SampleData ItemCount=5}">
                     </ListBox>
                 </TabItem>
             </TabControl>

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using WATA.LIS.Core;
 
 namespace WATA.LIS.Views
 {
@@ -10,6 +11,8 @@ namespace WATA.LIS.Views
         public MainWindow()
         {
             InitializeComponent();
+
+        
         }
     }
 }

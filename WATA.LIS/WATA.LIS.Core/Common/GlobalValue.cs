@@ -10,7 +10,7 @@ namespace WATA.LIS.Core.Common
     public class GlobalValue
     {
         public static string SystemVersion = "";
-        public static ErrorCheck_Model IS_ERROR = new ErrorCheck_Model() ;
+        public static DPSAllClear IS_ERROR = new DPSAllClear() ;
 
 
 

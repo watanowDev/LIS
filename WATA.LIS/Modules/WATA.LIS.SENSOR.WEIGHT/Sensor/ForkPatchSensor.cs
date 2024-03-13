@@ -11,6 +11,7 @@ using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Services;
 
 namespace WATA.LIS.SENSOR.WEIGHT.Sensor
@@ -87,7 +88,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 string recv_str = _port.ReadLine();
                 Tools.Log($"[DataRecive] {recv_str} ", Tools.ELogType.WeightLog);
-                _eventAggregator.GetEvent<WeightSensorEvent>().Publish(recv_str);
+                WeightSensorModel model = new WeightSensorModel();
+                model.GrossWeight = model.GrossWeight;
+
+                _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
                 Tools.Log($"m_only_weight {m_only_weight}", Tools.ELogType.WeightLog);
                 if (m_only_weight == true)
                 {

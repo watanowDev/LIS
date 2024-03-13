@@ -5,7 +5,10 @@ using Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using WATA.LIS.Core;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
 
 namespace WATA.LIS.Main.ViewModels
 {
@@ -36,12 +39,39 @@ namespace WATA.LIS.Main.ViewModels
         public bool CameraChecked { get { return _CameraChecked; } set { SetProperty(ref _CameraChecked, value); } }
 
 
-        public BottomBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
+        private bool _IndicatorChecked;
+        public bool IndicatorChecked { get { return _IndicatorChecked; } set { SetProperty(ref _IndicatorChecked, value); } }
+
+
+        private bool _DPSChecked;
+        public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
+
+
+        
+
+
+
+
+        public Visibility ForkLiftVisible { get; set; } = Visibility.Visible;
+        public Visibility DPSVisible { get; set; } = Visibility.Visible;
+
+        public BottomBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator, IMainModel main)
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
-
+           
             MenuSelectButton = new DelegateCommand<string>(MenuSelect);
+            MainConfigModel mainobj = (MainConfigModel)main;
+            if (mainobj.device_type == "DPS")
+            {
+                ForkLiftVisible = Visibility.Hidden;
+                DPSVisible = Visibility.Visible;
+            }
+            else
+            {
+                ForkLiftVisible = Visibility.Visible;
+                DPSVisible = Visibility.Hidden;
+            }
         }
 
         private void MenuSelect(string command)
@@ -51,13 +81,12 @@ namespace WATA.LIS.Main.ViewModels
             DistanceChecked = false;
             CameraChecked = false;
             WeightChecked = false;
-
-
+            IndicatorChecked = false;
+            DPSChecked = false;
 
             if (command != null)
             {
               
-
                 switch (command)
                 {
                     case "Content_Main":
@@ -75,6 +104,15 @@ namespace WATA.LIS.Main.ViewModels
                     case "Content_Weight":
                         WeightChecked = true;
                         break;
+
+                    case "Content_Indicator":
+                        IndicatorChecked = true;
+                        break;
+
+                    case "Content_DPS":
+                        DPSChecked = true;
+                        break;
+
 
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);

@@ -9,6 +9,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.Indicator;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.RFID;
@@ -31,7 +33,25 @@ namespace WATA.LIS.VISION.Camera.ViewModels
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
 
+
+            _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+
+
         }
+
+
+
+        public void OnIndicatorEvent(string status)
+        {
+            Tools.Log($"OnIndicatorEvent {status}", Tools.ELogType.DisplayLog);
+
+            if (status == "pick_up")
+            {
+           //     Pattlite_Buzzer_LED(ePlayBuzzerLed.MEASRUE_OK);
+            }
+        }
+
+
         private byte[] m_LoadMatrix = new byte[10];
 
         private void ButtonFuncClick(string command)
@@ -44,6 +64,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
                 switch (command)
                 {
                     case "pickup":
+
 
                         visionModel.area = (float)0.88;
                         visionModel.status = "pickup";

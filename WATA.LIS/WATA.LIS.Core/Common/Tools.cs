@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 using log4net.Config;
+using Prism.Services.Dialogs;
 
 namespace WATA.LIS.Core.Common
 {
@@ -26,7 +27,9 @@ namespace WATA.LIS.Core.Common
         static ILog BackEndCurrentELog;
         static ILog ActionLog;
         static ILog WeightLog;
-        
+        static ILog DisplayLog;
+        static ILog DPSLog;
+
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
         static Tools()
@@ -40,6 +43,8 @@ namespace WATA.LIS.Core.Common
             BackEndCurrentELog = LogManager.GetLogger("BackEndCurrentLogEx");
             ActionLog = LogManager.GetLogger("ActionLogEx");
             WeightLog = LogManager.GetLogger("WeightLogEx");
+            DisplayLog = LogManager.GetLogger("DisplayLogEx");
+            DPSLog = LogManager.GetLogger("DPSLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -61,6 +66,57 @@ namespace WATA.LIS.Core.Common
                 {
                     switch (logType)
                     {
+                        case ELogType.DPSLog:
+                            DPSLog.Info(msg);//Point
+                            if (logInfo.ListDPSLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListDPSLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListDPSLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListDPSLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListDPSLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+
+
+
+                        case ELogType.DisplayLog:
+                            DisplayLog.Info(msg);//Point
+                            if (logInfo.ListDisplayLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListDisplayLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListDisplayLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListDisplayLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListDisplayLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+
+
                         case ELogType.WeightLog:
                             WeightLog.Info(msg);//Point
                             if (logInfo.ListWeightLog.Count > 300)
@@ -513,7 +569,9 @@ namespace WATA.LIS.Core.Common
             BackEndLog,
             BackEndCurrentLog,
             ActionLog,
-            WeightLog
+            WeightLog,
+            DisplayLog,
+            DPSLog
         }
 
         public struct SYSTEMTIME

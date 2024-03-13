@@ -20,7 +20,6 @@ namespace WATA.LIS.INDICATOR.LED
 
         }
 
-
         public void OnInitialized(IContainerProvider containerProvider)
         {
 

@@ -85,6 +85,7 @@ namespace WATA.LIS.Core.Common
         ACTION_FINISH,
         DROP,
         EMERGENCY,
-        EMERGENCY2
+        EMERGENCY2,
+        MEASRUE_OK
     }
 }

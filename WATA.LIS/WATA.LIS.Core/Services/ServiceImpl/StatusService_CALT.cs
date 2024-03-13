@@ -41,7 +41,7 @@ namespace WATA.LIS.Core.Services
 
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
-        private int status_limit_count = 10;
+        private int status_limit_count = 5;
 
         private string m_location = "INCHEON_CALT_001";
         private string m_vihicle = "fork_lift001";
@@ -97,7 +97,7 @@ namespace WATA.LIS.Core.Services
 
         private string m_Location_epc = "";
 
-        public void OnWeightSensor(string str)
+        public void OnWeightSensor(WeightSensorModel str)
         {
 
 
@@ -436,10 +436,10 @@ namespace WATA.LIS.Core.Services
 
                         if (rssi < Threshold)
                         {
+                            retKeys = "field";
 
                             if (H_distance < 900)
                             {
-                                //retKeys = "field";
                                 shelf = false;
                                 //Tools.Log("##filed## ##Event##", Tools.ELogType.BackEndLog);
                             }
@@ -533,6 +533,8 @@ namespace WATA.LIS.Core.Services
 
 
         private string m_qr = "";
+        private float m_vision_with;
+        private float m_vision_height;
         public void OnVISIONEvent(VISON_Model obj)
         {
             ActionInfoModel ActionObj = new ActionInfoModel();
@@ -540,16 +542,29 @@ namespace WATA.LIS.Core.Services
             ActionObj.actionInfo.vehicleId = m_vihicle;
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
 
-            ActionObj.actionInfo.visionWidth = obj.width;
-            ActionObj.actionInfo.visionHeight = obj.height;
-
+            
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 m_LoadMatrix = null;
 
                 Tools.Log($"IN##########################pick up Action m_stop_rack_epc { m_stop_rack_epc}", Tools.ELogType.BackEndLog);
-                Tools.Log($"IN##########################pick up Action", Tools.ELogType.WeightLog);
                 m_stop_rack_epc = false;
+
+
+                m_vision_with = 0;
+                m_vision_height = 0;
+
+                ActionObj.actionInfo.visionWidth = 0;
+                ActionObj.actionInfo.visionHeight = 0;
+
+                m_vision_with =   obj.width;
+                m_vision_height =   obj.height;
+
+                Tools.Log($"get Vision Width Hegiht [vision_with : {m_vision_with}] [vision_height : {m_vision_height}]", Tools.ELogType.BackEndLog);
+
+
+
+
 
                 Tools.Log($"Pickup Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
                 Thread.Sleep(visionConfig.pickup_wait_delay);
@@ -580,13 +595,11 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(0);
                 ActionObj.actionInfo.loadMatrix.Add(0);
 
-                m_qr = obj.qr;
+                m_qr = obj.qr = "";
                 //m_qr = "6cf71590a6a544b091085bf72fb9b5b7";
                 m_qr = m_qr.Replace("{", "");
                 m_qr = m_qr.Replace("}", "");
                 m_qr = m_qr.Replace("wata", "");
-
-
 
 
                 ActionObj.actionInfo.loadId = m_qr;
@@ -607,8 +620,8 @@ namespace WATA.LIS.Core.Services
                     }
                     else
                     {
-                        Tools.Log($"##rack is not visible", Tools.ELogType.BackEndLog);
-                        ActionObj.actionInfo.shelf = true;
+                        Tools.Log($"##rack is not visible shelf false", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = false;
                     }
                 }
                 else
@@ -618,6 +631,12 @@ namespace WATA.LIS.Core.Services
                     ActionObj.actionInfo.shelf = true;
                 }
 
+
+                if (visionConfig.onlyshelf == 1) 
+                {
+                    Tools.Log($"@@onlyshelf true", Tools.ELogType.BackEndLog);
+                    ActionObj.actionInfo.shelf = true;
+                }
 
 
                 Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
@@ -655,8 +674,12 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrixRaw = "10";
                 ActionObj.actionInfo.loadMatrixColumn = "10";
 
-                ActionObj.actionInfo.visionWidth = obj.width;
-                ActionObj.actionInfo.visionHeight = obj.height;
+                Tools.Log($"set Vision Width Hegiht [vision_with : {m_vision_with}] [vision_height : {m_vision_height}]", Tools.ELogType.BackEndLog);
+
+                ActionObj.actionInfo.visionWidth = m_vision_with;
+                ActionObj.actionInfo.visionHeight = m_vision_height;
+
+
 
 
                 if (m_LoadMatrix != null)
@@ -682,8 +705,8 @@ namespace WATA.LIS.Core.Services
                     }
                     else
                     {
-                        Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
-                        ActionObj.actionInfo.shelf = true;
+                        Tools.Log($"##roof is not visible shelf false", Tools.ELogType.BackEndLog);
+                        ActionObj.actionInfo.shelf = false;
                     }
                 }
                 else
@@ -701,6 +724,12 @@ namespace WATA.LIS.Core.Services
 
 
                 ActionObj.actionInfo.loadId = m_qr;
+
+                if (visionConfig.onlyshelf == 1) 
+                {
+                    Tools.Log($"@@onlyshelf true", Tools.ELogType.BackEndLog);
+                    ActionObj.actionInfo.shelf = true;
+                }
 
 
                 if (ActionObj.actionInfo.shelf == false)
@@ -726,6 +755,8 @@ namespace WATA.LIS.Core.Services
                 ClearEpc();
                 m_CalRate = 0;
                 m_qr = "";
+                m_vision_with = 0;
+                m_vision_height = 0;
                 Tools.Log("Clear LoadRate", Tools.ELogType.BackEndLog);
                 m_stop_rack_epc = true;
                 Tools.Log("start receive rack epc", Tools.ELogType.BackEndLog);
