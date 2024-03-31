@@ -20,6 +20,7 @@ namespace WATA.LIS.Core.Model.Indicator
         public string QR { get; set; }
         public float visionHeight { get; set; }
         public float visionWidth { get; set; }
+        public float visionDepth { get; set; }
     }
 }
  

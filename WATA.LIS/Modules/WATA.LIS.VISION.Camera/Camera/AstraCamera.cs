@@ -217,6 +217,11 @@ namespace WATA.LIS.VISION.Camera.Camera
                                 visionModel.has_roof = (bool)jObject["has_roof"];
                             }
 
+                            if (jObject.ContainsKey("depth") == true)
+                            {
+                                visionModel.depth = (float)jObject["depth"];
+                            }
+
 
 
 
@@ -243,7 +248,7 @@ namespace WATA.LIS.VISION.Camera.Camera
 
                             }
 
-                            if (visionModel.status == "drop" || visionModel.status == "pickup")
+                            if (visionModel.status == "measuring" || visionModel.status == "drop" || visionModel.status == "pickup")
                             {
                                 _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
                                 Tools.Log("### Send Vision Event Action ###", Tools.ELogType.VisionLog);

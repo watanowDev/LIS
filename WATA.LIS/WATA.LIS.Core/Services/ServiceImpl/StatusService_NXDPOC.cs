@@ -32,13 +32,13 @@ using static WATA.LIS.Core.Common.Tools;
 namespace WATA.LIS.Core.Services
 {
     /*
-     * StatusService_Pantos 구성요소
-     * 거리센서 : TeraBee EVO-15 (높이 측정)
-     * RFID : A pluse RFID 수신기 
-     * VISION : Astra-FemtoW
+     * StatusService_NXDPOC 구성요소
+     * 
+     *  
+     * 
      */
 
-    public class StatusService_Pantos : IStatusService
+    public class StatusService_NXDPOC : IStatusService
     {
         IEventAggregator _eventAggregator;
 
@@ -66,7 +66,7 @@ namespace WATA.LIS.Core.Services
         private readonly IWeightModel _weightmodel;
         DispatcherTimer BuzzerTimer;
 
-        public StatusService_Pantos(IEventAggregator eventAggregator , IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel)
+        public StatusService_NXDPOC(IEventAggregator eventAggregator , IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
@@ -74,7 +74,6 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WeightSensorTrigger>().Subscribe(OnWeightTrigger, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Subscribe(OnContainerReturn, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             
@@ -130,10 +129,7 @@ namespace WATA.LIS.Core.Services
 
 
              m_weight = new WeightSensorModel();
-
         }
-
-
 
 
 
@@ -151,7 +147,7 @@ namespace WATA.LIS.Core.Services
         {
             if(status != 200)
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY2);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.FAIL);
                 Tools.Log($"IN########################## EMERGENCY2", Tools.ELogType.BackEndLog);
             }
         }
@@ -165,7 +161,7 @@ namespace WATA.LIS.Core.Services
 
             if (status == "pick_up")
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.MEASRUE_OK);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.SUCCESS);
 
                 if (m_pickup_obj != null)
                 {
@@ -176,82 +172,7 @@ namespace WATA.LIS.Core.Services
         }
 
 
-        public void OnWeightTrigger(string str)
-        {
-            ActionInfoModel ActionObj = new ActionInfoModel();
-            ActionObj.actionInfo.workLocationId = m_location;
-            ActionObj.actionInfo.vehicleId = m_vihicle;
-            ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
-
-
-
-
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
-
-                m_LoadMatrix = null;
-                Tools.Log($"IN##########################weight  Action", Tools.ELogType.BackEndLog);
-                Tools.Log($"IN##########################weight  Action", Tools.ELogType.WeightLog);
-                Tools.Log($"weight Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
-                Thread.Sleep(visionConfig.pickup_wait_delay);
-                Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
-                m_stop_rack_epc = false;
-                float rssi = (float)0.00;
-                bool IsShelf = false;
-                string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
-                ActionObj.actionInfo.epc = epc_data;
-                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
-                ActionObj.actionInfo.action = "IN";
-
-                ActionObj.actionInfo.loadRate = "0";
-                ActionObj.actionInfo.loadMatrixRaw = "10";
-                ActionObj.actionInfo.loadMatrixColumn = "10";
-
-
-                ActionObj.actionInfo.visionWidth = (float)00;
-                ActionObj.actionInfo.visionHeight =(float)00;
-
-
-                Thread.Sleep(_weightConfig.loadweight_timeout);
-
-                Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
-
-
-                ActionObj.actionInfo.loadWeight = m_weight.GrossWeight;
-
-                bool IsSendBackend = true;
-
-                if (ActionObj.actionInfo.loadWeight <= 5)
-                {
-
-                    IsSendBackend = false;
-                }
-         
-                if (IsSendBackend)
-                {
-                    Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
-                    string json_body = Util.ObjectToJson(ActionObj);
-                    RestClientPostModel post_obj = new RestClientPostModel();
-                    post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-                    post_obj.body = json_body;
-                    post_obj.type = eMessageType.BackEndAction;
-                    _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-
-
-                    Thread.Sleep(10);
-                    post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-                    _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FINISH);
-
-
-                }
-                else
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
-
-                }
-            
-        }
+   
 
         
 
@@ -349,14 +270,6 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-     /*   
-        int test1 = 0;
-        int test2 = 0;
-        int test3 = 0;
-        int test4 = 0;
-        int test5 = 0;
-        int test_qr = 0;
-     */
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             SendToIndicator(m_weight.GrossWeight, m_weight.LeftWeight, m_weight.RightWeight, m_qr, m_vision_width, m_vision_height, m_vision_depth);
@@ -365,15 +278,11 @@ namespace WATA.LIS.Core.Services
             //test_qr++;
         }
 
-
-
         private void BuzzerTimerEvent(object sender, EventArgs e)
         {
             Tools.Log("BuzzerTimerEvent", Tools.ELogType.BackEndLog);
-            Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY);
+          //  Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY);
         }
-
-
 
         private void AliveTimerEvent(object sender, EventArgs e)
         {
@@ -402,7 +311,6 @@ namespace WATA.LIS.Core.Services
         }
 
         bool Is_front_ant_disable = false;
-
 
 
         private void StatusErrorCheckEvent(object sender, EventArgs e)
@@ -459,10 +367,6 @@ namespace WATA.LIS.Core.Services
 
         private void StatusClearEvent(object sender, EventArgs e)
         {
-
-            
-
-
 
             if(rifid_status_check_count >  status_limit_count)
             {
@@ -734,40 +638,6 @@ namespace WATA.LIS.Core.Services
             //Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
         }
 
-        private int WaitLoadSensor(int distanceThreshold)
-        {
-            int count = 0;
-            int nRet = -1;
-
-            while(true)
-            {
-                if(count > 100)
-                {
-                    nRet = -1;
-                    break;
-                }
-
-                if(m_Height_Distance_mm > distanceThreshold)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
-
-                    Thread.Sleep(1000);
-
-
-                    Thread.Sleep(_weightConfig.loadweight_timeout);
-
-                    nRet = 0;
-                    break;
-                }
-
-
-                Thread.Sleep(100);
-                count++;
-
-            }
-            return nRet;
-        }
-        
 
 
        
@@ -869,150 +739,77 @@ namespace WATA.LIS.Core.Services
             m_vision_depth = ActionObj.actionInfo.visionHeight = obj.depth;
 
 
+             
+            Thread.Sleep(500);
 
+            Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.WEIGHT_CHECK_START);
+            _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_start);
 
             bool IsSendBackend = true;
 
-
-            int nRet = WaitLoadSensor(_distance.pick_up_distance_threshold);
+            Thread.Sleep(_weightConfig.loadweight_timeout);
             Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
-
-
 
             ActionObj.actionInfo.loadWeight = m_weight.GrossWeight;
 
 
-
-            if (nRet == -1)
-            {
-                Tools.Log($"Distance Fail", Tools.ELogType.BackEndLog);
-
-                IsSendBackend = false;
-
-            }
-
-
-
-
             if (ActionObj.actionInfo.loadWeight <= 10)
             {
-
                 Tools.Log($"Weight Fail", Tools.ELogType.BackEndLog);
-
-
                 IsSendBackend = false;
-            }
+
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_fail);
 
 
-            if (obj.height <= 0)
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.FAIL);
 
-            {
-                Tools.Log($"Hedight Fail", Tools.ELogType.BackEndLog);
-
-
-                IsSendBackend = false;
 
             }
 
-
-
+            _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
 
             m_qr = obj.qr;
             m_qr = m_qr.Replace("{", "");
             m_qr = m_qr.Replace("}", "");
             m_qr = m_qr.Replace("wata", "");
-            // m_container_qr = m_qr;
-            bool IsQRCheckFail = false;
-
+      
             m_container_qr = "NA";
 
             if (m_qr.Length == 32)
             {
                 m_container_qr = ActionObj.actionInfo.loadId = m_qr;
-                IsQRCheckFail = true;
                 Tools.Log($"QR Check OK", Tools.ELogType.BackEndLog);
             }
             else
             {
                 m_container_qr = m_qr = "NA";
-                IsQRCheckFail = false;
                 Tools.Log($"QR Check Failed.", Tools.ELogType.BackEndLog);
-            }
-
-
-            Tools.Log($"IS QR Check {IsQRCheckFail}.", Tools.ELogType.BackEndLog);
-
-
-
-
-
-
-
-
-            if (m_Height_Distance_mm < 1500)
-            {
-
-
-                Tools.Log($"@@shelf false", Tools.ELogType.BackEndLog);
-
-
-                if (IsShelf == true)
-                {
-                    Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
-                    ActionObj.actionInfo.shelf = true;
-                }
-                else
-                {
-                    Tools.Log($"##roof is not visible", Tools.ELogType.BackEndLog);
-                    ActionObj.actionInfo.shelf = false;
-                }
-            }
-            else
-            {
-
-                Tools.Log($"@@shelf true", Tools.ELogType.BackEndLog);
-                ActionObj.actionInfo.shelf = true;
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_fail);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.FAIL);
             }
 
 
             if (IsSendBackend)
             {
-
-
                 Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
-
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-
-
                 Thread.Sleep(10);
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-
-
-
-
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.SUCCESS);
             }
-            else
-            {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
-
-            }
+            
             ClearEpc();
             m_stop_rack_epc = true;
-
             SendToIndicator(m_weight.GrossWeight, m_weight.RightWeight, m_weight.RightWeight, m_qr, m_vision_width, m_vision_height, m_vision_depth);
-
             Tools.Log("start receive rack epc", Tools.ELogType.BackEndLog);
             Tools.Log($"Action : [pickup] EPC  [{epc_data}] Rssi : [{rssi}] QR {m_qr} ", Tools.ELogType.ActionLog);
-
             m_pickup_obj = null;
-
-
         }
 
 
@@ -1030,52 +827,27 @@ namespace WATA.LIS.Core.Services
         public void OnVISIONEvent(VISON_Model obj)
         {
             
-
-         
-
-            if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            if(obj.status == "measuring")
             {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.SIZE_CHECK_START);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start);
+
+            }
+            else if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            {
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete);
                 m_pickup_obj = obj;
-
                 PickUpEvent(m_pickup_obj);
-
-                
-                bool IsQRCheckFail = false;
+         
                 m_vision_width =  obj.width;
                 m_vision_height = obj.height;
                 m_vision_depth = obj.depth;
-
 
                 m_qr = obj.qr.Replace("{", "");
                 m_qr = obj.qr.Replace("}", "");
                 m_qr = obj.qr.Replace("wata", "");
 
                 Tools.Log($"QR {m_qr}", Tools.ELogType.BackEndLog);
-
-
-                if (m_qr.Length == 32)
-                {
-                    IsQRCheckFail = true;
-                    Tools.Log($"QR Check OK", Tools.ELogType.BackEndLog);
-                }
-                else
-                {
-                    IsQRCheckFail = false;
-                    Tools.Log($"QR Check Failed.", Tools.ELogType.BackEndLog);
-                }
-
-
-                if (IsQRCheckFail)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FINISH);
-                }
-                else
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY);
-                    Tools.Log("BuzzerTimer Start!!!!!", Tools.ELogType.BackEndLog);
-                }
-                
-
 
             }
             else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
@@ -1090,7 +862,7 @@ namespace WATA.LIS.Core.Services
                 float rssi = (float)0.00;
 
 
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.DROP);
 
                 Tools.Log($"OUT##########################Drop Action", Tools.ELogType.WeightLog);
                 Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
@@ -1106,7 +878,7 @@ namespace WATA.LIS.Core.Services
 
                 ActionObj.actionInfo.visionWidth = obj.width;
                 ActionObj.actionInfo.visionHeight = obj.height;
-                ActionObj.actionInfo.visionDepth = obj.depth;
+              //  ActionObj.actionInfo.visionDepth = obj.depth;
 
                 ActionObj.actionInfo.loadId = m_qr;
 
@@ -1244,68 +1016,39 @@ namespace WATA.LIS.Core.Services
             return (int)nRet;
         }
 
-        private void Pattlite_Buzzer_LED(ePlayBuzzerLed  value)
+        private void Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC  value)
         {
-            if(value == ePlayBuzzerLed.ACTION_FAIL)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Continuous;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            }
-            else if (value == ePlayBuzzerLed.ACTION_START)
+            if(value == ePlayBuzzerLed_NXDPOC.SIZE_CHECK_START)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
                 model.LED_Color = eLEDColors.Blue;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            }
-            else if(value == ePlayBuzzerLed.ACTION_FINISH)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Pattern1;
-                model.LED_Color = eLEDColors.Purple;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern4;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            }
-            else if (value == ePlayBuzzerLed.DROP)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Green;
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
-            else if (value == ePlayBuzzerLed.EMERGENCY)
+            else if (value == ePlayBuzzerLed_NXDPOC.WEIGHT_CHECK_START)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Purple;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+            else if (value == ePlayBuzzerLed_NXDPOC.FAIL)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
                 model.LED_Color = eLEDColors.Red;
                 model.BuzzerPattern = eBuzzerPatterns.Pattern1;
-                model.BuzzerCount = 0;
+                model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
-
-            else if (value == ePlayBuzzerLed.EMERGENCY2)
+            else if (value == ePlayBuzzerLed_NXDPOC.SUCCESS)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern2;
-                model.BuzzerCount = 0;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            }
-
-            else if (value == ePlayBuzzerLed.MEASRUE_OK)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Pattern1;
                 model.LED_Color = eLEDColors.Green;
                 model.BuzzerPattern = eBuzzerPatterns.Pattern1;
                 model.BuzzerCount = 1;

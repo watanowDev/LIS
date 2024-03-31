@@ -16,6 +16,7 @@ using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DPS;
 using WATA.LIS.Core.Events.Indicator;
 using Windows.Media.Protection.PlayReady;
+using Windows.Storage.Streams;
 
 namespace WATA.LIS.TCPSocket
 { 
@@ -26,67 +27,229 @@ namespace WATA.LIS.TCPSocket
         private readonly IEventAggregator _eventAggregator;
         static  private string _ip;
         static  private int _port;
-        TcpClient client;
+        static TcpClient _client;
         public TcpClientSimple(IEventAggregator eventAggregator, string ip, int port)
         {
             this._eventAggregator = eventAggregator;
+  
+            _eventAggregator.GetEvent<DPSSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
             _ip = ip;
             _port = port;
-            _eventAggregator.GetEvent<DPSSendEvent>().Subscribe(onSendMessage, ThreadOption.BackgroundThread, true);
-            StartListener();
         }
+
+        public async Task InitAsync()
+        {
+            
+            ConnectToServer();
+        }
+
+
+
+
+        private TcpClient tcpClient;
+        private NetworkStream networkStream;
+        private CancellationTokenSource cancellationTokenSource;
+
+
+
+
+        private async Task ConnectToServer()
+        {
+
+            Tools.Log($"Try to Connect IP : {_ip} PORT : {_port}", Tools.ELogType.DPSLog);
+
+            try
+            {
+                if (tcpClient != null)
+                {
+
+                    return;
+                }
+
+                tcpClient = new TcpClient();
+                await tcpClient.ConnectAsync(_ip, _port);
+
+                if (tcpClient.Connected)
+                {
+                    Tools.Log($"Connect Success", Tools.ELogType.DPSLog);
+
+                    networkStream = tcpClient.GetStream();
+                    cancellationTokenSource = new CancellationTokenSource();
+                    _ = Task.Run(() => ReceiveData(cancellationTokenSource.Token));
+                }
+                else
+                {
+                    Tools.Log($"Disconnect Server", Tools.ELogType.DPSLog);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Exception {ex.Message}", Tools.ELogType.DPSLog);
+            }
+        }
+
+
+
+        private void onSendData(byte[] data)
+        {
+
+            OnSendDataAsync(data);
+
+        }
+
+
+        private async Task OnSendDataAsync(byte[] data)
+        {
+            string bytelog = Util.DebugBytestoString(data);
+            Tools.Log($"Send packet {bytelog}", Tools.ELogType.DPSLog);
+
+
+            try
+            {
+                if (tcpClient != null && tcpClient.Connected)
+                {
+              //      byte[] data = Encoding.UTF8.GetBytes(msg);
+                    await networkStream.WriteAsync(data, 0, data.Length);
+                }
+                else
+                {
+                    Tools.Log($"DisConnect: {_ip} PORT : {_port}", Tools.ELogType.DPSLog);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
+            }
+        }
+
+
+
+        private async Task ReceiveData(CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
+
+                    if (bytesRead > 0)
+                    {
+                      
+
+
+              
+                    }
+
+                    Thread.Sleep(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                
+                Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
+
+                tcpClient.Close();
+                tcpClient = null;
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public void onSendMessage(byte[] buffer)
         {
-            NetworkStream stream = client.GetStream();
-            // 클라이언트에게 응답을 송신
-            string responseMessage = "Hello from server!";
-            byte[] data = Encoding.UTF8.GetBytes(responseMessage);
-            stream.Write(data, 0, data.Length);
-            client.Close();
+            string bytelog = Util.DebugBytestoString(buffer);
+            Tools.Log($"Send packet {bytelog}", Tools.ELogType.DPSLog);
+
+            try
+            {
+                if (_client != null)
+                {
+
+                    NetworkStream stream = _client.GetStream();
+                    stream.Write(buffer, 0, buffer.Length);
+             
+                }
+                else
+                {
+                    Tools.Log($"Disconnect client", Tools.ELogType.DPSLog);
+
+                }
+            }
+            catch
+            {
+                _client.Close();
+                Tools.Log($"Send Exception", Tools.ELogType.DPSLog);
+            }
         }
 
-
-        static void StartListener()
+        public static async Task StartListenerAsync()
         {
             try
             {
                 Tools.Log($"Try to Connect IP : {_ip} PORT : {_port}", Tools.ELogType.DPSLog);
 
-                IPAddress ipAddress = IPAddress.Parse(_ip);
-                int port = _port;
+                if (!IPAddress.TryParse(_ip, out IPAddress ipAddress))
+                {
+                    Tools.Log("Invalid IP address", Tools.ELogType.DPSLog);
+                    return;
+                }
 
-                TcpListener listener = new TcpListener(ipAddress, port);
+                if (_port < 0 || _port > 65535)
+                {
+                    Tools.Log("Invalid port number", Tools.ELogType.DPSLog);
+                    return;
+                }
+                TcpListener listener = new TcpListener(ipAddress, _port);
+                
                 listener.Start();
-
                 while (true)
                 {
-                    TcpClient client = listener.AcceptTcpClient();
-                    Thread clientThread = new Thread(() => HandleClient(client));
-                    clientThread.Start();
+                    _client= await listener.AcceptTcpClientAsync();
+                    _ = HandleClientAsync(_client);
                 }
             }
             catch (Exception ex)
             {
+                Tools.Log($"Exception: {ex.Message}", Tools.ELogType.DPSLog);
             }
         }
 
-        static void HandleClient(TcpClient client)
+        static async Task HandleClientAsync(TcpClient client)
         {
             try
             {
                 NetworkStream stream = client.GetStream();
                 // 클라이언트로부터 데이터 수신
                 byte[] buffer = new byte[1024];
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                
-
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                // Handle received data
             }
             catch (Exception ex)
             {
                 client.Close();
+                Tools.Log($"Exception: {ex.Message}", Tools.ELogType.DPSLog);
             }
         }
+
+
     }
 }

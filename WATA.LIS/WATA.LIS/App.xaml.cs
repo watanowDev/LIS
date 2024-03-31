@@ -31,6 +31,7 @@ namespace WATA.LIS
             return Container.Resolve<MainWindow>();
         }
 
+
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
 
@@ -44,6 +45,7 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<IRFIDModel>(x => rfid);
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
             containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
+            containerRegistry.RegisterSingleton<IDPSModel>(x => dpsmodel);
 
             if (!containerRegistry.IsRegistered<IWeightModel>())
                 containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
@@ -64,6 +66,11 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<ILedBuzzertModel>())
                 containerRegistry.RegisterSingleton<ILedBuzzertModel, Led_Buzzer_ConfigModel>();
 
+            if (!containerRegistry.IsRegistered<IDPSModel>())
+                containerRegistry.RegisterSingleton<IDPSModel, DPSConfigModel>();
+
+
+           
 
             MainConfigModel mainobj = (MainConfigModel)main;
 
@@ -88,6 +95,11 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_DPS>();
             }
+            else if (mainobj.device_type == "NXDPOC")//NXD POC 
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();// 니뽄 익스프레스 POC용도
+            }
+
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

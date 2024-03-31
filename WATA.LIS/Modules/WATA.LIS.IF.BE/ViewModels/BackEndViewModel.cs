@@ -39,6 +39,8 @@ namespace WATA.LIS.IF.BE.ViewModels
 
         private string _QRLoadID;
         public string QRLoadID { get { return _QRLoadID; } set { SetProperty(ref _QRLoadID, value); } }
+        
+
 
 
         

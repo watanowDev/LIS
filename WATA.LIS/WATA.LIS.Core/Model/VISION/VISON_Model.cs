@@ -12,6 +12,9 @@ namespace WATA.LIS.Core.Model.VISION
         public float area { get; set; }
         public float width { get; set; }
         public int height { get; set; }
+        public float depth { get; set; }
+
+
         public string qr { get; set; }
         public string status { get; set; }
 

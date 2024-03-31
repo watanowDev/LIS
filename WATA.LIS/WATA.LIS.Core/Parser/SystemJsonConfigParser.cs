@@ -43,6 +43,9 @@ namespace WATA.LIS.Core.Parser
                         distance.pick_up_distance_threshold = (int)json["distancesensor"]["pick_up_distance_threshold"];
 
                         LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
+                        LedBuzzer.InfoLanguage = json["led_buzzer"]["InfoLanguage"].ToString();
+
+
                         weight.ComPort = json["weightsensor"]["comport"].ToString();
                         weight.loadweight_timeout =(int)json["weightsensor"]["loadweight_timeout"];
                         weight.sensor_value = json["weightsensor"]["sensor_value"].ToString(); 

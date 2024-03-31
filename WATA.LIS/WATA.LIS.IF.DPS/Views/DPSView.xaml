@@ -9,7 +9,7 @@
              xmlns:lb ="clr-namespace:WATA.LIS.IF.DPS.Property"
              xmlns:i ="http://schemas.microsoft.com/expression/2010/interactiv1ity"
              mc:Ignorable="d" 
-             d:DesignHeight="720" d:DesignWidth="1280">
+             d:DesignHeight="720" d:DesignWidth="1700">
     <UserControl.Resources>
         <DataTemplate x:Key="DataTemplate1">
             <Grid>
@@ -30,6 +30,7 @@
             <RowDefinition Height="70"></RowDefinition>
             <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="0.1*"></RowDefinition>
+            <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="0.4*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -41,29 +42,445 @@
 
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"></ColumnDefinition>
                     <ColumnDefinition Width="100"></ColumnDefinition>
                     <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
-                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="200"></ColumnDefinition>
+
                 </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" TextWrapping="Wrap" Text="Set Clear" FontSize="20"  VerticalAlignment="Center" Height="50" Width="150"/>
+
+
+                <Grid Grid.Column="1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Location ID"                               FontSize="15"    Height="30" Width="100"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetClear_L_ID}"   FontSize="20"    Height="50" Width="100" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="2" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Controller ID"                             FontSize="15"    Height="30" Width="100"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetClear_C_ID}"   FontSize="20"    Height="50" Width="100" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+
+                <Button  Grid.Column="3" Command="{Binding ButtonFunc}" CommandParameter="SetClear" Width="100"  Content="Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
             </Grid>
+
 
         </Grid>
 
         <Grid Grid.Row="2">
 
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0" TextWrapping="Wrap" Text="Set Display" FontSize="15"  VerticalAlignment="Center" Height="50" Width="150"/>
+
+                <Grid Grid.Column="1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="L ID"                               FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_L_ID}"   FontSize="20"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="2" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="C ID"                               FontSize="15"    Height="30" Width="50"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_C_ID}"   FontSize="20"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="3" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="ADDR1"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_ADDR1}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="4" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="ADDR2"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_ADDR2}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="5" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="seq"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Seq}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="6" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color1"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color1}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="7" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color2"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color2}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="8" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color3"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color3}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="9" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color4"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color4}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="10" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color5"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color5}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="11" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color6"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color6}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="12" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color7"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color7}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="13" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color8"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color8}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="14" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color9"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color9}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="15" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color10"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color10}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="16" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color11"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color11}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="17" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color12"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color12}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="18" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color13"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color13}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="19" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="46.429"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color14"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color14}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+
+                <Grid Grid.Column="20" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color15"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color15}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+            </Grid>
         </Grid>
 
 
         <Grid Grid.Row="3">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="80"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+
+                </Grid.ColumnDefinitions>
+
+
+
+                <Grid Grid.Column="0" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="Color16"                               FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_Color16}"   FontSize="20"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF1"                               FontSize="15"    Height="30" Width="50"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF1}"   FontSize="20"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="2" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF2"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF2}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="3" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF3"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF3}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="4" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF4"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF4}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="5" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF5"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF5}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="6" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF6"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF6}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="7" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF7"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF7}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="8" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF8"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF8}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="9" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF9"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF9}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="10" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF10"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF10}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="11" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF11"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF11}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="12" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF12"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF12}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="13" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF13"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF13}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="14" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF14"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF14}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="15" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF15"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF15}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Grid Grid.Column="16" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"></RowDefinition>
+                        <RowDefinition Height="1*"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBox Grid.Row="0"  Text="UTF16"                             FontSize="15"    Height="30" Width="80"/>
+                    <TextBox Grid.Row="1" TextWrapping="Wrap" Text="{Binding SetDisplay_UTF16}"   FontSize="15"    Height="50" Width="80" BorderBrush="Black" BorderThickness="2"/>
+                </Grid>
+
+                <Button  Grid.Column="17" Command="{Binding ButtonFunc}" CommandParameter="SetDisplay" Width="100"  Content="Send" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+            </Grid>
+
+        </Grid>
+
+
+
+        <Grid Grid.Row="4">
             <Grid Grid.Column="0">
                 <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
                     <TabControl.Background>
@@ -73,7 +490,7 @@
                         </LinearGradientBrush>
                     </TabControl.Background>
                     <TabItem Header="Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                        <ListBox Background="DarkGray" ItemsSource="{Binding ListDPSLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" >
+                        <ListBox Background="DarkGray" ItemsSource="{Binding ListDPSLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
                         </ListBox>
                     </TabItem>
                 </TabControl>

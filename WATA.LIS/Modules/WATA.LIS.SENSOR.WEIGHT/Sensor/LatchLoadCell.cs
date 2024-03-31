@@ -37,6 +37,9 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             _eventAggregator = eventAggregator;
             _weightmodel = weightmodel;
             _weightConfig = (WeightConfigModel)_weightmodel;
+
+
+
         }
 
         private bool log_enable = true;
@@ -49,6 +52,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
+
+            _eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
         }
 
 
@@ -78,6 +83,19 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
             }
         }
+
+    private void onSendData(byte[] buffer)
+    {
+            string bytelog = Util.DebugBytestoString(buffer);
+            Tools.Log($"Send packet {bytelog}", Tools.ELogType.WeightLog);
+
+            if (_port == null || _port.IsOpen == false)
+            {
+
+                return;
+            }
+            _port.Write(buffer, 0, buffer.Length);
+    }
 
 
     private void ReceiveTimerEvent(object sender, EventArgs e)

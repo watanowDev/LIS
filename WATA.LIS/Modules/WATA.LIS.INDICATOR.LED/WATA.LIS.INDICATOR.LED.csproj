@@ -4,6 +4,7 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="IKVM" Version="8.4.4" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
   </ItemGroup>
   <ItemGroup>

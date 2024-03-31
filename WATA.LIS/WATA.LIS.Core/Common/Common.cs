@@ -88,4 +88,29 @@ namespace WATA.LIS.Core.Common
         EMERGENCY2,
         MEASRUE_OK
     }
+
+    public enum ePlayBuzzerLed_NXDPOC
+    {
+        SIZE_CHECK_START,
+        WEIGHT_CHECK_START,
+        SUCCESS,
+        FAIL,
+        DROP,
+        EMERGENCY,
+        EMERGENCY2,
+        MEASRUE_OK
+    }
+
+
+
+    public enum ePlayInfoSpeaker
+    {
+        size_check_complete,
+        size_check_start,
+        weight_check_complete,
+        weight_check_start,
+
+        weight_check_fail,
+        qr_check_fail,
+    }
 }

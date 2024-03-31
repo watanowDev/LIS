@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
@@ -51,6 +52,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
+
+         
         }
 
 

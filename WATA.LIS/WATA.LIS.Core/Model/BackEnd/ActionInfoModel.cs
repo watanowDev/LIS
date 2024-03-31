@@ -31,9 +31,8 @@ namespace WATA.LIS.Core.Model.BackEnd
 
         public float visionWidth { get; set; }
         public float visionHeight { get; set; }
-
+        public float visionDepth { get; set; }
         
-
 
         public List<byte> loadMatrix { get; set; } = new List<byte>();
     }
