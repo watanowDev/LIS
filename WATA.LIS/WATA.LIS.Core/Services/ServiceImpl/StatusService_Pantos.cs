@@ -1,4 +1,4 @@
-﻿using MaterialDesignThemes.Wpf;
+﻿ using MaterialDesignThemes.Wpf;
 using Microsoft.Xaml.Behaviors.Layout;
 using Newtonsoft.Json.Linq;
 using Prism.Events;

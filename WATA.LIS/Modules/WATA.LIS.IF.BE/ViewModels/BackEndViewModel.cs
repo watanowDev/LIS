@@ -10,7 +10,10 @@ using System.Linq;
 using System.Windows;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.VISION;
+using Windows.ApplicationModel.UserDataTasks;
 using static System.Net.WebRequestMethods;
 
 namespace WATA.LIS.IF.BE.ViewModels
@@ -39,11 +42,14 @@ namespace WATA.LIS.IF.BE.ViewModels
 
         private string _QRLoadID;
         public string QRLoadID { get { return _QRLoadID; } set { SetProperty(ref _QRLoadID, value); } }
-        
 
 
+  
 
-        
+        private string _QRInfo;
+        public string QRInfo { get { return _QRInfo; } set { SetProperty(ref _QRInfo, value); } }
+
+
 
         public BackEndViewModel(IEventAggregator eventAggregator)
         {
@@ -54,6 +60,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             Tools.Log($"##########################Init", Tools.ELogType.BackEndLog);
             Tools.Log($"##########################Init", Tools.ELogType.BackEndCurrentLog);
+            TagInfo = "DC4353495520008203224731";
         }
 
         public void SendAliveEvent()
@@ -186,27 +193,94 @@ namespace WATA.LIS.IF.BE.ViewModels
                         break;
 
 
-                    case "ActionIN":
-                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo, true, QRLoadID);
+                    case "ActionIN": //4.
+
+                        VISON_Model visionModel4 = new VISON_Model();
+                        visionModel4.area = 100;
+                        visionModel4.width = 100;
+                        visionModel4.height = 100;
+                        visionModel4.depth = 100;
+                        visionModel4.qr = "NA";
+                        visionModel4.status = "drop";
+                        byte[] _LoadMatrix4= new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        visionModel4.matrix = _LoadMatrix4;
+                        visionModel4.simulation_status = "IN";
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel4);
+
                         break;
 
-                    case "ActionOUT":
-                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo, true, QRLoadID);
+                    case "ActionOUT": //3.
+
+
+
+                        VISON_Model visionModel3 = new VISON_Model();
+                        visionModel3.area = 100;
+                        visionModel3.width = 100;
+                        visionModel3.height = 100;
+                        visionModel3.depth = 100;
+                        visionModel3.qr = "NA";
+                        visionModel3.status = "pickup";
+                        byte[] _LoadMatrix3 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        visionModel3.matrix = _LoadMatrix3;
+                        visionModel3.has_roof = false;
+                        visionModel3.simulation_status = "OUT";
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel3);
+
                         break;
 
-                    case "F_IN":
-                        SendAction_IN_InfoEvent(TagInfo, DistanceInfo, false, QRLoadID);
+                    case "F_IN":  //2.
+
+                        VISON_Model visionModel2 = new VISON_Model();
+                        visionModel2.area = 100;
+                        visionModel2.width = 100;
+                        visionModel2.height = 100;
+                        visionModel2.depth = 100;
+                        visionModel2.qr = "NA";
+                        visionModel2.status = "drop";
+                        byte[] _LoadMatrix2= new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        visionModel2.matrix = _LoadMatrix2;
+                        visionModel2.has_roof = false;
+                        visionModel2.simulation_status = "F_IN"; ;
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel2);
+
+
                         break;
 
-                    case "F_OUT":
-                        SendAction_OUT_InfoEvent(TagInfo, DistanceInfo, false, QRLoadID);
+                    case "F_OUT": //1.
+
+
+
+                        VISON_Model visionModel = new VISON_Model();
+                        visionModel.area = 100;
+                        visionModel.width = 100;
+                        visionModel.height = 100;
+                        visionModel.depth = 100;
+                        visionModel.qr = "NA";
+                        visionModel.status = "pickup";
+                        byte[] _LoadMatrix = new byte[10] {9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        visionModel.matrix = _LoadMatrix;
+                        visionModel.has_roof = false;
+                        visionModel.simulation_status = "F_OUT";
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
+
                         break;
 
                     case "Location":
 
-                        SendLocationInfoEvent(TagInfo);
+                        SendLocationInfoEvent("DA00025C00020000000200ED");
 
                         break;
+
+
+                    case "Container_Send":
+
+                        Container(QRInfo);
+
+                           
+                           
+
+                        break;
+
 
                     default:
                         break;
@@ -218,6 +292,25 @@ namespace WATA.LIS.IF.BE.ViewModels
             }
         }
 
+
+        private void Container(string qr)
+        {
+            ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
+            GateEventModelobj.vehicleId = m_vihicle;
+            GateEventModelobj.epc = TagInfo;
+            GateEventModelobj.loadId = qr;
+            string json_body = Util.ObjectToJson(GateEventModelobj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndContainer;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
+
+            Tools.Log($"URL : {post_obj.url} ", Tools.ELogType.BackEndLog);
+
+            Tools.Log($"Body : {json_body} ", Tools.ELogType.BackEndLog);
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+        }
 
         public void GateAction(eGateActionType action)
         {

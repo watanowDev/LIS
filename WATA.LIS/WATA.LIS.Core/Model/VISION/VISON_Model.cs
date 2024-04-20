@@ -20,7 +20,9 @@ namespace WATA.LIS.Core.Model.VISION
 
         public byte[] matrix { get; set; }
 
-        public bool has_roof  { get; set; }
+        public bool has_roof { get; set; }
+
+        public string simulation_status { get; set;} 
     }
 }
 

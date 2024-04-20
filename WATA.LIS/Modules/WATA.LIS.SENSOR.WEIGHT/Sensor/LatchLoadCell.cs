@@ -153,7 +153,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 int left_forkpower = RecvBytes[16];
 
                 WeightSensorModel model = new WeightSensorModel();
-
                 model.GrossWeight =  nGrossWeight;
                 model.RightWeight = nRightWeight;
                 model.LeftWeight = nLeftWeight;

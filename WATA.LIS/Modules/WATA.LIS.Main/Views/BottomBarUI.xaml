@@ -112,10 +112,14 @@
                 </RadioButton>
             </Grid>
 
-
+            <Grid Grid.Column="7">
+                <RadioButton IsChecked="{Binding DPSChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_DPS" Cursor="Hand">
+                    <TextBlock
+                    Text="DPS"
+                    Width="Auto"/>
+                </RadioButton>
+            </Grid>
 
         </Grid>
-
-      
     </Grid>
 </UserControl>

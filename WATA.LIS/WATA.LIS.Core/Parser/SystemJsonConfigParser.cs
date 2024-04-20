@@ -77,7 +77,6 @@ namespace WATA.LIS.Core.Parser
                         dps.IP = json["DPS"]["IP"].ToString();
                         dps.PORT = (int)json["DPS"]["PORT"];
 
-
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     } 
                 }

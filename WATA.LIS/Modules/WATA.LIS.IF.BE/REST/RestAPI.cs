@@ -152,25 +152,32 @@ namespace WATA.LIS.IF.BE.REST
                 }    
             }
             catch (WebException exception)
-            {
-                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
-                Tools.Log($"REST Poist Client Response Error smp", logtype);
-
-                using (WebResponse resp = exception.Response)
+            {/*
+                try
                 {
-                    Stream respStream = resp.GetResponseStream();
-                    using (StreamReader sr = new StreamReader(respStream))
-                    {
-                        string responseText = sr.ReadToEnd();
-                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
-                        Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
 
-                        if (Model.type == eMessageType.BackEndContainer)
+
+
+                    _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
+                    Tools.Log($"REST Poist Client Response Error smp", logtype);
+                    using (WebResponse resp = exception.Response)
+                    {
+                        Stream respStream = resp.GetResponseStream();
+                        using (StreamReader sr = new StreamReader(respStream))
                         {
-                            ParseContainterJson(responseText);
+                            string responseText = sr.ReadToEnd();
+                            _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
+                            Tools.Log($"REST Poist Client Response Data : {responseText} ", logtype);
+
+                            if (Model.type == eMessageType.BackEndContainer)
+                            {
+                                ParseContainterJson(responseText);
+                            }
                         }
                     }
                 }
+                catch { }
+                */
             }
         }
 

@@ -7,6 +7,7 @@ using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.SENSOR.WEIGHT.Sensor;
 using WATA.LIS.SENSOR.WEIGHT.Views;
+using WATA.LIS.TCPSocket;
 
 namespace WATA.LIS.SENSOR.WEIGHT
 {
@@ -42,8 +43,17 @@ namespace WATA.LIS.SENSOR.WEIGHT
                 Tools.Log($"SystemEngineering", Tools.ELogType.WeightLog);
                 ForkPatchSensor SystemEngineering = new ForkPatchSensor(_eventAggregator, _weightmodel, true);
                 SystemEngineering.SerialInit();
+            }
+            else if (_weightConfig.sensor_value == "TCP")
+            {
+
+                TcpServerSimple _tcpServer = new TcpServerSimple(_eventAggregator);
+                _tcpServer.initAsync();
 
             }
+
+
+
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

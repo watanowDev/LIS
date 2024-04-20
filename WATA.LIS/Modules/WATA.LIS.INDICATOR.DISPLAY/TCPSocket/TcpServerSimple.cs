@@ -136,7 +136,7 @@ namespace WATA.LIS.TCPSocket
                      _eventAggregator.GetEvent<IndicatorRecvEvent>().Publish(parse_str);
 
 
-                                 }
+                }
             }
             catch (Exception ex)
             {

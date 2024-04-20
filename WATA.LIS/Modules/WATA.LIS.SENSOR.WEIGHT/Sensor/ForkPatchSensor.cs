@@ -52,8 +52,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
-
-         
         }
 
 

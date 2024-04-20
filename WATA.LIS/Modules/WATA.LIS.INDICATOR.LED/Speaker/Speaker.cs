@@ -41,7 +41,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
 
         public void OnPlayEvent(ePlayInfoSpeaker speaker)
         {
-            if(_ledBuzzer.InfoLanguage == "JP")
+             if(_ledBuzzer.InfoLanguage == "JP")
             {
                 if(speaker == ePlayInfoSpeaker.size_check_start)
                 {
@@ -134,11 +134,14 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
         {
             try
             {
+                Thread.Sleep(200);
+                Tools.Log($"PlaySound {FileName}", Tools.ELogType.BackEndLog);
                 MediaPlayer mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.Open(new Uri("WaveResource\\" + FileName, UriKind.RelativeOrAbsolute));
                 mMediaPlayer.Play();
+                //mMediaPlayer.Close();
 
-            }
+             }
             catch
             {
 

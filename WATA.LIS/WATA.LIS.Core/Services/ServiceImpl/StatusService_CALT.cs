@@ -543,6 +543,9 @@ namespace WATA.LIS.Core.Services
             ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
 
             
+
+
+
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
                 m_LoadMatrix = null;

@@ -70,8 +70,6 @@ namespace WATA.LIS
                 containerRegistry.RegisterSingleton<IDPSModel, DPSConfigModel>();
 
 
-           
-
             MainConfigModel mainobj = (MainConfigModel)main;
 
             if (mainobj.device_type == "fork_lift_v1")
@@ -99,7 +97,10 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();// 니뽄 익스프레스 POC용도
             }
-
+            else if (mainobj.device_type == "WIS_KINTEX")//
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();// 국내전시회 3x3 선반용
+            }
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
