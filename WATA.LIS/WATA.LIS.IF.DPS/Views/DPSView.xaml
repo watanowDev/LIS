@@ -31,8 +31,9 @@
             <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="0.1*"></RowDefinition>
+            <RowDefinition Height="0.1*"></RowDefinition>
             <RowDefinition Height="0.4*"></RowDefinition>
-        </Grid.RowDefinitions>
+           </Grid.RowDefinitions>
         <Grid Grid.Row="0">
             <Label Content="WATA DPS Control(DPSS)" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="25" FontWeight="Bold"></Label>
         </Grid>
@@ -78,6 +79,54 @@
         </Grid>
 
         <Grid Grid.Row="2">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+
+
+                </Grid.ColumnDefinitions>
+
+               
+
+                <Button  Grid.Column="0" Command="{Binding ButtonFunc}" CommandParameter="IN_1" Width="100"  Content="입고1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="1" Command="{Binding ButtonFunc}" CommandParameter="IN_2" Width="100"  Content="입고2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="2" Command="{Binding ButtonFunc}" CommandParameter="IN_3" Width="100"  Content="입고3" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="3" Command="{Binding ButtonFunc}" CommandParameter="OUT_1" Width="100"  Content="출고1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="4" Command="{Binding ButtonFunc}" CommandParameter="OUT_2" Width="100"  Content="출고2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="5" Command="{Binding ButtonFunc}" CommandParameter="OUT_3" Width="100"  Content="출고3" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="6" Command="{Binding ButtonFunc}" CommandParameter="SN1" Width="100"  Content="시나리오1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="7" Command="{Binding ButtonFunc}" CommandParameter="SN2" Width="100"  Content="시나리오2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="8" Command="{Binding ButtonFunc}" CommandParameter="" Width="100"  Content="" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="9" Command="{Binding ButtonFunc}" CommandParameter="" Width="100"  Content="" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+
+
+
+
+
+
+            </Grid>
+
+
+        </Grid>
+
+        <Grid Grid.Row="3">
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -292,7 +341,9 @@
         </Grid>
 
 
-        <Grid Grid.Row="3">
+
+
+        <Grid Grid.Row="4">
 
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -480,7 +531,7 @@
 
 
 
-        <Grid Grid.Row="4">
+        <Grid Grid.Row="5">
             <Grid Grid.Column="0">
                 <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
                     <TabControl.Background>
