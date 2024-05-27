@@ -23,7 +23,7 @@ namespace WATA.LIS.VISION.Camera
             _visionModel = visionModel;
 
 
-            AstraCamera camera = new AstraCamera(_eventAggregator, _visionModel, main);
+            Camera.VisionCamera camera = new Camera.VisionCamera(_eventAggregator, _visionModel, main);
             camera.Init();
         
         }
@@ -35,7 +35,7 @@ namespace WATA.LIS.VISION.Camera
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<VisionCamera>(RegionNames.Content_Camera);
+            containerRegistry.RegisterForNavigation<Views.VisionCamera>(RegionNames.Content_Camera);
         }
     }
 }

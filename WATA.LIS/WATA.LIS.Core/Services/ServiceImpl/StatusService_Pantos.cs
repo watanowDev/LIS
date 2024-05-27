@@ -74,7 +74,6 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<WeightSensorTrigger>().Subscribe(OnWeightTrigger, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Subscribe(OnContainerReturn, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             
@@ -175,86 +174,6 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-
-        public void OnWeightTrigger(string str)
-        {
-            ActionInfoModel ActionObj = new ActionInfoModel();
-            ActionObj.actionInfo.workLocationId = m_location;
-            ActionObj.actionInfo.vehicleId = m_vihicle;
-            ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
-
-
-
-
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
-
-                m_LoadMatrix = null;
-                Tools.Log($"IN##########################weight  Action", Tools.ELogType.BackEndLog);
-                Tools.Log($"IN##########################weight  Action", Tools.ELogType.WeightLog);
-                Tools.Log($"weight Wait Delay {visionConfig.pickup_wait_delay} Second ", Tools.ELogType.BackEndLog);
-                Thread.Sleep(visionConfig.pickup_wait_delay);
-                Tools.Log($"Stop receive rack epc", Tools.ELogType.BackEndLog);
-                m_stop_rack_epc = false;
-                float rssi = (float)0.00;
-                bool IsShelf = false;
-                string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_pickup_timeout, rfidConfig.nRssi_pickup_threshold, ref rssi, m_Height_Distance_mm);
-                ActionObj.actionInfo.epc = epc_data;
-                Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
-                ActionObj.actionInfo.action = "IN";
-
-                ActionObj.actionInfo.loadRate = "0";
-                ActionObj.actionInfo.loadMatrixRaw = "10";
-                ActionObj.actionInfo.loadMatrixColumn = "10";
-
-
-                ActionObj.actionInfo.visionWidth = (float)00;
-                ActionObj.actionInfo.visionHeight =(float)00;
-
-
-                Thread.Sleep(_weightConfig.loadweight_timeout);
-
-                Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
-
-
-                ActionObj.actionInfo.loadWeight = m_weight.GrossWeight;
-
-                bool IsSendBackend = true;
-
-                if (ActionObj.actionInfo.loadWeight <= 5)
-                {
-
-                    IsSendBackend = false;
-                }
-         
-                if (IsSendBackend)
-                {
-                    Tools.Log($"Pickup ##QR : {m_qr}", Tools.ELogType.BackEndLog);
-                    string json_body = Util.ObjectToJson(ActionObj);
-                    RestClientPostModel post_obj = new RestClientPostModel();
-                    post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-                    post_obj.body = json_body;
-                    post_obj.type = eMessageType.BackEndAction;
-                    _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
-
-
-                    Thread.Sleep(10);
-                    post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-                    _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FINISH);
-
-
-                }
-                else
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
-
-                }
-            
-        }
-
-        
-
         private void CurrentLocationTimerEvent(object sender, EventArgs e)
         {
             string epc = GetMostlocationEPC(1, 0);
@@ -280,15 +199,14 @@ namespace WATA.LIS.Core.Services
 
                 Thread.Sleep(10);
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
-
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
             }
             else if (epc.Contains("DC"))
             {
                 ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
-                GateEventModelobj.vehicleId = m_vihicle;
-                GateEventModelobj.epc = epc;
+                GateEventModelobj.containerInfo.vehicleId = m_vihicle;
+                GateEventModelobj.containerInfo.epc = epc;
 
 
                 if (m_container_qr != "NA")
@@ -296,7 +214,7 @@ namespace WATA.LIS.Core.Services
 
                     Tools.Log($"Send Container {m_container_qr} ", Tools.ELogType.ActionLog);
                     Tools.Log($"Send Container {m_container_qr} ", Tools.ELogType.BackEndLog);
-                    GateEventModelobj.loadId = m_container_qr;
+                    GateEventModelobj.containerInfo.loadId = m_container_qr;
 
               
                     string json_body = Util.ObjectToJson(GateEventModelobj);
@@ -313,7 +231,6 @@ namespace WATA.LIS.Core.Services
                     Tools.Log($"TRUE URL : {post_obj.url} ", Tools.ELogType.ActionLog);
                     Tools.Log($"TRUE URL : {post_obj.url} ", Tools.ELogType.BackEndLog);
 
-
                     Tools.Log($"TRUE Body : {json_body} ", Tools.ELogType.ActionLog);
                     Tools.Log($"TRUE Body : {json_body} ", Tools.ELogType.BackEndLog);
                     _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
@@ -323,7 +240,7 @@ namespace WATA.LIS.Core.Services
                 {
                     Tools.Log($"NA Send Container {m_container_qr} ", Tools.ELogType.ActionLog);
                     Tools.Log($"NA Send Container {m_container_qr} ", Tools.ELogType.BackEndLog);
-                    GateEventModelobj.loadId = m_container_qr;
+                    GateEventModelobj.containerInfo.loadId = m_container_qr;
 
 
                     string json_body = Util.ObjectToJson(GateEventModelobj);
@@ -349,14 +266,6 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-     /*   
-        int test1 = 0;
-        int test2 = 0;
-        int test3 = 0;
-        int test4 = 0;
-        int test5 = 0;
-        int test_qr = 0;
-     */
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             SendToIndicator(m_weight.GrossWeight, m_weight.LeftWeight, m_weight.RightWeight, m_qr, m_vision_width, m_vision_height, m_vision_depth);
@@ -364,8 +273,6 @@ namespace WATA.LIS.Core.Services
             //SendToIndicator(test1 ++, test2 ++, test3 ++, test_qr.ToString(), test4 ++ , test5 ++);
             //test_qr++;
         }
-
-
 
         private void BuzzerTimerEvent(object sender, EventArgs e)
         {

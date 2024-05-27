@@ -31,6 +31,7 @@
             <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="1.*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
@@ -66,7 +67,13 @@
 
         </Grid>
 
- 
+        <Grid Grid.Row="4">
+            <Button Command="{Binding ButtonFunc}" CommandParameter="CTR_1" Grid.Column="0" Grid.Row="0" Width="144"  Content="CTR_1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left"   />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="CTR_2" Grid.Column="0" Grid.Row="0" Width="144"  Content="CTR_2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="144,0,0,0"/>
+            <Button Command="{Binding ButtonFunc}" CommandParameter="CTR_3" Grid.Column="0" Grid.Row="0" Width="144"  Content="CTR_3" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="291,0,0,0"   />
+            <Button Command="{Binding ButtonFunc}" CommandParameter="CTR_4" Grid.Column="0" Grid.Row="0" Width="144"  Content="CTR_4" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Left" Margin="437,0,0,0"/>
+        </Grid>
+
 
         <Grid Grid.Row="5">
             <Grid.ColumnDefinitions>

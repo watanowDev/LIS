@@ -7,9 +7,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Windows;
+using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.VISION;
@@ -49,7 +52,10 @@ namespace WATA.LIS.IF.BE.ViewModels
         private string _QRInfo;
         public string QRInfo { get { return _QRInfo; } set { SetProperty(ref _QRInfo, value); } }
 
-
+        DispatcherTimer _JobTimer1;
+        DispatcherTimer _JobTimer2;
+        DispatcherTimer _JobTimer3;
+        DispatcherTimer _JobTimer4;
 
         public BackEndViewModel(IEventAggregator eventAggregator)
         {
@@ -61,7 +67,241 @@ namespace WATA.LIS.IF.BE.ViewModels
             Tools.Log($"##########################Init", Tools.ELogType.BackEndLog);
             Tools.Log($"##########################Init", Tools.ELogType.BackEndCurrentLog);
             TagInfo = "DC4353495520008203224731";
+
+
+            _JobTimer1 = new DispatcherTimer();
+            _JobTimer1.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _JobTimer1.Tick += new EventHandler(JobEvent1);
+
+            _JobTimer2 = new DispatcherTimer();
+            _JobTimer2.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _JobTimer2.Tick += new EventHandler(JobEvent2);
+
+            _JobTimer3 = new DispatcherTimer();
+            _JobTimer3.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _JobTimer3.Tick += new EventHandler(JobEvent3);
+
+            _JobTimer4 = new DispatcherTimer();
+            _JobTimer4.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _JobTimer4.Tick += new EventHandler(JobEvent4);
+
         }
+
+        private int _jobcnt1 = 0;
+        private int _jobcnt2 = 0;
+        private int _jobcnt3 = 0;
+        private int _jobcnt4 = 0;
+
+
+        private void JobEvent1(object sender, EventArgs e)
+        {
+
+            SimulationModel sim_start = new SimulationModel();
+            if (_jobcnt1 == 0)
+            {
+                Tools.Log($"##########################Senario 1 Start", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 1 End", Tools.ELogType.BackEndCurrentLog);
+
+                sim_start.EPC = "filed";
+                sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+            }
+            else if (_jobcnt1 == 10)
+            {
+                VISON_Model pickup_vision = new VISON_Model();
+                pickup_vision.area = 100;
+                pickup_vision.width = 100;
+                pickup_vision.height = 100;
+                pickup_vision.depth = 100;
+                pickup_vision.qr = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                pickup_vision.status = "pickup";
+                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                pickup_vision.matrix = matrix_temp;
+                pickup_vision.has_roof = false;
+                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
+            }
+            else if (_jobcnt1 == 20)
+            {
+                sim_start.EPC = "DC4353495520008203224731";
+                sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+
+            }
+            else if (_jobcnt1 == 30)
+            {
+
+                VISON_Model drop_vision = new VISON_Model();
+                drop_vision.area = 100;
+                drop_vision.width = 100;
+                drop_vision.height = 100;
+                drop_vision.depth = 100;
+                drop_vision.qr = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                drop_vision.status = "drop";
+                byte[] matrix_temp1 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                drop_vision.matrix = matrix_temp1;
+                drop_vision.has_roof = false;
+                _eventAggregator.GetEvent<VISION_Event>().Publish(drop_vision);
+
+
+            }
+            else if (_jobcnt1 == 40)
+            {
+                sim_start.IS_SIMULATION = false;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+                _jobcnt1 = 0;
+                _JobTimer1.Stop();
+                Tools.Log($"##########################Senario 1 End", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 1 End", Tools.ELogType.BackEndCurrentLog);
+            }
+
+
+            _jobcnt1++;
+        }
+
+
+        private void JobEvent2(object sender, EventArgs e)
+        {
+
+            SimulationModel sim_start = new SimulationModel();
+            if (_jobcnt2 == 0)
+            {
+                Tools.Log($"##########################Senario 2 Start", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 2 End", Tools.ELogType.BackEndCurrentLog);
+
+                sim_start.EPC = "filed";
+                sim_start.QR = "NA";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+            }
+            else if (_jobcnt2 == 10)
+            {
+                VISON_Model pickup_vision = new VISON_Model();
+                pickup_vision.area = 100;
+                pickup_vision.width = 100;
+                pickup_vision.height = 100;
+                pickup_vision.depth = 100;
+                pickup_vision.qr = "NA";
+                pickup_vision.status = "pickup";
+                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                pickup_vision.matrix = matrix_temp;
+                pickup_vision.has_roof = false;
+                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
+            }
+            else if (_jobcnt2 == 20)
+            {
+                sim_start.IS_SIMULATION = false;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+                _jobcnt1 = 0;
+                _JobTimer2.Stop();
+                Tools.Log($"##########################Senario 2 End", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 2 End", Tools.ELogType.BackEndCurrentLog);
+            }
+            _jobcnt2++;
+        }
+
+
+        private void JobEvent3(object sender, EventArgs e)
+        {
+
+            SimulationModel sim_start = new SimulationModel();
+            if (_jobcnt3 == 0)
+            {
+                Tools.Log($"##########################Senario 3 Start", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 3 End", Tools.ELogType.BackEndCurrentLog);
+
+                sim_start.EPC = "filed";
+                sim_start.QR = "error_qr_data";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+            }
+            else if (_jobcnt3 == 10)
+            {
+                VISON_Model pickup_vision = new VISON_Model();
+                pickup_vision.area = 100;
+                pickup_vision.width = 100;
+                pickup_vision.height = 100;
+                pickup_vision.depth = 100;
+                pickup_vision.qr = "error_qr_data";
+                pickup_vision.status = "pickup";
+                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                pickup_vision.matrix = matrix_temp;
+                pickup_vision.has_roof = false;
+                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
+            }
+            else if (_jobcnt3 == 20)
+            {
+                sim_start.EPC = "DC4353495520008203224731";
+                sim_start.QR = "error_qr_data";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+
+            }
+            else if (_jobcnt3 == 30)
+            {
+                sim_start.IS_SIMULATION = false;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+                _jobcnt3 = 0;
+                _JobTimer3.Stop();
+                Tools.Log($"##########################Senario 3 End", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 3 End", Tools.ELogType.BackEndCurrentLog);
+            }
+
+
+            _jobcnt3++;
+        }
+
+        private void JobEvent4(object sender, EventArgs e)
+        {
+
+            SimulationModel sim_start = new SimulationModel();
+            if (_jobcnt4 == 0)
+            {
+                Tools.Log($"##########################Senario 4 Start", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 4 End", Tools.ELogType.BackEndCurrentLog);
+                sim_start.EPC = "filed";
+                sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+            }
+            else if (_jobcnt4 == 10)
+            {
+                VISON_Model pickup_vision = new VISON_Model();
+                pickup_vision.area = 100;
+                pickup_vision.width = 100;
+                pickup_vision.height = 100;
+                pickup_vision.depth = 100;
+                pickup_vision.qr = "NA";
+                pickup_vision.status = "pickup";
+                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                pickup_vision.matrix = matrix_temp;
+                pickup_vision.has_roof = false;
+                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
+            }
+            else if (_jobcnt4 == 20)
+            {
+                sim_start.EPC = "DC4353495520008203224733";
+                sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
+                sim_start.IS_SIMULATION = true;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+
+            }
+     
+            else if (_jobcnt4 == 30)
+            {
+                sim_start.IS_SIMULATION = false;
+                _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
+                _jobcnt4 = 0;
+                _JobTimer4.Stop();
+                Tools.Log($"##########################Senario 4 End", Tools.ELogType.BackEndLog);
+                Tools.Log($"##########################Senario 4 End", Tools.ELogType.BackEndCurrentLog);
+            }
+            _jobcnt4++;
+        }
+
+
+
 
         public void SendAliveEvent()
         {
@@ -275,11 +515,37 @@ namespace WATA.LIS.IF.BE.ViewModels
                     case "Container_Send":
 
                         Container(QRInfo);
-
-                           
                            
 
                         break;
+
+
+                    case "CTR_1":
+                        {
+
+                            _JobTimer1.Start();
+                            break;
+                        }
+
+                    case "CTR_2":
+                        {
+                            _JobTimer2.Start();
+                            break;
+                        }
+
+
+                    case "CTR_3":
+                        {
+                            _JobTimer3.Start();
+                            break;
+                        }
+
+
+                    case "CTR_4":
+                        {
+                            _JobTimer4.Start();
+                            break;
+                        }
 
 
                     default:
@@ -296,9 +562,9 @@ namespace WATA.LIS.IF.BE.ViewModels
         private void Container(string qr)
         {
             ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
-            GateEventModelobj.vehicleId = m_vihicle;
-            GateEventModelobj.epc = TagInfo;
-            GateEventModelobj.loadId = qr;
+            GateEventModelobj.containerInfo.vehicleId = m_vihicle;
+            GateEventModelobj.containerInfo.epc = TagInfo;
+            GateEventModelobj.containerInfo.loadId = qr;
             string json_body = Util.ObjectToJson(GateEventModelobj);
             RestClientPostModel post_obj = new RestClientPostModel();
 

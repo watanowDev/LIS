@@ -9,7 +9,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.VISION;
 
@@ -108,6 +110,11 @@ namespace WATA.LIS.Main.ViewModels
         {
             try
             {
+
+
+      
+
+
                 if (command == null) return;
                 switch (command)
                 {
@@ -120,8 +127,35 @@ namespace WATA.LIS.Main.ViewModels
 
                             Environment.Exit(0);
                         }
-
                         break;
+
+                    case "r1":
+                        {
+                            SimulationModel obj = new SimulationModel();
+                            obj.EPC = "DA00025C00020000000100ED";
+                            _eventAggregator.GetEvent<SimulModeEvent>().Publish(obj);
+
+                            break;
+                        }
+
+
+                    case "r2":
+                        {
+                            SimulationModel obj = new SimulationModel();
+                            obj.EPC = "DA00025C00020000000200ED";
+                            _eventAggregator.GetEvent<SimulModeEvent>().Publish(obj);
+
+                            break;
+                        }
+
+                    case "r3":
+                        {
+                            SimulationModel obj = new SimulationModel();
+                            obj.EPC = "DA00025C00020000000300ED";
+                            _eventAggregator.GetEvent<SimulModeEvent>().Publish(obj);
+                            break;
+                        }
+
                     default:
                         break;
                 }

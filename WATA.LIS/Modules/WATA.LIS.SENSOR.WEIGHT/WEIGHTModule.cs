@@ -21,7 +21,6 @@ namespace WATA.LIS.SENSOR.WEIGHT
             _eventAggregator = eventAggregator;
             _weightmodel = weightmodel;
 
-
             WeightConfigModel _weightConfig = (WeightConfigModel)_weightmodel;
 
             if (_weightConfig.sensor_value == "TJ")
@@ -29,8 +28,6 @@ namespace WATA.LIS.SENSOR.WEIGHT
                 Tools.Log($"TJ", Tools.ELogType.WeightLog);
                 LatchLoadCell china = new LatchLoadCell(_eventAggregator, _weightmodel);
                 china.SerialInit();
-
-
             }
             else if (_weightConfig.sensor_value == "SE")
             {
@@ -49,18 +46,12 @@ namespace WATA.LIS.SENSOR.WEIGHT
 
                 TcpServerSimple _tcpServer = new TcpServerSimple(_eventAggregator);
                 _tcpServer.initAsync();
-
             }
-
-
-
         }
-
         public void OnInitialized(IContainerProvider containerProvider)
         {
 
         }
-
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<WeightView>(RegionNames.Content_Weight);

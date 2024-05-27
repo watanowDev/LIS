@@ -113,7 +113,7 @@
                 <Button  Grid.Column="5" Command="{Binding ButtonFunc}" CommandParameter="OUT_3" Width="100"  Content="출고3" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
                 <Button  Grid.Column="6" Command="{Binding ButtonFunc}" CommandParameter="SN1" Width="100"  Content="시나리오1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
                 <Button  Grid.Column="7" Command="{Binding ButtonFunc}" CommandParameter="SN2" Width="100"  Content="시나리오2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
-                <Button  Grid.Column="8" Command="{Binding ButtonFunc}" CommandParameter="" Width="100"  Content="" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
+                <Button  Grid.Column="8" Command="{Binding ButtonFunc}" CommandParameter="clear" Width="100"  Content="Clear" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
                 <Button  Grid.Column="9" Command="{Binding ButtonFunc}" CommandParameter="" Width="100"  Content="" Style="{StaticResource ButtonStyle1}"  BorderThickness="2"     />
 
 

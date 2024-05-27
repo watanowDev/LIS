@@ -38,8 +38,13 @@ namespace WATA.LIS.Core.Parser
 
                         main.forkLiftID = json["main"]["unit_id"].ToString();
                         main.device_type = json["main"]["device_type"].ToString();
-                        distance.ComPort  = json["distancesensor"]["comport"].ToString();
+                        
+                        main.projectId = json["main"]["projectId"].ToString();
+                        main.mappingId = json["main"]["mappingId"].ToString();
+                        main.mapId = json["main"]["mapId"].ToString();
 
+
+                        distance.ComPort  = json["distancesensor"]["comport"].ToString();
                         distance.pick_up_distance_threshold = (int)json["distancesensor"]["pick_up_distance_threshold"];
 
                         LedBuzzer.volume = (int)json["led_buzzer"]["volume"];

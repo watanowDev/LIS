@@ -573,51 +573,32 @@ namespace WATA.LIS.IF.DPS.ViewModels
         {
             Tools.Log($"SetClearTest", Tools.ELogType.DPSLog);
 
-            Thread.Sleep(1000);
 
-
-            DPS_CLEAR();
-
-
-            Thread.Sleep(2000);
-
+            Tools.Log($"1", Tools.ELogType.DPSLog);
             SetDisplay("완", "료");
-
-            Tools.Log($"SetDisplaytest", Tools.ELogType.DPSLog);
-
-
-            Thread.Sleep(10000);
-            DPS_CLEAR();
-            Thread.Sleep(3000);
+            Thread.Sleep(1000);
+            Tools.Log($"2", Tools.ELogType.DPSLog);
             SetDisplay("대", "기");
-            Thread.Sleep(3000);
-            DPS_CLEAR();
-            Thread.Sleep(3000);
-
+            Thread.Sleep(1000);
+            Tools.Log($"3", Tools.ELogType.DPSLog);
             SetDisplay("입", "고", "2");
+            Thread.Sleep(1000);
+            Tools.Log($"4", Tools.ELogType.DPSLog);
         }
 
         private void DPS_EVENT2(string a1)
         {
-            Tools.Log($"SetClearTest", Tools.ELogType.DPSLog);
-
-            Thread.Sleep(1000);
-
-            DPS_CLEAR();
-
-            Thread.Sleep(2000);
+            Tools.Log($"DPS_EVENT2", Tools.ELogType.DPSLog);
+            Tools.Log($"1", Tools.ELogType.DPSLog);
             SetDisplay("완", "료");
-
-            Tools.Log($"SetDisplaytest", Tools.ELogType.DPSLog);
-
-            Thread.Sleep(3000);
-            DPS_CLEAR();
-            Thread.Sleep(3000);
+            Thread.Sleep(1000);
+            Tools.Log($"2", Tools.ELogType.DPSLog);
             SetDisplay("대", "기");
-            Thread.Sleep(3000);
-            DPS_CLEAR();
-            Thread.Sleep(3000);
+            Thread.Sleep(1000);
+            Tools.Log($"3", Tools.ELogType.DPSLog);
             SetDisplay("출", "고", "2");
+            Thread.Sleep(1000);
+            Tools.Log($"4", Tools.ELogType.DPSLog);
         }
 
 
@@ -672,6 +653,58 @@ namespace WATA.LIS.IF.DPS.ViewModels
 
         }
 
+
+        private void CLEAR()
+        {
+            SetDisplayModel SetDisplay_obj = new SetDisplayModel();
+
+
+            SetDisplay_obj.payload.AckType = 0;
+            SetDisplay_obj.payload.LocationID = 0x30;
+            SetDisplay_obj.payload.ControllerID = 0x33;
+            SetDisplay_obj.payload.ADDR1 = 1;
+            SetDisplay_obj.payload.ADDR2 = 0;
+            SetDisplay_obj.payload.SEQ = 0;
+            SetDisplay_obj.payload.COLORSET1 = 0;
+            SetDisplay_obj.payload.COLORSET2 = 0;
+            SetDisplay_obj.payload.COLORSET3 = 0;
+            SetDisplay_obj.payload.COLORSET4 = 0;
+            SetDisplay_obj.payload.COLORSET5 = 0;
+            SetDisplay_obj.payload.COLORSET6 = 0;
+            SetDisplay_obj.payload.COLORSET7 = 0;
+            SetDisplay_obj.payload.COLORSET8 = 0;
+            SetDisplay_obj.payload.COLORSET9 = 0;
+            SetDisplay_obj.payload.COLORSET10 = 0;
+            SetDisplay_obj.payload.COLORSET11 = 0;
+            SetDisplay_obj.payload.COLORSET12 = 0;
+            SetDisplay_obj.payload.COLORSET13 = 0;
+            SetDisplay_obj.payload.COLORSET14 = 0;
+            SetDisplay_obj.payload.COLORSET15 = 0;
+            SetDisplay_obj.payload.COLORSET16 = 0;
+
+            SetDisplay_obj.payload.UTF1 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+            SetDisplay_obj.payload.UTF2 = ConvertASCII(Encoding.UTF8.GetBytes("기"));
+            SetDisplay_obj.payload.UTF3 = ConvertASCII(Encoding.UTF8.GetBytes(" "));
+            SetDisplay_obj.payload.UTF4 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+            SetDisplay_obj.payload.UTF5 = ConvertASCII(Encoding.UTF8.GetBytes("기"));
+            SetDisplay_obj.payload.UTF6 = ConvertASCII(Encoding.UTF8.GetBytes(" "));
+            SetDisplay_obj.payload.UTF7 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+            SetDisplay_obj.payload.UTF8 = ConvertASCII(Encoding.UTF8.GetBytes("기"));
+            SetDisplay_obj.payload.UTF9 = ConvertASCII(Encoding.UTF8.GetBytes(" "));
+            SetDisplay_obj.payload.UTF10 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+            SetDisplay_obj.payload.UTF11 = ConvertASCII(Encoding.UTF8.GetBytes("기"));
+            SetDisplay_obj.payload.UTF12 = ConvertASCII(Encoding.UTF8.GetBytes(" "));
+            SetDisplay_obj.payload.UTF13 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+            SetDisplay_obj.payload.UTF14 = ConvertASCII(Encoding.UTF8.GetBytes("기"));
+            SetDisplay_obj.payload.UTF15 = ConvertASCII(Encoding.UTF8.GetBytes(" "));
+            SetDisplay_obj.payload.UTF16 = ConvertASCII(Encoding.UTF8.GetBytes("대"));
+
+            byte[] SetDisplay_buffer = Util.ObjectToByte(SetDisplay_obj);
+            _eventAggregator.GetEvent<DPSSendEvent>().Publish(SetDisplay_buffer);
+
+        }
+
+
         private void SetDisplay(string a1, string a2, string a3)
         {
             SetDisplayModel SetDisplay_obj = new SetDisplayModel();
@@ -719,11 +752,6 @@ namespace WATA.LIS.IF.DPS.ViewModels
 
             byte[] SetDisplay_buffer = Util.ObjectToByte(SetDisplay_obj);
             _eventAggregator.GetEvent<DPSSendEvent>().Publish(SetDisplay_buffer);
-
-
-
-
-
 
         }
 
@@ -792,6 +820,12 @@ namespace WATA.LIS.IF.DPS.ViewModels
                     case "SN2":
 
                         DPS_EVENT2("2"); //대기 입고2 대기
+                        break;
+
+                    case "clear":
+
+                        CLEAR();
+
                         break;
 
 

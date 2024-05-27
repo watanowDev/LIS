@@ -12,7 +12,9 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public string forkLiftID { get; set; }   
         public string device_type { get; set; }
 
-
+        public string projectId { get; set; }
+        public string mappingId { get; set; }
+        public string mapId { get; set; }
     }
 }
 

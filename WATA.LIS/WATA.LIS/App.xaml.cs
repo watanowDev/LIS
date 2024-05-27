@@ -85,11 +85,11 @@ namespace WATA.LIS
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();//현재 지게차용  Apulse RF수신기
 
             }
-            else if (mainobj.device_type == "gate_checker")//창고방 Gate Sender
+            else if (mainobj.device_type == "gate_checker")//창고방 Gate Sender 현재는 안씀
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_GateChecker>();
             }
-            else if (mainobj.device_type == "DPS")//DPS
+            else if (mainobj.device_type == "DPS")//DPS DPS 컨트롤 테스트때 사용
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_DPS>();
             }
@@ -100,6 +100,11 @@ namespace WATA.LIS
             else if (mainobj.device_type == "WIS_KINTEX")//
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();// 국내전시회 3x3 선반용
+            }
+            else if (mainobj.device_type == "CTR")//CTR POC
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();//현재 지게차용  Apulse RF수신기
+
             }
         }
 

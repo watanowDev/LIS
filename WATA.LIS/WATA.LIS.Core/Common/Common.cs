@@ -109,8 +109,8 @@ namespace WATA.LIS.Core.Common
         size_check_start,
         weight_check_complete,
         weight_check_start,
-
         weight_check_fail,
         qr_check_fail,
+        dummy,
     }
 }

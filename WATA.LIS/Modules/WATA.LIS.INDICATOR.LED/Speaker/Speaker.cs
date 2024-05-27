@@ -67,6 +67,10 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("jp_qr_error.mp3");
                 }
+                else if (speaker == ePlayInfoSpeaker.dummy)
+                {
+                    PlaySound("dummy.mp3");
+                }
 
 
             }
@@ -95,6 +99,10 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 else if (speaker == ePlayInfoSpeaker.qr_check_fail)
                 {
                     PlaySound("kr_qr_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.dummy)
+                {
+                    PlaySound("dummy.mp3");
                 }
 
             }
@@ -126,6 +134,10 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 else if (speaker == ePlayInfoSpeaker.qr_check_fail)
                 {
                     PlaySound("en_qr_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.dummy)
+                {
+                    PlaySound("dummy.mp3");
                 }
             }
         }

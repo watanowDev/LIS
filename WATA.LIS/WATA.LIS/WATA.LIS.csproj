@@ -5,7 +5,7 @@
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
     <BaseOutputPath></BaseOutputPath>
-    <AssemblyVersion>9.3.3.7</AssemblyVersion>
+    <AssemblyVersion>9.4.4.7</AssemblyVersion>
     <FileVersion>9.0.0.7</FileVersion>
   </PropertyGroup>
   <ItemGroup>

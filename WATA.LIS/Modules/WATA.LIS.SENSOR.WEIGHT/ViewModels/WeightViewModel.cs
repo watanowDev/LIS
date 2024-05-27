@@ -51,10 +51,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.ViewModels
                         Tools.Log($"ZeroSet Request", Tools.ELogType.WeightLog);
                         byte[] ZerosetReq = { 0x55, 0xAB, 0x03, 0x00 };
                         _eventAggregator.GetEvent<WeightSensorSendEvent>().Publish(ZerosetReq);
-
                         break;
-
-
 
 
                     default:

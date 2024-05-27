@@ -157,12 +157,13 @@ namespace WATA.LIS.TCPSocket
                     Tools.Log($"length {receivedMessage.Length}", Tools.ELogType.WeightLog);
 
                     
-                    if (receivedMessage.Length > 70)
+                    /*if (receivedMessage.Length > 70)
                     {
                         Tools.Log($"Json Length Error", Tools.ELogType.WeightLog);
 
                         return;
                     }
+                    */
 
                     if (IsValidJson(receivedMessage))
                     {
@@ -215,6 +216,7 @@ namespace WATA.LIS.TCPSocket
 
 
                     _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
+                    Thread.Sleep(100);
 
                 }
             }

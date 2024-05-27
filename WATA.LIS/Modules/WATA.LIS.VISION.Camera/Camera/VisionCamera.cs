@@ -23,7 +23,7 @@ using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.VISION.Camera.Camera
 {
-    public class AstraCamera
+    public class VisionCamera
     {
         Thread RecvThread;
 
@@ -36,7 +36,7 @@ namespace WATA.LIS.VISION.Camera.Camera
         DispatcherTimer Process_chk_Timer;
         bool CameraDisable = false;
 
-        public AstraCamera(IEventAggregator eventAggregator, IVisionModel visionModel, IMainModel main)
+        public VisionCamera(IEventAggregator eventAggregator, IVisionModel visionModel, IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _visonModel = visionModel;

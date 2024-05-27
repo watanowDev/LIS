@@ -77,11 +77,8 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Subscribe(OnContainerReturn, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
 
-
-
             _weightmodel = weightmodel;
             _distance = (DistanceConfigModel)distanceModel;
-
             _weightConfig = (WeightConfigModel)_weightmodel;
 
 
@@ -250,8 +247,8 @@ namespace WATA.LIS.Core.Services
             else if (epc.Contains("DC"))
             {
                 ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
-                GateEventModelobj.vehicleId = m_vihicle;
-                GateEventModelobj.epc = epc;
+                GateEventModelobj.containerInfo.vehicleId = m_vihicle;
+                GateEventModelobj.containerInfo.epc = epc;
 
 
                 if (m_container_qr != "NA")
@@ -259,7 +256,7 @@ namespace WATA.LIS.Core.Services
 
                     Tools.Log($"Send Container {m_container_qr} ", Tools.ELogType.ActionLog);
                     Tools.Log($"Send Container {m_container_qr} ", Tools.ELogType.BackEndLog);
-                    GateEventModelobj.loadId = m_container_qr;
+                    GateEventModelobj.containerInfo.loadId = m_container_qr;
 
               
                     string json_body = Util.ObjectToJson(GateEventModelobj);
@@ -286,7 +283,7 @@ namespace WATA.LIS.Core.Services
                 {
                     Tools.Log($"NA Send Container {m_container_qr} ", Tools.ELogType.ActionLog);
                     Tools.Log($"NA Send Container {m_container_qr} ", Tools.ELogType.BackEndLog);
-                    GateEventModelobj.loadId = m_container_qr;
+                    GateEventModelobj.containerInfo.loadId = m_container_qr;
 
 
                     string json_body = Util.ObjectToJson(GateEventModelobj);
@@ -315,9 +312,6 @@ namespace WATA.LIS.Core.Services
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             SendToIndicator(m_weight.GrossWeight, m_weight.LeftWeight, m_weight.RightWeight, m_qr, m_vision_width, m_vision_height, m_vision_depth);
-
-            //SendToIndicator(test1 ++, test2 ++, test3 ++, test_qr.ToString(), test4 ++ , test5 ++);
-            //test_qr++;
         }
 
         private void BuzzerTimerEvent(object sender, EventArgs e)
