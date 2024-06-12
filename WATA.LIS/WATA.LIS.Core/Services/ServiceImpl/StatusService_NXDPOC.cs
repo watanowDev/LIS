@@ -248,7 +248,7 @@ namespace WATA.LIS.Core.Services
             {
                 ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
                 GateEventModelobj.containerInfo.vehicleId = m_vihicle;
-                GateEventModelobj.containerInfo.epc = epc;
+                GateEventModelobj.containerInfo.cepc = epc;
 
 
                 if (m_container_qr != "NA")

@@ -20,6 +20,7 @@ namespace WATA.LIS.Core.Model.BackEnd
         public string action { get; set; }
         public string vehicleId { get; set; }
         public string epc { get; set; }
+        public string cepc { get; set; }
         public bool shelf { get; set; }
         public string height { get; set; }
         public string loadId { get; set; }

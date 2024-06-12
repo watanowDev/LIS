@@ -563,7 +563,7 @@ namespace WATA.LIS.IF.BE.ViewModels
         {
             ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
             GateEventModelobj.containerInfo.vehicleId = m_vihicle;
-            GateEventModelobj.containerInfo.epc = TagInfo;
+            GateEventModelobj.containerInfo.cepc = TagInfo;
             GateEventModelobj.containerInfo.loadId = qr;
             string json_body = Util.ObjectToJson(GateEventModelobj);
             RestClientPostModel post_obj = new RestClientPostModel();

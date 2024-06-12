@@ -21,6 +21,21 @@ namespace WATA.LIS.Core.Model.Indicator
         public float visionHeight { get; set; }
         public float visionWidth { get; set; }
         public float visionDepth { get; set; }
+
+        public bool visionStauts { get; set; }
+
+        public bool heightSensorStatus { get; set; }
+
+        public bool networkStatus { get; set; }
+
+        public bool rfidStatus { get; set; }
+
+        public bool eventValue { get; set; } //true pickup false drop
+
+        public string  cepc { get; set; } //container epc
+        public string depc { get; set; }  //dock epc
+        public bool is_unload { get; set; }
+  
     }
 }
  

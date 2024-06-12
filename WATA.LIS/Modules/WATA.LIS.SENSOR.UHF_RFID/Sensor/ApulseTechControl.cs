@@ -610,21 +610,35 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         {
 
 
-            if (epc.Length > 28)
+            if (epc.Length > 32)
             {
                 Tools.Log($"length is long", Tools.ELogType.RFIDLog);
                 return;
             }
 
 
-            string SendEPC = epc.Substring(4, 24);
+            int index = epc.IndexOf("DC");
+
+            if(index ==  -1)
+            {
+                index = epc.IndexOf("CB");
+            }
+
+            if (index == -1)
+            {
+                index = epc.IndexOf("DA");
+            }
+
+
+
+            string SendEPC = epc.Substring(index, 24);
 
      
             string stx = SendEPC.Substring(0, 2);
             string etx = SendEPC.Substring(22, 2);
+            
 
-
-            if (SendEPC.Length == 24 && (stx == "DA" || stx == "DC"))
+            if (SendEPC.Length == 24 && (stx == "DA" || stx == "DC" || stx == "CB"))
             {
 
 
@@ -638,7 +652,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
 
 
-            if (port == rfidConfig.front_ant_port) // 측면(측위용) 안테나 안테나
+            if (port == rfidConfig.front_ant_port)  //정면(선반용)  안테나
             {
                 RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
                 rfidmodel.EPC = SendEPC;
@@ -646,7 +660,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
 
             }
-            else //정면(선반용)  안테나
+            else // 측면(측위용) 안테나 안테나
             {
                 LocationRFIDEventModel location = new LocationRFIDEventModel();
                 location.EPC = SendEPC;

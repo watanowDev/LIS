@@ -113,4 +113,20 @@ namespace WATA.LIS.Core.Common
         qr_check_fail,
         dummy,
     }
+
+    public enum eContainerState
+    {
+        NONE,
+        CONTAINER_IN,
+        CONTAINER_OUT
+    }
+
+    public enum eDockContainerProcedure
+    {
+        NONE,
+        DOCK_IN,
+        CONTAINER_IN,
+        CONTAINER_OUT
+    }
+
 }

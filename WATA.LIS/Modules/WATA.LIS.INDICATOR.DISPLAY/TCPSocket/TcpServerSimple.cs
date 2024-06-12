@@ -129,13 +129,24 @@ namespace WATA.LIS.TCPSocket
                     string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     Tools.Log($"Receive Message: {receivedMessage}", Tools.ELogType.DisplayLog);
 
+              
+
 
 
                     JObject jObject = JObject.Parse(receivedMessage);
-                    string  parse_str = jObject["send_backend"]["eventValue"].ToString();
-                     _eventAggregator.GetEvent<IndicatorRecvEvent>().Publish(parse_str);
+
+                    if (jObject.ContainsKey("set_work") == true)
+                    {
+                        string parse_str = jObject["set_work"]["eventValue"].ToString();
+                        _eventAggregator.GetEvent<IndicatorRecvEvent>().Publish(parse_str);
+                    }
 
 
+                    if (jObject.ContainsKey("send_backend") == true)
+                    {
+                        string parse_str = jObject["send_backend"]["eventValue"].ToString();
+                        _eventAggregator.GetEvent<IndicatorRecvEvent>().Publish(parse_str);
+                    }
                 }
             }
             catch (Exception ex)

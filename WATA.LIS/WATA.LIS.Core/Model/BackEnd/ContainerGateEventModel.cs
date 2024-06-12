@@ -14,7 +14,8 @@ namespace WATA.LIS.Core.Model.BackEnd
 
     public class containerInfo
     {
-        public string epc { get; set; }
+        public string cepc { get; set; }
+        public string depc { get; set; }
         public string loadId { get; set; }
         public string vehicleId { get; set; }
         public string projectId { get; set; }
