@@ -11,7 +11,6 @@ namespace WATA.LIS.Core.Model.VISION
     {
         public int GrossWeight { get; set; }
         public int LeftWeight { get; set; }
-
         public int  RightWeight { get; set; }
     }
 }

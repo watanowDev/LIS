@@ -32,20 +32,25 @@ namespace WATA.LIS.SENSOR.UHF_RFID
         {
             _eventAggregator = eventAggregator;
             _rfidmodel = rfidmodel;
-            
+
             MainConfigModel main_config = (MainConfigModel)main;
+            RFIDConfigModel rfid_config = (RFIDConfigModel)rfidmodel;
 
             if (main_config.device_type == "fork_lift_v1")
             {
                 //WPSControl rfid = new WPSControl(_eventAggregator);
                 //rfid.Init();
             }
-            else
-            { 
+            if (rfid_config.rfid_name == "Apulse")
+            {
                 ApulseTechControl rfid = new ApulseTechControl(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
             }
-  
+            else if (rfid_config.rfid_name == "SystemK")
+            {
+                SystemK rfid = new SystemK(_eventAggregator, _rfidmodel, main);
+                rfid.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

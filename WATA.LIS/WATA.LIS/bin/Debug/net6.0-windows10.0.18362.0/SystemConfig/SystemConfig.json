@@ -1,28 +1,61 @@
 {
 	"main": 
 	{
-		"fork_lift_id": "fork001"
+		"device_type" :"CTR", //DPS, WIS_KINTEX , WIS_KINTEX
+		"unit_id": "fork_lift001",
+		"projectId" : "0b957d9ac8ed4aad82ffcc90101c8bce",
+		"mappingId" : "ea5ab7b282374801927bded06040adcc",
+		"mapId" : "607832afe8ec413f9e9cfacf0029dc85",
 	},
-	
+	"led_buzzer": 
+	{
+		"volume": 5,
+		"InfoLanguage" : "KR"//KR, JP, EN
+	},
 	"distancesensor": 
 	{
-		"comport": "COM3"
+		"comport": "COM4",
+		"pick_up_distance_threshold" : 100
 	},
-	
+	"weightsensor": 
+	{
+		"comport": "COM4",
+		"loadweight_timeout" : 3000,
+		"sensor_value" : "TJ" //TJ, TCP
+	},
 	"visioncamera": 
 	{
-		"camera_height": "1.05",
-		"qr_enable" : "1"
+		"vision_enable" : 0,
+		"camera_height": 0.85,
+		"qr_enable" : 1,
+		"view_3d_enable" : 1,
+		"event_distance" : 1.0,
+		"pickup_wait_delay" : 2000,
+		"rack_with" : 1.46,
+		"rack_height" : 2.3,
+		"onlyshelf" : 0
 	},
-	
 	"rfid_receiver": 
 	{
-		"SPP_MAC" : "00:05:C4:C1:01:33",
-		//"SPP_MAC" : "00:05:C4:C1:01:2C",
-		"radio_power": 27,
-		"tx_on_time": 100,
-		"tx_off_time" : 100,
-		"toggle" : 0,
-		"speaker_enable" : 1
+		"rfid_name" : "SystemK", //SystemK, Apulse
+		"rfid_enable" : 1,
+		"SPP_MAC" : "00:05:C4:C1:01:32",
+		"radio_power": 28,
+		"tx_on_time": 200,
+		"tx_off_time" : 200,
+		"toggle" : 1,
+		"speaker_level" : 0,
+		"rssi_pickup_timeout" : 20,
+		"rssi_pickup_threshold" : -78,
+		"rssi_drop_timeout" : 20,
+		"rssi_drop_threshold" : -78,
+		"front_ant_port" : "0",
+		"ip" : "192.168.1.73",
+		"port" : 3161
+	},
+	"DPS": 
+	{
+		"IP" : "192.168.0.107",
+		"PORT" : 5010
 	}
 }

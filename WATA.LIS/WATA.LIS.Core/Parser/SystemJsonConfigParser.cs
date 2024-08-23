@@ -67,18 +67,23 @@ namespace WATA.LIS.Core.Parser
                         vision.onlyshelf = (int)json["visioncamera"]["onlyshelf"];
 
 
+                        rfid.rfid_name = json["rfid_receiver"]["rfid_name"].ToString();
                         rfid.rfid_enable = (int)json["rfid_receiver"]["rfid_enable"];
+                        rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
                         rfid.nRadioPower = (int)json["rfid_receiver"]["radio_power"];
                         rfid.nTxOnTime = (int)json["rfid_receiver"]["tx_on_time"];
                         rfid.nTxOffTime = (int)json["rfid_receiver"]["tx_off_time"];
                         rfid.nToggle = (int)json["rfid_receiver"]["toggle"];
                         rfid.nSpeakerlevel = (int)json["rfid_receiver"]["speaker_level"];
-                        rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
                         rfid.nRssi_pickup_timeout = (int)json["rfid_receiver"]["rssi_pickup_timeout"];
                         rfid.nRssi_pickup_threshold = (int)json["rfid_receiver"]["rssi_pickup_threshold"];
                         rfid.nRssi_drop_timeout = (int)json["rfid_receiver"]["rssi_drop_timeout"];
                         rfid.nRssi_drop_threshold = (int)json["rfid_receiver"]["rssi_drop_threshold"];
                         rfid.front_ant_port = json["rfid_receiver"]["front_ant_port"].ToString();
+                        rfid.ip = json["rfid_receiver"]["ip"].ToString();
+                        rfid.port = (int)json["rfid_receiver"]["port"];
+
+
                         dps.IP = json["DPS"]["IP"].ToString();
                         dps.PORT = (int)json["DPS"]["PORT"];
 

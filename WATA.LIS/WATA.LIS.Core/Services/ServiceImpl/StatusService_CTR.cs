@@ -1,4 +1,4 @@
-﻿ using MaterialDesignThemes.Wpf;
+﻿using MaterialDesignThemes.Wpf;
 using Microsoft.Xaml.Behaviors.Layout;
 using Newtonsoft.Json.Linq;
 using Prism.Events;
@@ -43,8 +43,8 @@ namespace WATA.LIS.Core.Services
     {
         IEventAggregator _eventAggregator;
 
-        public int      m_Height_Distance_mm { get; set; }
- 
+        public int m_Height_Distance_mm { get; set; }
+
         private int rifid_status_check_count = 0;
         private int distance_status_check_count = 35;
         private int status_limit_count = 10;
@@ -63,9 +63,11 @@ namespace WATA.LIS.Core.Services
         private VisionConfigModel visionConfig;
 
         private WeightSensorModel m_weight;
+        private List<WeightSensorModel> m_weight_list;
+        private const int sample_size = 50;
         WeightConfigModel _weightConfig;
-        DistanceConfigModel  _distance;
- 
+        DistanceConfigModel _distance;
+
 
 
         private readonly IWeightModel _weightmodel;
@@ -76,7 +78,7 @@ namespace WATA.LIS.Core.Services
         private bool vision_stop_flag = true; //비전이벤트 중복으로 날라올시 중복바지 이벤트
 
 
-        public StatusService_CTR(IEventAggregator eventAggregator , IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel)
+        public StatusService_CTR(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
@@ -92,7 +94,7 @@ namespace WATA.LIS.Core.Services
 
 
             _weightmodel = weightmodel;
-            _distance = (DistanceConfigModel) distanceModel;
+            _distance = (DistanceConfigModel)distanceModel;
 
             _weightConfig = (WeightConfigModel)_weightmodel;
 
@@ -110,10 +112,10 @@ namespace WATA.LIS.Core.Services
             m_vihicle = mainobj.forkLiftID;
             m_projectId = mainobj.projectId;
             m_mappingId = mainobj.mappingId;
-            m_mapId = mainobj.mapId ;
+            m_mapId = mainobj.mapId;
 
 
-            visionConfig =(VisionConfigModel) visionModel;
+            visionConfig = (VisionConfigModel)visionModel;
             rfidConfig = (RFIDConfigModel)rfidmodel;
 
 
@@ -153,6 +155,7 @@ namespace WATA.LIS.Core.Services
 
 
             m_weight = new WeightSensorModel();
+            m_weight_list = new List<WeightSensorModel>();
 
 
             m_weight.LeftWeight = 50;
@@ -174,17 +177,70 @@ namespace WATA.LIS.Core.Services
         }
 
         private string m_Location_epc = "";
+
+        //public void OnWeightSensor(WeightSensorModel obj)
+        //{
+
+        //    m_weight = obj;
+        //    Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
+        //}
+
+        // 중량센서 표준편차 필터링 테스트 24.08.21
         public void OnWeightSensor(WeightSensorModel obj)
         {
+            m_weight_list.Add(obj);
 
-            m_weight = obj;
-            Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
+            if (m_weight_list.Count >= sample_size)
+            {
+                m_weight.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
+                m_weight.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
+                m_weight.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
+                Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
+
+                m_weight_list.RemoveAt(0);
+            }
+            else
+            {
+                m_weight.LeftWeight = obj.LeftWeight <= 0 ? 0 : obj.LeftWeight;
+                m_weight.RightWeight = obj.RightWeight <= 0 ? 0 : obj.RightWeight;
+                m_weight.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
+            }
+        }
+
+        private int GetStableValue(List<int> weight_list)
+        {
+            int ret = 0;
+            if (weight_list.Count > 0)
+            {
+                int average = (int)weight_list.Average();
+
+                int squaredDifferencesSum = weight_list.Sum(x => (x - average) * (x - average));
+
+                double variance = squaredDifferencesSum / weight_list.Count;
+
+                double standardDeviation = Math.Sqrt(variance);
+
+                List<int> filteredList = weight_list.Where(x => Math.Abs(x - average) <= standardDeviation).ToList();
+
+                ret = (int)filteredList.Average();
+            }
+            else
+            {
+                Tools.Log($"Weight Sensor Read Error!!!", Tools.ELogType.SystemLog);
+            }
+
+            if (ret < 0)
+            {
+                ret = 0;
+            }
+
+            return ret;
         }
 
 
         public void OnContainerReturn(int status)
         {
-            if(status != 200)
+            if (status != 200)
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY2);
                 //Tools.Log($"IN########################## EMERGENCY2", Tools.ELogType.BackEndLog);
@@ -205,7 +261,7 @@ namespace WATA.LIS.Core.Services
 
 
             }
-            else if (status == "stop_unload") 
+            else if (status == "stop_unload")
             {
 
                 _is_unload = false;
@@ -229,7 +285,7 @@ namespace WATA.LIS.Core.Services
             if (c_epc == "NA" && d_epc != "NA" && _process == eDockContainerProcedure.NONE)
             {
                 _process = eDockContainerProcedure.DOCK_IN;
-         
+
             }
             else if (c_epc != "NA" && d_epc != "NA" && _process == eDockContainerProcedure.DOCK_IN)
             {
@@ -273,7 +329,7 @@ namespace WATA.LIS.Core.Services
             string c_epc = GetMostContainerEPC(1, 0);
             string d_epc = GetMostDockEPC(1, 0);
 
-            (string ret_c_epc, string ret_d_epc)  = ContainerProcessState(c_epc, d_epc);
+            (string ret_c_epc, string ret_d_epc) = ContainerProcessState(c_epc, d_epc);
 
             if (ret_d_epc.Contains("DC") || ret_c_epc.Contains("CB"))
             {
@@ -329,7 +385,7 @@ namespace WATA.LIS.Core.Services
                 }
             }
         }
-        
+
         int test1 = 0;
         int test2 = 0;
         int test3 = 0;
@@ -337,11 +393,11 @@ namespace WATA.LIS.Core.Services
         int test5 = 0;
         int test6 = 0;
         int test_qr = 0;
-     
+
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             SendToIndicator(m_weight.GrossWeight, m_weight.LeftWeight, m_weight.RightWeight, m_container_qr, m_vision_width, m_vision_height, m_vision_depth);
-            
+
             //SendToIndicator(test1 ++, test2 ++, test3 ++, "d7d7a690ecbb4b3090102f88605f9b5e", test4 ++ , test5 ++, test6++);
             //test_qr++;
         }
@@ -393,7 +449,7 @@ namespace WATA.LIS.Core.Services
 
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndCurrent;
-           // _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+            // _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
 
             Thread.Sleep(10);
 
@@ -424,19 +480,19 @@ namespace WATA.LIS.Core.Services
 
                 if (GlobalValue.IS_ERROR.rfid == false)
                 {
-                    Tools.Log("rifid Error", Tools.ELogType.SystemLog);             
+                    Tools.Log("rifid Error", Tools.ELogType.SystemLog);
                 }
 
 
 
                 if (GlobalValue.IS_ERROR.distance == false)
                 {
-                    Tools.Log("distance Error", Tools.ELogType.SystemLog); 
+                    Tools.Log("distance Error", Tools.ELogType.SystemLog);
                 }
 
 
 
-                if(GlobalValue.IS_ERROR.distance == false || 
+                if (GlobalValue.IS_ERROR.distance == false ||
                    GlobalValue.IS_ERROR.backend == false ||
                    GlobalValue.IS_ERROR.rfid == false ||
                    GlobalValue.IS_ERROR.distance == false)
@@ -444,15 +500,15 @@ namespace WATA.LIS.Core.Services
 
                     _eventAggregator.GetEvent<StatusLED_Event>().Publish("red");
 
-                    
-                    
+
+
                     break;
                 }
 
 
                 _eventAggregator.GetEvent<StatusLED_Event>().Publish("green");
 
-                
+
             }
             while (false);
 
@@ -460,7 +516,7 @@ namespace WATA.LIS.Core.Services
 
         private void StatusClearEvent(object sender, EventArgs e)
         {
-            if(rifid_status_check_count >  status_limit_count)
+            if (rifid_status_check_count > status_limit_count)
             {
                 RackRFIDEventModel rfidmodel = new RackRFIDEventModel();
                 ClearEpc();
@@ -504,7 +560,7 @@ namespace WATA.LIS.Core.Services
             distance_status_check_count = 0;
             m_Height_Distance_mm = obj.Distance_mm;
 
-            Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);   
+            Tools.Log($"!! :  {m_Height_Distance_mm}", Tools.ELogType.SystemLog);
         }
 
         private static List<QueryRFIDModel> m_rack_epclist = new List<QueryRFIDModel>();
@@ -515,14 +571,14 @@ namespace WATA.LIS.Core.Services
 
         private void AddEpcList(string key_epc,
                                 float value_rssi,
-                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, 
+                                ref Dictionary<string, EPC_Value_Model> retRFIDInfoList,
                                 ref List<int> listCount,
                                 ref List<float> listRSSI)
         {
             if (retRFIDInfoList.ContainsKey(key_epc))
             {
                 int idx = Array.IndexOf(retRFIDInfoList.Keys.ToArray(), key_epc);
-                listCount[idx] ++;
+                listCount[idx]++;
                 listRSSI[idx] += value_rssi;
                 retRFIDInfoList[key_epc].EPC_Check_Count = listCount[idx];
                 retRFIDInfoList[key_epc].RSSI = listRSSI[idx];
@@ -538,11 +594,11 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList , ELogType logtype )
+        private void RSSI_AverageEPCList(ref Dictionary<string, EPC_Value_Model> retRFIDInfoList, ELogType logtype)
         {
-            foreach (KeyValuePair<string, EPC_Value_Model> item  in retRFIDInfoList)
+            foreach (KeyValuePair<string, EPC_Value_Model> item in retRFIDInfoList)
             {
-               
+
                 //Tools.Log($"Before RSSI : {item.Value.RSSI} Count {item.Value.EPC_Check_Count}", logtype);
                 float avg = item.Value.RSSI / item.Value.EPC_Check_Count;
                 //Tools.Log($"After RSSI Average :  {avg}", logtype);
@@ -551,9 +607,9 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        
-        
-     
+
+
+
 
         private string GetMostContainerEPC(int TimeSec, int Threshold)
         {
@@ -563,7 +619,7 @@ namespace WATA.LIS.Core.Services
             {
                 DateTime CurrentTime = DateTime.Now;
                 //Tools.Log($"Current Time {CurrentTime}  ", Tools.ELogType.BackEndCurrentLog);
-           
+
                 int idx = 0;
                 while (idx < m_c_epclist.Count)
                 {
@@ -594,7 +650,7 @@ namespace WATA.LIS.Core.Services
                     AddEpcList(m_c_epclist[i].EPC, m_c_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
-                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndCurrentLog);
+                RSSI_AverageEPCList(ref retRFIDInfoList, Tools.ELogType.BackEndCurrentLog);
 
                 if (retRFIDInfoList.Count > 0)
                 {
@@ -622,7 +678,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log("EPC List Empty", Tools.ELogType.BackEndCurrentLog);
             }
 
-            
+
             return retKeys;
         }
 
@@ -700,7 +756,7 @@ namespace WATA.LIS.Core.Services
 
 
 
-       
+
 
         /*
          * shelf = 선반인지 아닌지 리턴값 TRUE/ FALSE
@@ -710,7 +766,7 @@ namespace WATA.LIS.Core.Services
          * H_distance = 해당 파라미미터 입력시 EX n900 을 입력하면 높이센서 900mm 1층으로 해당 높이에는 무조건 1층 작업으로 판단함. 900이상은 무조건 선반으로 판단
          */
 
-        private string GetMostRackEPC(ref bool shelf, int TimeSec,float Threshold ,ref float rssi, int H_distance)
+        private string GetMostRackEPC(ref bool shelf, int TimeSec, float Threshold, ref float rssi, int H_distance)
         {
             string retKeys = "field";
 
@@ -744,17 +800,17 @@ namespace WATA.LIS.Core.Services
 
 
                 Dictionary<string, EPC_Value_Model> retRFIDInfoList = new Dictionary<string, EPC_Value_Model>();
-                List<int>   listCount   = new List<int>();
-                List<float> listRSSI    = new List<float>();
+                List<int> listCount = new List<int>();
+                List<float> listRSSI = new List<float>();
 
 
                 for (int i = 0; i < m_rack_epclist.Count; i++)
                 {
                     Tools.Log($"Query  epc {m_rack_epclist[i].EPC} RSSI {m_rack_epclist[i].RSSI} Time {m_rack_epclist[i].Time}  ", Tools.ELogType.BackEndLog);
-                    AddEpcList(m_rack_epclist[i].EPC, m_rack_epclist[i].RSSI , ref retRFIDInfoList, ref listCount, ref listRSSI);
+                    AddEpcList(m_rack_epclist[i].EPC, m_rack_epclist[i].RSSI, ref retRFIDInfoList, ref listCount, ref listRSSI);
                 }
 
-                RSSI_AverageEPCList(ref retRFIDInfoList , Tools.ELogType.BackEndLog);
+                RSSI_AverageEPCList(ref retRFIDInfoList, Tools.ELogType.BackEndLog);
 
                 shelf = true;
 
@@ -768,7 +824,7 @@ namespace WATA.LIS.Core.Services
                         Tools.Log($"EPCKey Count {Temp.EPC_Check_Count}", Tools.ELogType.BackEndLog);
                         Tools.Log($"EPCKey RSSI {Temp.RSSI}", Tools.ELogType.BackEndLog);
 
-                        if (rssi < Threshold )
+                        if (rssi < Threshold)
                         {
 
                             if (H_distance < 900)
@@ -779,7 +835,7 @@ namespace WATA.LIS.Core.Services
                             }
                             else
                             {
-                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);                             
+                                Tools.Log("##High Floor rack## ##Event##", Tools.ELogType.BackEndLog);
                             }
                         }
                         else
@@ -805,7 +861,7 @@ namespace WATA.LIS.Core.Services
                 shelf = false;
                 Tools.Log("EPC List Empty", Tools.ELogType.BackEndLog);
             }
-            
+
             return retKeys;
         }
 
@@ -817,71 +873,42 @@ namespace WATA.LIS.Core.Services
             //Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
         }
 
-        private int WaitLoadSensor(int distanceThreshold)
+        private void WaitLoadSensor()
         {
-            int count = 0;
-            int nRet = -1;
+            Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
 
-            while(true)
-            {
-                if(count > 100)
-                {
-                    nRet = -1;
-                    break;
-                }
-
-                if(m_Height_Distance_mm > distanceThreshold)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
-
-                    Thread.Sleep(1000);
-
-
-                    Thread.Sleep(_weightConfig.loadweight_timeout);
-
-                    nRet = 0;
-                    break;
-                }
-
-
-                Thread.Sleep(100);
-                count++;
-
-            }
-            return nRet;
+            Thread.Sleep(_weightConfig.loadweight_timeout);
         }
-        
 
 
-       
         public void OnSubAntEpcData(LocationRFIDEventModel obj)
         {
-                QueryRFIDModel epcModel = new QueryRFIDModel();
+            QueryRFIDModel epcModel = new QueryRFIDModel();
 
-                if (_IS_SIMULATION)
-                {
-                    epcModel.EPC = _SIM_EPC_DATA;
-                }
-                else
-                {
-                    epcModel.EPC = obj.EPC;
-                }
+            if (_IS_SIMULATION)
+            {
+                epcModel.EPC = _SIM_EPC_DATA;
+            }
+            else
+            {
+                epcModel.EPC = obj.EPC;
+            }
 
-                epcModel.Time = DateTime.Now;
-                epcModel.RSSI = obj.RSSI;
+            epcModel.Time = DateTime.Now;
+            epcModel.RSSI = obj.RSSI;
 
-                string stx = obj.EPC.Substring(0, 2);
+            string stx = obj.EPC.Substring(0, 2);
 
-                if (stx == "DC")
-                {
-                    m_d_epclist.Add(epcModel);
-                    Tools.Log($"Dock EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
-                }
-                else if (stx == "CB")
-                {
-                    m_c_epclist.Add(epcModel);
-                    Tools.Log($"Container EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
-                }
+            if (stx == "DC")
+            {
+                m_d_epclist.Add(epcModel);
+                Tools.Log($"Dock EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+            }
+            else if (stx == "CB")
+            {
+                m_c_epclist.Add(epcModel);
+                Tools.Log($"Container EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
+            }
         }
 
 
@@ -903,7 +930,7 @@ namespace WATA.LIS.Core.Services
                 epcModel.EPC = obj.EPC;
             }
 
-           
+
             epcModel.Time = DateTime.Now;
             epcModel.RSSI = obj.RSSI;
 
@@ -987,7 +1014,7 @@ namespace WATA.LIS.Core.Services
 
 
 
-            int nRet = WaitLoadSensor(_distance.pick_up_distance_threshold);
+            WaitLoadSensor();
 
 
             bool IsSendBackend = true;
@@ -1024,19 +1051,9 @@ namespace WATA.LIS.Core.Services
 
             Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
 
-          
-
-
-            if (nRet == -1)
-            {
-                Tools.Log($"weight Timeout Fail", Tools.ELogType.BackEndLog);
-                IsSendBackend = false;
-            }
-
 
             if (ActionObj.actionInfo.loadWeight <= 10)
             {
-
                 Tools.Log($"Weight Fail", Tools.ELogType.BackEndLog);
                 IsSendBackend = false;
             }
@@ -1051,7 +1068,7 @@ namespace WATA.LIS.Core.Services
             bool IsQRCheckFail = false;
 
             m_container_qr = "NA";
-            
+
             m_qr = m_qr.Replace("{", "");
             m_qr = m_qr.Replace("}", "");
             m_qr = m_qr.Replace("wata", "");
@@ -1123,7 +1140,7 @@ namespace WATA.LIS.Core.Services
             m_vision_depth = obj.depth;
 
 
-       
+
             if (IsQRCheckFail)
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FINISH);
@@ -1158,10 +1175,10 @@ namespace WATA.LIS.Core.Services
         public void OnVISIONEvent(VISON_Model obj)
         {
 
-            
 
 
-            if (_is_unload == true && (obj.status == "pickup" || obj.status ==  "drop"))
+
+            if (_is_unload == true && (obj.status == "pickup" || obj.status == "drop"))
             {
                 obj.qr = obj.qr;
                 obj.qr = obj.qr.Replace("{", "");
@@ -1176,7 +1193,7 @@ namespace WATA.LIS.Core.Services
 
             }
 
-            if(vision_stop_flag == false)
+            if (vision_stop_flag == false)
             {
 
                 Tools.Log($"vision_stop_flag false", Tools.ELogType.BackEndLog);
@@ -1184,7 +1201,7 @@ namespace WATA.LIS.Core.Services
                 return;
             }
 
-         
+
 
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
@@ -1196,7 +1213,7 @@ namespace WATA.LIS.Core.Services
                 vision_stop_flag = false;
 
             }
-            else if(obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
+            else if (obj.status == "drop")//지게차가 물건을 놨을경우  선반 에서는 물건이 추가될 경우
             {
                 m_event_value = false;
 
@@ -1247,7 +1264,7 @@ namespace WATA.LIS.Core.Services
                 if (m_Height_Distance_mm < 1500)
                 {
 
-                    if (IsShelf == true) 
+                    if (IsShelf == true)
                     {
                         Tools.Log($"##roof is visible", Tools.ELogType.BackEndLog);
                         ActionObj.actionInfo.shelf = true;
@@ -1268,7 +1285,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"!####[drop Rack Event] {epc_data}", Tools.ELogType.BackEndLog);
                 Tools.Log($"!#### LoadRate  : {ActionObj.actionInfo.loadRate}", Tools.ELogType.BackEndLog);
                 Tools.Log($"!#### QR  : {m_qr}", Tools.ELogType.BackEndLog);
-            
+
 
                 Tools.Log($"##QR : {m_qr}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.loadId = m_qr;
@@ -1284,19 +1301,19 @@ namespace WATA.LIS.Core.Services
                     m_vision_height = 50;
                     m_vision_depth = 50;
                 }
-                
+
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
-                
-             
+
+
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-               
+
 
                 ClearEpc();
                 m_CalRate = 0;
@@ -1310,7 +1327,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"Action : [drop] EPC  [{epc_data}] Rssi : [{rssi}] QR {m_qr} ", Tools.ELogType.ActionLog);
 
 
-                SendToIndicator(0, 0, 0, "", 0, 0 , 0);
+                SendToIndicator(0, 0, 0, "", 0, 0, 0);
 
 
                 VisionWaitTimer.Start();
@@ -1355,7 +1372,7 @@ namespace WATA.LIS.Core.Services
             return (int)nRet;
         }
 
-        private  int  CalcLoadRate(float area)
+        private int CalcLoadRate(float area)
         {
             Tools.Log($"##area  : {area}", Tools.ELogType.BackEndLog);
             double nRet = (area / 1.62) * 100;
@@ -1363,9 +1380,9 @@ namespace WATA.LIS.Core.Services
 
             if (nRet <= 0)
             {
-                 nRet = 0;
+                nRet = 0;
             }
-            if(nRet>= 97)
+            if (nRet >= 97)
             {
                 nRet = 97;
             }
@@ -1373,9 +1390,9 @@ namespace WATA.LIS.Core.Services
             return (int)nRet;
         }
 
-        private void Pattlite_Buzzer_LED(ePlayBuzzerLed  value)
+        private void Pattlite_Buzzer_LED(ePlayBuzzerLed value)
         {
-            if(value == ePlayBuzzerLed.ACTION_FAIL)
+            if (value == ePlayBuzzerLed.ACTION_FAIL)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
@@ -1393,7 +1410,7 @@ namespace WATA.LIS.Core.Services
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
-            else if(value == ePlayBuzzerLed.ACTION_FINISH)
+            else if (value == ePlayBuzzerLed.ACTION_FINISH)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern1;
@@ -1445,7 +1462,7 @@ namespace WATA.LIS.Core.Services
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-          
+
         }
 
         bool m_event_value = false;
