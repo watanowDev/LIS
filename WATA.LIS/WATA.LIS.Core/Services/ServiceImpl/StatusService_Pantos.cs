@@ -71,7 +71,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDLackData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnLocationData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Subscribe(OnContainerReturn, ThreadOption.BackgroundThread, true);
@@ -95,7 +95,7 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
             MainConfigModel mainobj = (MainConfigModel)main;
-            m_vihicle = mainobj.forkLiftID;
+            m_vihicle = mainobj.vehicleId;
             visionConfig =(VisionConfigModel) visionModel;
             rfidConfig = (RFIDConfigModel)rfidmodel;
 

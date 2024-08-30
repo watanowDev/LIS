@@ -32,5 +32,11 @@ namespace WATA.LIS.Core.Model.BackEnd
         public float visionHeight { get; set; }
         public float visionDepth { get; set; }
         public List<byte> loadMatrix { get; set; } = new List<byte>();
+
+
+        public string zoneId { get; set; }      // 평치측위 NavSensor
+        public string zoneName { get; set; }    // 평치측위 NavSensor
+
+        public string plMatrix { get; set; }    // 형상측위 LiDAR Point
     }
 }

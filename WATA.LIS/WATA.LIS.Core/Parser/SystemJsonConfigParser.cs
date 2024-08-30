@@ -36,12 +36,11 @@ namespace WATA.LIS.Core.Parser
                         JObject json = (JObject)JToken.ReadFrom(reader);
 
 
-                        main.forkLiftID = json["main"]["unit_id"].ToString();
                         main.device_type = json["main"]["device_type"].ToString();
-                        
                         main.projectId = json["main"]["projectId"].ToString();
                         main.mappingId = json["main"]["mappingId"].ToString();
                         main.mapId = json["main"]["mapId"].ToString();
+                        main.vehicleId = json["main"]["vehicleId"].ToString();
 
 
                         distance.ComPort  = json["distancesensor"]["comport"].ToString();

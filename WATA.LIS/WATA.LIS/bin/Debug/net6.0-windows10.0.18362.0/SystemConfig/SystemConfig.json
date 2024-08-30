@@ -1,11 +1,12 @@
 {
 	"main": 
 	{
-		"device_type" :"CTR", //DPS, WIS_KINTEX , WIS_KINTEX
-		"unit_id": "fork_lift001",
-		"projectId" : "0b957d9ac8ed4aad82ffcc90101c8bce",
-		"mappingId" : "ea5ab7b282374801927bded06040adcc",
-		"mapId" : "607832afe8ec413f9e9cfacf0029dc85",
+		"device_type" : "CTR", //DPS, WIS_KINTEX , WIS_KINTEX,
+		"workLocationId" : "PANTOS_FLAT_001",
+		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
+		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
+		"mapId" : "16b5d99e366b4f7585c49b8a4fbbc318",
+		"vehicleId": "fork_lift004"
 	},
 	"led_buzzer": 
 	{
@@ -14,7 +15,7 @@
 	},
 	"distancesensor": 
 	{
-		"comport": "COM4",
+		"comport": "COM3",
 		"pick_up_distance_threshold" : 100
 	},
 	"weightsensor": 
@@ -37,7 +38,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_name" : "SystemK", //SystemK, Apulse
+		"rfid_name" : "Apulse", //SystemK, Apulse
 		"rfid_enable" : 1,
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,

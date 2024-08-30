@@ -50,7 +50,7 @@ namespace WATA.LIS.Core.Services
         private int status_limit_count = 10;
 
         private string m_location = "CTR_PROJECT";
-        private string m_vihicle = "fork_lift001";
+        private string m_vehicle = "fork_lift001";
         private string m_projectId = "0b957d9ac8ed4aad82ffcc90101c8bce";
         private string m_mappingId = "ea5ab7b282374801927bded06040adcc";
         private string m_mapId = "0b957d9ac8ed4aad82ffcc90101c8bce";
@@ -109,7 +109,7 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
             MainConfigModel mainobj = (MainConfigModel)main;
-            m_vihicle = mainobj.forkLiftID;
+            m_vehicle = mainobj.vehicleId;
             m_projectId = mainobj.projectId;
             m_mappingId = mainobj.mappingId;
             m_mapId = mainobj.mapId;
@@ -178,14 +178,6 @@ namespace WATA.LIS.Core.Services
 
         private string m_Location_epc = "";
 
-        //public void OnWeightSensor(WeightSensorModel obj)
-        //{
-
-        //    m_weight = obj;
-        //    Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
-        //}
-
-        // 중량센서 표준편차 필터링 테스트 24.08.21
         public void OnWeightSensor(WeightSensorModel obj)
         {
             m_weight_list.Add(obj);
@@ -334,7 +326,7 @@ namespace WATA.LIS.Core.Services
             if (ret_d_epc.Contains("DC") || ret_c_epc.Contains("CB"))
             {
                 ContainerGateEventModel GateEventModelobj = new ContainerGateEventModel();
-                GateEventModelobj.containerInfo.vehicleId = m_vihicle;
+                GateEventModelobj.containerInfo.vehicleId = m_vehicle;
                 GateEventModelobj.containerInfo.projectId = m_projectId;
                 GateEventModelobj.containerInfo.mappingId = m_mappingId;
                 GateEventModelobj.containerInfo.mapId = m_mapId;
@@ -436,7 +428,7 @@ namespace WATA.LIS.Core.Services
         {
             AliveModel alive_obj = new AliveModel();
             alive_obj.alive.workLocationId = m_location;
-            alive_obj.alive.vehicleId = m_vihicle;
+            alive_obj.alive.vehicleId = m_vehicle;
             alive_obj.alive.projectId = m_projectId;
             alive_obj.alive.mappingId = m_mappingId;
             alive_obj.alive.mapId = m_mapId;
@@ -966,7 +958,7 @@ namespace WATA.LIS.Core.Services
         {
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_location;
-            ActionObj.actionInfo.vehicleId = m_vihicle;
+            ActionObj.actionInfo.vehicleId = m_vehicle;
 
             ActionObj.actionInfo.projectId = m_projectId;
             ActionObj.actionInfo.mappingId = m_mappingId;
@@ -1219,7 +1211,7 @@ namespace WATA.LIS.Core.Services
 
                 ActionInfoModel ActionObj = new ActionInfoModel();
                 ActionObj.actionInfo.workLocationId = m_location;
-                ActionObj.actionInfo.vehicleId = m_vihicle;
+                ActionObj.actionInfo.vehicleId = m_vehicle;
                 ActionObj.actionInfo.projectId = m_projectId;
                 ActionObj.actionInfo.mappingId = m_mappingId;
                 ActionObj.actionInfo.mapId = m_mapId;

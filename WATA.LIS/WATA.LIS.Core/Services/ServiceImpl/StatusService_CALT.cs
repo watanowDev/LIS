@@ -73,7 +73,7 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
             MainConfigModel mainobj = (MainConfigModel)main;
-            m_vihicle = mainobj.forkLiftID;
+            m_vihicle = mainobj.vehicleId;
             visionConfig = (VisionConfigModel)visionModel;
             rfidConfig = (RFIDConfigModel)rfidmodel;
 

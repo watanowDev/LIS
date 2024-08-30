@@ -22,7 +22,9 @@ namespace WATA.LIS.Core.Model.VISION
 
         public bool has_roof { get; set; }
 
-        public string simulation_status { get; set;} 
+        public string simulation_status { get; set; }
+
+        public string points { get; set; }  // LiDAR Point
     }
 }
 
