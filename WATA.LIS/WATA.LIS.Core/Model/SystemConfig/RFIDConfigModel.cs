@@ -27,7 +27,6 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public string front_ant_port;
 
         public string ip { get; set; }
-        public int port { get; set; }
 
 
     }

@@ -1000,23 +1000,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\wata_iot_dev\\.nuget\\packages\\": {},
+    "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\MSWON\\WORK LIST\\LIS\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
+      "projectUniqueName": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
       "projectName": "WATA.LIS.SENSOR.WEIGHT",
-      "projectPath": "D:\\MSWON\\WORK LIST\\LIS\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
-      "packagesPath": "C:\\Users\\wata_iot_dev\\.nuget\\packages\\",
-      "outputPath": "D:\\MSWON\\WORK LIST\\LIS\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\obj\\",
+      "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
+      "packagesPath": "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\",
+      "outputPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\wata_iot_dev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\MSWON-DESKTOP\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -1032,8 +1032,8 @@
         "net6.0-windows10.0.18362": {
           "targetAlias": "net6.0-windows10.0.18362.0",
           "projectReferences": {
-            "D:\\MSWON\\WORK LIST\\LIS\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "D:\\MSWON\\WORK LIST\\LIS\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }

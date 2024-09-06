@@ -42,3 +42,25 @@ D:\MSWON\WORK LIST\LIS\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-wi
 D:\MSWON\WORK LIST\LIS\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\refint\WATA.LIS.IF.DPS.dll
 D:\MSWON\WORK LIST\LIS\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.pdb
 D:\MSWON\WORK LIST\LIS\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\ref\WATA.LIS.IF.DPS.dll
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\bin\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.deps.json
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\bin\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.dll
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\bin\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.pdb
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\bin\Debug\net6.0-windows10.0.18362.0\WATA.LIS.Core.dll
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\bin\Debug\net6.0-windows10.0.18362.0\WATA.LIS.Core.pdb
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.csproj.AssemblyReference.cache
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\Views\DPSView.g.cs
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\GeneratedInternalTypeHelper.g.cs
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS_MarkupCompile.cache
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS_MarkupCompile.lref
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\Views\DPSView.baml
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.g.resources
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.AssemblyInfoInputs.cache
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.AssemblyInfo.cs
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.csproj.CoreCompileInputs.cache
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.sourcelink.json
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.9AEC2359.Up2Date
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.dll
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\refint\WATA.LIS.IF.DPS.dll
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\WATA.LIS.IF.DPS.pdb
+C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net6.0-windows10.0.18362.0\ref\WATA.LIS.IF.DPS.dll

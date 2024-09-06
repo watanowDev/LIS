@@ -14,9 +14,9 @@ using System.Windows;
 
 namespace WATA.LIS.Core.Parser
 {
-    public  class SystemJsonConfigParser
+    public class SystemJsonConfigParser
     {
-        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
@@ -25,6 +25,7 @@ namespace WATA.LIS.Core.Parser
             RFIDConfigModel rfid = new RFIDConfigModel();
             Led_Buzzer_ConfigModel LedBuzzer = new Led_Buzzer_ConfigModel();
             DPSConfigModel dps = new DPSConfigModel();
+            NAVConfigModel nav = new NAVConfigModel();
 
             try
             {
@@ -43,7 +44,7 @@ namespace WATA.LIS.Core.Parser
                         main.vehicleId = json["main"]["vehicleId"].ToString();
 
 
-                        distance.ComPort  = json["distancesensor"]["comport"].ToString();
+                        distance.ComPort = json["distancesensor"]["comport"].ToString();
                         distance.pick_up_distance_threshold = (int)json["distancesensor"]["pick_up_distance_threshold"];
 
                         LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
@@ -51,8 +52,8 @@ namespace WATA.LIS.Core.Parser
 
 
                         weight.ComPort = json["weightsensor"]["comport"].ToString();
-                        weight.loadweight_timeout =(int)json["weightsensor"]["loadweight_timeout"];
-                        weight.sensor_value = json["weightsensor"]["sensor_value"].ToString(); 
+                        weight.loadweight_timeout = (int)json["weightsensor"]["loadweight_timeout"];
+                        weight.sensor_value = json["weightsensor"]["sensor_value"].ToString();
 
                         vision.vision_enable = (int)json["visioncamera"]["vision_enable"];
                         vision.CameraHeight = (float)json["visioncamera"]["camera_height"];
@@ -80,14 +81,13 @@ namespace WATA.LIS.Core.Parser
                         rfid.nRssi_drop_threshold = (int)json["rfid_receiver"]["rssi_drop_threshold"];
                         rfid.front_ant_port = json["rfid_receiver"]["front_ant_port"].ToString();
                         rfid.ip = json["rfid_receiver"]["ip"].ToString();
-                        rfid.port = (int)json["rfid_receiver"]["port"];
 
 
                         dps.IP = json["DPS"]["IP"].ToString();
                         dps.PORT = (int)json["DPS"]["PORT"];
 
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
-                    } 
+                    }
                 }
             }
             catch (Exception Ex)
@@ -96,7 +96,7 @@ namespace WATA.LIS.Core.Parser
                 MessageBox.Show("Config File Failed");
             }
 
-            return (weight, distance, vision, rfid, main , LedBuzzer, dps);
+            return (weight, distance, vision, rfid, main, LedBuzzer, dps, nav);
         }
     }
 }

@@ -29,6 +29,7 @@ namespace WATA.LIS.Core.Common
         static ILog WeightLog;
         static ILog DisplayLog;
         static ILog DPSLog;
+        static ILog NAVLog;
 
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
@@ -45,6 +46,7 @@ namespace WATA.LIS.Core.Common
             WeightLog = LogManager.GetLogger("WeightLogEx");
             DisplayLog = LogManager.GetLogger("DisplayLogEx");
             DPSLog = LogManager.GetLogger("DPSLogEx");
+            NAVLog = LogManager.GetLogger("NAVLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -292,6 +294,31 @@ namespace WATA.LIS.Core.Common
                             break;
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        case ELogType.NAVLog:
+                            DPSLog.Info(msg);//Point
+                            if (logInfo.ListNAVLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListNAVLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListNAVLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListNAVLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListNAVLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         case ELogType.BackEndLog:
                             BackEndLog.Info(msg);//Point
                             if (logInfo.ListBackEndLog.Count > 300)
@@ -332,19 +359,19 @@ namespace WATA.LIS.Core.Common
         static public void SaveJsons<T>(T json, string filename)
         {
             string jsonData = JsonConvert.SerializeObject(json);
-        
+
             string Path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
-        
+
             File.WriteAllText(Path, jsonData);
         }
-        
+
         static public T LoadJson<T>(string FileName)
         {
             T jsonData = default(T);
             try
             {
                 string Path = $@"{AppDomain.CurrentDomain.BaseDirectory}{FileName}";
-        
+
                 if (File.Exists(Path))
                 {
                     jsonData = JsonConvert.DeserializeObject<T>(File.ReadAllText(Path));
@@ -352,7 +379,7 @@ namespace WATA.LIS.Core.Common
             }
             catch (Exception ex)
             {
-      
+
             }
             return jsonData;
         }
@@ -571,7 +598,43 @@ namespace WATA.LIS.Core.Common
             ActionLog,
             WeightLog,
             DisplayLog,
-            DPSLog
+            DPSLog,
+            NAVLog
+        }
+
+        private static string errorCode = "0000";
+        public enum EEroorCodes
+        {
+            Default = 0000,
+            RFIDConnError = 0101,
+            DistanceConnError = 0201,
+            VisionConnError = 0301,
+            WeightConnError = 0401,
+            DisplayConnError = 0501,
+            DPSConnError = 0601,
+            NAVConnError = 0701
+        }
+
+        public static string ErrorCode
+        {
+            get
+            {
+                return errorCode;
+            }
+        }
+        public static void AddErrorCode(EEroorCodes code)
+        {
+            string codeString = ((int)code).ToString("D4"); // 4자리 숫자로 변환
+
+            // "0000"이 기본값으로 설정되어 있는 경우, 첫 번째 에러 코드가 추가될 때 "0000"을 제거
+            if (errorCode == "0000")
+            {
+                errorCode = codeString;
+            }
+            else
+            {
+                errorCode += "," + codeString;
+            }
         }
 
         public struct SYSTEMTIME

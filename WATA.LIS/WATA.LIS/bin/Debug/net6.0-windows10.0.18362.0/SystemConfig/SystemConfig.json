@@ -6,7 +6,7 @@
 		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
 		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
 		"mapId" : "16b5d99e366b4f7585c49b8a4fbbc318",
-		"vehicleId": "fork_lift004"
+		"vehicleId": "fork_lift007"
 	},
 	"led_buzzer": 
 	{
@@ -26,7 +26,7 @@
 	},
 	"visioncamera": 
 	{
-		"vision_enable" : 0,
+		"vision_enable" : 1,
 		"camera_height": 0.85,
 		"qr_enable" : 1,
 		"view_3d_enable" : 1,
@@ -38,7 +38,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_name" : "Apulse", //SystemK, Apulse
+		"rfid_name" : "Apulse", //Keonn, Apulse
 		"rfid_enable" : 1,
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,
@@ -51,8 +51,7 @@
 		"rssi_drop_timeout" : 20,
 		"rssi_drop_threshold" : -78,
 		"front_ant_port" : "0",
-		"ip" : "192.168.1.73",
-		"port" : 3161
+		"ip" : "192.168.0.9"
 	},
 	"DPS": 
 	{

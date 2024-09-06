@@ -67,6 +67,7 @@ namespace WATA.LIS.ZMQ
                     catch
                     {
                         Tools.Log($"Exception!!!", Tools.ELogType.DisplayLog);
+                        Tools.AddErrorCode(Tools.EEroorCodes.VisionConnError);
                     }
                     Thread.Sleep(50);
                 }

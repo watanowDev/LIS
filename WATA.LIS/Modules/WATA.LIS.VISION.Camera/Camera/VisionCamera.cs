@@ -222,8 +222,10 @@ namespace WATA.LIS.VISION.Camera.Camera
                                 visionModel.depth = (float)jObject["depth"];
                             }
 
-
-
+                            if (jObject.ContainsKey("points") == true)
+                            {
+                                visionModel.points = jObject["points"].ToString();
+                            }
 
                             if (jObject.ContainsKey("status") == true)
                             {

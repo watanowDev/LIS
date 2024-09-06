@@ -14,6 +14,7 @@ using WATA.LIS.INDICATOR.DISPLAY;
 using WATA.LIS.INDICATOR.LED;
 using WATA.LIS.Main;
 using WATA.LIS.SENSOR.Distance;
+using WATA.LIS.SENSOR.NAV;
 using WATA.LIS.SENSOR.UHF_RFID;
 using WATA.LIS.SENSOR.WEIGHT;
 using WATA.LIS.Views;
@@ -37,7 +38,7 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel) = parser.LoadJsonfile();
+            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
@@ -46,6 +47,7 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
             containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
             containerRegistry.RegisterSingleton<IDPSModel>(x => dpsmodel);
+            containerRegistry.RegisterSingleton<INAVModel>(x => navmodel);
 
             if (!containerRegistry.IsRegistered<IWeightModel>())
                 containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
@@ -119,6 +121,7 @@ namespace WATA.LIS
             moduleCatalog.AddModule<UHF_RFIDModule>();
             moduleCatalog.AddModule<DISPLAYModule>();
             moduleCatalog.AddModule<DPSModule>();
+            moduleCatalog.AddModule<NAVModule>();
         }
     }
 }

@@ -1,12 +1,17 @@
 ﻿using MaterialDesignThemes.Wpf;
 using Microsoft.Xaml.Behaviors.Layout;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Policy;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
@@ -15,6 +20,7 @@ using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.Indicator;
+using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
 using WATA.LIS.Core.Events.VISON;
@@ -24,6 +30,7 @@ using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.ErrorCheck;
 using WATA.LIS.Core.Model.Indicator;
+using WATA.LIS.Core.Model.NAV;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
@@ -50,10 +57,10 @@ namespace WATA.LIS.Core.Services
         private int status_limit_count = 10;
 
         private string m_location = "CTR_PROJECT";
-        private string m_vehicle = "fork_lift001";
         private string m_projectId = "0b957d9ac8ed4aad82ffcc90101c8bce";
         private string m_mappingId = "ea5ab7b282374801927bded06040adcc";
         private string m_mapId = "0b957d9ac8ed4aad82ffcc90101c8bce";
+        private string m_vehicle = "fork_lift001";
 
         private string m_errorcode = "0000";
 
@@ -67,6 +74,27 @@ namespace WATA.LIS.Core.Services
         private const int sample_size = 50;
         WeightConfigModel _weightConfig;
         DistanceConfigModel _distance;
+
+        public string mapId { get; set; }
+        public string mappingId { get; set; }
+        public string projectId { get; set; }
+
+        public long naviX { get; set; }
+        public long naviY { get; set; }
+        public long naviT { get; set; }
+        public int m_result { get; set; }
+        public string zoneId { get; set; }
+        public string zoneName { get; set; }
+
+        CellInfoModel cellInfoModel;
+        BasicInfoModel basicInfoModel;
+        private List<(long, long)> isMoving = new List<(long, long)>();
+
+        public int m_pidx { get; set; }
+        public int m_vidx { get; set; }
+        public string m_workLocationId { get; set; }
+
+        private bool m_getBasicInfo = false;
 
 
 
@@ -89,6 +117,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<BackEndReturnCodeEvent>().Subscribe(OnContainerReturn, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<SimulModeEvent>().Subscribe(OnSimulation, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
 
 
 
@@ -109,10 +138,13 @@ namespace WATA.LIS.Core.Services
             CurrentTimer.Tick += new EventHandler(CurrentLocationTimerEvent);
             CurrentTimer.Start();
             MainConfigModel mainobj = (MainConfigModel)main;
-            m_vehicle = mainobj.vehicleId;
             m_projectId = mainobj.projectId;
             m_mappingId = mainobj.mappingId;
             m_mapId = mainobj.mapId;
+            m_vehicle = mainobj.vehicleId;
+            projectId = mainobj.projectId;
+            mappingId = mainobj.mappingId;
+            mapId = mainobj.mapId;
 
 
             visionConfig = (VisionConfigModel)visionModel;
@@ -151,16 +183,21 @@ namespace WATA.LIS.Core.Services
             IndicatorTimer.Start();
 
 
+
+            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            SendProdDataTimer.Start();
+
+
             Tools.Log($"Start Status Service", Tools.ELogType.SystemLog);
 
 
             m_weight = new WeightSensorModel();
             m_weight_list = new List<WeightSensorModel>();
 
-
-            m_weight.LeftWeight = 50;
-            m_weight.RightWeight = 50;
-            m_weight.GrossWeight = 100;
+            GetCellListFromPlatform();
+            GetBasicInfoFromBackEnd();
 
         }
 
@@ -188,6 +225,15 @@ namespace WATA.LIS.Core.Services
                 m_weight.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
                 m_weight.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
                 Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
+
+                if (m_weight.GrossWeight >= 10)
+                {
+                    _is_unload = false;
+                }
+                else
+                {
+                    _is_unload = true;
+                }
 
                 m_weight_list.RemoveAt(0);
             }
@@ -229,7 +275,6 @@ namespace WATA.LIS.Core.Services
             return ret;
         }
 
-
         public void OnContainerReturn(int status)
         {
             if (status != 200)
@@ -239,9 +284,7 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-
         private bool _is_unload = false;
-
 
         public void OnIndicatorEvent(string status)
         {
@@ -434,7 +477,7 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.mapId = m_mapId;
 
 
-            alive_obj.alive.errorCode = m_errorcode;
+            alive_obj.alive.errorCode = Tools.ErrorCode;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             //post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
@@ -865,11 +908,35 @@ namespace WATA.LIS.Core.Services
             //Tools.Log("Clear EPC", Tools.ELogType.BackEndLog);
         }
 
-        private void WaitLoadSensor()
+        private int WaitLoadSensor()
         {
-            Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
+            int count = 0;
+            int nRet = -1;
 
-            Thread.Sleep(_weightConfig.loadweight_timeout);
+            while (true)
+            {
+                if (count > 100)
+                {
+                    nRet = -1;
+                    break;
+                }
+
+                if (m_weight.GrossWeight >= 10)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
+
+                    Thread.Sleep(_weightConfig.loadweight_timeout);
+
+                    nRet = 0;
+                    break;
+                }
+
+
+                Thread.Sleep(100);
+                count++;
+
+            }
+            return nRet;
         }
 
 
@@ -902,10 +969,6 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"Container EPC Receive {obj.EPC}", Tools.ELogType.SystemLog);
             }
         }
-
-
-
-
 
         public void OnFrontAntEpcData(RackRFIDEventModel obj)
         {
@@ -1003,10 +1066,10 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.loadMatrix.Add(m_LoadMatrix[9]);
             }
 
+            // LiDAR points Test
+            ActionObj.actionInfo.plMatrix = obj.points;
 
-
-
-            WaitLoadSensor();
+            int nRet = WaitLoadSensor();
 
 
             bool IsSendBackend = true;
@@ -1029,8 +1092,9 @@ namespace WATA.LIS.Core.Services
             else
             {
                 ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
-                ActionObj.actionInfo.epc = _d_epc_temp;
+                ActionObj.actionInfo.epc = _d_epc_temp; // 백엔드와 확인 해보고 삭제 필요 (24.09.03)
                 ActionObj.actionInfo.cepc = _c_epc_temp;
+                ActionObj.actionInfo.epc = "DP" + zoneName + _d_epc_temp;
 
                 ActionObj.actionInfo.loadWeight = m_weight.GrossWeight;
                 m_qr = obj.qr;
@@ -1043,6 +1107,15 @@ namespace WATA.LIS.Core.Services
 
             Tools.Log($"loadweight_timeout {_weightConfig.loadweight_timeout} Second ", Tools.ELogType.BackEndLog);
 
+
+
+
+
+            if (nRet == -1)
+            {
+                Tools.Log($"weight Timeout Fail", Tools.ELogType.BackEndLog);
+                IsSendBackend = false;
+            }
 
             if (ActionObj.actionInfo.loadWeight <= 10)
             {
@@ -1110,6 +1183,7 @@ namespace WATA.LIS.Core.Services
             }
 
 
+            IsSendBackend = true;       // LiDAR points Test
             if (IsSendBackend)
             {
 
@@ -1164,11 +1238,20 @@ namespace WATA.LIS.Core.Services
 
         private string m_qr = "";
         private string m_container_qr = "";
+
+        bool m_event_value = false;
+
         public void OnVISIONEvent(VISON_Model obj)
         {
 
-
-
+            if (obj.status == "pickup")
+            {
+                CalcDistanceAndGetZoneID(naviX, naviY, false);
+            }
+            else if (obj.status == "drop")
+            {
+                CalcDistanceAndGetZoneID(naviX, naviY, true);
+            }
 
             if (_is_unload == true && (obj.status == "pickup" || obj.status == "drop"))
             {
@@ -1197,6 +1280,34 @@ namespace WATA.LIS.Core.Services
 
             if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
+                ActionInfoModel ActionObj = new ActionInfoModel();
+                ActionObj.actionInfo.workLocationId = "WIS";
+                ActionObj.actionInfo.vehicleId = m_vehicle;
+                ActionObj.actionInfo.height = (m_Height_Distance_mm - 740).ToString();
+
+                if (zoneId.Equals("") || zoneId == null)
+                {
+                    ActionObj.actionInfo.zoneId = "NA";
+                }
+                else
+                {
+                    ActionObj.actionInfo.zoneId = zoneId;
+                }
+
+
+                if (zoneName.Equals("") || zoneId == null)
+                {
+                    ActionObj.actionInfo.zoneName = "NA";
+                }
+                else
+                {
+                    ActionObj.actionInfo.zoneName = zoneName;
+                }
+
+                ActionObj.actionInfo.projectId = projectId;
+                ActionObj.actionInfo.mappingId = mappingId;
+                ActionObj.actionInfo.mapId = mapId;
+
                 m_pickup_obj = obj;
                 PickUpEvent(m_pickup_obj);
                 m_event_value = true;
@@ -1217,6 +1328,31 @@ namespace WATA.LIS.Core.Services
                 ActionObj.actionInfo.mapId = m_mapId;
 
 
+                if (zoneId.Equals("") || zoneId == null)
+                {
+                    ActionObj.actionInfo.zoneId = "NA";
+                }
+                else
+                {
+                    ActionObj.actionInfo.zoneId = zoneId;
+                }
+
+
+                if (zoneName.Equals("") || zoneId == null)
+                {
+                    ActionObj.actionInfo.zoneName = "NA";
+                }
+                else
+                {
+                    ActionObj.actionInfo.zoneName = zoneName;
+                }
+
+
+                ActionObj.actionInfo.projectId = projectId;
+                ActionObj.actionInfo.mappingId = mappingId;
+                ActionObj.actionInfo.mapId = mapId;
+
+
                 ActionObj.actionInfo.height = m_Height_Distance_mm.ToString();
                 float rssi = (float)0.00;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
@@ -1226,9 +1362,10 @@ namespace WATA.LIS.Core.Services
                 m_stop_rack_epc = false;
                 bool IsShelf = false;
                 string epc_data = GetMostRackEPC(ref IsShelf, rfidConfig.nRssi_drop_timeout, rfidConfig.nRssi_drop_threshold, ref rssi, m_Height_Distance_mm);
-                ActionObj.actionInfo.epc = _d_epc_temp;
+                ActionObj.actionInfo.epc = _d_epc_temp; // 백엔드와 확인 해보고 삭제 필요 (24.09.03)
                 string c_epc_data = GetMostContainerEPC(1, 0);
                 ActionObj.actionInfo.cepc = _c_epc_temp;
+                ActionObj.actionInfo.epc = "DP" + zoneName + _d_epc_temp;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);
                 ActionObj.actionInfo.action = "drop";
                 ActionObj.actionInfo.loadRate = m_CalRate.ToString();
@@ -1344,7 +1481,6 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-
         private int CalcHeightLoadRate(int height)
         {
             Tools.Log($"##height  : {height}", Tools.ELogType.BackEndLog);
@@ -1457,8 +1593,6 @@ namespace WATA.LIS.Core.Services
 
         }
 
-        bool m_event_value = false;
-
         private void SendToIndicator(int grossWeight, int leftweight, int rightweight, string QR, float vision_w, float vision_h, float vsion_depth)
         {
             IndicatorModel Model = new IndicatorModel();
@@ -1466,8 +1600,8 @@ namespace WATA.LIS.Core.Services
             Model.forlift_status.weightLeft = leftweight;
             Model.forlift_status.weightRight = rightweight;
             Model.forlift_status.QR = QR;
-            Model.forlift_status.visionWidth = vision_w;
             Model.forlift_status.visionHeight = vision_h;
+            Model.forlift_status.visionWidth = vision_w;
             Model.forlift_status.visionDepth = vsion_depth;
             Model.forlift_status.visionStauts = true;
             Model.forlift_status.heightSensorStatus = true;
@@ -1478,6 +1612,299 @@ namespace WATA.LIS.Core.Services
             Model.forlift_status.is_unload = _is_unload;
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
+        }
+
+        public void GetCellListFromPlatform()
+        {
+            try
+            {
+                string param = "mapId=" + mapId + "&mappingId=" + mappingId + "&projectId=" + projectId;
+                string url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?" + param;
+                Tools.Log($"REST Get Client url: {url}", Tools.ELogType.BackEndLog);
+
+                HttpWebRequest request = WebRequest.CreateHttp(url);
+                request.Method = "GET";
+                request.Timeout = 30 * 1000; // 30초
+                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                {
+                    HttpStatusCode status = resp.StatusCode;
+
+                    if (status == HttpStatusCode.OK)
+                    {
+                        Stream respStream = resp.GetResponseStream();
+                        using (StreamReader sr = new StreamReader(respStream))
+                        {
+                            cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(sr.ReadToEnd());
+                            for (int i = 0; i < cellInfoModel.data.Count; i++)
+                            {
+                                if (cellInfoModel.data[i].targetGeofence.Count > 0)
+                                {
+                                    for (int j = 0; j < cellInfoModel.data[i].targetGeofence.Count; j++)
+                                    {
+                                        string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
+                                        Match match = Regex.Match(cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                        if (match.Success && match.Groups.Count == 3)
+                                        {
+                                            double x = double.Parse(match.Groups[1].Value);
+                                            double y = double.Parse(match.Groups[2].Value);
+                                            x = Math.Truncate(x * 1000);
+                                            y = Math.Truncate(y * 1000);
+                                            //Tools.Log($" Cell x : " + x + " y: " + y, Tools.ELogType.BackEndLog);
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //    CalcDistanceAndGetZoneID(14096609073, 4510553755, false);
+                        //Tools.Log($"REST GetCellListFromPlatform status : {status}, {Util.ObjectToJson(cellInfoModel)} ", Tools.ELogType.BackEndLog);
+                        /* TEST
+                        //Tools.Log($"REST GetCellListFromPlatform status : {status}, {Util.ObjectToJson(cellInfoModel)} ", Tools.ELogType.BackEndLog);
+                        CalcDistanceAndGetZoneID(14096615041, 4510558400);
+                    
+                        
+
+                        VISON_Model visionModel = new VISON_Model();
+                        visionModel.area = 200;
+                        visionModel.width = 105;
+                        visionModel.height = 0;
+                        visionModel.qr = "08e8396ac20d5230a9202c7592754154";
+                        visionModel.has_roof = true ;
+                        visionModel.depth = 1;
+                        visionModel.status = "1";
+                        visionModel.matrix = new byte[10] { 0,1,2,3,4,5,6,7,8,9 };
+                        visionModel.status = "drop";
+                        
+                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
+                        */
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"REST Get Client Response Error: {ex}", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
+        {
+            long distance = 300;
+            zoneId = "";
+            zoneName = "";
+            if (cellInfoModel != null && cellInfoModel.data.Count > 0)
+            {
+                for (int i = 0; i < cellInfoModel.data.Count; i++)
+                {
+                    if (cellInfoModel.data[i].targetGeofence.Count > 0)
+                    {
+                        for (int j = cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
+                        {
+                            string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
+                            Match match = Regex.Match(cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                            if (match.Success && match.Groups.Count == 3)
+                            {
+                                double x = double.Parse(match.Groups[1].Value);
+                                double y = double.Parse(match.Groups[2].Value);
+                                x = Math.Truncate(x * 1000);
+                                y = Math.Truncate(y * 1000);
+                                long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
+                                //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
+                                if (calcDistance < distance)
+                                {
+                                    if (bDrop)
+                                    {
+                                        zoneId = cellInfoModel.data[i].targetGeofence[j + 1].zoneId;
+                                        zoneName = cellInfoModel.data[i].targetGeofence[j + 1].zoneName;
+                                    }
+                                    else
+                                    {
+                                        zoneId = cellInfoModel.data[i].targetGeofence[j].zoneId;
+                                        zoneName = cellInfoModel.data[i].targetGeofence[j].zoneName;
+                                    }
+
+                                    //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Tools.Log($"[ERROR] Can't get cellInfoModel ", Tools.ELogType.BackEndLog);
+            }
+
+        }
+
+        public void OnNAVSensorEvent(NAVSensorModel navSensorModel)
+        {
+            if (navSensorModel.result != "1")
+            {
+                /*
+                 * NAV데이터가 들어올 경우 각 열에 첫번째 ZoneId를 기억
+                 * 
+                 * if(VisionDistance > 0)
+                 *  열에 X 값이 동일한 경우 Y값은 비전 데이터로 navSensorModel.naviX = navSensorModel.naviX, navSensorModel.naviY = navSensorModel.naviY + visionDistance
+                 *  navSensorModel.result = 1
+                 * else
+                 *  
+                */
+            }
+
+            naviX = navSensorModel.naviX;
+            naviY = navSensorModel.naviY;
+            naviT = navSensorModel.naviT;
+            //m_result = int.Parse(navSensorModel.result);
+
+            navSensorModel.zoneId = zoneId;
+            navSensorModel.zoneName = zoneName;
+            navSensorModel.mapId = mapId;
+            navSensorModel.mappingId = mappingId;
+            navSensorModel.projectId = projectId;
+            navSensorModel.vehicleId = m_vehicle;
+
+            //CalcDistanceAndGetZoneID(naviX, naviY, false);
+
+            //string json_body = Util.ObjectToJson(navSensorModel);
+            //json_body = "{ \"navigation\":" + json_body + "}";
+            //RestClientPostModel post_obj = new RestClientPostModel();
+            //post_obj.body = json_body;
+            //post_obj.type = eMessageType.BackEndAction;
+            //post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+
+            //_eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            //Tools.Log($"{json_body}", Tools.ELogType.BackEndLog);
+        }
+
+        public void GetBasicInfoFromBackEnd()
+        {
+            try
+            {
+                string param = $"projectId={m_projectId}&mappingId={m_mappingId}&mapId={m_mapId}&vehicleId={m_vehicle}";
+                string url = $"https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?{param}";
+                Tools.Log($"REST Get BasicInfo url: {url}", Tools.ELogType.BackEndLog);
+
+                HttpWebRequest request = WebRequest.CreateHttp(url);
+                request.Method = "GET";
+                request.Timeout = 30 * 1000; // 30초
+                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                {
+                    HttpStatusCode status = resp.StatusCode;
+
+                    if (status == HttpStatusCode.OK)
+                    {
+                        Stream respStream = resp.GetResponseStream();
+                        using (StreamReader sr = new StreamReader(respStream))
+                        {
+                            basicInfoModel = JsonConvert.DeserializeObject<BasicInfoModel>(sr.ReadToEnd());
+                            m_pidx = basicInfoModel.data[0].pidx;
+                            m_vidx = basicInfoModel.data[0].vidx;
+                            m_workLocationId = basicInfoModel.data[0].workLocationId;
+                            m_vehicle = basicInfoModel.data[0].vehicleId;
+                            m_getBasicInfo = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                m_getBasicInfo = false;
+                Tools.Log($"REST Get BasicInfo Response Error: {ex}", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public void SendProdDataToBackEnd(object sender, EventArgs e)
+        {
+            try
+            {
+                if (m_getBasicInfo == false)
+                {
+                    Tools.Log($"Failed Get BasicInfo", Tools.ELogType.BackEndLog);
+                    return;
+                }
+
+                //if (m_result != 1)
+                //{
+                //    Tools.Log($"Failed Read NavSensor", Tools.ELogType.NAVLog);
+                //    return;
+                //}
+
+                ProdDataModel prodDataModel = new ProdDataModel();
+                prodDataModel.pidx = m_pidx;
+                prodDataModel.vidx = m_vidx;
+                prodDataModel.x = naviX;
+                prodDataModel.y = naviY;
+                prodDataModel.t = (int)naviT;
+                (prodDataModel.x, prodDataModel.y, prodDataModel.move) = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
+                prodDataModel.load = _is_unload ? 0 : 1; // UnLoad : 0, Load : 1
+                prodDataModel.result = m_result; // 1 : Success, other : Fail
+                prodDataModel.errorCode = Tools.ErrorCode; // ErrorCode 관련 로직 개발 필요
+
+                string json_body = Util.ObjectToJson(prodDataModel);
+                //json_body = "{ \"navigation\":" + json_body + "}";
+                //json_body = "{" + json_body + "}";
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+                Tools.Log($"{json_body}", Tools.ELogType.BackEndLog);
+            }
+            catch
+            {
+                Tools.Log($"Failed SendProdData to BackEnd", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public (long, long, int) IsMovingCheck(long rNaviX, long rNaviY)
+        {
+            long nRetX = 0;
+            long nRetY = 0;
+            int nRetFlag = 0;
+
+            try
+            {
+                isMoving.Add((rNaviX, rNaviY));
+
+                if (isMoving.Count > 1)
+                {
+                    long lastX = isMoving[isMoving.Count - 1].Item1;
+                    long lastY = isMoving[isMoving.Count - 1].Item2;
+                    long beforeX = isMoving[isMoving.Count - 2].Item1;
+                    long beforeY = isMoving[isMoving.Count - 2].Item2;
+                    long diffX = Math.Abs(lastX - beforeX);
+                    long diffY = Math.Abs(lastY - beforeY);
+                    double totalDistance = Math.Sqrt(Math.Pow(diffX, 2) + Math.Pow(diffY, 2));
+
+                    if (totalDistance >= 300)
+                    {
+                        nRetX = lastX;
+                        nRetY = lastY;
+                        nRetFlag = 1;
+                        //Tools.Log($"Moving", Tools.ELogType.BackEndLog);
+                    }
+                    else
+                    {
+                        nRetX = beforeX;
+                        nRetY = beforeY;
+                        nRetFlag = 0;
+                        //Tools.Log($"Not Moving", Tools.ELogType.BackEndLog);
+                    }
+
+                    isMoving.RemoveRange(0, isMoving.Count - 1);
+                }
+            }
+            catch
+            {
+                Tools.Log($"Failed IsMovingCheck", Tools.ELogType.BackEndLog);
+            }
+
+            return (nRetX, nRetY, nRetFlag);
         }
     }
 }

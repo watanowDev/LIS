@@ -74,6 +74,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
+                Tools.AddErrorCode(Tools.EEroorCodes.WeightConnError);
             }
         }
 

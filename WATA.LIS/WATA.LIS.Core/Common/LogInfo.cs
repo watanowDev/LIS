@@ -20,6 +20,7 @@ namespace WATA.LIS.Core.Common
         public ObservableCollection<Log> ListWeightLog;
         public ObservableCollection<Log> ListDisplayLog;
         public ObservableCollection<Log> ListDPSLog;
+        public ObservableCollection<Log> ListNAVLog;
 
 
         public LogInfo()
