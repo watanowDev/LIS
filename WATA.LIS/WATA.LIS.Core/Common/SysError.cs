@@ -42,7 +42,7 @@ namespace WATA.LIS.Core.Common
             {
                 if (CurrentError.Contains(code))
                 {
-                    return;
+                    break;
                 }
 
                 if (CurrentError.Contains("0000"))
