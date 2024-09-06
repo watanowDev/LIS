@@ -791,11 +791,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
+      "projectUniqueName": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
       "projectName": "WATA.LIS.IF.DPS",
-      "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
+      "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
       "packagesPath": "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\",
-      "outputPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\obj\\",
+      "outputPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.IF.DPS\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -817,8 +817,8 @@
         "net6.0-windows10.0.18362": {
           "targetAlias": "net6.0-windows10.0.18362.0",
           "projectReferences": {
-            "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }

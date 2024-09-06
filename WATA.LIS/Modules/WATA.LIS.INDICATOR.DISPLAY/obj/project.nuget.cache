@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "elxgem11vB0=",
+  "dgSpecHash": "i2y26lHGu2g=",
   "success": true,
-  "projectFilePath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.INDICATOR.DISPLAY\\WATA.LIS.INDICATOR.DISPLAY.csproj",
+  "projectFilePath": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.INDICATOR.DISPLAY\\WATA.LIS.INDICATOR.DISPLAY.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\asyncio\\0.1.69\\asyncio.0.1.69.nupkg.sha512",
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",

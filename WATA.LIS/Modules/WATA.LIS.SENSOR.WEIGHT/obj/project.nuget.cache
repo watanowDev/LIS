@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "53ntkj5le84=",
+  "dgSpecHash": "nETG7MLVjx8=",
   "success": true,
-  "projectFilePath": "D:\\Minsup_20240704\\PROJECT\\WATA\\pantos_240906\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
+  "projectFilePath": "D:\\Minsup_20240704\\PROJECT\\WATA\\LIS-ForkLift\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\log4net\\2.0.15\\log4net.2.0.15.nupkg.sha512",
