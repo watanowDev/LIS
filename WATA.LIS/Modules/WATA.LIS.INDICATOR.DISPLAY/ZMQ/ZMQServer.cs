@@ -63,12 +63,10 @@ namespace WATA.LIS.ZMQ
                     {
                         string RecieveStr = subSocket.ReceiveFrameString();
                         Tools.Log($"receive {RecieveStr}", Tools.ELogType.DisplayLog);
-                        SysError.RemoveErrorCode(SysError.VisionConnError);
                     }
                     catch
                     {
                         Tools.Log($"Exception!!!", Tools.ELogType.DisplayLog);
-                        SysError.AddErrorCode(SysError.VisionConnError);
                     }
                     Thread.Sleep(50);
                 }

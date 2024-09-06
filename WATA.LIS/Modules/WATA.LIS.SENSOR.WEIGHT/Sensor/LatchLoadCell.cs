@@ -72,7 +72,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                    // _port.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
-                    SysError.RemoveErrorCode(SysError.WeightConnError);
+                    SysError.RemoveErrorCodes(SysError.WeightConnError);
                 }
 
 
@@ -82,7 +82,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
-                SysError.AddErrorCode(SysError.WeightConnError);
+                SysError.AddErrorCodes(SysError.WeightConnError);
             }
         }
 
@@ -93,18 +93,19 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
             if (_port == null || _port.IsOpen == false)
             {
-
+                SysError.AddErrorCodes(SysError.WeightConnError);
                 return;
             }
             _port.Write(buffer, 0, buffer.Length);
-    }
+            SysError.RemoveErrorCodes(SysError.WeightConnError);
+        }
 
 
     private void ReceiveTimerEvent(object sender, EventArgs e)
     {
             if (_port == null || _port.IsOpen == false)
             {
-
+                SysError.AddErrorCodes(SysError.WeightConnError);
                 return;
             }
 
@@ -118,11 +119,13 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
                     LogRawData(buffer);
                     ParseData(buffer, bytesize);
+                    SysError.RemoveErrorCodes(SysError.WeightConnError);
                 }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
+                SysError.AddErrorCodes(SysError.WeightConnError);
             }
     }
 

@@ -182,11 +182,11 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             catch
                             {
                                 Tools.Log("Excepiton Connect Device!!!", Tools.ELogType.RFIDLog);
-                                SysError.AddErrorCode(SysError.RFIDConnError);
+                                SysError.AddErrorCodes(SysError.RFIDConnError);
                             }
 
                             Tools.Log("Success Connect Device!!!", Tools.ELogType.RFIDLog);
-                            SysError.RemoveErrorCode(SysError.RFIDConnError);
+                            SysError.RemoveErrorCodes(SysError.RFIDConnError);
                             mConnectionTimer.Stop();
                             Tools.Log("Stop Connect Timer", Tools.ELogType.RFIDLog);
                         }

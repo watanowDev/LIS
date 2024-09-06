@@ -29,31 +29,45 @@ namespace WATA.LIS.Core.Common
 
 
         public static string DPSConnError = "0601";
+        public static string DPSRcvError = "0602";
 
 
         public static string NAVConnError = "0701";
 
 
 
-        public static void AddErrorCode(string code)
+        public static void AddErrorCodes(params string[] codes)
         {
-            if (CurrentError.Contains("0000"))
+            foreach (var code in codes)
             {
-                CurrentError = code;
-            }
-            else
-            {
-                CurrentError += "," + code;
+                if (CurrentError.Contains(code))
+                {
+                    return;
+                }
+
+                if (CurrentError.Contains("0000"))
+                {
+                    var errorCodes = CurrentError.Split(',').ToList();
+                    errorCodes.Remove("0000");
+                    CurrentError = errorCodes.Count > 0 ? string.Join(",", errorCodes) : code;
+                }
+                else
+                {
+                    CurrentError += "," + code;
+                }
             }
         }
 
-        public static void RemoveErrorCode(string code)
+        public static void RemoveErrorCodes(params string[] codes)
         {
-            if (CurrentError.Contains(code))
+            foreach (var code in codes)
             {
-                var codes = CurrentError.Split(',').ToList();
-                codes.Remove(code);
-                CurrentError = codes.Count > 0 ? string.Join(",", codes) : "0000";
+                if (CurrentError.Contains(code))
+                {
+                    var codeList = CurrentError.Split(',').ToList();
+                    codeList.Remove(code);
+                    CurrentError = codeList.Count > 0 ? string.Join(",", codeList) : "0000";
+                }
             }
         }
     }

@@ -19,19 +19,19 @@ using Windows.Media.Protection.PlayReady;
 using Windows.Storage.Streams;
 
 namespace WATA.LIS.TCPSocket
-{ 
+{
     class TcpClientSimple
     {
 
 
         private readonly IEventAggregator _eventAggregator;
-        static  private string _ip;
-        static  private int _port;
+        static private string _ip;
+        static private int _port;
         static TcpClient _client;
         public TcpClientSimple(IEventAggregator eventAggregator, string ip, int port)
         {
             this._eventAggregator = eventAggregator;
-  
+
             _eventAggregator.GetEvent<DPSSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
             _ip = ip;
             _port = port;
@@ -39,7 +39,7 @@ namespace WATA.LIS.TCPSocket
 
         public async Task InitAsync()
         {
-            
+
             ConnectToServer();
         }
 
@@ -72,6 +72,7 @@ namespace WATA.LIS.TCPSocket
                 if (tcpClient.Connected)
                 {
                     Tools.Log($"Connect Success", Tools.ELogType.DPSLog);
+                    SysError.RemoveErrorCodes(SysError.DPSConnError);
 
                     networkStream = tcpClient.GetStream();
                     cancellationTokenSource = new CancellationTokenSource();
@@ -80,13 +81,14 @@ namespace WATA.LIS.TCPSocket
                 else
                 {
                     Tools.Log($"Disconnect Server", Tools.ELogType.DPSLog);
-
+                    SysError.AddErrorCodes(SysError.DPSConnError);
                 }
 
             }
             catch (Exception ex)
             {
                 Tools.Log($"Exception {ex.Message}", Tools.ELogType.DPSLog);
+                SysError.AddErrorCodes(SysError.DPSConnError);
             }
         }
 
@@ -110,13 +112,15 @@ namespace WATA.LIS.TCPSocket
             {
                 if (tcpClient != null && tcpClient.Connected)
                 {
-              //      byte[] data = Encoding.UTF8.GetBytes(msg);
+                    //      byte[] data = Encoding.UTF8.GetBytes(msg);
                     await networkStream.WriteAsync(data, 0, data.Length);
+                    SysError.RemoveErrorCodes(SysError.DPSConnError);
+                    SysError.RemoveErrorCodes(SysError.DPSRcvError);
                 }
                 else
                 {
                     Tools.Log($"DisConnect: {_ip} PORT : {_port}", Tools.ELogType.DPSLog);
-
+                    SysError.AddErrorCodes(SysError.DPSConnError);
                 }
 
 
@@ -124,6 +128,7 @@ namespace WATA.LIS.TCPSocket
             catch (Exception ex)
             {
                 Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
+                SysError.AddErrorCodes(SysError.DPSRcvError);
             }
         }
 
@@ -140,10 +145,7 @@ namespace WATA.LIS.TCPSocket
 
                     if (bytesRead > 0)
                     {
-                      
-
-
-              
+                        SysError.RemoveErrorCodes(SysError.DPSConnError, SysError.DPSRcvError);
                     }
 
                     Thread.Sleep(100);
@@ -151,8 +153,9 @@ namespace WATA.LIS.TCPSocket
             }
             catch (Exception ex)
             {
-                
+
                 Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
+                SysError.AddErrorCodes(SysError.DPSRcvError);
 
                 tcpClient.Close();
                 tcpClient = null;
@@ -185,7 +188,7 @@ namespace WATA.LIS.TCPSocket
 
                     NetworkStream stream = _client.GetStream();
                     stream.Write(buffer, 0, buffer.Length);
-             
+
                 }
                 else
                 {
@@ -218,11 +221,11 @@ namespace WATA.LIS.TCPSocket
                     return;
                 }
                 TcpListener listener = new TcpListener(ipAddress, _port);
-                
+
                 listener.Start();
                 while (true)
                 {
-                    _client= await listener.AcceptTcpClientAsync();
+                    _client = await listener.AcceptTcpClientAsync();
                     _ = HandleClientAsync(_client);
                 }
             }
