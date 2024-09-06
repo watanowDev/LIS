@@ -477,7 +477,7 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.mapId = m_mapId;
 
 
-            alive_obj.alive.errorCode = Tools.ErrorCode;
+            alive_obj.alive.errorCode = SysError.CurrentError;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             //post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
@@ -1841,7 +1841,7 @@ namespace WATA.LIS.Core.Services
                 (prodDataModel.x, prodDataModel.y, prodDataModel.move) = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
                 prodDataModel.load = _is_unload ? 0 : 1; // UnLoad : 0, Load : 1
                 prodDataModel.result = m_result; // 1 : Success, other : Fail
-                prodDataModel.errorCode = Tools.ErrorCode; // ErrorCode 관련 로직 개발 필요
+                prodDataModel.errorCode = SysError.CurrentError; // ErrorCode 관련 로직 개발 필요
 
                 string json_body = Util.ObjectToJson(prodDataModel);
                 //json_body = "{ \"navigation\":" + json_body + "}";

@@ -110,6 +110,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             catch
             {
                 Tools.Log($"Exception Connect!!!", Tools.ELogType.RFIDLog);
+                SysError.AddErrorCode(SysError.RFIDConnError);
             }
 
             return response;
@@ -123,6 +124,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             if (nodeList.Count > 0)
             {
                 mDeviceID = nodeList[0].InnerText;
+                Tools.Log($"Success Connection RFID", Tools.ELogType.RFIDLog);
+                SysError.RemoveErrorCode(SysError.RFIDConnError);
             }
 
             return Task.CompletedTask;

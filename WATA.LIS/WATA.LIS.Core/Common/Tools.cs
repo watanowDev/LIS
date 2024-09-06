@@ -295,7 +295,7 @@ namespace WATA.LIS.Core.Common
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                         case ELogType.NAVLog:
-                            DPSLog.Info(msg);//Point
+                            NAVLog.Info(msg);//Point
                             if (logInfo.ListNAVLog.Count > 300)
                             {
                                 System.Windows.Application.Current?.Dispatcher.Invoke(delegate
@@ -600,41 +600,6 @@ namespace WATA.LIS.Core.Common
             DisplayLog,
             DPSLog,
             NAVLog
-        }
-
-        private static string errorCode = "0000";
-        public enum EEroorCodes
-        {
-            Default = 0000,
-            RFIDConnError = 0101,
-            DistanceConnError = 0201,
-            VisionConnError = 0301,
-            WeightConnError = 0401,
-            DisplayConnError = 0501,
-            DPSConnError = 0601,
-            NAVConnError = 0701
-        }
-
-        public static string ErrorCode
-        {
-            get
-            {
-                return errorCode;
-            }
-        }
-        public static void AddErrorCode(EEroorCodes code)
-        {
-            string codeString = ((int)code).ToString("D4"); // 4자리 숫자로 변환
-
-            // "0000"이 기본값으로 설정되어 있는 경우, 첫 번째 에러 코드가 추가될 때 "0000"을 제거
-            if (errorCode == "0000")
-            {
-                errorCode = codeString;
-            }
-            else
-            {
-                errorCode += "," + codeString;
-            }
         }
 
         public struct SYSTEMTIME

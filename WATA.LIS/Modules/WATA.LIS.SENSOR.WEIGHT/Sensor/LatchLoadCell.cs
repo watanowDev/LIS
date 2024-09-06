@@ -72,6 +72,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                    // _port.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
+                    SysError.RemoveErrorCode(SysError.WeightConnError);
                 }
 
 
@@ -81,7 +82,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
-                Tools.AddErrorCode(Tools.EEroorCodes.WeightConnError);
+                SysError.AddErrorCode(SysError.WeightConnError);
             }
         }
 
