@@ -13,6 +13,8 @@ namespace WATA.LIS.Core.Common
 
 
         public static string RFIDConnError = "0101";
+        public static string RFIDRcvError = "0102";
+        public static string RFIDStartError = "0103";
 
 
         public static string DistanceConnError = "0201";
@@ -65,7 +67,7 @@ namespace WATA.LIS.Core.Common
                 if (CurrentError.Contains(code))
                 {
                     var codeList = CurrentError.Split(',').ToList();
-                    codeList.Remove(code);
+                    codeList.RemoveAll(c => c == code);
                     CurrentError = codeList.Count > 0 ? string.Join(",", codeList) : "0000";
                 }
             }

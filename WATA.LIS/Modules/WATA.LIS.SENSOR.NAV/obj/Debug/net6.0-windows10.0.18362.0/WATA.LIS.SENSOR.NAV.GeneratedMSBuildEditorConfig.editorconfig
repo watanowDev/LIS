@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = WATA.LIS.SENSOR.NAV
-build_property.ProjectDir = D:\Minsup_20240704\PROJECT\WATA\LIS-ForkLift\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\
+build_property.ProjectDir = D:\MSWON\WORK_LIST\LIS\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

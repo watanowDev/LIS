@@ -23,6 +23,13 @@ namespace WATA.LIS.SENSOR.NAV
             _eventAggregator = eventAggregator;
             _navModel = navModel;
 
+            NAVConfigModel _navConfig = (NAVConfigModel)_navModel;
+
+            if(_navConfig.NAV_Enable == 0)
+            {
+                return;
+            }
+
             NAVSensor navSensor = new NAVSensor(_eventAggregator, _navModel);
             navSensor.Init();
         }

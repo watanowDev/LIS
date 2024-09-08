@@ -1126,3 +1126,8 @@
 2024-09-06 16:55:42,334 ERROR [shared_library_windows] load_library C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
 2024-09-06 16:56:04,783 ERROR [shared_library_windows] load_library C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
 2024-09-06 16:56:26,860 ERROR [shared_library_windows] load_library C:\Users\watanuc\Downloads\mswon_test_240905\LIS-ForkLift\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
+2024-09-08 14:53:31,365 ERROR [shared_library_windows] load_library D:\MSWON\WORK_LIST\LIS\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
+2024-09-08 14:54:02,922 ERROR [shared_library_windows] load_library D:\MSWON\WORK_LIST\LIS\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
+2024-09-08 14:56:56,276 ERROR [shared_library_windows] load_library D:\MSWON\WORK_LIST\LIS\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
+2024-09-08 15:06:46,381 ERROR [shared_library_windows] load_library D:\MSWON\WORK_LIST\LIS\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126
+2024-09-08 15:07:50,846 ERROR [shared_library_windows] load_library D:\MSWON\WORK_LIST\LIS\WATA.LIS\WATA.LIS\bin\Debug\net6.0-windows10.0.18362.0\VISION\Plugins\OrbbecBodyTracking.dll failed: 126

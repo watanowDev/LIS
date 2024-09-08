@@ -62,6 +62,10 @@ namespace WATA.LIS.Core.Services
         private string m_mapId = "0b957d9ac8ed4aad82ffcc90101c8bce";
         private string m_vehicle = "fork_lift001";
 
+        private int m_pidx { get; set; }
+        private int m_vidx { get; set; }
+        private string m_workLocationId { get; set; }
+        private bool m_is_unload = false;
         private string m_errorcode = "0000";
 
         private bool m_stop_rack_epc = true;
@@ -75,24 +79,20 @@ namespace WATA.LIS.Core.Services
         WeightConfigModel _weightConfig;
         DistanceConfigModel _distance;
 
-        public string mapId { get; set; }
-        public string mappingId { get; set; }
-        public string projectId { get; set; }
+        private string mapId { get; set; }
+        private string mappingId { get; set; }
+        private string projectId { get; set; }
 
-        public long naviX { get; set; }
-        public long naviY { get; set; }
-        public long naviT { get; set; }
-        public int m_result { get; set; }
-        public string zoneId { get; set; }
-        public string zoneName { get; set; }
+        private long m_naviX { get; set; }
+        private long m_naviY { get; set; }
+        private long m_naviT { get; set; }
+        private int m_result { get; set; }
+        private string zoneId { get; set; }
+        private string zoneName { get; set; }
 
         CellInfoModel cellInfoModel;
         BasicInfoModel basicInfoModel;
         private List<(long, long)> isMoving = new List<(long, long)>();
-
-        public int m_pidx { get; set; }
-        public int m_vidx { get; set; }
-        public string m_workLocationId { get; set; }
 
         private bool m_getBasicInfo = false;
 
@@ -228,11 +228,11 @@ namespace WATA.LIS.Core.Services
 
                 if (m_weight.GrossWeight >= 10)
                 {
-                    _is_unload = false;
+                    m_is_unload = false;
                 }
                 else
                 {
-                    _is_unload = true;
+                    m_is_unload = true;
                 }
 
                 m_weight_list.RemoveAt(0);
@@ -284,25 +284,23 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        private bool _is_unload = false;
-
         public void OnIndicatorEvent(string status)
         {
             Tools.Log($"OnIndicatorEvent1111 {status}", Tools.ELogType.DisplayLog);
 
             if (status == "start_unload")
             {
-                _is_unload = true;
+                m_is_unload = true;
 
 
             }
             else if (status == "stop_unload")
             {
 
-                _is_unload = false;
+                m_is_unload = false;
             }
 
-            Tools.Log($"_is_unload {_is_unload}", Tools.ELogType.BackEndLog);
+            Tools.Log($"_is_unload {m_is_unload}", Tools.ELogType.BackEndLog);
         }
 
         eDockContainerProcedure _process = eDockContainerProcedure.NONE;
@@ -1246,14 +1244,14 @@ namespace WATA.LIS.Core.Services
 
             if (obj.status == "pickup")
             {
-                CalcDistanceAndGetZoneID(naviX, naviY, false);
+                CalcDistanceAndGetZoneID(m_naviX, m_naviY, false);
             }
             else if (obj.status == "drop")
             {
-                CalcDistanceAndGetZoneID(naviX, naviY, true);
+                CalcDistanceAndGetZoneID(m_naviX, m_naviY, true);
             }
 
-            if (_is_unload == true && (obj.status == "pickup" || obj.status == "drop"))
+            if (m_is_unload == true && (obj.status == "pickup" || obj.status == "drop"))
             {
                 obj.qr = obj.qr;
                 obj.qr = obj.qr.Replace("{", "");
@@ -1609,7 +1607,7 @@ namespace WATA.LIS.Core.Services
             Model.forlift_status.eventValue = m_event_value;
             Model.forlift_status.cepc = _c_epc_temp;
             Model.forlift_status.depc = _d_epc_temp;
-            Model.forlift_status.is_unload = _is_unload;
+            Model.forlift_status.is_unload = m_is_unload;
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
         }
@@ -1656,28 +1654,6 @@ namespace WATA.LIS.Core.Services
                                 }
                             }
                         }
-
-                        //    CalcDistanceAndGetZoneID(14096609073, 4510553755, false);
-                        //Tools.Log($"REST GetCellListFromPlatform status : {status}, {Util.ObjectToJson(cellInfoModel)} ", Tools.ELogType.BackEndLog);
-                        /* TEST
-                        //Tools.Log($"REST GetCellListFromPlatform status : {status}, {Util.ObjectToJson(cellInfoModel)} ", Tools.ELogType.BackEndLog);
-                        CalcDistanceAndGetZoneID(14096615041, 4510558400);
-                    
-                        
-
-                        VISON_Model visionModel = new VISON_Model();
-                        visionModel.area = 200;
-                        visionModel.width = 105;
-                        visionModel.height = 0;
-                        visionModel.qr = "08e8396ac20d5230a9202c7592754154";
-                        visionModel.has_roof = true ;
-                        visionModel.depth = 1;
-                        visionModel.status = "1";
-                        visionModel.matrix = new byte[10] { 0,1,2,3,4,5,6,7,8,9 };
-                        visionModel.status = "drop";
-                        
-                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
-                        */
                     }
                 }
             }
@@ -1740,23 +1716,9 @@ namespace WATA.LIS.Core.Services
 
         public void OnNAVSensorEvent(NAVSensorModel navSensorModel)
         {
-            if (navSensorModel.result != "1")
-            {
-                /*
-                 * NAV데이터가 들어올 경우 각 열에 첫번째 ZoneId를 기억
-                 * 
-                 * if(VisionDistance > 0)
-                 *  열에 X 값이 동일한 경우 Y값은 비전 데이터로 navSensorModel.naviX = navSensorModel.naviX, navSensorModel.naviY = navSensorModel.naviY + visionDistance
-                 *  navSensorModel.result = 1
-                 * else
-                 *  
-                */
-            }
-
-            naviX = navSensorModel.naviX;
-            naviY = navSensorModel.naviY;
-            naviT = navSensorModel.naviT;
-            //m_result = int.Parse(navSensorModel.result);
+            m_naviX = navSensorModel.naviX;
+            m_naviY = navSensorModel.naviY;
+            m_naviT = navSensorModel.naviT;
 
             navSensorModel.zoneId = zoneId;
             navSensorModel.zoneName = zoneName;
@@ -1764,19 +1726,6 @@ namespace WATA.LIS.Core.Services
             navSensorModel.mappingId = mappingId;
             navSensorModel.projectId = projectId;
             navSensorModel.vehicleId = m_vehicle;
-
-            //CalcDistanceAndGetZoneID(naviX, naviY, false);
-
-            //string json_body = Util.ObjectToJson(navSensorModel);
-            //json_body = "{ \"navigation\":" + json_body + "}";
-            //RestClientPostModel post_obj = new RestClientPostModel();
-            //post_obj.body = json_body;
-            //post_obj.type = eMessageType.BackEndAction;
-            //post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
-
-            //_eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-
-            //Tools.Log($"{json_body}", Tools.ELogType.BackEndLog);
         }
 
         public void GetBasicInfoFromBackEnd()
@@ -1826,20 +1775,14 @@ namespace WATA.LIS.Core.Services
                     return;
                 }
 
-                //if (m_result != 1)
-                //{
-                //    Tools.Log($"Failed Read NavSensor", Tools.ELogType.NAVLog);
-                //    return;
-                //}
-
                 ProdDataModel prodDataModel = new ProdDataModel();
                 prodDataModel.pidx = m_pidx;
                 prodDataModel.vidx = m_vidx;
-                prodDataModel.x = naviX;
-                prodDataModel.y = naviY;
-                prodDataModel.t = (int)naviT;
+                prodDataModel.x = m_naviX;
+                prodDataModel.y = m_naviY;
+                prodDataModel.t = (int)m_naviT;
                 (prodDataModel.x, prodDataModel.y, prodDataModel.move) = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
-                prodDataModel.load = _is_unload ? 0 : 1; // UnLoad : 0, Load : 1
+                prodDataModel.load = m_is_unload ? 0 : 1; // UnLoad : 0, Load : 1
                 prodDataModel.result = m_result; // 1 : Success, other : Fail
                 prodDataModel.errorCode = SysError.CurrentError;
 

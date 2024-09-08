@@ -64,10 +64,16 @@ namespace WATA.LIS.SENSOR.NAV
         System.Threading.Timer countTimer;
         Thread mainProcess;
 
+        private static string gIP = "169.254.4.63";
+        private static string gPORT = "2111";
 
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
             _eventAggregator = eventAggregator;
+
+            NAVConfigModel _navConfig = (NAVConfigModel)navModel;
+            gIP = _navConfig.IP;
+            gPORT = _navConfig.PORT.ToString(); ;
         }
 
         public void Init()
@@ -138,7 +144,7 @@ namespace WATA.LIS.SENSOR.NAV
                 }
                 else
                 {
-                    nav350_socket_open = NAVSensor.NAV_SockConn(Globals.nav_ip, Globals.nav_port);
+                    nav350_socket_open = NAVSensor.NAV_SockConn(gIP, gPORT);
                     if (nav350_socket_open == true)
                     {
                         Globals.setTimerCounter(Globals.nav_rcv);

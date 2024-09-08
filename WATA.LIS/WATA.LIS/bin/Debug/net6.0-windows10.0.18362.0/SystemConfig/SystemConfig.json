@@ -26,7 +26,7 @@
 	},
 	"visioncamera": 
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"camera_height": 0.85,
 		"qr_enable" : 1,
 		"view_3d_enable" : 1,
@@ -38,7 +38,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_name" : "Apulse", //Keonn, Apulse
+		"rfid_name" : "Keonn", //Keonn, Apulse
 		"rfid_enable" : 1,
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,
@@ -57,5 +57,11 @@
 	{
 		"IP" : "192.168.0.107",
 		"PORT" : 5010
+	},
+	"NAV": 
+	{
+		"NAV_Enable" : 0,
+		"IP" : "169.254.4.63",
+		"PORT" : 2111
 	}
 }

@@ -86,6 +86,11 @@ namespace WATA.LIS.Core.Parser
                         dps.IP = json["DPS"]["IP"].ToString();
                         dps.PORT = (int)json["DPS"]["PORT"];
 
+
+                        nav.NAV_Enable = (int)json["NAV"]["NAV_Enable"];
+                        nav.IP = json["NAV"]["IP"].ToString();
+                        nav.PORT = (int)json["NAV"]["PORT"];
+
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     }
                 }

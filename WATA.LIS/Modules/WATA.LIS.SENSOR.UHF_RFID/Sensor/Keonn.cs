@@ -25,28 +25,22 @@ using System.Diagnostics;
 using System.Net.Http;
 using Newtonsoft.Json;
 using WATA.LIS.Core.Model.BackEnd;
+using Windows.UI.WindowManagement;
+using WATA.LIS.Core.Model.RIFID;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
     public class Keonn
     {
         private readonly IEventAggregator _eventAggregator;
-        private RemoteDeviceScanner mRemoteDeviceScanner;
-        private readonly MsgEvent mMsgEvent = new MsgEvent();
-        private DispatcherTimer mScanTimeoutTimer;
-        private DispatcherTimer mConnectionTimer;
-        private DispatcherTimer mStatusCheckTimer;
-
-        private int mTimeout = 30000;
-        private RemoteDevice mRemoteDevice;
-        private bool mConnected = false;
-        private bool mRfidInventoryStarted = false;
         private readonly IRFIDModel _rfidmodel;
-        private string mDeviceID;
 
         RFIDConfigModel rfidConfig;
 
-        private String rfidUri;
+        private DispatcherTimer mCheckConnTimer;
+        private DispatcherTimer mGetInventoryTimer;
+        private bool mConnected = false;
+        private string mDeviceID;
 
 
         public Keonn(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
@@ -65,30 +59,45 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 Tools.Log("rftag disable", Tools.ELogType.RFIDLog);
                 return;
             }
-            TryConnect();
+
+            mCheckConnTimer = new DispatcherTimer();
+            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            mCheckConnTimer.Tick += new EventHandler(CheckConnTimer);
+
+            mGetInventoryTimer = new DispatcherTimer();
+            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 6000);
+            mGetInventoryTimer.Tick += new EventHandler(GetInventoryTimer);
+
+            RfidReaderInit();
         }
 
-        private void TryConnect()
+        /// <summary>
+        /// Initialize RFID Reader
+        /// </summary>
+        private void RfidReaderInit()
         {
-            string response;
-            response = GetResponseFromURI().Result;
+            bool GetDeviceIDResult;
+            bool SendStartCommandResult;
 
-            if (response == string.Empty)
+            GetDeviceIDResult = GetDeviceID();
+            SendStartCommandResult = SendStartCommand();
+
+            if (GetDeviceIDResult && SendStartCommandResult)
             {
-                mConnected = false;
-                Tools.Log("Empty String", Tools.ELogType.RFIDLog);
+                mConnected = true;
+                mCheckConnTimer.Start();
+                mGetInventoryTimer.Start();
             }
             else
             {
-                mConnected = true;
-                Tools.Log("Reader Connected", Tools.ELogType.RFIDLog);
+                mConnected = false;
             }
         }
 
-        private async Task<string> GetResponseFromURI()
+        private bool GetDeviceID()
         {
-            string response = string.Empty;
-            rfidUri = $"http://{rfidConfig.ip}/devices/";
+            bool result = false;
+            string rfidUri = $"http://{rfidConfig.ip}/devices/";
 
             try
             {
@@ -101,8 +110,16 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     {
                         using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
                         {
-                            await GetDeviceID(sr);
-                            await ReaderStart();
+                            XmlDocument xmlDocument = new XmlDocument();
+                            xmlDocument.LoadXml(sr.ReadToEnd());
+                            XmlNodeList nodeList = xmlDocument.GetElementsByTagName("id");
+                            if (nodeList.Count > 0)
+                            {
+                                mDeviceID = nodeList[0].InnerText;
+                                result = true;
+                                Tools.Log($"Device ID : {mDeviceID}", Tools.ELogType.RFIDLog);
+                                SysError.RemoveErrorCodes(SysError.RFIDRcvError);
+                            }
                         }
                     }
                 }
@@ -110,30 +127,54 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             catch
             {
                 Tools.Log($"Exception Connect!!!", Tools.ELogType.RFIDLog);
-                SysError.AddErrorCodes(SysError.RFIDConnError);
+                SysError.AddErrorCodes(SysError.RFIDRcvError);
             }
-
-            return response;
+            return result;
         }
 
-        private Task GetDeviceID(StreamReader sr)
+        private bool SendStartCommand()
         {
-            XmlDocument xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(sr.ReadToEnd());
-            XmlNodeList nodeList = xmlDocument.GetElementsByTagName("id");
-            if (nodeList.Count > 0)
+            bool result = false;
+            string rfidUri = $"http://{rfidConfig.ip}/devices/{mDeviceID}/start";
+
+            try
             {
-                mDeviceID = nodeList[0].InnerText;
-                Tools.Log($"Success Connection RFID", Tools.ELogType.RFIDLog);
-                SysError.RemoveErrorCodes(SysError.RFIDConnError);
-            }
+                // Bypassing firewall by disabling the check for certificate validation
+                ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
 
-            return Task.CompletedTask;
+                HttpWebRequest request = WebRequest.CreateHttp(rfidUri);
+                request.Method = "GET";
+                request.Timeout = 30 * 1000; // 30초
+                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                {
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        result = true;
+                        Tools.Log("RF is On", Tools.ELogType.RFIDLog);
+                        SysError.RemoveErrorCodes(SysError.RFIDStartError);
+                    }
+                }
+            }
+            catch
+            {
+                Tools.Log($"Failed starting RF", Tools.ELogType.RFIDLog);
+                SysError.AddErrorCodes(SysError.RFIDStartError);
+            }
+            return result;
         }
 
-        private Task ReaderStart()
+        /// <summary>
+        /// Check RFID Reader Connection
+        /// </summary>
+        private void CheckConnTimer(object sender, EventArgs e)
         {
-            rfidUri = $"http://{rfidConfig.ip}/devices/{mDeviceID}/start";
+            GetDeviceStatus();
+        }
+
+        private string GetDeviceStatus()
+        {
+            string result = string.Empty;
+            string rfidUri = $"http://{rfidConfig.ip}/status/";
 
             try
             {
@@ -144,21 +185,80 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 {
                     if (resp.StatusCode == HttpStatusCode.OK)
                     {
-                        Tools.Log("RF is On", Tools.ELogType.RFIDLog);
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            XmlDocument xmlDocument = new XmlDocument();
+                            xmlDocument.LoadXml(sr.ReadToEnd());
+                            XmlNodeList nodeList = xmlDocument.GetElementsByTagName("status");
+                            if (nodeList.Count > 0)
+                            {
+                                result = nodeList[0].InnerText;
+                                SysError.RemoveErrorCodes(SysError.RFIDConnError);
+                            }
+                        }
                     }
                 }
             }
             catch
             {
-                Tools.Log($"Failed starting RF", Tools.ELogType.RFIDLog);
+                Tools.Log($"Exception Connect!!!", Tools.ELogType.RFIDLog);
+                SysError.AddErrorCodes(SysError.RFIDConnError);
             }
-
-            return Task.CompletedTask;
+            return result;
         }
 
-        private async Task ReadEPC()
+        /// <summary>
+        /// Get Inventory
+        /// </summary>
+        private async void GetInventoryTimer(object sender, EventArgs e)
         {
+            //await GetInventory();
+            await GetRandomInventoryAsync();
+        }
 
+        private async Task<List<KeonnSensorModel>> GetInventory()
+        {
+            List<KeonnSensorModel> inventory = new List<KeonnSensorModel>();
+
+
+
+            return inventory;
+        }
+
+        /// <summary>
+        /// Test Method
+        /// </summary>
+        private async Task<List<KeonnSensorModel>> GetRandomInventoryAsync()
+        {
+            // Test Method
+            List<KeonnSensorModel> result = new List<KeonnSensorModel>();
+            string rfidUri = $"http://{rfidConfig.ip}/devices/{mDeviceID}/jsonMinLocationRandom";
+
+            try
+            {
+                HttpWebRequest request = WebRequest.CreateHttp(rfidUri);
+                request.Method = "GET";
+                request.Timeout = 30 * 1000; // 30초
+                using (HttpWebResponse resp = (HttpWebResponse)await request.GetResponseAsync())
+                {
+                    if (resp.StatusCode == HttpStatusCode.OK)
+                    {
+                        using (StreamReader sr = new StreamReader(resp.GetResponseStream()))
+                        {
+                            XmlDocument xmlDocument = new XmlDocument();
+                            xmlDocument.LoadXml(sr.ReadToEnd());
+                            string resultJson = xmlDocument.SelectSingleNode("//result").InnerText;
+                            result = JsonConvert.DeserializeObject<List<KeonnSensorModel>>(resultJson);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                Tools.Log($"Failed getting RandomData", Tools.ELogType.RFIDLog);
+                SysError.AddErrorCodes(SysError.RFIDRcvError);
+            }
+            return result;
         }
     }
 }
