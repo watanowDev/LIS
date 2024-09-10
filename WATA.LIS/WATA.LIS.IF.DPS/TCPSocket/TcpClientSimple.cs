@@ -72,7 +72,7 @@ namespace WATA.LIS.TCPSocket
                 if (tcpClient.Connected)
                 {
                     Tools.Log($"Connect Success", Tools.ELogType.DPSLog);
-                    SysError.RemoveErrorCodes(SysError.DPSConnError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.DPSConnErr);
 
                     networkStream = tcpClient.GetStream();
                     cancellationTokenSource = new CancellationTokenSource();
@@ -81,14 +81,14 @@ namespace WATA.LIS.TCPSocket
                 else
                 {
                     Tools.Log($"Disconnect Server", Tools.ELogType.DPSLog);
-                    SysError.AddErrorCodes(SysError.DPSConnError);
+                    SysAlarm.AddErrorCodes(SysAlarm.DPSConnErr);
                 }
 
             }
             catch (Exception ex)
             {
                 Tools.Log($"Exception {ex.Message}", Tools.ELogType.DPSLog);
-                SysError.AddErrorCodes(SysError.DPSConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.DPSConnErr);
             }
         }
 
@@ -114,13 +114,13 @@ namespace WATA.LIS.TCPSocket
                 {
                     //      byte[] data = Encoding.UTF8.GetBytes(msg);
                     await networkStream.WriteAsync(data, 0, data.Length);
-                    SysError.RemoveErrorCodes(SysError.DPSConnError);
-                    SysError.RemoveErrorCodes(SysError.DPSRcvError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.DPSConnErr);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.DPSRcvErr);
                 }
                 else
                 {
                     Tools.Log($"DisConnect: {_ip} PORT : {_port}", Tools.ELogType.DPSLog);
-                    SysError.AddErrorCodes(SysError.DPSConnError);
+                    SysAlarm.AddErrorCodes(SysAlarm.DPSConnErr);
                 }
 
 
@@ -128,7 +128,7 @@ namespace WATA.LIS.TCPSocket
             catch (Exception ex)
             {
                 Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
-                SysError.AddErrorCodes(SysError.DPSRcvError);
+                SysAlarm.AddErrorCodes(SysAlarm.DPSRcvErr);
             }
         }
 
@@ -145,7 +145,7 @@ namespace WATA.LIS.TCPSocket
 
                     if (bytesRead > 0)
                     {
-                        SysError.RemoveErrorCodes(SysError.DPSConnError, SysError.DPSRcvError);
+                        SysAlarm.RemoveErrorCodes(SysAlarm.DPSConnErr, SysAlarm.DPSRcvErr);
                     }
 
                     Thread.Sleep(100);
@@ -155,7 +155,7 @@ namespace WATA.LIS.TCPSocket
             {
 
                 Tools.Log($"ReceiveData Exception {ex.Message}", Tools.ELogType.DPSLog);
-                SysError.AddErrorCodes(SysError.DPSRcvError);
+                SysAlarm.AddErrorCodes(SysAlarm.DPSRcvErr);
 
                 tcpClient.Close();
                 tcpClient = null;

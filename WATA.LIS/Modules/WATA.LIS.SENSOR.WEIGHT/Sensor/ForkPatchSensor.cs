@@ -68,14 +68,14 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Open();
                     _port.Handshake = Handshake.None;
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
-                    SysError.RemoveErrorCodes(SysError.WeightConnError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
             }
             catch
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -84,7 +84,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
     {
             if (_port == null || _port.IsOpen == false)
             {
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
                 return;
             }
 
@@ -101,13 +101,13 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 {
 
                     Process_Event(recv_str);
-                    SysError.RemoveErrorCodes(SysError.WeightConnError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
 
     }

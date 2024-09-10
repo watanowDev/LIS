@@ -475,7 +475,7 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.mapId = m_mapId;
 
 
-            alive_obj.alive.errorCode = SysError.CurrentError;
+            alive_obj.alive.errorCode = SysAlarm.CurrentErr;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             //post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
@@ -1778,13 +1778,14 @@ namespace WATA.LIS.Core.Services
                 ProdDataModel prodDataModel = new ProdDataModel();
                 prodDataModel.pidx = m_pidx;
                 prodDataModel.vidx = m_vidx;
+                prodDataModel.vehicleId = m_vehicle;
                 prodDataModel.x = m_naviX;
                 prodDataModel.y = m_naviY;
                 prodDataModel.t = (int)m_naviT;
                 (prodDataModel.x, prodDataModel.y, prodDataModel.move) = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
                 prodDataModel.load = m_is_unload ? 0 : 1; // UnLoad : 0, Load : 1
                 prodDataModel.result = m_result; // 1 : Success, other : Fail
-                prodDataModel.errorCode = SysError.CurrentError;
+                prodDataModel.errorCode = SysAlarm.CurrentErr;
 
                 string json_body = Util.ObjectToJson(prodDataModel);
                 //json_body = "{ \"navigation\":" + json_body + "}";

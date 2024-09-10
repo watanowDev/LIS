@@ -10,6 +10,7 @@ namespace WATA.LIS.Core.Model.BackEnd
     {
         public int pidx { get; set; } //프로젝트 id
         public int vidx { get; set; } //지게차 id
+        public string vehicleId { get; set; } //지게차 이름
         public long x { get; set; } //x좌표
         public long y { get; set; } //y좌표
         public int t { get; set; } //지게차 헤딩 방향 (range : 0~3600)

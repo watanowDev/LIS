@@ -72,7 +72,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                    // _port.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
-                    SysError.RemoveErrorCodes(SysError.WeightConnError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
 
 
@@ -82,7 +82,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -93,11 +93,11 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
             if (_port == null || _port.IsOpen == false)
             {
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
                 return;
             }
             _port.Write(buffer, 0, buffer.Length);
-            SysError.RemoveErrorCodes(SysError.WeightConnError);
+            SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
         }
 
 
@@ -105,7 +105,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
     {
             if (_port == null || _port.IsOpen == false)
             {
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
                 return;
             }
 
@@ -119,13 +119,13 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
                     LogRawData(buffer);
                     ParseData(buffer, bytesize);
-                    SysError.RemoveErrorCodes(SysError.WeightConnError);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
-                SysError.AddErrorCodes(SysError.WeightConnError);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
     }
 
