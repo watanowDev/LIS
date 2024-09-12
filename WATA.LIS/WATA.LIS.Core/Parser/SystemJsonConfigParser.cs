@@ -69,6 +69,7 @@ namespace WATA.LIS.Core.Parser
 
                         rfid.rfid_name = json["rfid_receiver"]["rfid_name"].ToString();
                         rfid.rfid_enable = (int)json["rfid_receiver"]["rfid_enable"];
+                        rfid.comport = json["rfid_receiver"]["comport"].ToString();
                         rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
                         rfid.nRadioPower = (int)json["rfid_receiver"]["radio_power"];
                         rfid.nTxOnTime = (int)json["rfid_receiver"]["tx_on_time"];

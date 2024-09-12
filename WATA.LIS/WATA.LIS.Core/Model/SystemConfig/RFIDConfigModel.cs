@@ -6,6 +6,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
     {
         public string rfid_name { get; set; }
         public int rfid_enable { get; set; }
+        public string comport {  get; set; }
         public string SPP_MAC { get; set; }
         public int nRadioPower { get; set; }
         

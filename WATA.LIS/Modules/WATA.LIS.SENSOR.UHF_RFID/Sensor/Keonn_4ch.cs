@@ -30,7 +30,7 @@ using WATA.LIS.Core.Model.RIFID;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
-    public class Keonn
+    public class Keonn_4ch
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IRFIDModel _rfidmodel;
@@ -43,7 +43,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         private string mDeviceID;
 
 
-        public Keonn(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
+        public Keonn_4ch(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
         {
             _eventAggregator = eventAggregator;
             _rfidmodel = rfidmodel;

@@ -4,7 +4,7 @@
 library
 C#
 .cs
-D:\MSWON\WORK_LIST\LIS\WATA.LIS\Modules\WATA.LIS.SENSOR.WEIGHT\obj\Debug\net6.0-windows10.0.18362.0\
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.WEIGHT\obj\Debug\net6.0-windows10.0.18362.0\
 WATA.LIS.SENSOR.WEIGHT
 none
 false
@@ -13,8 +13,8 @@ TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 11115245823
 
 9801565862
-208673392594
+208337947992
 Views\WeightView.xaml;
 
-True
+False
 

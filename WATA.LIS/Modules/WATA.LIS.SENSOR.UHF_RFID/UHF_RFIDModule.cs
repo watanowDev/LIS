@@ -48,7 +48,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID
             }
             else if (rfid_config.rfid_name == "Keonn")
             {
-                Keonn rfid = new Keonn(_eventAggregator, _rfidmodel, main);
+                Keonn_4ch rfid = new Keonn_4ch(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
             }
         }

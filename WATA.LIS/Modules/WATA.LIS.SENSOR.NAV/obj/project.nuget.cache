@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "ulDzq0FrOjQ=",
+  "dgSpecHash": "ZC4sJrTurlE=",
   "success": true,
-  "projectFilePath": "D:\\MSWON\\WORK_LIST\\LIS\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
+  "projectFilePath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wata_iot_dev\\.nuget\\packages\\asyncio\\0.1.69\\asyncio.0.1.69.nupkg.sha512",
     "C:\\Users\\wata_iot_dev\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",

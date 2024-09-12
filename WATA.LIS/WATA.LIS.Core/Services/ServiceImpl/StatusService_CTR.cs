@@ -1716,9 +1716,23 @@ namespace WATA.LIS.Core.Services
 
         public void OnNAVSensorEvent(NAVSensorModel navSensorModel)
         {
+            if (navSensorModel.result != "1")
+            {
+                /*
+                 * NAV데이터가 들어올 경우 각 열에 첫번째 ZoneId를 기억
+                 * 
+                 * if(VisionDistance > 0)
+                 *  열에 X 값이 동일한 경우 Y값은 비전 데이터로 navSensorModel.naviX = navSensorModel.naviX, navSensorModel.naviY = navSensorModel.naviY + visionDistance
+                 *  navSensorModel.result = 1
+                 * else
+                 *  
+                */
+            }
+
             m_naviX = navSensorModel.naviX;
             m_naviY = navSensorModel.naviY;
             m_naviT = navSensorModel.naviT;
+            m_result = Convert.ToInt16(navSensorModel.result);
 
             navSensorModel.zoneId = zoneId;
             navSensorModel.zoneName = zoneName;
@@ -1782,7 +1796,7 @@ namespace WATA.LIS.Core.Services
                 prodDataModel.x = m_naviX;
                 prodDataModel.y = m_naviY;
                 prodDataModel.t = (int)m_naviT;
-                (prodDataModel.x, prodDataModel.y, prodDataModel.move) = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
+                prodDataModel.move = IsMovingCheck(prodDataModel.x, prodDataModel.y); // Stop : 0, Move : 1
                 prodDataModel.load = m_is_unload ? 0 : 1; // UnLoad : 0, Load : 1
                 prodDataModel.result = m_result; // 1 : Success, other : Fail
                 prodDataModel.errorCode = SysAlarm.CurrentErr;
@@ -1805,10 +1819,10 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        public (long, long, int) IsMovingCheck(long rNaviX, long rNaviY)
+        public int IsMovingCheck(long rNaviX, long rNaviY)
         {
-            long nRetX = 0;
-            long nRetY = 0;
+            //long nRetX = 0;
+            //long nRetY = 0;
             int nRetFlag = 0;
 
             try
@@ -1827,15 +1841,15 @@ namespace WATA.LIS.Core.Services
 
                     if (totalDistance >= 300)
                     {
-                        nRetX = lastX;
-                        nRetY = lastY;
+                        //nRetX = lastX;
+                        //nRetY = lastY;
                         nRetFlag = 1;
                         //Tools.Log($"Moving", Tools.ELogType.BackEndLog);
                     }
                     else
                     {
-                        nRetX = beforeX;
-                        nRetY = beforeY;
+                        //nRetX = beforeX;
+                        //nRetY = beforeY;
                         nRetFlag = 0;
                         //Tools.Log($"Not Moving", Tools.ELogType.BackEndLog);
                     }
@@ -1848,7 +1862,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"Failed IsMovingCheck", Tools.ELogType.BackEndLog);
             }
 
-            return (nRetX, nRetY, nRetFlag);
+            return nRetFlag;
         }
     }
 }

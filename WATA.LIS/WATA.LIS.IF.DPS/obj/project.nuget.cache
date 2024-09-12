@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "eP+GF58UzGE=",
+  "dgSpecHash": "FseuRkqa+8A=",
   "success": true,
-  "projectFilePath": "D:\\MSWON\\WORK_LIST\\LIS\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
+  "projectFilePath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wata_iot_dev\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",
     "C:\\Users\\wata_iot_dev\\.nuget\\packages\\log4net\\2.0.15\\log4net.2.0.15.nupkg.sha512",
