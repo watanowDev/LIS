@@ -216,9 +216,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             await GetRandomInventoryAsync();
         }
 
-        private async Task<List<KeonnSensorModel>> GetInventory()
+        private async Task<List<Keonn4chSensorModel>> GetInventory()
         {
-            List<KeonnSensorModel> inventory = new List<KeonnSensorModel>();
+            List<Keonn4chSensorModel> inventory = new List<Keonn4chSensorModel>();
 
 
 
@@ -228,10 +228,10 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         /// <summary>
         /// Test Method
         /// </summary>
-        private async Task<List<KeonnSensorModel>> GetRandomInventoryAsync()
+        private async Task<List<Keonn4chSensorModel>> GetRandomInventoryAsync()
         {
             // Test Method
-            List<KeonnSensorModel> result = new List<KeonnSensorModel>();
+            List<Keonn4chSensorModel> result = new List<Keonn4chSensorModel>();
             string rfidUri = $"http://{rfidConfig.ip}/devices/{mDeviceID}/jsonMinLocationRandom";
 
             try
@@ -248,7 +248,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             XmlDocument xmlDocument = new XmlDocument();
                             xmlDocument.LoadXml(sr.ReadToEnd());
                             string resultJson = xmlDocument.SelectSingleNode("//result").InnerText;
-                            result = JsonConvert.DeserializeObject<List<KeonnSensorModel>>(resultJson);
+                            result = JsonConvert.DeserializeObject<List<Keonn4chSensorModel>>(resultJson);
                         }
                     }
                 }

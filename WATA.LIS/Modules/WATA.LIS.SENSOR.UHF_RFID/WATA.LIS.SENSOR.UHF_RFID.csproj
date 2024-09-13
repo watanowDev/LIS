@@ -9,6 +9,7 @@
 	<PackageReference Include="IKVM" Version="8.4.4" />
     <PackageReference Include="NetMQ" Version="4.0.1.10" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
+    <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
@@ -16,6 +17,12 @@
   <ItemGroup>
     <Reference Include="ApulsetechNet">
       <HintPath>Libary\ApulsetechNet.dll</HintPath>
+    </Reference>
+    <Reference Include="LLRP">
+      <HintPath>Libary\LLRP.dll</HintPath>
+    </Reference>
+    <Reference Include="MercuryAPI">
+      <HintPath>Libary\MercuryAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

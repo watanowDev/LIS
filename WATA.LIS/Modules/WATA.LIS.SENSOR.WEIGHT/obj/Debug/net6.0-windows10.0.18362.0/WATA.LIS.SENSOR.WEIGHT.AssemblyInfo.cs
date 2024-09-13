@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.SENSOR.WEIGHT")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0dd1109f7b6ace1e2a16728b517615ffd1ddb056")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09522d7840d20e1f6c13a9a897710568f53faacd")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.SENSOR.WEIGHT")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.SENSOR.WEIGHT")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

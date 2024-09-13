@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WATA.LIS.Core.Model.RIFID
+namespace WATA.LIS.Core.Model.RFID
 {
-    public class KeonnSensorModel
+    public class Keonn4chSensorModel
     {
         public string EPC { get; set; }
         public long TS { get; set; }

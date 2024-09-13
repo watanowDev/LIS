@@ -21,7 +21,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
     public class LatchLoadCell
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly IWeightModel  _weightmodel;
+        private readonly IWeightModel _weightmodel;
 
         SerialPort serial = new SerialPort();
         SerialPort _port = new SerialPort();
@@ -33,7 +33,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         //DistanceConfigModel _distaceConfig;
 
         public LatchLoadCell(IEventAggregator eventAggregator, IWeightModel weightmodel)
-        {                          
+        {
             _eventAggregator = eventAggregator;
             _weightmodel = weightmodel;
             _weightConfig = (WeightConfigModel)_weightmodel;
@@ -66,17 +66,17 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 string port = _weightConfig.ComPort;
                 int bouadrate = 9600;
                 _port = new SerialPort(port, bouadrate, Parity.None, 8, StopBits.One);
-                 if (_port != null)
+                if (_port != null)
                 {
                     _port.Open();
                     _port.Handshake = Handshake.None;
-                   // _port.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
+                    // _port.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
 
 
-          
+
             }
             catch
             {
@@ -86,8 +86,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
         }
 
-    private void onSendData(byte[] buffer)
-    {
+        private void onSendData(byte[] buffer)
+        {
             string bytelog = Util.DebugBytestoString(buffer);
             Tools.Log($"Send packet {bytelog}", Tools.ELogType.WeightLog);
 
@@ -101,8 +101,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         }
 
 
-    private void ReceiveTimerEvent(object sender, EventArgs e)
-    {
+        private void ReceiveTimerEvent(object sender, EventArgs e)
+        {
             if (_port == null || _port.IsOpen == false)
             {
                 SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
@@ -127,11 +127,11 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
                 SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
-    }
+        }
 
         public void ParseData(byte[] RecvBytes, int nSize)
         {
-            if (RecvBytes[0] == 0x55 && RecvBytes[1] ==  0xAB && RecvBytes[2] == 0x01)
+            if (RecvBytes[0] == 0x55 && RecvBytes[1] == 0xAB && RecvBytes[2] == 0x01)
             {
 
                 byte[] GrossWeight = new byte[4];
@@ -158,7 +158,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 int left_forkpower = RecvBytes[16];
 
                 WeightSensorModel model = new WeightSensorModel();
-                model.GrossWeight =  nGrossWeight;
+                model.GrossWeight = nGrossWeight;
                 model.RightWeight = nRightWeight;
                 model.LeftWeight = nLeftWeight;
 
@@ -171,9 +171,9 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 Tools.Log($"[DataRecive] {nGrossWeight} ", Tools.ELogType.WeightLog);
                 _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
             }
-           
 
-            return ;
+
+            return;
         }
 
         private void LogRawData(byte[] HexData)
@@ -191,8 +191,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
         }
 
-        private void DataRecive(object sender, SerialDataReceivedEventArgs e) 
-    {
+        private void DataRecive(object sender, SerialDataReceivedEventArgs e)
+        {
             try
             {
                 SerialPort sp = (SerialPort)sender;

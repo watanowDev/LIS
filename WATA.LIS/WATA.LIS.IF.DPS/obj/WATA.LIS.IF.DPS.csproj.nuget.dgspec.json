@@ -11,7 +11,7 @@
         "projectName": "WATA.LIS.Core",
         "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
         "packagesPath": "C:\\Users\\wata_iot_dev\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wata_iot_dev\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
+        "outputPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
