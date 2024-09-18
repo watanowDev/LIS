@@ -106,7 +106,10 @@ namespace WATA.LIS
             else if (mainobj.device_type == "CTR")//CTR POC
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();//현재 지게차용  Apulse RF수신기
-
+            }
+            else if (mainobj.device_type == "Singapore")//Singapore POC
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 POC용 원민섭 주임 신규개발
             }
         }
 

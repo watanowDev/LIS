@@ -46,7 +46,12 @@ namespace WATA.LIS.SENSOR.UHF_RFID
                 ApulseTechControl rfid = new ApulseTechControl(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
             }
-            else if (rfid_config.rfid_name == "Keonn")
+            if (rfid_config.rfid_name == "Keonn2ch")
+            {
+                Keonn_2ch rfid = new Keonn_2ch(_eventAggregator, _rfidmodel, main);
+                rfid.Init();
+            }
+            else if (rfid_config.rfid_name == "Keonn4ch")
             {
                 Keonn_4ch rfid = new Keonn_4ch(_eventAggregator, _rfidmodel, main);
                 rfid.Init();

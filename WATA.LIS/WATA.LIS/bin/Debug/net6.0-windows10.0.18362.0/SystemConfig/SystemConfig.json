@@ -38,7 +38,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_name" : "Keonn", //Keonn, Apulse
+		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"rfid_enable" : 1,
 		"comport": "COM9",
 		"SPP_MAC" : "00:05:C4:C1:01:32",

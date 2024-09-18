@@ -26,7 +26,7 @@ using System.Net.Http;
 using Newtonsoft.Json;
 using WATA.LIS.Core.Model.BackEnd;
 using Windows.UI.WindowManagement;
-using WATA.LIS.Core.Model.RIFID;
+using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
@@ -216,9 +216,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             await GetRandomInventoryAsync();
         }
 
-        private async Task<List<Keonn4chSensorModel>> GetInventory()
+        private async Task<List<Keonn4chEventModel>> GetInventory()
         {
-            List<Keonn4chSensorModel> inventory = new List<Keonn4chSensorModel>();
+            List<Keonn4chEventModel> inventory = new List<Keonn4chEventModel>();
 
 
 
@@ -228,10 +228,10 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         /// <summary>
         /// Test Method
         /// </summary>
-        private async Task<List<Keonn4chSensorModel>> GetRandomInventoryAsync()
+        private async Task<List<Keonn4chEventModel>> GetRandomInventoryAsync()
         {
             // Test Method
-            List<Keonn4chSensorModel> result = new List<Keonn4chSensorModel>();
+            List<Keonn4chEventModel> result = new List<Keonn4chEventModel>();
             string rfidUri = $"http://{rfidConfig.ip}/devices/{mDeviceID}/jsonMinLocationRandom";
 
             try
@@ -248,7 +248,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             XmlDocument xmlDocument = new XmlDocument();
                             xmlDocument.LoadXml(sr.ReadToEnd());
                             string resultJson = xmlDocument.SelectSingleNode("//result").InnerText;
-                            result = JsonConvert.DeserializeObject<List<Keonn4chSensorModel>>(resultJson);
+                            result = JsonConvert.DeserializeObject<List<Keonn4chEventModel>>(resultJson);
                         }
                     }
                 }
