@@ -11,6 +11,7 @@ using ThingMagic;
 using Apulsetech.Rfid.Type;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 {
@@ -48,50 +49,53 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
 
             mCheckConnTimer = new DispatcherTimer();
-            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 10000);
+            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             mCheckConnTimer.Tick += new EventHandler(CheckConnTimer);
 
             mGetInventoryTimer = new DispatcherTimer();
-            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 2000);
+            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
 
             RfidReaderInit();
+            //TestTagRead();
         }
 
         private void RfidReaderInit()
         {
             try
             {
-                using (reader = Reader.Create($"tmr:///{rfidConfig.comport}"))
-                {
-                    reader.Connect();
+                reader = Reader.Create($"tmr:///{rfidConfig.comport}");
+                reader.Connect();
 
-                    //The region of operation should be set
-                    Reader.Region[] readerSupportedRegions = (Reader.Region[])reader.ParamGet("/reader/region/supportedRegions");
-                    if (readerSupportedRegions.Length < 1)
-                        throw new FAULT_INVALID_REGION_Exception();
+                //The region of operation should be set
+                Reader.Region[] readerSupportedRegions = (Reader.Region[])reader.ParamGet("/reader/region/supportedRegions");
+                if (readerSupportedRegions.Length < 1)
+                    throw new FAULT_INVALID_REGION_Exception();
 
-                    //Set region to KR2
-                    reader.ParamSet("/reader/region/id", readerSupportedRegions[5]);
+                //Set region to KR2
+                reader.ParamSet("/reader/region/id", readerSupportedRegions[5]);
 
-                    //Set antennas 1 or 2
-                    int[] antennaList = { 1, 2 }; //int[] antennaList = { 1 };
+                //Set antennas 1 or 2
+                int[] antennaList = { 1 };
+                //int[] antennaList = { 1, 2 };
 
-                    //Set use the antennas, use GEN2 protocol, don't use any filter
-                    SimpleReadPlan plan = new SimpleReadPlan(antennaList, TagProtocol.GEN2, null, null, 1000);
-                    reader.ParamSet("/reader/read/plan", plan);
+                //Set use the antennas, use GEN2 protocol, don't use any filter
+                SimpleReadPlan plan = new SimpleReadPlan(antennaList, TagProtocol.GEN2, null, null, 1000);
+                reader.ParamSet("/reader/read/plan", plan);
 
-                    mConnected = true;
+                //Get the model of the reader for checking the connection
+                string model = (string)reader.ParamGet("/reader/version/model");
 
-                    //reader.Destroy();
-                }
+                mConnected = true;
                 SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
+
+                //reader.Destroy();
             }
             catch (Exception ex)
             {
                 mConnected = false;
-                Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
                 SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
+                Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
             }
         }
 
@@ -103,12 +107,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 string model = (string)reader.ParamGet("/reader/version/model");
                 mConnected = true;
                 SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
+                Tools.Log($"[RfidReaderConnCheck] Connected !!! : {model}", Tools.ELogType.RFIDLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"[RfidReaderConnCheck] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
                 mConnected = false;
                 SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
+                Tools.Log($"[RfidReaderConnCheck] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
             }
         }
 
@@ -121,13 +126,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
             try
             {
+                //Start reading
                 TagReadData[] tagsRead = await Task.Run(() => reader.Read(1000));
 
                 List<TagReadData> filteredTags = new List<TagReadData>();
 
                 foreach (TagReadData tag in tagsRead)
                 {
-                    if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC"))
+                    if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC") || tag.EpcString.Contains("DA")) //CB:컨테이너, DC:도크, DA:랙
                     {
                         filteredTags.Add(tag);
                     }
@@ -155,11 +161,49 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 keonn2chEventModel.EPC = tag.EpcString;
                 keonn2chEventModel.TS = tag.Time;
                 keonn2chEventModel.RSSI = tag.Rssi;
+                keonn2chEventModel.COUNT = tag.ReadCount;
 
                 eventModels.Add(keonn2chEventModel);
+                Tools.Log($"EPC:{eventModels[0].EPC}, RSSI:{eventModels[0].RSSI}, COUNT:{eventModels[0].COUNT}", Tools.ELogType.RFIDLog);
             }
 
             _eventAggregator.GetEvent<Keonn2chEvent>().Publish(eventModels);
+        }
+
+        private async void TestTagRead()
+        {
+            if (!mConnected)
+            {
+                return;
+            }
+
+            try
+            {
+                //Start reading
+                TagReadData[] tagsRead = await Task.Run(() => reader.Read(1000));
+
+                List<TagReadData> filteredTags = new List<TagReadData>();
+
+                foreach (TagReadData tag in tagsRead)
+                {
+                    if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC") || tag.EpcString.Contains("DA")) //CB:컨테이너, DC:도크, DA:랙
+                    {
+                        filteredTags.Add(tag);
+                    }
+                }
+
+                filteredTags.Sort((x, y) => y.ReadCount.CompareTo(x.ReadCount));
+                filteredTags.OrderBy(x => x.ReadCount).ThenBy(x => x.Rssi);
+
+
+                PubTagData(filteredTags);
+                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
+            }
+            catch
+            {
+                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.RFIDLog);
+                SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
+            }
         }
     }
 }

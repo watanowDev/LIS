@@ -12,6 +12,7 @@ namespace WATA.LIS.Core.Model.RFID
         public string EPC { get; set; }
         public DateTime TS { get; set; }
         public int RSSI { get; set; }
+        public int COUNT { get; set; }
 
     }
 }

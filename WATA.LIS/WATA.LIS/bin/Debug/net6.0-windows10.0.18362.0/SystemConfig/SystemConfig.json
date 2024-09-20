@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "CTR", //DPS, WIS_KINTEX , WIS_KINTEX,
+		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore
 		"workLocationId" : "PANTOS_FLAT_001",
 		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
 		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",

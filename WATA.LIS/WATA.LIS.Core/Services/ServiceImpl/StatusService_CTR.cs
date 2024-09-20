@@ -110,8 +110,8 @@ namespace WATA.LIS.Core.Services
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnFrontAntEpcData, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnSubAntEpcData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnFrontAntEpcData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LocationProcess_Event>().Subscribe(OnSubAntEpcData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<Keonn2chEvent>().Subscribe(OnEpcData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensor, ThreadOption.BackgroundThread, true);
