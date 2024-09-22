@@ -202,7 +202,7 @@ namespace WATA.LIS.Core.Services
 
         }
 
-        private void OnEpcData(List<Keonn2chEventModel> list)
+        private void OnEpcData(List<Keonn2ch_Model> list)
         {
             // RFID EPC Data
         }

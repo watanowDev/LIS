@@ -30,6 +30,7 @@ namespace WATA.LIS.Core.Common
         static ILog DisplayLog;
         static ILog DPSLog;
         static ILog NAVLog;
+        static ILog QRCameraLog;
 
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
@@ -47,6 +48,7 @@ namespace WATA.LIS.Core.Common
             DisplayLog = LogManager.GetLogger("DisplayLogEx");
             DPSLog = LogManager.GetLogger("DPSLogEx");
             NAVLog = LogManager.GetLogger("NAVLogEx");
+            QRCameraLog = LogManager.GetLogger("QRCameraLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -379,7 +381,7 @@ namespace WATA.LIS.Core.Common
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
             }
             return jsonData;
         }
@@ -599,7 +601,8 @@ namespace WATA.LIS.Core.Common
             WeightLog,
             DisplayLog,
             DPSLog,
-            NAVLog
+            NAVLog,
+            QRCameraLog
         }
 
         public struct SYSTEMTIME

@@ -28,8 +28,8 @@
 	{
 		"vision_enable" : 0,
 		"camera_height": 0.85,
-		"qr_enable" : 1,
-		"view_3d_enable" : 1,
+		"qr_enable" : 0,
+		"view_3d_enable" : 0,
 		"event_distance" : 1.0,
 		"pickup_wait_delay" : 2000,
 		"rack_with" : 1.46,
@@ -38,8 +38,8 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"rfid_enable" : 1,
+		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"comport": "COM9",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,
@@ -61,8 +61,13 @@
 	},
 	"NAV": 
 	{
-		"NAV_Enable" : 0,
+		"NAV_Enable" : 1,
 		"IP" : "169.254.4.63",
 		"PORT" : 2111
+	},
+	"QR":
+	{
+		"qr_enable" : 1,
+		"qr_cameraname" : "Hik" //Hik
 	}
 }

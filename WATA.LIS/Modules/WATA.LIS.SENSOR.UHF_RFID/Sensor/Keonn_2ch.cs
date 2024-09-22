@@ -8,7 +8,6 @@ using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Events.RFID;
 using System.IO.Ports;
 using ThingMagic;
-using Apulsetech.Rfid.Type;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,11 +156,11 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
         private void PubTagData(List<TagReadData> tagsRead)
         {
-            List<Keonn2chEventModel> eventModels = new List<Keonn2chEventModel>();
+            List<Keonn2ch_Model> eventModels = new List<Keonn2ch_Model>();
 
             foreach (TagReadData tag in tagsRead)
             {
-                Keonn2chEventModel keonn2chEventModel = new Keonn2chEventModel();
+                Keonn2ch_Model keonn2chEventModel = new Keonn2ch_Model();
                 keonn2chEventModel.EPC = tag.EpcString;
                 keonn2chEventModel.TS = tag.Time;
                 keonn2chEventModel.RSSI = tag.Rssi;

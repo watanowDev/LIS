@@ -16,7 +16,7 @@ namespace WATA.LIS.Core.Parser
 {
     public class SystemJsonConfigParser
     {
-        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel, QRCameraConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
@@ -26,6 +26,7 @@ namespace WATA.LIS.Core.Parser
             Led_Buzzer_ConfigModel LedBuzzer = new Led_Buzzer_ConfigModel();
             DPSConfigModel dps = new DPSConfigModel();
             NAVConfigModel nav = new NAVConfigModel();
+            QRCameraConfigModel qr = new QRCameraConfigModel();
 
             try
             {
@@ -67,8 +68,8 @@ namespace WATA.LIS.Core.Parser
                         vision.onlyshelf = (int)json["visioncamera"]["onlyshelf"];
 
 
-                        rfid.rfid_name = json["rfid_receiver"]["rfid_name"].ToString();
                         rfid.rfid_enable = (int)json["rfid_receiver"]["rfid_enable"];
+                        rfid.rfid_name = json["rfid_receiver"]["rfid_name"].ToString();
                         rfid.comport = json["rfid_receiver"]["comport"].ToString();
                         rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
                         rfid.nRadioPower = (int)json["rfid_receiver"]["radio_power"];
@@ -92,6 +93,9 @@ namespace WATA.LIS.Core.Parser
                         nav.IP = json["NAV"]["IP"].ToString();
                         nav.PORT = (int)json["NAV"]["PORT"];
 
+                        qr.qr_enable = (int)json["QR"]["qr_enable"];
+                        qr.qr_cameraname = json["QR"]["qr_cameraname"].ToString();
+
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     }
                 }
@@ -100,9 +104,10 @@ namespace WATA.LIS.Core.Parser
             {
                 Tools.Log($"Exception !!!", Tools.ELogType.DistanceLog);
                 MessageBox.Show("Config File Failed");
+                Console.WriteLine(Ex.Message);
             }
 
-            return (weight, distance, vision, rfid, main, LedBuzzer, dps, nav);
+            return (weight, distance, vision, rfid, main, LedBuzzer, dps, nav, qr);
         }
     }
 }

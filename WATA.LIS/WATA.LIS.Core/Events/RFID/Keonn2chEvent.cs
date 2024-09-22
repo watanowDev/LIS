@@ -8,7 +8,7 @@ using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.Core.Events.RFID
 {
-    public class Keonn2chEvent : PubSubEvent<List<Keonn2chEventModel>>
+    public class Keonn2chEvent : PubSubEvent<List<Keonn2ch_Model>>
     {
 
     }

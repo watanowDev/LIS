@@ -202,7 +202,7 @@ namespace WATA.LIS.Core.Services
 
         }
 
-        private void OnEpcData(List<Keonn2chEventModel> epcData)
+        private void OnEpcData(List<Keonn2ch_Model> epcData)
         {
             if (epcData != null && epcData.Count > 0)
             {

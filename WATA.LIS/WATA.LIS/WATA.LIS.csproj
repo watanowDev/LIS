@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.VISION.Camera\WATA.LIS.VISION.Camera.csproj" />
+    <ProjectReference Include="..\Modules\WATA.LIS.VISION.QRCamera\WATA.LIS.VISION.QRCamera.csproj" />
     <ProjectReference Include="..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
     <ProjectReference Include="..\WATA.LIS.IF.DPS\WATA.LIS.IF.DPS.csproj" />
   </ItemGroup>

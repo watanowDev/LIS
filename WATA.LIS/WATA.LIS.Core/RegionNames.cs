@@ -13,5 +13,6 @@
         public const string Content_BackEnd = "Content_BackEnd";
         public const string Content_Indicator = "Content_Indicator";
         public const string Content_DPS = "Content_DPS";
+        public const string Content_QRCamera = "Content_QRCamera";
     }
 }

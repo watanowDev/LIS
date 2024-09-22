@@ -1,22 +1,11 @@
 ﻿using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
-using Prism.Regions;
-using System.Net.Sockets;
-using System.Threading;
-using System;
 using WATA.LIS.Core;
 using WATA.LIS.SENSOR.UHF_RFID.Views;
 using WATA.LIS.SENSOR.UHF_RFID.Sensor;
-using WATA.LIS.Core.Services;
-using WATA.LIS.Core.Model.RFID;
-using Apulsetech.Rfid.Vendor.Tag.Sensor.Rfmicron;
-using System.Windows.Media;
 using WATA.LIS.Core.Interfaces;
-using System.Text.Json.Serialization;
-using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Model.SystemConfig;
-//using WATA.LIS.Core.Interfaces;
 
 namespace WATA.LIS.SENSOR.UHF_RFID
 {
@@ -51,7 +40,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID
                 Keonn_2ch rfid = new Keonn_2ch(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
             }
-            else if (rfid_config.rfid_name == "Keonn4ch")
+            if (rfid_config.rfid_name == "Keonn4ch")
             {
                 Keonn_4ch rfid = new Keonn_4ch(_eventAggregator, _rfidmodel, main);
                 rfid.Init();
