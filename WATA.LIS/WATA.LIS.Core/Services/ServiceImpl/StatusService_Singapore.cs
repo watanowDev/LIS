@@ -202,9 +202,16 @@ namespace WATA.LIS.Core.Services
 
         }
 
-        private void OnEpcData(List<Keonn2chEventModel> list)
+        private void OnEpcData(List<Keonn2chEventModel> epcData)
         {
-            // RFID EPC Data
+            if (epcData != null && epcData.Count > 0)
+            {
+                foreach (var epc in epcData)
+                {
+                    Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.COUNT}, TS:{epc.TS}", ELogType.RFIDLog);
+                }
+                Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].COUNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
+            }
         }
 
         private string _SIM_EPC_DATA = "";

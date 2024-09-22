@@ -51,13 +51,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             mCheckConnTimer = new DispatcherTimer();
             mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             mCheckConnTimer.Tick += new EventHandler(CheckConnTimer);
+            mCheckConnTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
             mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
+            mGetInventoryTimer.Start();
 
             RfidReaderInit();
-            //TestTagRead();
         }
 
         private void RfidReaderInit()
@@ -127,7 +128,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             try
             {
                 //Start reading
-                TagReadData[] tagsRead = await Task.Run(() => reader.Read(1000));
+                TagReadData[] tagsRead = await Task.Run(() => reader.Read(800));
 
                 List<TagReadData> filteredTags = new List<TagReadData>();
 
@@ -139,7 +140,10 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     }
                 }
 
-                filteredTags.Sort((x, y) => x.Time.CompareTo(y.Time)); // Sort the tags by Time
+                // Sort filteredTags by ReadCount in descending order, then by RSSI in descending order
+                filteredTags = filteredTags.OrderByDescending(tag => tag.ReadCount)
+                                           .ThenByDescending(tag => tag.Rssi)
+                                           .ToList();
 
                 PubTagData(filteredTags);
                 SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
@@ -164,46 +168,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 keonn2chEventModel.COUNT = tag.ReadCount;
 
                 eventModels.Add(keonn2chEventModel);
-                Tools.Log($"EPC:{eventModels[0].EPC}, RSSI:{eventModels[0].RSSI}, COUNT:{eventModels[0].COUNT}", Tools.ELogType.RFIDLog);
             }
 
             _eventAggregator.GetEvent<Keonn2chEvent>().Publish(eventModels);
-        }
-
-        private async void TestTagRead()
-        {
-            if (!mConnected)
-            {
-                return;
-            }
-
-            try
-            {
-                //Start reading
-                TagReadData[] tagsRead = await Task.Run(() => reader.Read(1000));
-
-                List<TagReadData> filteredTags = new List<TagReadData>();
-
-                foreach (TagReadData tag in tagsRead)
-                {
-                    if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC") || tag.EpcString.Contains("DA")) //CB:컨테이너, DC:도크, DA:랙
-                    {
-                        filteredTags.Add(tag);
-                    }
-                }
-
-                filteredTags.Sort((x, y) => y.ReadCount.CompareTo(x.ReadCount));
-                filteredTags.OrderBy(x => x.ReadCount).ThenBy(x => x.Rssi);
-
-
-                PubTagData(filteredTags);
-                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
-            }
-            catch
-            {
-                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
-            }
         }
     }
 }
