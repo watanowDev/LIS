@@ -60,7 +60,7 @@ namespace WATA.LIS.TCPSocket
                 }
 
             }
-            catch (Exception ex)
+            catch
             {
 
 

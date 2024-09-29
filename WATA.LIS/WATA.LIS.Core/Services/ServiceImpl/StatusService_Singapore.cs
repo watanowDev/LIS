@@ -66,7 +66,7 @@ namespace WATA.LIS.Core.Services
         private int m_vidx { get; set; }
         private string m_workLocationId { get; set; }
         private bool m_is_unload = false;
-        private string m_errorcode = "0000";
+        //private string m_errorcode = "0000";
 
         private bool m_stop_rack_epc = true;
         private RFIDConfigModel rfidConfig;
@@ -226,7 +226,7 @@ namespace WATA.LIS.Core.Services
             Tools.Log($"######Set Simulation EPC !!!!! {_SIM_EPC_DATA} index ", Tools.ELogType.BackEndLog);
         }
 
-        private string m_Location_epc = "";
+        //private string m_Location_epc = "";
 
         private void OnWeightSensor(WeightSensorModel obj)
         {
@@ -432,13 +432,13 @@ namespace WATA.LIS.Core.Services
             }
         }
 
-        int test1 = 0;
-        int test2 = 0;
-        int test3 = 0;
-        int test4 = 0;
-        int test5 = 0;
-        int test6 = 0;
-        int test_qr = 0;
+        //int test1 = 0;
+        //int test2 = 0;
+        //int test3 = 0;
+        //int test4 = 0;
+        //int test5 = 0;
+        //int test6 = 0;
+        //int test_qr = 0;
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
@@ -504,7 +504,7 @@ namespace WATA.LIS.Core.Services
 
         }
 
-        bool Is_front_ant_disable = false;
+        //bool Is_front_ant_disable = false;
 
 
 
@@ -571,7 +571,7 @@ namespace WATA.LIS.Core.Services
                 rfidmodel.RSSI = -99;
                 _eventAggregator.GetEvent<RackProcess_Event>().Publish(rfidmodel);
 
-                Is_front_ant_disable = true;
+                //Is_front_ant_disable = true;
 
             }
             else
@@ -579,7 +579,7 @@ namespace WATA.LIS.Core.Services
                 rifid_status_check_count++;
                 Tools.Log($"Wait Count {rifid_status_check_count}", Tools.ELogType.SystemLog);
 
-                Is_front_ant_disable = false;
+                //Is_front_ant_disable = false;
             }
 
             if (distance_status_check_count > status_limit_count)// 30초후 응답이 없으면 RFID 클리어
@@ -1463,20 +1463,22 @@ namespace WATA.LIS.Core.Services
         private void SendToIndicator(int grossWeight, int leftweight, int rightweight, string QR, float vision_w, float vision_h, float vsion_depth)
         {
             IndicatorModel Model = new IndicatorModel();
-            Model.forlift_status.weightTotal = grossWeight;
-            Model.forlift_status.weightLeft = leftweight;
-            Model.forlift_status.weightRight = rightweight;
-            Model.forlift_status.QR = QR;
-            Model.forlift_status.visionHeight = vision_h;
-            Model.forlift_status.visionWidth = vision_w;
-            Model.forlift_status.visionDepth = vsion_depth;
-            Model.forlift_status.visionStauts = true;
-            Model.forlift_status.heightSensorStatus = true;
-            Model.forlift_status.networkStatus = true;
-            Model.forlift_status.eventValue = m_event_value;
-            Model.forlift_status.cepc = _c_epc_temp;
-            Model.forlift_status.depc = _d_epc_temp;
-            Model.forlift_status.is_unload = m_is_unload;
+            Model.forklift_status.weightTotal = grossWeight;
+            Model.forklift_status.weightLeft = leftweight;
+            Model.forklift_status.weightRight = rightweight;
+            Model.forklift_status.QR = QR;
+            Model.forklift_status.visionHeight = vision_h;
+            Model.forklift_status.visionWidth = vision_w;
+            Model.forklift_status.visionDepth = vsion_depth;
+            Model.forklift_status.epc = _c_epc_temp;
+            Model.forklift_status.networkStatus = true;
+            Model.forklift_status.visionStauts = true;
+            Model.forklift_status.lidar2dStatus = true;
+            Model.forklift_status.lidar3dStatus = true;
+            Model.forklift_status.heightSensorStatus = true;
+            Model.forklift_status.rfidStatus = true;
+            Model.forklift_status.eventValue = m_event_value; // true : pickup, false : drop
+            Model.forklift_status.is_unload = m_is_unload;
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
         }

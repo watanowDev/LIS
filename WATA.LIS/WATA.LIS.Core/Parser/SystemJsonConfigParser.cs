@@ -93,8 +93,9 @@ namespace WATA.LIS.Core.Parser
                         nav.IP = json["NAV"]["IP"].ToString();
                         nav.PORT = (int)json["NAV"]["PORT"];
 
-                        qr.qr_enable = (int)json["QR"]["qr_enable"];
-                        qr.qr_cameraname = json["QR"]["qr_cameraname"].ToString();
+                        qr.vision_enable = (int)json["QR"]["vision_enable"];
+                        qr.vision_name = json["QR"]["vision_name"].ToString();
+                        qr.vision_ip = json["QR"]["vision_ip"].ToString();
 
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     }
