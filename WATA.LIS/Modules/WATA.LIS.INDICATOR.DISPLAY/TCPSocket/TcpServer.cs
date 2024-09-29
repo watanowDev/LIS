@@ -101,7 +101,7 @@ namespace WATA.LIS.TCPSocket
         /// </summary>
         public override void Stop()
         {
-            _processThread.Abort();
+            //_processThread.Abort();
             _sock.Shutdown(SocketShutdown.Both);
             _sock.Close();
 
@@ -175,7 +175,7 @@ namespace WATA.LIS.TCPSocket
 
         private void PassvieSocketDataReadHandler(object ob)
         {
-            int rst = 0;
+            //int rst = 0;
             Socket sock = (Socket)ob;
             SetKeepalive(sock);
             //DataGathering.Json.Parser.CimJsonParser parser = new DataGathering.Json.Parser.CimJsonParser();
@@ -230,8 +230,9 @@ namespace WATA.LIS.TCPSocket
 
 
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     Disconnect();
                     break;
                 }

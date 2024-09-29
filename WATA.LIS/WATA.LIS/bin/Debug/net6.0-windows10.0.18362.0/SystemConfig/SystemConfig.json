@@ -40,7 +40,7 @@
 	{
 		"rfid_enable" : 1,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
-		"comport": "COM9",
+		"comport": "COM6",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,
 		"tx_on_time": 200,
@@ -67,7 +67,8 @@
 	},
 	"QR":
 	{
-		"qr_enable" : 1,
-		"qr_cameraname" : "Hik" //Hik
+		"vision_enable" : 1,
+		"vision_name" : "HikVision", //HikVision
+		"vision_ip" : "192.168.0.4"
 	}
 }

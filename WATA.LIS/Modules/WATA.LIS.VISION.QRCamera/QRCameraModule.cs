@@ -22,7 +22,12 @@ namespace WATA.LIS.VISION.QRCamera
             MainConfigModel main_config = (MainConfigModel)main;
             QRCameraConfigModel qrcamera_config = (QRCameraConfigModel)qrcameramodel;
 
-            if (qrcamera_config.qr_cameraname == "HikVision")
+            if (qrcamera_config.vision_enable == 0)
+            {
+                return;
+            }
+
+            if (qrcamera_config.vision_name == "HikVision")
             {
                 HikVision qrcamera = new HikVision(_eventAggregator, _qrcameramodel, main);
                 qrcamera.Init();

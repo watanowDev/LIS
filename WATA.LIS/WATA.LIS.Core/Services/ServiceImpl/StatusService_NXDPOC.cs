@@ -1100,13 +1100,13 @@ namespace WATA.LIS.Core.Services
         private void SendToIndicator(int grossWeight, int leftweight, int rightweight, string QR, float vision_w, float vision_h, float vsion_depth)
         {
             IndicatorModel Model = new IndicatorModel();
-            Model.forlift_status.weightTotal = grossWeight;
-            Model.forlift_status.weightLeft = leftweight;
-            Model.forlift_status.weightRight = rightweight;
-            Model.forlift_status.QR = QR;
-            Model.forlift_status.visionWidth = vision_w;
-            Model.forlift_status.visionHeight = vision_h;
-            Model.forlift_status.visionDepth = vsion_depth;
+            Model.forklift_status.weightTotal = grossWeight;
+            Model.forklift_status.weightLeft = leftweight;
+            Model.forklift_status.weightRight = rightweight;
+            Model.forklift_status.QR = QR;
+            Model.forklift_status.visionWidth = vision_w;
+            Model.forklift_status.visionHeight = vision_h;
+            Model.forklift_status.visionDepth = vsion_depth;
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
         }

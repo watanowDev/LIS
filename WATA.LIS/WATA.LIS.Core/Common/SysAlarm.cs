@@ -21,14 +21,15 @@ namespace WATA.LIS.Core.Common
         public static string DistanceConnErr = "0201";
 
 
-        public static string VisionConnErr = "0301";
+        public static string VisionConnErr = "0301"; // QR Camera
+        public static string VisionRcvErr = "0302";
 
 
         public static string WeightConnErr = "0401";
         public static string WeightLowBattery = "0402";
 
 
-        public static string DisplayConnErr = "0501";
+        public static string DisplayConnErr = "0501"; // App Display
 
 
         public static string DPSConnErr = "0601";

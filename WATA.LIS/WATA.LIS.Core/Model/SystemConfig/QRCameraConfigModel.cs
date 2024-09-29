@@ -9,7 +9,8 @@ namespace WATA.LIS.Core.Model.SystemConfig
 {
     public class QRCameraConfigModel : IQRCameraModel
     {
-        public int qr_enable { get; set; }
-        public string qr_cameraname { get; set; }
+        public int vision_enable { get; set; }
+        public string vision_name { get; set; }
+        public string vision_ip { get; set; }
     }
 }
