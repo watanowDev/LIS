@@ -22,7 +22,6 @@ namespace WATA.LIS.Main.ViewModels
         public ObservableCollection<Log> ListSystemLog { get; set; }
         public ObservableCollection<Log> ListBackEndLog { get; set; }
         public ObservableCollection<Log> ListRFIDLog { get; set; }
-
         public ObservableCollection<Log> VisionLog { get; set; }
 
 
@@ -30,14 +29,20 @@ namespace WATA.LIS.Main.ViewModels
         //Elips
         private string _Distance_Active;
         public string Distance_Active { get { return _Distance_Active; } set { SetProperty(ref _Distance_Active, value); } }
+        
+        
         private string _RFID_Active;
         public string RFID_Active { get { return _RFID_Active; } set { SetProperty(ref _RFID_Active, value); } }
+        
+        
         private string _VISION_Active;
         public string VISION_Active { get { return _VISION_Active; } set { SetProperty(ref _VISION_Active, value); } }
 
+       
         private string _BACKEND_Active;
         public string BACKEND_Active { get { return _BACKEND_Active; } set { SetProperty(ref _BACKEND_Active, value); } }
 
+       
         //Text
         private string _Distance_Value;
         public string Distance_Value { get { return _Distance_Value; } set { SetProperty(ref _Distance_Value, value); } }
@@ -75,7 +80,7 @@ namespace WATA.LIS.Main.ViewModels
 
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             Distance_Active = Disable;
             RFID_Active = Disable;
@@ -124,11 +129,6 @@ namespace WATA.LIS.Main.ViewModels
 
 
             RFID_Value = obj.EPC;
-        }
-
-        public void OnVISIONEvent(VISON_Model obj)
-        {
-      
         }
     }
 }

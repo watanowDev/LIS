@@ -13,6 +13,7 @@ using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.Indicator;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.SENSOR.NAV.NAV;
@@ -21,26 +22,12 @@ namespace WATA.LIS.SENSOR.NAV.ViewModels
 {
     public class NAVViewModel : BindableBase
     {
-        public ObservableCollection<Log> NAVLog { get; set; }
-        private readonly IEventAggregator _eventAggregator;
-        public DelegateCommand<string> ButtonFunc { get; set; }
+        public ObservableCollection<Log> ListNAVLog { get; set; }
 
-        public NAVViewModel(IEventAggregator eventAggregator)
+        public NAVViewModel()
         {
-            _eventAggregator = eventAggregator;
-            NAVLog = Tools.logInfo.ListNAVLog;
-
-            _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+            ListNAVLog = Tools.logInfo.ListNAVLog;
+            Tools.Log($"Init NAVViewModel", Tools.ELogType.NAVLog);
         }
-
-        public void OnIndicatorEvent(string status)
-        {
-            Tools.Log($"OnIndicatorEvent {status}", Tools.ELogType.NAVLog);
-
-        }
-
-        
-
-
     }
 }

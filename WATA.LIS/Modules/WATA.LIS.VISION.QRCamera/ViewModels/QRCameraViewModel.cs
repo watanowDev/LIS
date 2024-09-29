@@ -16,7 +16,7 @@ namespace WATA.LIS.VISION.QRCamera.ViewModels
 
         public QRCameraViewModel()
         {
-            ListQRCameraLog = Tools.logInfo.ListQRCameraLog;
+            ListQRCameraLog = Tools.logInfo.ListQRCamLog;
             Tools.Log($"Init QRCameraViewModel", Tools.ELogType.QRCameraLog);
         }
     }

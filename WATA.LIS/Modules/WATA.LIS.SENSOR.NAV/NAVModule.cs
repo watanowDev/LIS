@@ -8,6 +8,7 @@ using WATA.LIS.Core;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.SENSOR.NAV.Views;
 
 namespace WATA.LIS.SENSOR.NAV
 {
@@ -41,6 +42,7 @@ namespace WATA.LIS.SENSOR.NAV
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            containerRegistry.RegisterForNavigation<NAV_View>(RegionNames.Content_LiDAR2D);
         }
     }
 }

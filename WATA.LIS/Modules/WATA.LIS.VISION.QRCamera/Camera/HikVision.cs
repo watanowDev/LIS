@@ -27,13 +27,11 @@ namespace WATA.LIS.VISION.QRCamera.Camera
         private DispatcherTimer mGetImageTimer;
         private bool mConnected = false;
 
-        public HikVision(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel, IMainModel main)
+        public HikVision(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel)
         {
             _eventAggregator = eventAggregator;
             _qrcameramodel = qrcameramodel;
             qrcameraConfig = (QRCameraConfigModel)_qrcameramodel;
-
-            MainConfigModel main_config = (MainConfigModel)main;
         }
 
         public void Init()
@@ -148,12 +146,12 @@ namespace WATA.LIS.VISION.QRCamera.Camera
 
         private void GetImageTimer(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+
         }
 
         private void CheckConnTimer(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

@@ -181,18 +181,6 @@
                 <Label  Grid.Row="0" Grid.Column="0" Content="Vision" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="15" Margin="0,6,0,0"/>
             </Grid>
 
-
-            <Grid Grid.Column="4">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="r1" Grid.Column="0" Grid.Row="0" Width="109"  Content="1" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
-            </Grid>
-            <Grid Grid.Column="5">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="r2" Grid.Column="0" Grid.Row="0" Width="109"  Content="2" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
-            </Grid>
-
-            <Grid Grid.Column="6">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="r3" Grid.Column="0" Grid.Row="0" Width="109"  Content="3" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
-            </Grid>
-
             <Grid Grid.Column="7">
                 <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109"  Content="EXIT" Style="{StaticResource ButtonStyle1}"  BorderThickness="2" HorizontalAlignment="Center"  />
             </Grid>

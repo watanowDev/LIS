@@ -19,9 +19,10 @@ namespace WATA.LIS.Main.ViewModels
         private readonly IEventAggregator _eventAggregator;
 
         public DelegateCommand<string> MenuSelectButton { get; private set; }
-        
+
         private bool _MainChecked;
         public bool MainChecked { get { return _MainChecked; } set { SetProperty(ref _MainChecked, value); } }
+
 
         private bool _RFIDChecked;
         public bool RFIDChecked { get { return _RFIDChecked; } set { SetProperty(ref _RFIDChecked, value); } }
@@ -31,12 +32,16 @@ namespace WATA.LIS.Main.ViewModels
         public bool WeightChecked { get { return _WeightChecked; } set { SetProperty(ref _WeightChecked, value); } }
 
 
-
         private bool _DistanceChecked;
         public bool DistanceChecked { get { return _DistanceChecked; } set { SetProperty(ref _DistanceChecked, value); } }
 
+
         private bool _CameraChecked;
         public bool CameraChecked { get { return _CameraChecked; } set { SetProperty(ref _CameraChecked, value); } }
+
+
+        private bool _BackEndChecked;
+        public bool BackEndChecked { get { return _BackEndChecked; } set { SetProperty(ref _BackEndChecked, value); } }
 
 
         private bool _IndicatorChecked;
@@ -47,7 +52,15 @@ namespace WATA.LIS.Main.ViewModels
         public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
 
 
-        
+        private bool _LiDAR2DChecked;
+        public bool LiDAR2DChecked { get { return _LiDAR2DChecked; } set { SetProperty(ref _LiDAR2DChecked, value); } }
+
+
+        private bool _LiDAR3DChecked;
+        public bool LiDAR3DChecked { get { return _LiDAR3DChecked; } set { SetProperty(ref _LiDAR3DChecked, value); } }
+
+
+
 
 
 
@@ -59,7 +72,7 @@ namespace WATA.LIS.Main.ViewModels
         {
             _regionManager = regionManager;
             _eventAggregator = eventAggregator;
-           
+
             MenuSelectButton = new DelegateCommand<string>(MenuSelect);
             MainConfigModel mainobj = (MainConfigModel)main;
             if (mainobj.device_type == "DPS")
@@ -83,24 +96,29 @@ namespace WATA.LIS.Main.ViewModels
             WeightChecked = false;
             IndicatorChecked = false;
             DPSChecked = false;
+            LiDAR2DChecked = false;
+            LiDAR3DChecked = false;
 
             if (command != null)
             {
-              
                 switch (command)
                 {
                     case "Content_Main":
                         MainChecked = true;
                         break;
+                    
                     case "Content_RFID":
                         RFIDChecked = true;
                         break;
+                    
                     case "Content_Distance":
                         DistanceChecked = true;
                         break;
-                    case "Content_Camera":
+                    
+                    case "Content_QRCamera":
                         CameraChecked = true;
                         break;
+                    
                     case "Content_Weight":
                         WeightChecked = true;
                         break;
@@ -113,12 +131,16 @@ namespace WATA.LIS.Main.ViewModels
                         DPSChecked = true;
                         break;
 
+                    case "Content_LiDAR2D":
+                        LiDAR2DChecked = true;
+                        break;
 
+                    case "Content_LiDAR3D":
+                        LiDAR3DChecked = true;
+                        break;
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);
             }
-
         }
-
     }
 }

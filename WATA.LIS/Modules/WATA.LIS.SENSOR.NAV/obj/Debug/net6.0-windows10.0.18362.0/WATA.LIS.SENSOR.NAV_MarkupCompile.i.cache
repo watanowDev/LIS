@@ -4,17 +4,17 @@
 library
 C#
 .cs
-C:\Users\WATA06\Desktop\LIS-ForkLift\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Debug\net6.0-windows10.0.18362.0\
+C:\Users\MSWON-DESKTOP\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Debug\net6.0-windows10.0.18362.0\
 WATA.LIS.SENSOR.NAV
 none
 false
 TRACE;DEBUG;NET;NET6_0;NETCOREAPP
 
-12091248352
+1799831344
 
-71669858461
-215-139076315
-Views\VisionCamera.xaml;
+9-646246810
+215-1096319468
+Views\NAV_View.xaml;
 
 False
 

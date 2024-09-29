@@ -72,7 +72,7 @@
                                     <GradientStop Color="#FF0C0202" Offset="1"/>
                                 </LinearGradientBrush>
                             </TabControl.Background>
-                            <TabItem Header="Tag" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                            <TabItem Header="RFID Tag" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
                                 <ListBox Background="DarkGray" ItemsSource="{Binding ListRFIDLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5" >
                                 </ListBox>
                             </TabItem>

@@ -14,12 +14,11 @@ namespace WATA.LIS.VISION.QRCamera
         private readonly IEventAggregator _eventAggregator;
         private readonly IQRCameraModel _qrcameramodel;
 
-        public QRCameraModule(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel, IMainModel main)
+        public QRCameraModule(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel)
         {
             _eventAggregator = eventAggregator;
             _qrcameramodel = qrcameramodel;
 
-            MainConfigModel main_config = (MainConfigModel)main;
             QRCameraConfigModel qrcamera_config = (QRCameraConfigModel)qrcameramodel;
 
             if (qrcamera_config.vision_enable == 0)
@@ -29,7 +28,7 @@ namespace WATA.LIS.VISION.QRCamera
 
             if (qrcamera_config.vision_name == "HikVision")
             {
-                HikVision qrcamera = new HikVision(_eventAggregator, _qrcameramodel, main);
+                HikVision qrcamera = new HikVision(_eventAggregator, _qrcameramodel);
                 qrcamera.Init();
             }
         }

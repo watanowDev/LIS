@@ -14,5 +14,7 @@
         public const string Content_Indicator = "Content_Indicator";
         public const string Content_DPS = "Content_DPS";
         public const string Content_QRCamera = "Content_QRCamera";
+        public const string Content_LiDAR2D = "Content_LiDAR2D";
+        public const string Content_LiDAR3D = "Content_LiDAR3D";
     }
 }

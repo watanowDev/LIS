@@ -43,13 +43,11 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
         private string mDeviceID;
 
 
-        public Keonn_4ch(IEventAggregator eventAggregator, IRFIDModel rfidmodel, IMainModel main)
+        public Keonn_4ch(IEventAggregator eventAggregator, IRFIDModel rfidmodel)
         {
             _eventAggregator = eventAggregator;
             _rfidmodel = rfidmodel;
             rfidConfig = (RFIDConfigModel)_rfidmodel;
-
-            MainConfigModel main_config = (MainConfigModel)main;
         }
 
         public void Init()

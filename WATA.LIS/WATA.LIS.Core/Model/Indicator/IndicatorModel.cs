@@ -31,7 +31,6 @@ namespace WATA.LIS.Core.Model.Indicator
         public bool rfidStatus { get; set; }
 
         public bool eventValue { get; set; } //true pickup false drop
-
         public bool is_unload { get; set; }
   
     }
