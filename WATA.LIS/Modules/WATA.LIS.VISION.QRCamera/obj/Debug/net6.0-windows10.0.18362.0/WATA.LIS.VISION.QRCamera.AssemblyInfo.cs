@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.VISION.QRCamera")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eba60fcac0be657c2ea4a6b19e769d44f389fc32")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+62f74ac7f158d859c5b53ca338781ef8ae8a4b42")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.VISION.QRCamera")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.VISION.QRCamera")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

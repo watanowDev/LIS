@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VJBxB97HDaQ=",
+  "dgSpecHash": "lA1534ADuj8=",
   "success": true,
-  "projectFilePath": "C:\\Users\\MSWON-DESKTOP\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.QRCamera\\WATA.LIS.VISION.QRCamera.csproj",
+  "projectFilePath": "C:\\Users\\MSWON-DESKTOP\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.QRCamera\\WATA.LIS.VISION.QRCamera.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",
     "C:\\Users\\MSWON-DESKTOP\\.nuget\\packages\\log4net\\2.0.15\\log4net.2.0.15.nupkg.sha512",
