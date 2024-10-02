@@ -76,7 +76,7 @@ namespace WATA.LIS
                 containerRegistry.RegisterSingleton<INAVModel, NAVConfigModel>();
 
             if (!containerRegistry.IsRegistered<IQRCameraModel>())
-                containerRegistry.RegisterSingleton<IQRCameraModel, QRCameraConfigModel>();
+                containerRegistry.RegisterSingleton<IQRCameraModel, VisionCamConfigModel>();
 
 
             MainConfigModel mainobj = (MainConfigModel)main;

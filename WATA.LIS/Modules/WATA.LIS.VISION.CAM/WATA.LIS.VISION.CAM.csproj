@@ -9,7 +9,6 @@
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Library\" />
     <Folder Include="Property\" />
   </ItemGroup>
   <ItemGroup>

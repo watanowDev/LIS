@@ -16,7 +16,7 @@ namespace WATA.LIS.Core.Parser
 {
     public class SystemJsonConfigParser
     {
-        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel, QRCameraConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel, VisionCamConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
@@ -26,7 +26,7 @@ namespace WATA.LIS.Core.Parser
             Led_Buzzer_ConfigModel LedBuzzer = new Led_Buzzer_ConfigModel();
             DPSConfigModel dps = new DPSConfigModel();
             NAVConfigModel nav = new NAVConfigModel();
-            QRCameraConfigModel qr = new QRCameraConfigModel();
+            VisionCamConfigModel qr = new VisionCamConfigModel();
 
             try
             {

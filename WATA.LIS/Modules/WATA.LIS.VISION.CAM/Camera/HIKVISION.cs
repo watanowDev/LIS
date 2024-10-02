@@ -17,6 +17,7 @@ using OpenCvSharp.Extensions;
 using ZXing;
 using System.Drawing;
 using System.Windows;
+using WATA.LIS.VISION.CAM.Library;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -26,7 +27,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         private readonly IQRCameraModel _qrcameramodel;
 
 
-        QRCameraConfigModel qrcameraConfig;
+        VisionCamConfigModel qrcameraConfig;
 
 
         private DispatcherTimer mCheckConnTimer;
@@ -43,7 +44,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             _eventAggregator = eventAggregator;
             _qrcameramodel = qrcameramodel;
-            qrcameraConfig = (QRCameraConfigModel)_qrcameramodel;
+            qrcameraConfig = (VisionCamConfigModel)_qrcameramodel;
         }
 
         public void Init()
@@ -63,12 +64,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             mGetImageTimer.Tick += new EventHandler(GetFrameTimer);
             mGetImageTimer.Start();
 
-            VisionCamInit();
-        }
-
-        private void VisionCamInit()
-        {
-            VisionCamLogin();
+            //VisionCamLogin();
         }
 
         /// <summary>
@@ -85,6 +81,15 @@ namespace WATA.LIS.VISION.CAM.Camera
                 Int16 DVRPortNumber = (Int16)qrcameraConfig.vision_port;
                 string DVRUserName = qrcameraConfig.vision_id;
                 string DVRPassword = qrcameraConfig.vision_pw;
+
+                //현재 출력경로
+                string path = System.IO.Directory.GetCurrentDirectory();
+                //[DllImport(@"..\bin\HCNetSDK.dll")]의 참조경로
+                string path2 = System.IO.Directory.GetCurrentDirectory() + "\\bin";
+
+                CHCNetSDK.NET_DVR_DEVICEINFO_V30 DeviceInfo = new CHCNetSDK.NET_DVR_DEVICEINFO_V30();
+                m_lUserID = CHCNetSDK.NET_DVR_Login_V30(DVRIPAddress, DVRPortNumber, DVRUserName, DVRPassword, ref DeviceInfo);
+
 
 
                 Tools.Log("VisionCam Login Success", Tools.ELogType.VisionCamLog);

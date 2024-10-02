@@ -1465,7 +1465,7 @@ namespace WATA.LIS.Core.Services
             Model.forklift_status.visionDepth = vsion_depth;
             Model.forklift_status.epc = _c_epc_temp;
             Model.forklift_status.networkStatus = true;
-            Model.forklift_status.visionCamStauts = true;
+            Model.forklift_status.visionCamStatus = true;
             Model.forklift_status.lidar2dStatus = true;
             Model.forklift_status.lidar3dStatus = true;
             Model.forklift_status.heightSensorStatus = true;

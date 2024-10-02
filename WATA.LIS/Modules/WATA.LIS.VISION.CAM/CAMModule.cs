@@ -20,7 +20,7 @@ namespace WATA.LIS.VISION.CAM
             _eventAggregator = eventAggregator;
             _qrcameramodel = qrcameramodel;
 
-            QRCameraConfigModel qrcamera_config = (QRCameraConfigModel)qrcameramodel;
+            VisionCamConfigModel qrcamera_config = (VisionCamConfigModel)qrcameramodel;
 
             if (qrcamera_config.vision_enable == 0)
             {
