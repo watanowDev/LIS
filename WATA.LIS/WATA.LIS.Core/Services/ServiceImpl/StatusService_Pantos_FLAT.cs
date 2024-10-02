@@ -806,8 +806,8 @@ namespace WATA.LIS.Core.Services
         {
             IndicatorModel Model = new IndicatorModel();
             Model.forklift_status.weightTotal = grossWeight;
-            Model.forklift_status.weightLeft = leftweight;
-            Model.forklift_status.weightRight = rightweight;
+            //Model.forklift_status.weightLeft = leftweight;
+            //Model.forklift_status.weightRight = rightweight;
             Model.forklift_status.QR = QR;
             Model.forklift_status.visionWidth = vision_w;
             Model.forklift_status.visionHeight = vision_h;

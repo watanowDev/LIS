@@ -14,25 +14,20 @@ namespace WATA.LIS.Core.Model.Indicator
 
     public class forklift_status
     {
-        public int weightTotal { get; set; }
-        public int weightLeft { get; set; }
-        public int weightRight { get; set; }
+        public int command { get; set; } // 0. alive, 1. loaded, 2. 상차요청응답, 3. 하차요청응답, 4. 상차중드롭이벤트, 5. 하차중드롭이벤트
+
         public string QR { get; set; }
+        public int weightTotal { get; set; }
         public float visionHeight { get; set; }
         public float visionWidth { get; set; }
         public float visionDepth { get; set; }
-        public string epc { get; set; } // epc
+        public string epc { get; set; }
 
-        public bool networkStatus { get; set; }
-        public bool visionStauts { get; set; }
+        public bool networkStatus { get; set; } // 외부망 연결 상태
+        public bool visionCamStauts { get; set; }
         public bool lidar2dStatus { get; set; }
         public bool lidar3dStatus { get; set; }
         public bool heightSensorStatus { get; set; }
         public bool rfidStatus { get; set; }
-
-        public bool eventValue { get; set; } //true pickup false drop
-        public bool is_unload { get; set; }
-  
     }
 }
- 

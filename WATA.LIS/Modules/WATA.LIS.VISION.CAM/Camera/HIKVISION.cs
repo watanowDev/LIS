@@ -106,7 +106,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         /// <param name="e"></param>
         private void GetFrameTimer(object sender, EventArgs e)
         {
-            GetFrame();
+            //GetFrame();
         }
 
         private void GetFrame()

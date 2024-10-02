@@ -1457,21 +1457,21 @@ namespace WATA.LIS.Core.Services
         {
             IndicatorModel Model = new IndicatorModel();
             Model.forklift_status.weightTotal = grossWeight;
-            Model.forklift_status.weightLeft = leftweight;
-            Model.forklift_status.weightRight = rightweight;
+            //Model.forklift_status.weightLeft = leftweight;
+            //Model.forklift_status.weightRight = rightweight;
             Model.forklift_status.QR = QR;
             Model.forklift_status.visionHeight = vision_h;
             Model.forklift_status.visionWidth = vision_w;
             Model.forklift_status.visionDepth = vsion_depth;
             Model.forklift_status.epc = _c_epc_temp;
             Model.forklift_status.networkStatus = true;
-            Model.forklift_status.visionStauts = true;
+            Model.forklift_status.visionCamStauts = true;
             Model.forklift_status.lidar2dStatus = true;
             Model.forklift_status.lidar3dStatus = true;
             Model.forklift_status.heightSensorStatus = true;
             Model.forklift_status.rfidStatus = true;
-            Model.forklift_status.eventValue = m_event_value; // true : pickup, false : drop
-            Model.forklift_status.is_unload = m_is_unload;
+            //Model.forklift_status.eventValue = m_event_value; // true : pickup, false : drop
+            //Model.forklift_status.is_unload = m_is_unload;
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
         }

@@ -58,11 +58,11 @@ namespace WATA.LIS.Core.Services
         private DistanceConfigModel distanceConfig;
 
 
-        private CellInfoModel cellInfoModel;
-        private BasicInfoModel basicInfoModel;
-        private Keonn2ch_Model m_rfid;
-        private VISON_Model m_vision;
-        private WeightSensorModel m_weight;
+        private CellInfoModel m_cellInfoModel;
+        private BasicInfoModel m_basicInfoModel;
+        private Keonn2ch_Model m_rfidModel;
+        private VisionCamModel m_visionCamModel;
+        private WeightSensorModel m_weightModel;
         private List<WeightSensorModel> m_weight_list;
         private const int m_weight_sample_size = 50;
 
@@ -123,23 +123,23 @@ namespace WATA.LIS.Core.Services
             m_vehicle = mainobj.vehicleId;
 
 
-            DispatcherTimer ErrorCheckTimer = new DispatcherTimer();
-            ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 2000);
-            ErrorCheckTimer.Tick += new EventHandler(StatusErrorCheckEvent);
-            ErrorCheckTimer.Start();
+            //DispatcherTimer ErrorCheckTimer = new DispatcherTimer();
+            //ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 2000);
+            //ErrorCheckTimer.Tick += new EventHandler(StatusErrorCheckEvent);
+            //ErrorCheckTimer.Start();
 
 
 
-            DispatcherTimer BuzzerTimer = new DispatcherTimer();
-            BuzzerTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            BuzzerTimer.Tick += new EventHandler(BuzzerTimerEvent);
+            //DispatcherTimer BuzzerTimer = new DispatcherTimer();
+            //BuzzerTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //BuzzerTimer.Tick += new EventHandler(BuzzerTimerEvent);
 
 
 
-            DispatcherTimer AliveTimer = new DispatcherTimer(); //성웅 팀장님과 논의 후 제거
-            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            AliveTimer.Start();
+            //DispatcherTimer AliveTimer = new DispatcherTimer(); //성웅 팀장님과 논의 후 제거
+            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            //AliveTimer.Start();
 
 
 
@@ -150,29 +150,29 @@ namespace WATA.LIS.Core.Services
 
 
 
-            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
-            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            SendProdDataTimer.Start();
+            //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            //SendProdDataTimer.Start();
 
 
 
-            DispatcherTimer IsPickUpTimer = new DispatcherTimer();
-            IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
-            IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
-            IsPickUpTimer.Start();
+            //DispatcherTimer IsPickUpTimer = new DispatcherTimer();
+            //IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
+            //IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
+            //IsPickUpTimer.Start();
 
 
 
-            DispatcherTimer IsDropTimer = new DispatcherTimer();
-            IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
-            IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
-            IsDropTimer.Start();
+            //DispatcherTimer IsDropTimer = new DispatcherTimer();
+            //IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
+            //IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
+            //IsDropTimer.Start();
 
 
-            m_rfid = new Keonn2ch_Model();
-            m_vision = new VISON_Model();
-            m_weight = new WeightSensorModel();
+            m_rfidModel = new Keonn2ch_Model();
+            m_visionCamModel = new VisionCamModel();
+            m_weightModel = new WeightSensorModel();
             m_weight_list = new List<WeightSensorModel>();
             isMoving = new List<(long, long)>();
 
@@ -206,15 +206,15 @@ namespace WATA.LIS.Core.Services
                         Stream respStream = resp.GetResponseStream();
                         using (StreamReader sr = new StreamReader(respStream))
                         {
-                            cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(sr.ReadToEnd());
-                            for (int i = 0; i < cellInfoModel.data.Count; i++)
+                            m_cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(sr.ReadToEnd());
+                            for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                             {
-                                if (cellInfoModel.data[i].targetGeofence.Count > 0)
+                                if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                                 {
-                                    for (int j = 0; j < cellInfoModel.data[i].targetGeofence.Count; j++)
+                                    for (int j = 0; j < m_cellInfoModel.data[i].targetGeofence.Count; j++)
                                     {
                                         string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                                        Match match = Regex.Match(cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                        Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
                                         if (match.Success && match.Groups.Count == 3)
                                         {
                                             double x = double.Parse(match.Groups[1].Value);
@@ -257,11 +257,11 @@ namespace WATA.LIS.Core.Services
                         Stream respStream = resp.GetResponseStream();
                         using (StreamReader sr = new StreamReader(respStream))
                         {
-                            basicInfoModel = JsonConvert.DeserializeObject<BasicInfoModel>(sr.ReadToEnd());
-                            m_pidx = basicInfoModel.data[0].pidx;
-                            m_vidx = basicInfoModel.data[0].vidx;
-                            m_workLocationId = basicInfoModel.data[0].workLocationId;
-                            m_vehicle = basicInfoModel.data[0].vehicleId;
+                            m_basicInfoModel = JsonConvert.DeserializeObject<BasicInfoModel>(sr.ReadToEnd());
+                            m_pidx = m_basicInfoModel.data[0].pidx;
+                            m_vidx = m_basicInfoModel.data[0].vidx;
+                            m_workLocationId = m_basicInfoModel.data[0].workLocationId;
+                            m_vehicle = m_basicInfoModel.data[0].vehicleId;
                             m_getBasicInfo = true;
                         }
                     }
@@ -304,12 +304,12 @@ namespace WATA.LIS.Core.Services
 
             if (m_weight_list.Count >= m_weight_sample_size)
             {
-                m_weight.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
-                m_weight.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
-                m_weight.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
+                m_weightModel.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
+                m_weightModel.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
+                m_weightModel.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
                 //Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
 
-                if (m_weight.GrossWeight >= 10)
+                if (m_weightModel.GrossWeight >= 10)
                 {
                     m_is_load = false;
                 }
@@ -322,9 +322,9 @@ namespace WATA.LIS.Core.Services
             }
             else
             {
-                m_weight.LeftWeight = obj.LeftWeight <= 0 ? 0 : obj.LeftWeight;
-                m_weight.RightWeight = obj.RightWeight <= 0 ? 0 : obj.RightWeight;
-                m_weight.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
+                m_weightModel.LeftWeight = obj.LeftWeight <= 0 ? 0 : obj.LeftWeight;
+                m_weightModel.RightWeight = obj.RightWeight <= 0 ? 0 : obj.RightWeight;
+                m_weightModel.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
             }
         }
 
@@ -429,16 +429,16 @@ namespace WATA.LIS.Core.Services
             long distance = 300;
             m_zoneId = "";
             m_zoneName = "";
-            if (cellInfoModel != null && cellInfoModel.data.Count > 0)
+            if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
             {
-                for (int i = 0; i < cellInfoModel.data.Count; i++)
+                for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                 {
-                    if (cellInfoModel.data[i].targetGeofence.Count > 0)
+                    if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                     {
-                        for (int j = cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
+                        for (int j = m_cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
                         {
                             string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                            Match match = Regex.Match(cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                            Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
                             if (match.Success && match.Groups.Count == 3)
                             {
                                 double x = double.Parse(match.Groups[1].Value);
@@ -451,13 +451,13 @@ namespace WATA.LIS.Core.Services
                                 {
                                     if (bDrop)
                                     {
-                                        m_zoneId = cellInfoModel.data[i].targetGeofence[j + 1].zoneId;
-                                        m_zoneName = cellInfoModel.data[i].targetGeofence[j + 1].zoneName;
+                                        m_zoneId = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneId;
+                                        m_zoneName = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneName;
                                     }
                                     else
                                     {
-                                        m_zoneId = cellInfoModel.data[i].targetGeofence[j].zoneId;
-                                        m_zoneName = cellInfoModel.data[i].targetGeofence[j].zoneName;
+                                        m_zoneId = m_cellInfoModel.data[i].targetGeofence[j].zoneId;
+                                        m_zoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
                                     }
 
                                     //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
@@ -539,25 +539,22 @@ namespace WATA.LIS.Core.Services
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             IndicatorModel Model = new IndicatorModel();
-            //Model.forklift_status.weightTotal = weight.GrossWeight;
-            //Model.forklift_status.weightLeft = weight.LeftWeight;
-            //Model.forklift_status.weightRight = weight.RightWeight;
-            //Model.forklift_status.QR = camera.QR;
-            //Model.forklift_status.visionHeight = vision_h;
-            //Model.forklift_status.visionWidth = vision_w;
-            //Model.forklift_status.visionDepth = vsion_depth;
-            //Model.forklift_status.epc = "";
-            //Model.forklift_status.networkStatus = true;
-            //Model.forklift_status.visionStauts = true;
-            //Model.forklift_status.lidar2dStatus = true;
-            //Model.forklift_status.lidar3dStatus = true;
-            //Model.forklift_status.heightSensorStatus = true;
-            //Model.forklift_status.rfidStatus = true;
-            Model.forklift_status.eventValue = m_event_value; // true : pickup, false : drop
-            //Model.forklift_status.is_unload = m_is_unload;
+            Model.forklift_status.QR = m_visionCamModel.QR;
+            Model.forklift_status.weightTotal = m_weightModel.GrossWeight;
+            Model.forklift_status.visionHeight = 0;
+            Model.forklift_status.visionWidth = 0;
+            Model.forklift_status.visionDepth = 0;
+            Model.forklift_status.epc = m_rfidModel.EPC;
+            Model.forklift_status.networkStatus = true;
+            Model.forklift_status.visionCamStauts = true;
+            Model.forklift_status.lidar2dStatus = true;
+            Model.forklift_status.lidar3dStatus = true;
+            Model.forklift_status.heightSensorStatus = true;
+            Model.forklift_status.rfidStatus = true;
+
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-
+            Tools.Log($"Send Indicator", Tools.ELogType.DisplayLog);
         }
 
 
@@ -795,7 +792,7 @@ namespace WATA.LIS.Core.Services
         /// <param name="bDrop"></param>
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
-            if (m_weight.GrossWeight < 10)
+            if (m_weightModel.GrossWeight < 10)
             {
                 return;
             }
@@ -823,7 +820,7 @@ namespace WATA.LIS.Core.Services
         /// <param name="bDrop"></param>
         private void IsDropTimerEvent(object sender, EventArgs e)
         {
-            if (m_weight.GrossWeight >= 10)
+            if (m_weightModel.GrossWeight >= 10)
             {
                 return;
             }

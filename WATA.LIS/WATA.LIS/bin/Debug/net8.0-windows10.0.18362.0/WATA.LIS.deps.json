@@ -934,14 +934,6 @@
           }
         }
       },
-      "PreviewDemo/1.0.0": {
-        "runtime": {
-          "PreviewDemo.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.9041.21216"
-          }
-        }
-      },
       "WATA.LIS.Core/1.0.0": {
         "dependencies": {
           "MaterialDesignColors": "2.0.9",
@@ -1084,7 +1076,6 @@
       "WATA.LIS.VISION.CAM/1.0.0": {
         "dependencies": {
           "OpenCvSharp4.Extensions": "4.5.5.20211231",
-          "PreviewDemo": "1.0.0",
           "Prism.Wpf": "8.1.97",
           "WATA.LIS.Core": "1.0.0",
           "ZXing.Net": "0.16.6"
@@ -1795,11 +1786,6 @@
       "sha512": "sha512-0+6EcJ7Ve1BocwqvqpAmgMa7xF3wxqROcM3KvAE6WGNIqXLA5YEziLjRX+kKYVrcttlFRz1IaoRSzt/o6Ttviw==",
       "path": "zxing.net/0.16.6",
       "hashPath": "zxing.net.0.16.6.nupkg.sha512"
-    },
-    "PreviewDemo/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
     },
     "WATA.LIS.Core/1.0.0": {
       "type": "project",

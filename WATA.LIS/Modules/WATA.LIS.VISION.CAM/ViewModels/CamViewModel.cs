@@ -13,8 +13,6 @@ using System.IO;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
 using WATA.LIS.Core.Common;
-using PreviewDemo;
-using PreviewDemo.Camera;
 
 namespace WATA.LIS.VISION.CAM.ViewModels
 {
@@ -33,8 +31,6 @@ namespace WATA.LIS.VISION.CAM.ViewModels
         {
             ListVisionCamLog = Tools.logInfo.ListVisionCamLog;
             Tools.Log($"Init CamViewModel", Tools.ELogType.VisionCamLog);
-
-            HikvisionModel hikvisionModel = new HikvisionModel();
 
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
