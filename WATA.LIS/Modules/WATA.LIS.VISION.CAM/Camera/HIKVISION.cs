@@ -64,7 +64,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             mGetImageTimer.Tick += new EventHandler(GetFrameTimer);
             mGetImageTimer.Start();
 
-            VisionCamLogin();
+            //VisionCamLogin();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         /// <param name="e"></param>
         private void GetFrameTimer(object sender, EventArgs e)
         {
-            GetFrame();
+            //GetFrame();
         }
 
         private void GetFrame()

@@ -523,6 +523,7 @@ namespace WATA.LIS.Core.Services
         {
             Tools.Log($"OnIndicatorEvent {status}", Tools.ELogType.DisplayLog);
 
+            // 통합 모니터링
             if (status == "start_unload")
             {
                 m_is_unload = true;
@@ -533,17 +534,22 @@ namespace WATA.LIS.Core.Services
                 m_is_unload = false;
             }
 
+
+            //판토스 인디케이터
             if (status == "set_load")
             {
                 Tools.Log(status, Tools.ELogType.BackEndLog);
             }
 
-            if (status == "set_unload ")
+            if (status == "set_unload")
             {
                 Tools.Log(status, Tools.ELogType.BackEndLog);
             }
 
-            Tools.Log($"_is_unload {m_is_unload}", Tools.ELogType.BackEndLog);
+            if (status == "set_normal")
+            {
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
