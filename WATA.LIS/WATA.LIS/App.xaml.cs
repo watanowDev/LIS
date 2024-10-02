@@ -19,7 +19,7 @@ using WATA.LIS.SENSOR.UHF_RFID;
 using WATA.LIS.SENSOR.WEIGHT;
 using WATA.LIS.Views;
 using WATA.LIS.VISION.Camera;
-using WATA.LIS.VISION.QRCamera;
+using WATA.LIS.VISION.CAM;
 
 namespace WATA.LIS
 {
@@ -39,7 +39,7 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel  weight, IDistanceModel distance, IVisionModel vision , IRFIDModel rfid ,IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel, IQRCameraModel qrcameramodel) = parser.LoadJsonfile();
+            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel, IQRCameraModel qrcameramodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
@@ -63,7 +63,7 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<IRFIDModel>())
                 containerRegistry.RegisterSingleton<IRFIDModel, RFIDConfigModel>();
 
-               if (!containerRegistry.IsRegistered<IMainModel>())
+            if (!containerRegistry.IsRegistered<IMainModel>())
                 containerRegistry.RegisterSingleton<IMainModel, MainConfigModel>();
 
             if (!containerRegistry.IsRegistered<ILedBuzzertModel>())
@@ -89,8 +89,8 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();//현재 지게차용  Apulse RF수신기
             }
-            else if (mainobj.device_type == "calt" )//칼트향
-            { 
+            else if (mainobj.device_type == "calt")//칼트향
+            {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();//현재 지게차용  Apulse RF수신기
 
             }
@@ -121,7 +121,7 @@ namespace WATA.LIS
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)
-        { 
+        {
             moduleCatalog.AddModule<LEDModule>();
             moduleCatalog.AddModule<DistanceModule>();
             moduleCatalog.AddModule<WEIGHTModule>();
@@ -132,7 +132,7 @@ namespace WATA.LIS
             moduleCatalog.AddModule<DISPLAYModule>();
             moduleCatalog.AddModule<DPSModule>();
             moduleCatalog.AddModule<NAVModule>();
-            moduleCatalog.AddModule<QRCameraModule>();
+            moduleCatalog.AddModule<CAMModule>();
         }
     }
 }

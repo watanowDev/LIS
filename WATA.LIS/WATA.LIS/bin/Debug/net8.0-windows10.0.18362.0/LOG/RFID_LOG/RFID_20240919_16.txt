@@ -1,0 +1,2 @@
+2024-09-19 16:33:11,429 [1] .ctor(72) > Init MainUIViewModel
+2024-09-19 16:34:09,486 [1] .ctor(72) > Init MainUIViewModel

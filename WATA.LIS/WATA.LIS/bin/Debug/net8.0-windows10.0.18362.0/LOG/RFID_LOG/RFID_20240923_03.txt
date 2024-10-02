@@ -1,0 +1,2 @@
+2024-09-23 03:28:13,727 [1] .ctor(72) > Init MainUIViewModel
+2024-09-23 03:28:14,408 [1] RfidReaderInit(98) > [RfidReaderInit] Exception !!! : Could not find file 'COM9'.

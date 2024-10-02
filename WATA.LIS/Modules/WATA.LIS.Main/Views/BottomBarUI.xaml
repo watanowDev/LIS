@@ -43,7 +43,7 @@
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
-                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
                 <ColumnDefinition Width="1.*"></ColumnDefinition>
@@ -123,15 +123,15 @@
                 </RadioButton>
             </Grid>
 
-            <!--<Grid Grid.Column="8">
-                <RadioButton IsChecked="{Binding LiDAR2DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR2D" Cursor="Hand">
+            <Grid Grid.Column="8">
+                <RadioButton IsChecked="{Binding QRCamChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_VisionCam" Cursor="Hand">
                     <TextBlock
-                    Text="2D LiDAR"
+                    Text="CAM"
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
 
-            <Grid Grid.Column="9">
+            <!--<Grid Grid.Column="9">
                 <RadioButton IsChecked="{Binding LiDAR3DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR3D" Cursor="Hand">
                     <TextBlock
                     Text="3D LiDAR"

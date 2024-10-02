@@ -1,0 +1,4 @@
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Remote\net8.0-windows10.0.18362.0\WATA.LIS.SENSOR.NAV.csproj.AssemblyReference.cache
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Remote\net8.0-windows10.0.18362.0\Views\NAV_View.g.cs
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Remote\net8.0-windows10.0.18362.0\WATA.LIS.SENSOR.NAV_MarkupCompile.cache
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Remote\net8.0-windows10.0.18362.0\WATA.LIS.SENSOR.NAV_MarkupCompile.lref

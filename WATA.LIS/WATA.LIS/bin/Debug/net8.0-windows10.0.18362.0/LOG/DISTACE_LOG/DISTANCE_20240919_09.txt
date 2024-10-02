@@ -1,0 +1,24 @@
+2024-09-19 09:22:42,585 [1] SerialInit(49) > Init Wait
+2024-09-19 09:22:44,626 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:24:01,510 [1] SerialInit(49) > Init Wait
+2024-09-19 09:24:03,553 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:27:18,336 [1] SerialInit(49) > Init Wait
+2024-09-19 09:27:20,380 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:30:48,282 [1] SerialInit(49) > Init Wait
+2024-09-19 09:30:50,326 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:35:27,734 [1] SerialInit(49) > Init Wait
+2024-09-19 09:35:29,780 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:37:55,152 [1] SerialInit(49) > Init Wait
+2024-09-19 09:37:57,184 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:45:29,416 [1] SerialInit(49) > Init Wait
+2024-09-19 09:45:31,450 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:49:24,468 [1] SerialInit(49) > Init Wait
+2024-09-19 09:49:26,515 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:50:20,875 [1] SerialInit(49) > Init Wait
+2024-09-19 09:50:22,911 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:55:22,596 [1] SerialInit(49) > Init Wait
+2024-09-19 09:55:24,629 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:57:30,475 [1] SerialInit(49) > Init Wait
+2024-09-19 09:57:32,513 [1] SerialThreadInit(79) > Serial Port Exception !!!
+2024-09-19 09:57:48,414 [1] SerialInit(49) > Init Wait
+2024-09-19 09:57:50,456 [1] SerialThreadInit(79) > Serial Port Exception !!!

@@ -8,9 +8,11 @@ using System.Linq;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.QRCamera;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.DistanceSensor;
+using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Services;
@@ -58,7 +60,10 @@ namespace WATA.LIS.Main.ViewModels
         public string BACKEND_Value { get { return _BACKEND_Value; } set { SetProperty(ref _BACKEND_Value, value); } }
 
 
-        
+        //Image
+        private VisionCamModel _QRCam_Frame;
+        public VisionCamModel QRCam_Frame { get { return _QRCam_Frame; } set { SetProperty(ref _QRCam_Frame, value); } }
+
 
         private string Active = "#FF5DF705";//light Green color
         private string Disable = "DimGray";
@@ -80,13 +85,19 @@ namespace WATA.LIS.Main.ViewModels
 
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnQRCamFrame, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             Distance_Active = Disable;
             RFID_Active = Disable;
             VISION_Active = Active;
             BACKEND_Active = Active;
         }
+
+        private void OnQRCamFrame(VisionCamModel model)
+        {
+            //throw new NotImplementedException();
+        }
+
         public void OnBackEndStatus(int status)
         {
             if(status == -1)

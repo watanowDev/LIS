@@ -1,0 +1,18 @@
+2024-09-19 13:30:30,490 [1] .ctor(28) > TJ
+2024-09-19 13:30:30,509 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:31:26,934 [1] .ctor(28) > TJ
+2024-09-19 13:31:26,951 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:32:49,067 [1] .ctor(28) > TJ
+2024-09-19 13:32:49,086 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:33:29,423 [1] .ctor(28) > TJ
+2024-09-19 13:33:29,440 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:51:52,103 [1] .ctor(28) > TJ
+2024-09-19 13:51:52,121 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:53:24,929 [1] .ctor(28) > TJ
+2024-09-19 13:53:24,947 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:56:42,036 [1] .ctor(28) > TJ
+2024-09-19 13:56:42,054 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:57:29,851 [1] .ctor(28) > TJ
+2024-09-19 13:57:29,869 [1] SerialThreadInit(84) > Serial Port Exception !!!
+2024-09-19 13:58:20,130 [1] .ctor(28) > TJ
+2024-09-19 13:58:20,148 [1] SerialThreadInit(84) > Serial Port Exception !!!

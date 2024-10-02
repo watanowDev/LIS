@@ -1,0 +1,558 @@
+2024-09-19 13:30:27,882 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:30:30,589 [1] .ctor(194) > Start Status Service
+2024-09-19 13:30:30,940 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:31:24,408 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:31:27,023 [1] .ctor(194) > Start Status Service
+2024-09-19 13:31:27,306 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:32:46,497 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:32:49,158 [1] .ctor(194) > Start Status Service
+2024-09-19 13:32:49,492 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:33:26,949 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:33:29,518 [1] .ctor(194) > Start Status Service
+2024-09-19 13:33:29,803 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:51:48,699 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:51:52,274 [1] .ctor(194) > Start Status Service
+2024-09-19 13:51:52,669 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:53:22,470 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:53:25,025 [1] .ctor(194) > Start Status Service
+2024-09-19 13:53:25,333 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:56:39,380 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:56:42,127 [1] .ctor(194) > Start Status Service
+2024-09-19 13:56:42,429 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:57:27,265 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:57:29,940 [1] .ctor(194) > Start Status Service
+2024-09-19 13:57:30,234 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 13:58:17,559 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 13:58:20,220 [1] .ctor(194) > Start Status Service
+2024-09-19 13:58:20,560 [1] .ctor(71) > Init MainUIViewModel

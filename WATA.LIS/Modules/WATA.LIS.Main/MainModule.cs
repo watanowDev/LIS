@@ -31,11 +31,11 @@ namespace WATA.LIS.Main
 
             _regionManager.RegisterViewWithRegion(RegionNames.TopStatusBar, typeof(TopBarUI));
 
-            containerRegistry.RegisterForNavigation<MainUI>(); ;
+            containerRegistry.RegisterForNavigation<MainUI>();
             _regionManager.RequestNavigate(RegionNames.Content_Main, "MainUI");
             containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_Main);
 
-            containerRegistry.RegisterForNavigation<DPSView>(); ;
+            containerRegistry.RegisterForNavigation<DPSView>();
             _regionManager.RequestNavigate(RegionNames.Content_DPS, "DPSView");
             containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_DPS);
 

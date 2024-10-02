@@ -48,7 +48,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
             Tools.Log($"Init Wait", Tools.ELogType.DistanceLog);
 
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
             ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);

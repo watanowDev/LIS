@@ -1,0 +1,138 @@
+2024-09-19 16:33:08,434 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 16:33:11,090 [1] .ctor(194) > Start Status Service
+2024-09-19 16:33:11,429 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 16:33:14,543 [1] StatusClearEvent(573) > Wait Count 1
+2024-09-19 16:33:14,559 [1] StatusClearEvent(586) > #######Distance Status Clear #######
+2024-09-19 16:33:14,559 [13] OnDistanceSensorData(602) > !! :  -100
+2024-09-19 16:33:14,611 [1] StatusErrorCheckEvent(510) > Camera Error
+2024-09-19 16:33:14,616 [1] StatusErrorCheckEvent(516) > BackEnd Error
+2024-09-19 16:33:14,651 [1] StatusErrorCheckEvent(522) > rifid Error
+2024-09-19 16:33:14,656 [1] StatusErrorCheckEvent(529) > distance Error
+2024-09-19 16:34:06,478 [1] LoadJsonfile(95) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 1,
+    "view_3d_enable": 1,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_name": "Keonn2ch",
+    "rfid_enable": 1,
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  }
+}
+2024-09-19 16:34:09,163 [1] .ctor(194) > Start Status Service
+2024-09-19 16:34:09,486 [1] .ctor(71) > Init MainUIViewModel
+2024-09-19 16:34:12,201 [1] StatusClearEvent(573) > Wait Count 1
+2024-09-19 16:34:12,205 [1] StatusClearEvent(586) > #######Distance Status Clear #######
+2024-09-19 16:34:12,205 [6] OnDistanceSensorData(602) > !! :  -100
+2024-09-19 16:34:12,262 [1] StatusErrorCheckEvent(510) > Camera Error
+2024-09-19 16:34:12,266 [1] StatusErrorCheckEvent(516) > BackEnd Error
+2024-09-19 16:34:12,271 [1] StatusErrorCheckEvent(522) > rifid Error
+2024-09-19 16:34:12,305 [1] StatusErrorCheckEvent(529) > distance Error

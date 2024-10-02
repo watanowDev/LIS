@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
     <Configurations>Debug;Release;Remote</Configurations>
-    <BaseOutputPath></BaseOutputPath>
+    <BaseOutputPath>bin\</BaseOutputPath>
     <AssemblyVersion>9.4.4.7</AssemblyVersion>
     <FileVersion>9.0.0.7</FileVersion>
   </PropertyGroup>
@@ -21,7 +21,7 @@
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.VISION.Camera\WATA.LIS.VISION.Camera.csproj" />
-    <ProjectReference Include="..\Modules\WATA.LIS.VISION.QRCamera\WATA.LIS.VISION.QRCamera.csproj" />
+    <ProjectReference Include="..\Modules\WATA.LIS.VISION.CAM\WATA.LIS.VISION.CAM.csproj" />
     <ProjectReference Include="..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
     <ProjectReference Include="..\WATA.LIS.IF.DPS\WATA.LIS.IF.DPS.csproj" />
   </ItemGroup>

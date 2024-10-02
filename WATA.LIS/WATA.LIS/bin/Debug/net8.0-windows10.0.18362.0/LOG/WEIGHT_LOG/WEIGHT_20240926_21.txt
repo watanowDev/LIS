@@ -1,0 +1,2 @@
+2024-09-26 21:23:38,293 [1] .ctor(28) > TJ
+2024-09-26 21:23:38,311 [1] SerialThreadInit(84) > Serial Port Exception !!!

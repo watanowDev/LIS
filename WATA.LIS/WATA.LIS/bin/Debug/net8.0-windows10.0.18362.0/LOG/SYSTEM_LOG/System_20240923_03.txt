@@ -1,0 +1,97 @@
+2024-09-23 03:28:08,742 [1] LoadJsonfile(99) > Load SystemConfig {
+  "main": {
+    "device_type": "Singapore",
+    "workLocationId": "PANTOS_FLAT_001",
+    "projectId": "7aca5f6e8bcc4a68a5784c68a42a3a58",
+    "mappingId": "75dcbb56f4674fae8f91d9b1c03f0ca5",
+    "mapId": "16b5d99e366b4f7585c49b8a4fbbc318",
+    "vehicleId": "fork_lift007"
+  },
+  "led_buzzer": {
+    "volume": 5,
+    "InfoLanguage": "KR"
+  },
+  "distancesensor": {
+    "comport": "COM3",
+    "pick_up_distance_threshold": 100
+  },
+  "weightsensor": {
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ"
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 0,
+    "view_3d_enable": 0,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_enable": 1,
+    "rfid_name": "Keonn2ch",
+    "comport": "COM9",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 1,
+    "IP": "169.254.4.63",
+    "PORT": 2111
+  },
+  "QR": {
+    "qr_enable": 1,
+    "qr_cameraname": "Hik"
+  }
+}
+2024-09-23 03:28:13,165 [1] .ctor(194) > Start Status Service
+2024-09-23 03:28:13,726 [1] .ctor(71) > Init MainUIViewModel
+2024-09-23 03:28:15,123 [1] StatusClearEvent(580) > Wait Count 1
+2024-09-23 03:28:15,130 [1] StatusClearEvent(593) > #######Distance Status Clear #######
+2024-09-23 03:28:15,131 [19] OnDistanceSensorData(609) > !! :  -100
+2024-09-23 03:28:15,253 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:15,264 [1] StatusErrorCheckEvent(523) > BackEnd Error
+2024-09-23 03:28:15,279 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:15,300 [1] StatusErrorCheckEvent(536) > distance Error
+2024-09-23 03:28:16,202 [1] StatusClearEvent(580) > Wait Count 2
+2024-09-23 03:28:17,805 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:17,807 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:17,825 [1] StatusClearEvent(580) > Wait Count 3
+2024-09-23 03:28:18,845 [1] StatusClearEvent(580) > Wait Count 4
+2024-09-23 03:28:19,870 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:19,872 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:19,883 [1] StatusClearEvent(580) > Wait Count 5
+2024-09-23 03:28:20,951 [1] StatusClearEvent(580) > Wait Count 6
+2024-09-23 03:28:21,977 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:21,979 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:21,988 [1] StatusClearEvent(580) > Wait Count 7
+2024-09-23 03:28:23,027 [1] StatusClearEvent(580) > Wait Count 8
+2024-09-23 03:28:24,075 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:24,076 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:24,121 [1] StatusClearEvent(580) > Wait Count 9
+2024-09-23 03:28:25,120 [1] StatusClearEvent(580) > Wait Count 10
+2024-09-23 03:28:26,088 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:26,089 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:26,121 [1] StatusClearEvent(580) > Wait Count 11
+2024-09-23 03:28:28,135 [1] StatusErrorCheckEvent(517) > Camera Error
+2024-09-23 03:28:28,136 [1] StatusErrorCheckEvent(529) > rifid Error
+2024-09-23 03:28:28,197 [1] StatusClearEvent(593) > #######Distance Status Clear #######
+2024-09-23 03:28:28,197 [19] OnDistanceSensorData(609) > !! :  -100

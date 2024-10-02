@@ -32,7 +32,7 @@ using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.ErrorCheck;
 using WATA.LIS.Core.Model.Indicator;
 using WATA.LIS.Core.Model.NAV;
-using WATA.LIS.Core.Model.QRCamera;
+using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
@@ -236,6 +236,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"REST Get Client Response Error: {ex}", Tools.ELogType.BackEndLog);
             }
         }
+
         private void GetBasicInfoFromBackEnd()
         {
             try
@@ -326,6 +327,7 @@ namespace WATA.LIS.Core.Services
                 m_weight.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
             }
         }
+
         private int GetStableValue(List<int> weight_list)
         {
             int ret = 0;
@@ -368,6 +370,7 @@ namespace WATA.LIS.Core.Services
 
             Tools.Log($"!! :  {m_height_distance_mm}", Tools.ELogType.SystemLog);
         }
+
         private int CalcHeightLoadRate(int height)
         {
             Tools.Log($"##height  : {height}", Tools.ELogType.BackEndLog);
@@ -420,6 +423,7 @@ namespace WATA.LIS.Core.Services
             navSensorModel.projectId = m_projectId;
             navSensorModel.vehicleId = m_vehicle;
         }
+
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
             long distance = 300;
@@ -470,6 +474,7 @@ namespace WATA.LIS.Core.Services
             }
 
         }
+
         private int IsMovingCheck(long rNaviX, long rNaviY)
         {
             int nRetFlag = 0;
@@ -530,6 +535,7 @@ namespace WATA.LIS.Core.Services
 
             Tools.Log($"_is_unload {m_is_unload}", Tools.ELogType.BackEndLog);
         }
+
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
             IndicatorModel Model = new IndicatorModel();
@@ -574,6 +580,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
 
         }
+
         private void StatusErrorCheckEvent(object sender, EventArgs e)
         {
             do
@@ -625,6 +632,7 @@ namespace WATA.LIS.Core.Services
             while (false);
 
         }
+
         private void Pattlite_Buzzer_LED(ePlayBuzzerLed value)
         {
             if (value == ePlayBuzzerLed.ACTION_FAIL)
@@ -711,6 +719,7 @@ namespace WATA.LIS.Core.Services
         {
             SendAliveEvent();
         }
+
         private void SendAliveEvent()
         {
             AliveModel alive_obj = new AliveModel();
@@ -736,6 +745,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
         }
+
         private void SendProdDataToBackEnd(object sender, EventArgs e)
         {
             try
@@ -767,7 +777,7 @@ namespace WATA.LIS.Core.Services
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-                Tools.Log($"{json_body}", Tools.ELogType.BackEndLog);
+                //Tools.Log($"{json_body}", Tools.ELogType.BackEndLog);
             }
             catch
             {
@@ -797,6 +807,7 @@ namespace WATA.LIS.Core.Services
 
             PickUpEvent();
         }
+
         private void PickUpEvent()
         {
             CalcDistanceAndGetZoneID(m_naviX, m_naviY, false);
@@ -824,6 +835,7 @@ namespace WATA.LIS.Core.Services
 
             DropEvent();
         }
+
         private void DropEvent()
         {
             CalcDistanceAndGetZoneID(m_naviX, m_naviY, true);

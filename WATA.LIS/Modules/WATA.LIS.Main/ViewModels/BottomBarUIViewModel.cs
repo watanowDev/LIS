@@ -52,12 +52,20 @@ namespace WATA.LIS.Main.ViewModels
         public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
 
 
+        private bool _QRCamChecked;
+        public bool QRCamChecked { get { return _QRCamChecked; } set { SetProperty(ref _QRCamChecked, value); } }
+
+
         private bool _LiDAR2DChecked;
         public bool LiDAR2DChecked { get { return _LiDAR2DChecked; } set { SetProperty(ref _LiDAR2DChecked, value); } }
 
 
         private bool _LiDAR3DChecked;
         public bool LiDAR3DChecked { get { return _LiDAR3DChecked; } set { SetProperty(ref _LiDAR3DChecked, value); } }
+
+
+        private bool _CAMChecked;
+        public bool CAMChecked { get { return _CAMChecked; } set { SetProperty(ref _CAMChecked, value); } }
 
 
 
@@ -91,13 +99,16 @@ namespace WATA.LIS.Main.ViewModels
         {
             MainChecked = false;
             RFIDChecked = false;
+            WeightChecked = false;
             DistanceChecked = false;
             CameraChecked = false;
-            WeightChecked = false;
+            BackEndChecked = false;
             IndicatorChecked = false;
             DPSChecked = false;
+            QRCamChecked = false;
             LiDAR2DChecked = false;
             LiDAR3DChecked = false;
+            CAMChecked = false;
 
             if (command != null)
             {
@@ -110,17 +121,21 @@ namespace WATA.LIS.Main.ViewModels
                     case "Content_RFID":
                         RFIDChecked = true;
                         break;
-                    
+
+                    case "Content_Weight":
+                        WeightChecked = true;
+                        break;
+
                     case "Content_Distance":
                         DistanceChecked = true;
                         break;
                     
-                    case "Content_QRCamera":
+                    case "Content_Camera":
                         CameraChecked = true;
                         break;
-                    
-                    case "Content_Weight":
-                        WeightChecked = true;
+
+                    case "Content_BackEnd":
+                        BackEndChecked = true;
                         break;
 
                     case "Content_Indicator":
@@ -131,12 +146,20 @@ namespace WATA.LIS.Main.ViewModels
                         DPSChecked = true;
                         break;
 
+                    case "Content_QRCamera":
+                        QRCamChecked = true;
+                        break;
+
                     case "Content_LiDAR2D":
                         LiDAR2DChecked = true;
                         break;
 
                     case "Content_LiDAR3D":
                         LiDAR3DChecked = true;
+                        break;
+
+                    case "Content_VisionCam":
+                        CAMChecked = true;
                         break;
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);

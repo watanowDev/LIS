@@ -30,7 +30,7 @@ namespace WATA.LIS.Core.Common
         static ILog DisplayLog;
         static ILog DPSLog;
         static ILog NAVLog;
-        static ILog QRCameraLog;
+        static ILog VisionCamLog;
 
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
@@ -48,7 +48,7 @@ namespace WATA.LIS.Core.Common
             DisplayLog = LogManager.GetLogger("DisplayLogEx");
             DPSLog = LogManager.GetLogger("DPSLogEx");
             NAVLog = LogManager.GetLogger("NAVLogEx");
-            QRCameraLog = LogManager.GetLogger("QRCameraLogEx");
+            VisionCamLog = LogManager.GetLogger("QRCameraLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -345,6 +345,31 @@ namespace WATA.LIS.Core.Common
                             }
                             break;
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        case ELogType.VisionCamLog:
+                            VisionCamLog.Info(msg);//Point
+                            if (logInfo.ListVisionCamLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListVisionCamLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListVisionCamLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListVisionCamLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListVisionCamLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         default:
                             break;
@@ -602,7 +627,7 @@ namespace WATA.LIS.Core.Common
             DisplayLog,
             DPSLog,
             NAVLog,
-            QRCameraLog
+            VisionCamLog
         }
 
         public struct SYSTEMTIME

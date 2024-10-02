@@ -1,0 +1,24 @@
+2024-09-26 13:54:06,447 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:06,448 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:06,545 [32] OnClientPost_dev(49) > Request Post URI : https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive 
+2024-09-26 13:54:06,551 [32] OnClientPost_dev(50) > {"alive":{"workLocationId":"CTR_PROJECT","vehicleId":"fork_lift007","projectId":"7aca5f6e8bcc4a68a5784c68a42a3a58","mappingId":"75dcbb56f4674fae8f91d9b1c03f0ca5","mapId":"16b5d99e366b4f7585c49b8a4fbbc318","errorCode":"0201,0401,0103"}}
+2024-09-26 13:54:06,614 [32] OnClientPost_dev(86) > REST Poist Client Response Error dev
+2024-09-26 13:54:06,626 [32] OnClientPost_dev(98) > REST Poist Client Response Data : {"status":500,"message":"No enum constant com.lms.monitoring.platform.dto.code.VisionErrorCode.0201,0401,0103","cause":"INTERNAL_SERVER_ERROR","error":null,"data":[],"timeStamp":1727326450968} 
+2024-09-26 13:54:07,449 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:07,449 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:08,558 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:08,558 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:09,565 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:09,565 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:10,572 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:10,572 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:11,658 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:11,658 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:12,649 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:12,649 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:13,664 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:13,664 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:14,666 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:14,666 [1] GetMostDockEPC(796) > EPC List Empty
+2024-09-26 13:54:15,756 [1] GetMostContainerEPC(724) > EPC List Empty
+2024-09-26 13:54:15,756 [1] GetMostDockEPC(796) > EPC List Empty

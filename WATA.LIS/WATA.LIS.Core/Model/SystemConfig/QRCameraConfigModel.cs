@@ -12,5 +12,8 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public int vision_enable { get; set; }
         public string vision_name { get; set; }
         public string vision_ip { get; set; }
+        public int vision_port { get; set; }
+        public string vision_id { get; set; }
+        public string vision_pw { get; set; }
     }
 }

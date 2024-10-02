@@ -123,15 +123,15 @@ namespace WATA.LIS.Core.Common
         }
 
         
-        public static byte[] SerializeObject(SetDisplayModel obj)
-        {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(stream, obj);
-                return stream.ToArray();
-            }
-        }
+        //public static byte[] SerializeObject(SetDisplayModel obj)
+        //{
+        //    using (MemoryStream stream = new MemoryStream())
+        //    {
+        //        BinaryFormatter formatter = new BinaryFormatter();
+        //        formatter.Serialize(stream, obj);
+        //        return stream.ToArray();
+        //    }
+        //}
 
         public static T ByteToObject<T>(byte[] buffer) where T : class
         {
