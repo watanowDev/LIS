@@ -533,6 +533,16 @@ namespace WATA.LIS.Core.Services
                 m_is_unload = false;
             }
 
+            if (status == "set_load")
+            {
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
+
+            if (status == "set_unload ")
+            {
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
+
             Tools.Log($"_is_unload {m_is_unload}", Tools.ELogType.BackEndLog);
         }
 
