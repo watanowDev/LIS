@@ -13,4 +13,9 @@ namespace WATA.LIS.Core.Events.QRCamera
     {
 
     }
+
+    public class HikVisionEventTest : PubSubEvent<VisionCamModel>
+    {
+
+    }
 }

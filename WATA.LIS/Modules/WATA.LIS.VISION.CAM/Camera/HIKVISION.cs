@@ -17,7 +17,13 @@ using OpenCvSharp.Extensions;
 using ZXing;
 using System.Drawing;
 using System.Windows;
-using WATA.LIS.VISION.CAM.Library;
+using System.Windows.Controls;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
+using System.Windows.Forms;
+using System.Windows.Forms.Integration;
+
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -26,18 +32,14 @@ namespace WATA.LIS.VISION.CAM.Camera
         private readonly IEventAggregator _eventAggregator;
         private readonly IQRCameraModel _qrcameramodel;
 
-
         VisionCamConfigModel qrcameraConfig;
-
 
         private DispatcherTimer mCheckConnTimer;
         private DispatcherTimer mGetImageTimer;
         private bool mConnected = false;
+        private string mLastQRCode = string.Empty;
 
-
-        private uint iLastErr = 0;
-        private Int32 m_lUserID = -1;
-        private bool m_bInitSDK = false;
+        private VideoCapture _capture;
 
 
         public HIKVISION(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel)
@@ -54,17 +56,15 @@ namespace WATA.LIS.VISION.CAM.Camera
                 return;
             }
 
-            //mCheckConnTimer = new DispatcherTimer();
-            //mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            //mCheckConnTimer.Tick += new EventHandler(CheckConnTimer);
-            //mCheckConnTimer.Start();
+            mCheckConnTimer = new DispatcherTimer();
+            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            mCheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             mGetImageTimer = new DispatcherTimer();
-            mGetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            mGetImageTimer.Tick += new EventHandler(GetFrameTimer);
-            mGetImageTimer.Start();
+            mGetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
+            mGetImageTimer.Tick += new EventHandler(GetFrame);
 
-            //VisionCamLogin();
+            openVisionCam();
         }
 
         /// <summary>
@@ -72,28 +72,60 @@ namespace WATA.LIS.VISION.CAM.Camera
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        private void CheckConnection(object sender, EventArgs e)
+        {
+            if (!_capture.IsOpened())
+            {
+                try
+                {
+                    string rtspUrl = $"rtsp://{qrcameraConfig.vision_id}:{qrcameraConfig.vision_pw}@{qrcameraConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
+                    _capture = new VideoCapture(rtspUrl);
 
-        private void VisionCamLogin()
+                    if (!_capture.IsOpened())
+                    {
+                        SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                        Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
+                        openVisionCam();
+                        return;
+                    }
+
+                    Tools.Log("VisionCam Login again", Tools.ELogType.VisionCamLog);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+                }
+                catch (Exception ex)
+                {
+                    Tools.Log($"VisionCamLogin Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+                    SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                }
+            }
+            else
+            {
+                Tools.Log("VisionCam is opened", Tools.ELogType.VisionCamLog);
+                SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+            }
+        }
+
+        private void openVisionCam()
         {
             try
             {
-                string DVRIPAddress = qrcameraConfig.vision_ip;
-                Int16 DVRPortNumber = (Int16)qrcameraConfig.vision_port;
-                string DVRUserName = qrcameraConfig.vision_id;
-                string DVRPassword = qrcameraConfig.vision_pw;
+                // 카메라의 RTSP URL 설정
+                string rtspUrl = $"rtsp://{qrcameraConfig.vision_id}:{qrcameraConfig.vision_pw}@{qrcameraConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
+                _capture = new VideoCapture(rtspUrl);
 
-                //현재 출력경로
-                string path = System.IO.Directory.GetCurrentDirectory();
-                //[DllImport(@"..\bin\HCNetSDK.dll")]의 참조경로
-                string path2 = System.IO.Directory.GetCurrentDirectory() + "\\bin";
-
-                CHCNetSDK.NET_DVR_DEVICEINFO_V30 DeviceInfo = new CHCNetSDK.NET_DVR_DEVICEINFO_V30();
-                m_lUserID = CHCNetSDK.NET_DVR_Login_V30(DVRIPAddress, DVRPortNumber, DVRUserName, DVRPassword, ref DeviceInfo);
-
+                if (!_capture.IsOpened())
+                {
+                    SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                    Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
+                    return;
+                }
 
 
                 Tools.Log("VisionCam Login Success", Tools.ELogType.VisionCamLog);
                 SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+
+                mCheckConnTimer.Start();
+                mGetImageTimer.Start();
             }
             catch (Exception ex)
             {
@@ -109,43 +141,30 @@ namespace WATA.LIS.VISION.CAM.Camera
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void GetFrameTimer(object sender, EventArgs e)
+        private void GetFrame(object sender, EventArgs e)
         {
-            //GetFrame();
-        }
-
-        private void GetFrame()
-        {
-            // 카메라의 RTSP URL 설정
-            string rtspUrl = $"rtsp://{qrcameraConfig.vision_id}:{qrcameraConfig.vision_pw}@{qrcameraConfig.vision_ip}:554/Streaming/Channels/101?transportmode=unicast";
-            using var capture = new VideoCapture(rtspUrl);
-
-            if (!capture.IsOpened())
+            using (var frame = new Mat())
             {
-                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
-                return;
+                _capture.Read(frame);
+
+                if (!frame.Empty())
+                {
+                    byte[] currentFrameBytes = frame.ToBytes();
+
+                    VisionCamModel eventModels = new VisionCamModel();
+                    eventModels.QR = GetQRcodeID(frame);
+                    eventModels.STATUS = "NONE";
+                    eventModels.FRAME = currentFrameBytes;
+
+                    if (eventModels.QR != mLastQRCode)
+                    {
+                        mLastQRCode = eventModels.QR;
+                        WriteLog(); // QR 코드가 변경되었을 때만 로그 작성
+                    }
+
+                    _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                }
             }
-
-            // 프레임을 저장할 Mat 객체 생성
-            using var frame = new Mat();
-
-            capture.Read(frame);
-            if (frame.Empty())
-            {
-                SysAlarm.AddErrorCodes(SysAlarm.VisionRcvErr);
-                Tools.Log("VisionCam has no Image", Tools.ELogType.VisionCamLog);
-                return;
-            }
-
-            // eventModels 생성
-            VisionCamModel eventModels = new VisionCamModel();
-            eventModels.QR = GetQRcodeID(frame);
-            eventModels.STATUS = "NONE";
-            eventModels.FRAME = frame.ToBytes();
-
-
-            _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
         }
 
         private string GetQRcodeID(Mat frame)
@@ -154,10 +173,8 @@ namespace WATA.LIS.VISION.CAM.Camera
 
             try
             {
-
                 // OpenCvSharp Mat 객체를 Bitmap으로 변환
                 using var bitmap = BitmapConverter.ToBitmap(frame);
-
 
                 // ZXing 라이브러리를 사용하여 QR 코드 디코딩
                 var reader = new BarcodeReader();
@@ -167,11 +184,6 @@ namespace WATA.LIS.VISION.CAM.Camera
                 {
                     string qrCodeText = result.Text;
                     ret = qrCodeText;
-                    Tools.Log($"QR Code Detected: {qrCodeText}", Tools.ELogType.VisionCamLog);
-                }
-                else
-                {
-                    //Tools.Log("No QR Code detected in the frame", Tools.ELogType.QRCamLog);
                 }
             }
             catch (Exception ex)
@@ -180,6 +192,14 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
 
             return ret;
+        }
+
+        private void WriteLog()
+        {
+            if (!string.IsNullOrEmpty(mLastQRCode))
+            {
+                Tools.Log($"QR Code Detected: {mLastQRCode}", Tools.ELogType.VisionCamLog);
+            }
         }
     }
 }

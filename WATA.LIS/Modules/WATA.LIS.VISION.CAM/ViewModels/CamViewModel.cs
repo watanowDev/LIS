@@ -13,6 +13,7 @@ using System.IO;
 using System.Windows.Controls;
 using System.Collections.ObjectModel;
 using WATA.LIS.Core.Common;
+using System.Windows;
 
 namespace WATA.LIS.VISION.CAM.ViewModels
 {
@@ -40,7 +41,10 @@ namespace WATA.LIS.VISION.CAM.ViewModels
         {
             if (model?.FRAME != null)
             {
-                CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                // UI 스레드에서 CurrentFrame 속성을 업데이트
+                Application.Current.Dispatcher.Invoke(() => {
+                    CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                });
             }
         }
 

@@ -38,7 +38,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_enable" : 1,
+		"rfid_enable" : 0,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"comport": "COM6",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
@@ -61,7 +61,7 @@
 	},
 	"NAV": 
 	{
-		"NAV_Enable" : 1,
+		"NAV_Enable" : 0,
 		"IP" : "169.254.4.63",
 		"PORT" : 2111
 	},
