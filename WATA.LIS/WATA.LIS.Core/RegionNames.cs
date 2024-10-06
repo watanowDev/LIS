@@ -17,5 +17,6 @@
         public const string Content_LiDAR2D = "Content_LiDAR2D";
         public const string Content_LiDAR3D = "Content_LiDAR3D";
         public const string Content_VisionCam = "Content_VisionCam";
+        public const string Content_LIVOX = "Content_LIVOX";
     }
 }

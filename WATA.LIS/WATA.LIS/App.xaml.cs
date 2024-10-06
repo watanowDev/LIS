@@ -20,6 +20,7 @@ using WATA.LIS.SENSOR.WEIGHT;
 using WATA.LIS.Views;
 using WATA.LIS.VISION.Camera;
 using WATA.LIS.VISION.CAM;
+using WATA.LIS.SENSOR.LIVOX;
 
 namespace WATA.LIS
 {
@@ -39,7 +40,7 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel, IQRCameraModel qrcameramodel) = parser.LoadJsonfile();
+            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel, ILivoxModel livoxmodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
@@ -49,7 +50,8 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
             containerRegistry.RegisterSingleton<IDPSModel>(x => dpsmodel);
             containerRegistry.RegisterSingleton<INAVModel>(x => navmodel);
-            containerRegistry.RegisterSingleton<IQRCameraModel>(x => qrcameramodel);
+            containerRegistry.RegisterSingleton<IVisionCamModel>(x => visioncammodel);
+            containerRegistry.RegisterSingleton<ILivoxModel>(x => livoxmodel);
 
             if (!containerRegistry.IsRegistered<IWeightModel>())
                 containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
@@ -75,8 +77,11 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<INAVModel>())
                 containerRegistry.RegisterSingleton<INAVModel, NAVConfigModel>();
 
-            if (!containerRegistry.IsRegistered<IQRCameraModel>())
-                containerRegistry.RegisterSingleton<IQRCameraModel, VisionCamConfigModel>();
+            if (!containerRegistry.IsRegistered<IVisionCamModel>())
+                containerRegistry.RegisterSingleton<IVisionCamModel, VisionCamConfigModel>();
+
+            if (!containerRegistry.IsRegistered<ILivoxModel>())
+                containerRegistry.RegisterSingleton<ILivoxModel, LIVOXConfigModel>();
 
 
             MainConfigModel mainobj = (MainConfigModel)main;
@@ -133,6 +138,7 @@ namespace WATA.LIS
             moduleCatalog.AddModule<DPSModule>();
             moduleCatalog.AddModule<NAVModule>();
             moduleCatalog.AddModule<CAMModule>();
+            moduleCatalog.AddModule<LIVOXModule>();
         }
     }
 }

@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:WATA.LIS.VISION.CAM.Views"
              xmlns:prism="http://prismlibrary.com/"
              prism:ViewModelLocator.AutoWireViewModel="True"
-             xmlns:lb ="clr-namespace:WATA.LIS.VISION.CAM.Property"
              mc:Ignorable="d" 
+             xmlns:lb ="clr-namespace:WATA.LIS.VISION.CAM.Property"
              d:DesignHeight="720" d:DesignWidth="1280">
 
     <UserControl.Resources>

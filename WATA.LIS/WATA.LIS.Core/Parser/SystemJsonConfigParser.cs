@@ -16,7 +16,7 @@ namespace WATA.LIS.Core.Parser
 {
     public class SystemJsonConfigParser
     {
-        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel, VisionCamConfigModel) LoadJsonfile()
+        public (WeightConfigModel, DistanceConfigModel, VisionConfigModel, RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, DPSConfigModel, NAVConfigModel, VisionCamConfigModel, LIVOXConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
             DistanceConfigModel distance = new DistanceConfigModel();
@@ -27,6 +27,7 @@ namespace WATA.LIS.Core.Parser
             DPSConfigModel dps = new DPSConfigModel();
             NAVConfigModel nav = new NAVConfigModel();
             VisionCamConfigModel qr = new VisionCamConfigModel();
+            LIVOXConfigModel livox = new LIVOXConfigModel();
 
             try
             {
@@ -112,7 +113,7 @@ namespace WATA.LIS.Core.Parser
                 Console.WriteLine(Ex.Message);
             }
 
-            return (weight, distance, vision, rfid, main, LedBuzzer, dps, nav, qr);
+            return (weight, distance, vision, rfid, main, LedBuzzer, dps, nav, qr, livox);
         }
     }
 }

@@ -7,7 +7,7 @@ using WATA.LIS.Core.Interfaces;
 
 namespace WATA.LIS.Core.Model.SystemConfig
 {
-    public class VisionCamConfigModel : IQRCameraModel
+    public class VisionCamConfigModel : IVisionCamModel
     {
         public int vision_enable { get; set; }
         public string vision_name { get; set; }

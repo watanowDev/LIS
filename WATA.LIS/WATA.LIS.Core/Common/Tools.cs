@@ -31,6 +31,7 @@ namespace WATA.LIS.Core.Common
         static ILog DPSLog;
         static ILog NAVLog;
         static ILog VisionCamLog;
+        static ILog LIVOXLog;
 
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
@@ -49,6 +50,7 @@ namespace WATA.LIS.Core.Common
             DPSLog = LogManager.GetLogger("DPSLogEx");
             NAVLog = LogManager.GetLogger("NAVLogEx");
             VisionCamLog = LogManager.GetLogger("QRCameraLogEx");
+            LIVOXLog = LogManager.GetLogger("LIVOXLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -370,6 +372,31 @@ namespace WATA.LIS.Core.Common
                             }
                             break;
                         //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                        case ELogType.LIVOXLog:
+                            LIVOXLog.Info(msg);//Point
+                            if (logInfo.ListLIVOXLog.Count > 300)
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListLIVOXLog.Clear(); }
+                                , DispatcherPriority.Normal);
+                            }
+                            if (logInfo.ListLIVOXLog.Count > 0)//Point
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                {
+                                    logInfo.ListLIVOXLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
+                                }
+                                , DispatcherPriority.Normal);
+                            }
+                            else
+                            {
+                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
+                                { logInfo.ListLIVOXLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
+                                , DispatcherPriority.Normal);
+                            }
+                            break;
+                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
                         default:
                             break;
@@ -627,7 +654,8 @@ namespace WATA.LIS.Core.Common
             DisplayLog,
             DPSLog,
             NAVLog,
-            VisionCamLog
+            VisionCamLog,
+            LIVOXLog
         }
 
         public struct SYSTEMTIME

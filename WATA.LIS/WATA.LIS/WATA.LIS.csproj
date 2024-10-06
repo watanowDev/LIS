@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.LED\WATA.LIS.INDICATOR.LED.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.Main\WATA.LIS.Main.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.Distance\WATA.LIS.SENSOR.Distance.csproj" />
+    <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.LIVOX\WATA.LIS.SENSOR.LIVOX.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.NAV\WATA.LIS.SENSOR.NAV.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />

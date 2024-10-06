@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using WATA.LIS.Core.Events.QRCamera;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Model.VisionCam;
 using System.IO;
 using System.Windows.Controls;

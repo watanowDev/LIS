@@ -8,7 +8,7 @@ using System.Linq;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
-using WATA.LIS.Core.Events.QRCamera;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.DistanceSensor;

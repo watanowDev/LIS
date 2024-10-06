@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
-using WATA.LIS.Core.Events.QRCamera;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Model.SystemConfig;
@@ -30,9 +30,9 @@ namespace WATA.LIS.VISION.CAM.Camera
     public class HIKVISION
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly IQRCameraModel _qrcameramodel;
+        private readonly IVisionCamModel _visioncammodel;
 
-        VisionCamConfigModel qrcameraConfig;
+        VisionCamConfigModel visioncamConfig;
 
         private DispatcherTimer mCheckConnTimer;
         private DispatcherTimer mGetImageTimer;
@@ -42,16 +42,16 @@ namespace WATA.LIS.VISION.CAM.Camera
         private VideoCapture _capture;
 
 
-        public HIKVISION(IEventAggregator eventAggregator, IQRCameraModel qrcameramodel)
+        public HIKVISION(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
             _eventAggregator = eventAggregator;
-            _qrcameramodel = qrcameramodel;
-            qrcameraConfig = (VisionCamConfigModel)_qrcameramodel;
+            _visioncammodel = visioncammodel;
+            visioncamConfig = (VisionCamConfigModel)_visioncammodel;
         }
 
         public void Init()
         {
-            if (qrcameraConfig.vision_enable == 0)
+            if (visioncamConfig.vision_enable == 0)
             {
                 return;
             }
@@ -78,7 +78,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             {
                 try
                 {
-                    string rtspUrl = $"rtsp://{qrcameraConfig.vision_id}:{qrcameraConfig.vision_pw}@{qrcameraConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
+                    string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
                     _capture = new VideoCapture(rtspUrl);
 
                     if (!_capture.IsOpened())
@@ -110,7 +110,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             try
             {
                 // 카메라의 RTSP URL 설정
-                string rtspUrl = $"rtsp://{qrcameraConfig.vision_id}:{qrcameraConfig.vision_pw}@{qrcameraConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
+                string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
                 _capture = new VideoCapture(rtspUrl);
 
                 if (!_capture.IsOpened())

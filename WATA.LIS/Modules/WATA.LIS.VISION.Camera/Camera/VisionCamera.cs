@@ -164,10 +164,13 @@ namespace WATA.LIS.VISION.Camera.Camera
             using (var subSocket = new SubscriberSocket())
             {
                 subSocket.Options.ReceiveHighWatermark = 10000;
-                subSocket.Connect("tcp://localhost:5555");
-                subSocket.Subscribe("vision");
+                subSocket.Connect("tcp://192.168.219.186:5001");
+                subSocket.Subscribe("LIS>MID360");
                 subSocket.Subscribe("vision_forklift");
                 subSocket.Subscribe("WATA");
+
+                string RecvStrTest = subSocket.ReceiveFrameString();
+                Tools.Log(RecvStrTest, Tools.ELogType.VisionLog);
 
                 while (true)
                 {
@@ -175,7 +178,7 @@ namespace WATA.LIS.VISION.Camera.Camera
                     {
                         string RecieveStr = subSocket.ReceiveFrameString();
 
-                        if (RecieveStr.Contains("vision"))
+                        if (RecieveStr.Contains("LIS>MID360"))
                         {
                             Tools.Log("Topic : " + RecieveStr, Tools.ELogType.VisionLog);
 
