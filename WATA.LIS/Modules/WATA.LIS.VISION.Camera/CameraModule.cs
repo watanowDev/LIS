@@ -35,7 +35,7 @@ namespace WATA.LIS.VISION.Camera
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<Views.VisionCamera>(RegionNames.Content_Camera);
+            //containerRegistry.RegisterForNavigation<Views.VisionCamera>(RegionNames.Content_Camera);
         }
     }
 }

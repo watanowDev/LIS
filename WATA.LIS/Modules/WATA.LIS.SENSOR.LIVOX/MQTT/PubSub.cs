@@ -39,10 +39,6 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         public void Init()
         {
-            //mCheckConnTimer = new DispatcherTimer();
-            //mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            //mCheckConnTimer.Tick += new EventHandler(CheckConnection);
-
             mSubTimer = new DispatcherTimer();
             mSubTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             mSubTimer.Tick += new EventHandler(Subscribe);
@@ -56,51 +52,70 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         private void Subscribe(object sender, EventArgs e)
         {
-            using (var subscriber = new SubscriberSocket())
+            try
             {
-                // 서브스크라이버 소켓을 5555 포트에 연결합니다.
-                subscriber.Connect("tcp://192.168.219.186:5001");
-
-                // "VISION" 주제를 구독합니다.
-                subscriber.Subscribe("MID360>LIS");
-
-
-                // 메시지를 수신합니다.
-                string RcvStr = subscriber.ReceiveFrameString();
-
-                if (!RcvStr.Contains("LIS>MID360"))
+                using (var subscriber = new SubscriberSocket())
                 {
-                    return;
-                }
+                    // 서브스크라이버 소켓을 5555 포트에 연결합니다.
+                    subscriber.Connect("tcp://192.168.219.186:5001");
 
-                if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("depth") && RcvStr.Contains("true"))
-                {
-                    mPubTimer.Stop();
-                    Tools.Log(RcvStr, Tools.ELogType.LIVOXLog);
+                    // "VISION" 주제를 구독합니다.
+                    subscriber.Subscribe("MID360>LIS");
+
+                    // 타임아웃 설정 (예: 5초)
+                    subscriber.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+
+                    // 메시지를 수신합니다.
+                    string RcvStr;
+                    if (subscriber.TryReceiveFrameString(out RcvStr))
+                    {
+                        if (!RcvStr.Contains("LIS>MID360"))
+                        {
+                            return;
+                        }
+
+                        if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("depth") && RcvStr.Contains("true"))
+                        {
+                            mPubTimer.Stop();
+                            Tools.Log(RcvStr, Tools.ELogType.LIVOXLog);
+                        }
+                    }
+                    else
+                    {
+                        // 타임아웃 발생 시 처리
+                        Tools.Log("Timeout occurred while receiving message", Tools.ELogType.LIVOXLog);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // 예외 처리
+                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.LIVOXLog);
             }
         }
 
         private void Publish(object sender, EventArgs e)
         {
-            using (var publisher = new PublisherSocket())
+            try
             {
-                // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
-                publisher.Bind("tcp://192.168.219.193:5002");
+                using (var publisher = new PublisherSocket())
+                {
+                    // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
+                    publisher.Bind("tcp://192.168.219.193:5002");
 
-                // 메시지를 퍼블리시합니다.
-                LIVOXModel eventModel = new LIVOXModel();
-                string topic = eventModel.topic;
-                string message = $"{eventModel.responseCode}";
+                    // 메시지를 퍼블리시합니다.
+                    LIVOXModel eventModel = new LIVOXModel();
+                    string topic = eventModel.topic;
+                    string message = $"{eventModel.responseCode}";
 
-                // 주제와 메시지를 결합하여 퍼블리시
-                publisher.SendMoreFrame(topic).SendFrame(message);
+                    // 주제와 메시지를 결합하여 퍼블리시
+                    publisher.SendMoreFrame(topic).SendFrame(message);
+                }
+            }
+            catch
+            {
+
             }
         }
-
-        //private void CheckConnection(object sender, EventArgs e)
-        //{
-
-        //}
     }
 }

@@ -31,7 +31,7 @@
             <RowDefinition Height="1.*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <Label Content="Distance" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="40" FontWeight="Bold"></Label>
+            <Label Content="3D LiDAR" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="40" FontWeight="Bold"></Label>
         </Grid>
         <Grid Grid.Row="1">
 

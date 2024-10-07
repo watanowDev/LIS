@@ -61,8 +61,8 @@ namespace WATA.LIS.Main.ViewModels
 
 
         //Image
-        private VisionCamModel _QRCam_Frame;
-        public VisionCamModel QRCam_Frame { get { return _QRCam_Frame; } set { SetProperty(ref _QRCam_Frame, value); } }
+        private VisionCamModel _VisionCam_Frame;
+        public VisionCamModel VisionCam_Frame { get { return _VisionCam_Frame; } set { SetProperty(ref _VisionCam_Frame, value); } }
 
 
         private string Active = "#FF5DF705";//light Green color
@@ -85,17 +85,11 @@ namespace WATA.LIS.Main.ViewModels
 
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnQRCamFrame, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             Distance_Active = Disable;
             RFID_Active = Disable;
             VISION_Active = Active;
             BACKEND_Active = Active;
-        }
-
-        private void OnQRCamFrame(VisionCamModel model)
-        {
-            //throw new NotImplementedException();
         }
 
         public void OnBackEndStatus(int status)

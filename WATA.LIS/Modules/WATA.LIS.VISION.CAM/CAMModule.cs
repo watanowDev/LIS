@@ -13,12 +13,12 @@ namespace WATA.LIS.VISION.CAM
     public class CAMModule : IModule
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly IVisionCamModel _qrcameramodel;
+        private readonly IVisionCamModel _visioncammodel;
 
         public CAMModule(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
             _eventAggregator = eventAggregator;
-            _qrcameramodel = visioncammodel;
+            _visioncammodel = visioncammodel;
 
             VisionCamConfigModel visioncam_config = (VisionCamConfigModel)visioncammodel;
 
@@ -29,7 +29,7 @@ namespace WATA.LIS.VISION.CAM
 
             if (visioncam_config.vision_name == "HikVision")
             {
-                HIKVISION visioncam = new HIKVISION(_eventAggregator, _qrcameramodel);
+                HIKVISION visioncam = new HIKVISION(_eventAggregator, _visioncammodel);
                 visioncam.Init();
             }
         }

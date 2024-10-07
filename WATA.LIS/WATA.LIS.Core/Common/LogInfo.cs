@@ -21,7 +21,6 @@ namespace WATA.LIS.Core.Common
         public ObservableCollection<Log> ListDisplayLog;
         public ObservableCollection<Log> ListDPSLog;
         public ObservableCollection<Log> ListNAVLog;
-        public ObservableCollection<Log> ListLiDAR3DLog;
         public ObservableCollection<Log> ListVisionCamLog;
         public ObservableCollection<Log> ListLIVOXLog;
 
@@ -39,7 +38,6 @@ namespace WATA.LIS.Core.Common
             ListDisplayLog = new ObservableCollection<Log>();
             ListDPSLog = new ObservableCollection<Log>();
             ListNAVLog = new ObservableCollection<Log>();
-            ListLiDAR3DLog = new ObservableCollection<Log>();
             ListVisionCamLog = new ObservableCollection<Log>();
             ListLIVOXLog = new ObservableCollection<Log>();
         }

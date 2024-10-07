@@ -30,7 +30,7 @@ namespace WATA.LIS.SENSOR.LIVOX
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<ViewA>(RegionNames.Content_LIVOX);
+            containerRegistry.RegisterForNavigation<ViewA>(RegionNames.Content_LiDAR3D);
         }
     }
 }

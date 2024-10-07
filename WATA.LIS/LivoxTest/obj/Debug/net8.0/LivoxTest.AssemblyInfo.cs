@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LivoxTest")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae2db418c94afc8468f3e1549eb68e4a748731de")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c1f5d629ad5e78dc8e7a469342984f7af20bcb1d")]
 [assembly: System.Reflection.AssemblyProductAttribute("LivoxTest")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LivoxTest")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -64,6 +64,7 @@
                     </Style.Setters>
                 </Style>
             </Grid.Resources>
+            
             <Grid Grid.Column="0">
                 <RadioButton IsChecked="{Binding MainChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Main" Cursor="Hand">
                     <TextBlock
@@ -71,6 +72,7 @@
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
+            
             <Grid Grid.Column="1">
                 <RadioButton IsChecked="{Binding RFIDChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_RFID" Cursor="Hand">
                     <TextBlock
@@ -78,6 +80,7 @@
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
+            
             <Grid Grid.Column="2">
                 <RadioButton IsChecked="{Binding WeightChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Weight" Cursor="Hand">
                     <TextBlock
@@ -85,6 +88,7 @@
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
+            
             <Grid Grid.Column="3">
                 <RadioButton IsChecked="{Binding DistanceChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Distance" Cursor="Hand">
                     <TextBlock
@@ -92,13 +96,15 @@
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
+
             <Grid Grid.Column="4">
-                <RadioButton IsChecked="{Binding CameraChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Camera" Cursor="Hand">
+                <RadioButton IsChecked="{Binding VisionCamChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_VisionCam" Cursor="Hand">
                     <TextBlock
-                    Text="CAMERA"
+                    Text="CAM"
                     Width="Auto"/>
                 </RadioButton>
             </Grid>
+            
             <Grid Grid.Column="5">
                 <RadioButton IsChecked="{Binding BackEndChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_BackEnd" Cursor="Hand">
                     <TextBlock
@@ -124,20 +130,12 @@
             </Grid>
 
             <Grid Grid.Column="8">
-                <RadioButton IsChecked="{Binding QRCamChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_VisionCam" Cursor="Hand">
-                    <TextBlock
-                    Text="CAM"
-                    Width="Auto"/>
-                </RadioButton>
-            </Grid>
-
-            <!--<Grid Grid.Column="9">
                 <RadioButton IsChecked="{Binding LiDAR3DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR3D" Cursor="Hand">
                     <TextBlock
                     Text="3D LiDAR"
                     Width="Auto"/>
                 </RadioButton>
-            </Grid>-->
+            </Grid>
 
         </Grid>
     </Grid>

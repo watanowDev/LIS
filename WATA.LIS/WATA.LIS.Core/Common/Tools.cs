@@ -49,7 +49,7 @@ namespace WATA.LIS.Core.Common
             DisplayLog = LogManager.GetLogger("DisplayLogEx");
             DPSLog = LogManager.GetLogger("DPSLogEx");
             NAVLog = LogManager.GetLogger("NAVLogEx");
-            VisionCamLog = LogManager.GetLogger("QRCameraLogEx");
+            VisionCamLog = LogManager.GetLogger("VisionCamLogEx");
             LIVOXLog = LogManager.GetLogger("LIVOXLogEx");
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();

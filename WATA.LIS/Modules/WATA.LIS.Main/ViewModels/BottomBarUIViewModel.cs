@@ -52,8 +52,8 @@ namespace WATA.LIS.Main.ViewModels
         public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
 
 
-        private bool _QRCamChecked;
-        public bool QRCamChecked { get { return _QRCamChecked; } set { SetProperty(ref _QRCamChecked, value); } }
+        private bool _VisionCamChecked;
+        public bool VisionCamChecked { get { return _VisionCamChecked; } set { SetProperty(ref _VisionCamChecked, value); } }
 
 
         private bool _LiDAR2DChecked;
@@ -62,10 +62,6 @@ namespace WATA.LIS.Main.ViewModels
 
         private bool _LiDAR3DChecked;
         public bool LiDAR3DChecked { get { return _LiDAR3DChecked; } set { SetProperty(ref _LiDAR3DChecked, value); } }
-
-
-        private bool _CAMChecked;
-        public bool CAMChecked { get { return _CAMChecked; } set { SetProperty(ref _CAMChecked, value); } }
 
 
 
@@ -105,10 +101,9 @@ namespace WATA.LIS.Main.ViewModels
             BackEndChecked = false;
             IndicatorChecked = false;
             DPSChecked = false;
-            QRCamChecked = false;
+            VisionCamChecked = false;
             LiDAR2DChecked = false;
             LiDAR3DChecked = false;
-            CAMChecked = false;
 
             if (command != null)
             {
@@ -146,8 +141,8 @@ namespace WATA.LIS.Main.ViewModels
                         DPSChecked = true;
                         break;
 
-                    case "Content_QRCamera":
-                        QRCamChecked = true;
+                    case "Content_VisionCam":
+                        VisionCamChecked = true;
                         break;
 
                     case "Content_LiDAR2D":
@@ -156,10 +151,6 @@ namespace WATA.LIS.Main.ViewModels
 
                     case "Content_LiDAR3D":
                         LiDAR3DChecked = true;
-                        break;
-
-                    case "Content_VisionCam":
-                        CAMChecked = true;
                         break;
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);
