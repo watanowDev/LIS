@@ -36,6 +36,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private DispatcherTimer mCheckConnTimer;
         private DispatcherTimer mGetImageTimer;
+        private DispatcherTimer mCurrQRTimer;
         private bool mConnected = false;
         private string mLastQRCode = string.Empty;
 
@@ -57,12 +58,16 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
 
             mCheckConnTimer = new DispatcherTimer();
-            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             mCheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             mGetImageTimer = new DispatcherTimer();
             mGetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             mGetImageTimer.Tick += new EventHandler(GetFrame);
+
+            mCurrQRTimer = new DispatcherTimer();
+            mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
             openVisionCam();
         }
@@ -76,6 +81,9 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             if (!_capture.IsOpened())
             {
+                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                Tools.Log("VisionCam is disconnected", Tools.ELogType.VisionCamLog);
+
                 try
                 {
                     string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
@@ -83,9 +91,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     if (!_capture.IsOpened())
                     {
-                        SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                        Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
-                        openVisionCam();
+                        Tools.Log("VisionCam connection is failed", Tools.ELogType.VisionCamLog);
                         return;
                     }
 
@@ -100,7 +106,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
             else
             {
-                Tools.Log("VisionCam is opened", Tools.ELogType.VisionCamLog);
+                Tools.Log("VisionCam is alive", Tools.ELogType.VisionCamLog);
                 SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
             }
         }
@@ -126,6 +132,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 mCheckConnTimer.Start();
                 mGetImageTimer.Start();
+                mCurrQRTimer.Start();
             }
             catch (Exception ex)
             {
@@ -156,11 +163,13 @@ namespace WATA.LIS.VISION.CAM.Camera
                     eventModels.STATUS = "NONE";
                     eventModels.FRAME = currentFrameBytes;
 
-                    if (eventModels.QR != mLastQRCode)
-                    {
-                        mLastQRCode = eventModels.QR;
-                        WriteLog(); // QR 코드가 변경되었을 때만 로그 작성
-                    }
+                    mLastQRCode = eventModels.QR;
+
+                    //if (eventModels.QR != mLastQRCode)
+                    //{
+                    //    mLastQRCode = eventModels.QR;
+                    //    WriteLog(); // QR 코드가 변경되었을 때만 로그 작성
+                    //}
 
                     _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                 }
@@ -198,8 +207,13 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             if (!string.IsNullOrEmpty(mLastQRCode))
             {
-                Tools.Log($"QR Code Detected: {mLastQRCode}", Tools.ELogType.VisionCamLog);
+                Tools.Log($"{mLastQRCode}", Tools.ELogType.VisionCamLog);
             }
+        }
+
+        private void StampQRCode(object sender, EventArgs e)
+        {
+            Tools.Log($"{mLastQRCode}", Tools.ELogType.VisionCamLog);
         }
     }
 }

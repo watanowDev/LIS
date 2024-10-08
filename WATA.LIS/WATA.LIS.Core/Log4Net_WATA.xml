@@ -335,6 +335,45 @@
 	</appender>
 
 
+	<appender name="VisionCamLog" type="log4net.Appender.RollingFileAppender">
+
+		<!-- 로그 파일 이름의 선두 부분 -->
+
+		<File value=".\LOG\VISIONCAM_LOG\VISIONCAM" />
+
+		<!-- 기존에 로그 파일이 있다면 연결해서 사용 여부 -->
+
+		<appendToFile value="true" />
+
+		<!-- 날짜 마다 파일을 작성하는 것을 지정 -->
+
+		<rollingStyle value="Composite" />
+
+		<!-- 로그 파일 이름 고정 여부. 고정하지 않을 때는 false -->
+
+		<staticLogFileName value="false" />
+
+		<!-- 파일 이름에의 날짜 부분 -->
+
+		<datePattern value='"_"yyyyMMdd_HH".txt"' />
+
+		<maximumFileSize value="20M" />
+
+		<maxSizeRollBackups value="10" />
+
+		<layout type="log4net.Layout.PatternLayout">
+
+			<!-- 로그 형식 -->
+
+			<!--<conversionPattern value="%date [%thread] %logger - %location %message%newline" />-->
+			<conversionPattern value="%date [%thread] %message%newline" />
+			<!--conversionPattern value="%date [%thread] - %message%newline" />-->
+			<lockingModel type="log4net.Appender.FileAppender+MinimalLock" />
+		</layout>
+
+	</appender>
+
+
 	<appender name="DisplayLog" type="log4net.Appender.RollingFileAppender">
 
 		<!-- 로그 파일 이름의 선두 부분 -->
@@ -411,5 +450,10 @@
 	<logger name="WeightLogEx">
 		<level value="ALL" />
 		<appender-ref ref="WeightLog" />
+	</logger>
+
+	<logger name="VisionCamLogEx">
+		<level value="ALL" />
+		<appender-ref ref="VisionCamLog" />
 	</logger>
 </log4net>

@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = WATA.LIS.IF.DPS
-build_property.ProjectDir = C:\Users\MSWON-DESKTOP\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.IF.DPS\
+build_property.ProjectDir = C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.IF.DPS\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
