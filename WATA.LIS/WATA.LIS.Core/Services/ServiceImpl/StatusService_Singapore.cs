@@ -10,6 +10,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using NetMQ;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
@@ -18,6 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.Indicator;
@@ -26,7 +28,7 @@ using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Events.WeightSensor;
-using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.ErrorCheck;
@@ -36,8 +38,10 @@ using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
-using Windows.Security.Cryptography.Core;
+using WATA.LIS.Core.Model.LIVOX;
 using static WATA.LIS.Core.Common.Tools;
+using NetMQ.Sockets;
+using System.Threading.Tasks;
 
 namespace WATA.LIS.Core.Services
 {
@@ -62,6 +66,7 @@ namespace WATA.LIS.Core.Services
         private BasicInfoModel m_basicInfoModel;
         private Keonn2ch_Model m_rfidModel;
         private VisionCamModel m_visionCamModel;
+        private LIVOXModel m_livoxModel;
         private WeightSensorModel m_weightModel;
         private List<WeightSensorModel> m_weight_list;
         private const int m_weight_sample_size = 50;
@@ -91,9 +96,9 @@ namespace WATA.LIS.Core.Services
 
 
         private byte[] m_LoadMatrix = new byte[10];
-        private float m_vision_width = 0;
-        private float m_vision_height = 0;
-        private float m_vision_depth = 0;
+        private float m_livox_width = 0;
+        private float m_livox_height = 0;
+        private float m_livox_depth = 0;
 
 
         private bool m_event_value = false;
@@ -108,6 +113,7 @@ namespace WATA.LIS.Core.Services
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
 
 
             rfidConfig = (RFIDConfigModel)rfidmodel;
@@ -516,6 +522,42 @@ namespace WATA.LIS.Core.Services
 
 
         /// <summary>
+        /// LIVOX 센서
+        /// </summary>
+        /// <param name="status"></param>
+        private void OnLivoxSensorEvent(LIVOXModel LivoxSensorModel)
+        {
+            m_livoxModel = LivoxSensorModel;
+        }
+
+        private void SendToLivox(int commandNum)
+        {
+            try
+            {
+                using (var publisher = new PublisherSocket())
+                {
+                    // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
+                    publisher.Bind("tcp://127.0.0.1:5002");
+
+                    // 메시지를 퍼블리시합니다.
+                    string topic = m_livoxModel.topic;
+                    string message = $",{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
+
+                    // 주제와 메시지를 결합하여 퍼블리시
+                    publisher.SendMoreFrame(topic).SendFrame(message);
+
+                    Tools.Log($"SendToLivox : {topic} {message}", Tools.ELogType.LIVOXLog);
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.LIVOXLog);
+            }
+        }
+
+
+
+        /// <summary>
         /// 인디케이터
         /// </summary>
         /// <param name="status"></param>
@@ -824,6 +866,34 @@ namespace WATA.LIS.Core.Services
         private void PickUpEvent()
         {
             CalcDistanceAndGetZoneID(m_naviX, m_naviY, false);
+
+            SendToLivox(1);
+
+            IsGetLivox();
+        }
+
+        private async void IsGetLivox()
+        {
+            bool conditionMet = false;
+            int attempts = 0;
+
+            while (attempts < 5 && !conditionMet)
+            {
+                if (m_livoxModel.height >= 0 && m_livoxModel.width >= 0 && m_livoxModel.depth >= 0 && m_livoxModel.result == 1)
+                {
+                    m_livox_height = m_livoxModel.height;
+                    m_livox_width = m_livoxModel.width;
+                    m_livox_depth = m_livoxModel.depth;
+                    SendToLivox(0);
+                    conditionMet = true;
+                }
+                else
+                {
+                    SendToLivox(1);
+                    attempts++;
+                    await Task.Delay(1000); // 1초 대기
+                }
+            }
         }
 
 

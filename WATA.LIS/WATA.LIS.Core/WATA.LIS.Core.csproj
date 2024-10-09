@@ -10,6 +10,7 @@
     <PackageReference Include="MaterialDesignColors" Version="2.0.9" />
     <PackageReference Include="MaterialDesignThemes" Version="4.6.1" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.5" />
+    <PackageReference Include="NetMQ" Version="4.0.1.13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="OpenCvSharp4" Version="4.5.5.20211231" />
     <PackageReference Include="OpenCvSharp4.Extensions" Version="4.5.5.20211231" />

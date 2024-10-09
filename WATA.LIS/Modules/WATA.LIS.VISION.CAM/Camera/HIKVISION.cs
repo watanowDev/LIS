@@ -111,28 +111,29 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
         }
 
-        private void openVisionCam()
+        private async void openVisionCam()
         {
             try
             {
-                // 카메라의 RTSP URL 설정
-                string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
-                _capture = new VideoCapture(rtspUrl);
+                await Task.Run(() => {
+                    // 카메라의 RTSP URL 설정
+                    string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
+                    _capture = new VideoCapture(rtspUrl);
 
-                if (!_capture.IsOpened())
-                {
-                    SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                    Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
-                    return;
-                }
+                    if (!_capture.IsOpened())
+                    {
+                        SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                        Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
+                        return;
+                    }
 
+                    Tools.Log("VisionCam Login Success", Tools.ELogType.VisionCamLog);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
 
-                Tools.Log("VisionCam Login Success", Tools.ELogType.VisionCamLog);
-                SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
-
-                mCheckConnTimer.Start();
-                mGetImageTimer.Start();
-                mCurrQRTimer.Start();
+                    mCheckConnTimer.Start();
+                    mGetImageTimer.Start();
+                    mCurrQRTimer.Start();
+                });
             }
             catch (Exception ex)
             {
