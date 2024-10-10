@@ -39,10 +39,10 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         public void Init()
         {
-            mSubTimer = new DispatcherTimer();
-            mSubTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            mSubTimer.Tick += new EventHandler(Subscribe);
-            mSubTimer.Start();
+            //mSubTimer = new DispatcherTimer();
+            //mSubTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //mSubTimer.Tick += new EventHandler(Subscribe);
+            //mSubTimer.Start();
         }
 
         private void Subscribe(object sender, EventArgs e)
@@ -73,7 +73,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                             return;
                         }
 
-                        if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("depth") && RcvStr.Contains("result"))
+                        if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
                         {
                             
                         }

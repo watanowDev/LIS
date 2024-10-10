@@ -20,7 +20,7 @@
 	},
 	"weightsensor": 
 	{
-		"comport": "COM2",
+		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
 	},

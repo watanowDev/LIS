@@ -1,6 +1,7 @@
 ﻿using log4net.Core;
 using NetMQ;
 using NetMQ.Sockets;
+using Newtonsoft.Json.Linq;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -23,6 +24,7 @@ using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Services;
 using Windows.ApplicationModel.UserDataTasks;
+using Windows.Devices.Bluetooth.Advertisement;
 using static System.Net.WebRequestMethods;
 
 namespace WATA.LIS.IF.BE.ViewModels
@@ -39,7 +41,7 @@ namespace WATA.LIS.IF.BE.ViewModels
         private string m_vihicle = "fork_lift001";
         private string m_errorcode = "0000";
 
-        
+
         private string _TagInfo;
         public string TagInfo { get { return _TagInfo; } set { SetProperty(ref _TagInfo, value); } }
 
@@ -53,7 +55,7 @@ namespace WATA.LIS.IF.BE.ViewModels
         public string QRLoadID { get { return _QRLoadID; } set { SetProperty(ref _QRLoadID, value); } }
 
 
-  
+
 
         private string _QRInfo;
         public string QRInfo { get { return _QRInfo; } set { SetProperty(ref _QRInfo, value); } }
@@ -302,7 +304,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
 
             }
-     
+
             else if (_jobcnt4 == 30)
             {
                 sim_start.IS_SIMULATION = false;
@@ -378,7 +380,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
             action_obj.actionInfo.loadId = loadid;
 
-            
+
             action_obj.actionInfo.action = "OUT";
             action_obj.actionInfo.epc = Tag;
             action_obj.actionInfo.height = Distance;
@@ -443,7 +445,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                         GateAction(eGateActionType.IN);
                         break;
 
-                    case "GateOUT" :
+                    case "GateOUT":
                         GateAction(eGateActionType.OUT);
                         break;
 
@@ -457,7 +459,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                         visionModel4.depth = 100;
                         visionModel4.qr = "NA";
                         visionModel4.status = "drop";
-                        byte[] _LoadMatrix4= new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        byte[] _LoadMatrix4 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
                         visionModel4.matrix = _LoadMatrix4;
                         visionModel4.simulation_status = "IN";
                         _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel4);
@@ -492,7 +494,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                         visionModel2.depth = 100;
                         visionModel2.qr = "NA";
                         visionModel2.status = "drop";
-                        byte[] _LoadMatrix2= new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        byte[] _LoadMatrix2 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
                         visionModel2.matrix = _LoadMatrix2;
                         visionModel2.has_roof = false;
                         visionModel2.simulation_status = "F_IN"; ;
@@ -512,7 +514,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                         visionModel.depth = 100;
                         visionModel.qr = "NA";
                         visionModel.status = "pickup";
-                        byte[] _LoadMatrix = new byte[10] {9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
+                        byte[] _LoadMatrix = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
                         visionModel.matrix = _LoadMatrix;
                         visionModel.has_roof = false;
                         visionModel.simulation_status = "F_OUT";
@@ -530,7 +532,7 @@ namespace WATA.LIS.IF.BE.ViewModels
                     case "Container_Send":
 
                         Container(QRInfo);
-                           
+
 
                         break;
 
@@ -566,7 +568,12 @@ namespace WATA.LIS.IF.BE.ViewModels
                     case "PICKUP":
                         {
                             SendToLivox(1);
-
+                            Task.Delay(1000); // 1초 대기
+                            while (true)
+                            {
+                                if (Subscribe() == true) break;
+                            };
+                            IsGetLivox();
                             break;
                         }
 
@@ -690,5 +697,72 @@ namespace WATA.LIS.IF.BE.ViewModels
             }
         }
 
+        private bool Subscribe()
+        {
+            bool ret = false;
+            try
+            {
+                //await Task.Run(() => {
+
+                //});
+
+                using (var subscriber = new SubscriberSocket())
+                {
+                    // 서브스크라이버 소켓을 5555 포트에 연결합니다.
+                    subscriber.Connect("tcp://127.0.0.1:5001");
+
+                    // "VISION" 주제를 구독합니다.
+                    subscriber.Subscribe("MID360>LIS");
+
+                    // 타임아웃 설정 (예: 5초)
+                    subscriber.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+
+                    // 메시지를 수신합니다.
+                    string RcvStr;
+                    if (subscriber.TryReceiveFrameString(out RcvStr))
+                    {
+                        if (!RcvStr.Contains("MID360>LIS"))
+                        {
+                            return ret;
+                        }
+
+                        if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
+                        {
+                            // JSON 문자열에서 데이터를 추출합니다.
+                            var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
+                            var jsonObject = JObject.Parse(jsonString);
+
+                            LIVOXModel eventModel = new LIVOXModel();
+                            eventModel.topic = "MID360>LIS";
+                            eventModel.responseCode = 0;
+                            eventModel.height = (int)jsonObject["height"];
+                            eventModel.width = (int)jsonObject["width"];
+                            eventModel.length = (int)jsonObject["length"];
+                            eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
+                            eventModel.points = jsonObject["points"].ToString();
+
+                            _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
+                            Tools.Log(RcvStr, Tools.ELogType.LIVOXLog);
+
+                            return ret = true;
+                        }
+                    }
+                    else
+                    {
+                        // 타임아웃 발생 시 처리
+                        SendToLivox(1);
+                        Tools.Log("Timeout occurred while receiving message", Tools.ELogType.LIVOXLog);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // 예외 처리
+                SendToLivox(1);
+                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.LIVOXLog);
+            }
+            Task.Delay(1000); // 1초 대기
+            return ret;
+        }
     }
 }

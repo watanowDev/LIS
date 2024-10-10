@@ -166,10 +166,10 @@ namespace WATA.LIS.Core.Services
 
 
 
-            m_IsPickUpTimer = new DispatcherTimer();
-            m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
-            m_IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
-            m_IsPickUpTimer.Start();
+            //m_IsPickUpTimer = new DispatcherTimer();
+            //m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
+            //m_IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
+            //m_IsPickUpTimer.Start();
 
 
 

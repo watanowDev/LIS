@@ -964,6 +964,7 @@
       },
       "WATA.LIS.IF.BE/1.0.0": {
         "dependencies": {
+          "NetMQ": "4.0.1.13",
           "Prism.Wpf": "8.1.97",
           "WATA.LIS.Core": "1.0.0"
         },
