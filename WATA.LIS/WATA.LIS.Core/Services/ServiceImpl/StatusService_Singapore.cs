@@ -786,9 +786,8 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.projectId = m_projectId;
             alive_obj.alive.mappingId = m_mappingId;
             alive_obj.alive.mapId = m_mapId;
-
-
             alive_obj.alive.errorCode = SysAlarm.CurrentErr;
+
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
             //post_obj.url = "https://smp-api.watanow.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";

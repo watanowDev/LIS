@@ -1,4 +1,6 @@
 ﻿using log4net.Core;
+using NetMQ;
+using NetMQ.Sockets;
 using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
@@ -8,14 +10,18 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.VISION;
+using WATA.LIS.Core.Services;
 using Windows.ApplicationModel.UserDataTasks;
 using static System.Net.WebRequestMethods;
 
@@ -57,6 +63,13 @@ namespace WATA.LIS.IF.BE.ViewModels
         DispatcherTimer _JobTimer3;
         DispatcherTimer _JobTimer4;
 
+        private LIVOXModel m_livoxModel = new LIVOXModel();
+        private float m_livox_width = 0;
+        private float m_livox_height = 0;
+        private float m_livox_depth = 0;
+
+
+
         public BackEndViewModel(IEventAggregator eventAggregator)
         {
             _eventAggregator = eventAggregator;
@@ -84,6 +97,8 @@ namespace WATA.LIS.IF.BE.ViewModels
             _JobTimer4 = new DispatcherTimer();
             _JobTimer4.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             _JobTimer4.Tick += new EventHandler(JobEvent4);
+
+            _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
 
         }
 
@@ -548,6 +563,20 @@ namespace WATA.LIS.IF.BE.ViewModels
                         }
 
 
+                    case "PICKUP":
+                        {
+                            SendToLivox(1);
+
+                            break;
+                        }
+
+
+                    case "DROP":
+                        {
+                            break;
+                        }
+
+
                     default:
                         break;
                 }
@@ -601,6 +630,64 @@ namespace WATA.LIS.IF.BE.ViewModels
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndAction;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
+        }
+
+
+        /// <summary>
+        /// Pickup Event Test
+        /// </summary>
+        /// <param name="commandNum"></param>
+        private void OnLivoxSensorEvent(LIVOXModel LivoxSensorModel)
+        {
+            m_livoxModel = LivoxSensorModel;
+        }
+
+        private void SendToLivox(int commandNum)
+        {
+            try
+            {
+                using (var publisher = new PublisherSocket())
+                {
+                    // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
+                    publisher.Bind("tcp://127.0.0.1:5002");
+
+                    // 메시지를 퍼블리시합니다.
+                    string message = $"LIS>MID360,{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
+
+                    // 주제와 메시지를 결합하여 퍼블리시
+                    publisher.SendFrame(message);
+
+                    Tools.Log($"SendToLivox : {message}", Tools.ELogType.LIVOXLog);
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.LIVOXLog);
+            }
+        }
+
+        private async void IsGetLivox()
+        {
+            bool conditionMet = false;
+            int attempts = 0;
+
+            while (attempts < 5 && !conditionMet)
+            {
+                if (m_livoxModel.height >= 0 && m_livoxModel.width >= 0 && m_livoxModel.length >= 0 && m_livoxModel.result == 1)
+                {
+                    m_livox_height = m_livoxModel.height;
+                    m_livox_width = m_livoxModel.width;
+                    m_livox_depth = m_livoxModel.length;
+                    SendToLivox(0);
+                    conditionMet = true;
+                }
+                else
+                {
+                    SendToLivox(1);
+                    attempts++;
+                    await Task.Delay(1000); // 1초 대기
+                }
+            }
         }
 
     }

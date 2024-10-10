@@ -13,6 +13,7 @@ namespace WATA.LIS.Core.Model.LIVOX
         public int height { get; set; }
         public int width { get; set; }
         public int length { get; set; }
+        public string points { get; set; } // 형상측정값
         public int result { get; set; } //리복스의 측정 결과값이 신뢰할 수 있는 값인지 아닌지 판단
     }
 }

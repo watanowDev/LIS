@@ -89,6 +89,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                         eventModel.width = (int)jsonObject["width"];
                         eventModel.length = (int)jsonObject["length"];
                         eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
+                        eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
                         Tools.Log(RcvStr, Tools.ELogType.LIVOXLog);
