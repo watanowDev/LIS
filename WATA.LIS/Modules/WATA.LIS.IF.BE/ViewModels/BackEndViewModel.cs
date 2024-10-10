@@ -70,6 +70,9 @@ namespace WATA.LIS.IF.BE.ViewModels
         private float m_livox_height = 0;
         private float m_livox_depth = 0;
 
+        PublisherSocket _publisherSocket;
+        SubscriberSocket _subscriberSocket;
+
 
 
         public BackEndViewModel(IEventAggregator eventAggregator)
@@ -101,6 +104,8 @@ namespace WATA.LIS.IF.BE.ViewModels
             _JobTimer4.Tick += new EventHandler(JobEvent4);
 
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
+
+            InitLivox();
 
         }
 
@@ -568,12 +573,11 @@ namespace WATA.LIS.IF.BE.ViewModels
                     case "PICKUP":
                         {
                             SendToLivox(1);
-                            Task.Delay(1000); // 1초 대기
-                            while (true)
+                            Thread.Sleep(3000);
+                            if (Subscribe() == true)
                             {
-                                if (Subscribe() == true) break;
-                            };
-                            IsGetLivox();
+                                SendToLivox(0);
+                            }
                             break;
                         }
 
@@ -649,51 +653,44 @@ namespace WATA.LIS.IF.BE.ViewModels
             m_livoxModel = LivoxSensorModel;
         }
 
+        private void InitLivox()
+        {
+            try
+            {
+                _publisherSocket = new PublisherSocket();
+                // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
+                _publisherSocket.Bind("tcp://127.0.0.1:5002");
+
+                Tools.Log($"InitLivox", Tools.ELogType.BackEndLog);
+
+                _subscriberSocket = new SubscriberSocket();
+                // 서브스크라이버 소켓을 5555 포트에 연결합니다.
+                _subscriberSocket.Connect("tcp://127.0.0.1:5001");
+
+                // 타임아웃 설정 (예: 5초)
+                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+            }
+        }
+
         private void SendToLivox(int commandNum)
         {
             try
             {
-                using (var publisher = new PublisherSocket())
-                {
-                    // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
-                    publisher.Bind("tcp://127.0.0.1:5002");
+                // 메시지를 퍼블리시합니다.
+                string message = $"LIS>MID360,{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
 
-                    // 메시지를 퍼블리시합니다.
-                    string message = $"LIS>MID360,{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
+                // 주제와 메시지를 결합하여 퍼블리시
+                _publisherSocket.SendFrame(message);
 
-                    // 주제와 메시지를 결합하여 퍼블리시
-                    publisher.SendFrame(message);
-
-                    Tools.Log($"SendToLivox : {message}", Tools.ELogType.LIVOXLog);
-                }
+                Tools.Log($"SendToLivox : {message}", Tools.ELogType.BackEndLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.LIVOXLog);
-            }
-        }
-
-        private async void IsGetLivox()
-        {
-            bool conditionMet = false;
-            int attempts = 0;
-
-            while (attempts < 5 && !conditionMet)
-            {
-                if (m_livoxModel.height >= 0 && m_livoxModel.width >= 0 && m_livoxModel.length >= 0 && m_livoxModel.result == 1)
-                {
-                    m_livox_height = m_livoxModel.height;
-                    m_livox_width = m_livoxModel.width;
-                    m_livox_depth = m_livoxModel.length;
-                    SendToLivox(0);
-                    conditionMet = true;
-                }
-                else
-                {
-                    SendToLivox(1);
-                    attempts++;
-                    await Task.Delay(1000); // 1초 대기
-                }
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.BackEndLog);
             }
         }
 
@@ -706,62 +703,60 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                 //});
 
-                using (var subscriber = new SubscriberSocket())
+                // "VISION" 주제를 구독합니다.
+                _subscriberSocket.Subscribe("MID360>LIS");
+
+                // 타임아웃 설정 (예: 5초)
+                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+
+                // 메시지를 수신합니다.
+                string RcvStr;
+                if (_subscriberSocket.TryReceiveFrameString(out RcvStr))
                 {
-                    // 서브스크라이버 소켓을 5555 포트에 연결합니다.
-                    subscriber.Connect("tcp://127.0.0.1:5001");
-
-                    // "VISION" 주제를 구독합니다.
-                    subscriber.Subscribe("MID360>LIS");
-
-                    // 타임아웃 설정 (예: 5초)
-                    subscriber.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
-
-                    // 메시지를 수신합니다.
-                    string RcvStr;
-                    if (subscriber.TryReceiveFrameString(out RcvStr))
+                    if (!RcvStr.Contains("MID360>LIS"))
                     {
-                        if (!RcvStr.Contains("MID360>LIS"))
-                        {
-                            return ret;
-                        }
-
-                        if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
-                        {
-                            // JSON 문자열에서 데이터를 추출합니다.
-                            var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
-                            var jsonObject = JObject.Parse(jsonString);
-
-                            LIVOXModel eventModel = new LIVOXModel();
-                            eventModel.topic = "MID360>LIS";
-                            eventModel.responseCode = 0;
-                            eventModel.height = (int)jsonObject["height"];
-                            eventModel.width = (int)jsonObject["width"];
-                            eventModel.length = (int)jsonObject["length"];
-                            eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
-                            eventModel.points = jsonObject["points"].ToString();
-
-                            _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                            Tools.Log(RcvStr, Tools.ELogType.LIVOXLog);
-
-                            return ret = true;
-                        }
+                        return ret;
                     }
-                    else
+
+                    if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
                     {
-                        // 타임아웃 발생 시 처리
-                        SendToLivox(1);
-                        Tools.Log("Timeout occurred while receiving message", Tools.ELogType.LIVOXLog);
+                        // JSON 문자열에서 데이터를 추출합니다.
+                        var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
+                        var jsonObject = JObject.Parse(jsonString);
+
+                        LIVOXModel eventModel = new LIVOXModel();
+                        eventModel.topic = "MID360>LIS";
+                        eventModel.responseCode = 0;
+                        eventModel.height = (int)jsonObject["height"];
+                        eventModel.width = (int)jsonObject["width"];
+                        eventModel.length = (int)jsonObject["length"];
+                        eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
+                        eventModel.points = jsonObject["points"].ToString();
+
+                        m_livox_height = eventModel.height;
+                        m_livox_width = eventModel.width;
+                        m_livox_depth = eventModel.length;
+
+                        _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
+                        Tools.Log($"{m_livox_height}, ", Tools.ELogType.BackEndLog);
+
+                        return ret = true;
                     }
+                }
+                else
+                {
+                    // 타임아웃 발생 시 처리
+                    SendToLivox(1);
+                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.BackEndLog);
                 }
             }
             catch (Exception ex)
             {
                 // 예외 처리
                 SendToLivox(1);
-                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.LIVOXLog);
+                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.BackEndLog);
             }
-            Task.Delay(1000); // 1초 대기
+            
             return ret;
         }
     }

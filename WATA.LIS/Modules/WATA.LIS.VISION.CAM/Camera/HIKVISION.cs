@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Windows.Forms;
 using System.Windows.Forms.Integration;
+using System.Reflection;
 
 
 namespace WATA.LIS.VISION.CAM.Camera
@@ -70,6 +71,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
             openVisionCam();
+            //InitializeWeChatQRCode();
         }
 
         /// <summary>
@@ -161,6 +163,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     VisionCamModel eventModels = new VisionCamModel();
                     eventModels.QR = GetQRcodeID(frame);
+                    //eventModels.QR = GetQRcodeIDByWeChat(frame);
                     eventModels.STATUS = "NONE";
                     eventModels.FRAME = currentFrameBytes;
 
@@ -176,7 +179,35 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
             }
         }
+        private WeChatQRCode weChatQRCode;
+        private void InitializeWeChatQRCode()
+        {
+            string exePath = Assembly.GetExecutingAssembly().Location;
+            string detectorPrototxtPath = "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\Model\\sr.prototxt";
+            string detectorCaffeModelPath = "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\Model\\detect.caffemodel";
+            string superResolutionPrototxtPath = "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\Model\\sr.prototxt";
+            string superResolutionCaffeModelPath = "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\Model\\sr.caffemodel";
 
+            weChatQRCode = WeChatQRCode.Create(
+                detectorPrototxtPath,
+                detectorCaffeModelPath,
+                superResolutionPrototxtPath,
+                superResolutionCaffeModelPath);
+        }
+        private string GetQRcodeIDByWeChat(Mat frame)
+        {
+            string ret = string.Empty;
+
+            weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] results);
+
+            if (results.Length > 0)
+            {
+                ret = results[0];
+                Tools.Log($"Decoding QR Code: {results[0]}", Tools.ELogType.VisionCamLog);
+            }
+
+            return ret;
+        }
         private string GetQRcodeID(Mat frame)
         {
             string ret = string.Empty;
