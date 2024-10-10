@@ -72,6 +72,9 @@ namespace WATA.LIS.Core.Services
         private const int m_weight_sample_size = 50;
 
 
+        DispatcherTimer m_IsPickUpTimer;
+
+
         private int m_pidx { get; set; }
         private int m_vidx { get; set; }
         private string m_mapId { get; set; }
@@ -163,17 +166,17 @@ namespace WATA.LIS.Core.Services
 
 
 
-            DispatcherTimer IsPickUpTimer = new DispatcherTimer();
-            IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
-            IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
-            IsPickUpTimer.Start();
+            m_IsPickUpTimer = new DispatcherTimer();
+            m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 3000);
+            m_IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
+            m_IsPickUpTimer.Start();
 
 
 
-            DispatcherTimer IsDropTimer = new DispatcherTimer();
-            IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
-            IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
-            IsDropTimer.Start();
+            //m_IsDropTimer = new DispatcherTimer();
+            //m_IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
+            //m_IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
+            //m_IsDropTimer.Start();
 
 
             m_rfidModel = new Keonn2ch_Model();
@@ -181,10 +184,11 @@ namespace WATA.LIS.Core.Services
             m_weightModel = new WeightSensorModel();
             m_weight_list = new List<WeightSensorModel>();
             isMoving = new List<(long, long)>();
+            m_livoxModel = new LIVOXModel();
 
             GetCellListFromPlatform();
             GetBasicInfoFromBackEnd();
-
+            //PickUpEvent();
         }
 
 
@@ -540,13 +544,12 @@ namespace WATA.LIS.Core.Services
                     publisher.Bind("tcp://127.0.0.1:5002");
 
                     // 메시지를 퍼블리시합니다.
-                    string topic = m_livoxModel.topic;
-                    string message = $",{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
+                    string message = $"LIS>MID360,{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
 
                     // 주제와 메시지를 결합하여 퍼블리시
-                    publisher.SendMoreFrame(topic).SendFrame(message);
+                    publisher.SendFrame(message);
 
-                    Tools.Log($"SendToLivox : {topic} {message}", Tools.ELogType.LIVOXLog);
+                    Tools.Log($"SendToLivox : {message}", Tools.ELogType.LIVOXLog);
                 }
             }
             catch (Exception ex)
@@ -850,15 +853,15 @@ namespace WATA.LIS.Core.Services
         /// <param name="bDrop"></param>
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
-            if (m_weightModel.GrossWeight < 10)
-            {
-                return;
-            }
+            //if (m_weightModel.GrossWeight < 10)
+            //{
+            //    return;
+            //}
 
-            if (m_qr == "" || m_qr == null)
-            {
-                return;
-            }
+            //if (m_qr == "" || m_qr == null)
+            //{
+            //    return;
+            //}
 
             PickUpEvent();
         }
@@ -879,12 +882,13 @@ namespace WATA.LIS.Core.Services
 
             while (attempts < 5 && !conditionMet)
             {
-                if (m_livoxModel.height >= 0 && m_livoxModel.width >= 0 && m_livoxModel.depth >= 0 && m_livoxModel.result == 1)
+                if (m_livoxModel.height >= 0 && m_livoxModel.width >= 0 && m_livoxModel.length >= 0 && m_livoxModel.result == 1)
                 {
                     m_livox_height = m_livoxModel.height;
                     m_livox_width = m_livoxModel.width;
-                    m_livox_depth = m_livoxModel.depth;
+                    m_livox_depth = m_livoxModel.length;
                     SendToLivox(0);
+                    m_IsPickUpTimer.Stop();
                     conditionMet = true;
                 }
                 else
