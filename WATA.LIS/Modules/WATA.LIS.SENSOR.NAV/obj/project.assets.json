@@ -2039,9 +2039,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
+      "projectUniqueName": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
       "projectName": "WATA.LIS.SENSOR.NAV",
-      "projectPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
+      "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\WATA.LIS.SENSOR.NAV.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.NAV\\obj\\",
       "projectStyle": "PackageReference",
@@ -2065,8 +2065,8 @@
         "net8.0-windows10.0.18362": {
           "targetAlias": "net8.0-windows10.0.18362.0",
           "projectReferences": {
-            "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }

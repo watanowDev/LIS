@@ -22,6 +22,7 @@ using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.VISION;
+using WATA.LIS.Core.Events.Indicator;
 using WATA.LIS.Core.Services;
 using Windows.ApplicationModel.UserDataTasks;
 using Windows.Devices.Bluetooth.Advertisement;
@@ -104,6 +105,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             _JobTimer4.Tick += new EventHandler(JobEvent4);
 
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
 
             InitLivox();
 
@@ -572,12 +574,17 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                     case "PICKUP":
                         {
+                            // Livox part
                             SendToLivox(1);
                             Thread.Sleep(3000);
                             if (Subscribe() == true)
                             {
                                 SendToLivox(0);
                             }
+
+                            // Indicator Part
+
+
                             break;
                         }
 
@@ -758,6 +765,15 @@ namespace WATA.LIS.IF.BE.ViewModels
             }
             
             return ret;
+        }
+
+
+        /// indicator
+        /// 
+
+        private void OnIndicatorEvent(string obj)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "rTMrXZOj2mQ=",
+  "dgSpecHash": "bTqFhIqDTzw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\pubsub\\pubsub.csproj",
+  "projectFilePath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\pubsub\\pubsub.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\USER\\.nuget\\packages\\asyncio\\0.1.69\\asyncio.0.1.69.nupkg.sha512",
     "C:\\Users\\USER\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\5.0.0\\microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512",

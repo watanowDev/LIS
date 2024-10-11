@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.SENSOR.LIVOX")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+df997f2761ef91e7bbf3c98565eca38d433d1990")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93f8c0b0d64fa40ec6c972306b943a41cb43117d")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.SENSOR.LIVOX")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.SENSOR.LIVOX")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

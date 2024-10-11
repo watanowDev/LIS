@@ -272,17 +272,17 @@
           }
         }
       },
-      "OpenCvSharp4.runtime.win/4.5.5.20211231": {
+      "OpenCvSharp4.runtime.win/4.10.0.20240616": {
         "type": "package",
         "build": {
-          "build/net5.0/_._": {}
+          "build/net5.0/OpenCvSharp4.runtime.win.props": {}
         },
         "runtimeTargets": {
           "runtimes/win-x64/native/OpenCvSharpExtern.dll": {
             "assetType": "native",
             "rid": "win-x64"
           },
-          "runtimes/win-x64/native/opencv_videoio_ffmpeg455_64.dll": {
+          "runtimes/win-x64/native/opencv_videoio_ffmpeg4100_64.dll": {
             "assetType": "native",
             "rid": "win-x64"
           },
@@ -290,7 +290,7 @@
             "assetType": "native",
             "rid": "win-x86"
           },
-          "runtimes/win-x86/native/opencv_videoio_ffmpeg455.dll": {
+          "runtimes/win-x86/native/opencv_videoio_ffmpeg4100.dll": {
             "assetType": "native",
             "rid": "win-x86"
           }
@@ -1126,10 +1126,10 @@
         "opencvsharp4.extensions.nuspec"
       ]
     },
-    "OpenCvSharp4.runtime.win/4.5.5.20211231": {
-      "sha512": "hywJLVuHQTHxroPTYWPhj59VIpoPTGoKJYyvHWWs0hnqPLPemnPCWZLJtdehdpf00U6l1QgvARJMFqc3RtSXGQ==",
+    "OpenCvSharp4.runtime.win/4.10.0.20240616": {
+      "sha512": "dpQNIR6PpeB/oZM0e0fZpt9lOS3Htjm6ZjtOgLyxN7QwjRekbNevrmO8VbgezUoetk68CRwxYZGaymCm2vt8Sg==",
       "type": "package",
-      "path": "opencvsharp4.runtime.win/4.5.5.20211231",
+      "path": "opencvsharp4.runtime.win/4.10.0.20240616",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1137,12 +1137,12 @@
         "build/net5.0/OpenCvSharp4.runtime.win.props",
         "build/netcoreapp/OpenCvSharp4.runtime.win.props",
         "build/netstandard/OpenCvSharp4.runtime.win.props",
-        "opencvsharp4.runtime.win.4.5.5.20211231.nupkg.sha512",
+        "opencvsharp4.runtime.win.4.10.0.20240616.nupkg.sha512",
         "opencvsharp4.runtime.win.nuspec",
         "runtimes/win-x64/native/OpenCvSharpExtern.dll",
-        "runtimes/win-x64/native/opencv_videoio_ffmpeg455_64.dll",
+        "runtimes/win-x64/native/opencv_videoio_ffmpeg4100_64.dll",
         "runtimes/win-x86/native/OpenCvSharpExtern.dll",
-        "runtimes/win-x86/native/opencv_videoio_ffmpeg455.dll"
+        "runtimes/win-x86/native/opencv_videoio_ffmpeg4100.dll"
       ]
     },
     "Prism.Core/8.1.97": {
@@ -2021,6 +2021,7 @@
   "projectFileDependencyGroups": {
     "net8.0-windows10.0.18362": [
       "OpenCvSharp4.Extensions >= 4.10.0.20240616",
+      "OpenCvSharp4.runtime.win >= 4.10.0.20240616",
       "Prism.Wpf >= 8.1.97",
       "System.Drawing.Common >= 8.0.8",
       "WATA.LIS.Core >= 1.0.0",
@@ -2034,9 +2035,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "projectUniqueName": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
       "projectName": "WATA.LIS.VISION.CAM",
-      "projectPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
       "projectStyle": "PackageReference",
@@ -2060,8 +2061,8 @@
         "net8.0-windows10.0.18362": {
           "targetAlias": "net8.0-windows10.0.18362.0",
           "projectReferences": {
-            "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }
@@ -2082,6 +2083,10 @@
         "targetAlias": "net8.0-windows10.0.18362.0",
         "dependencies": {
           "OpenCvSharp4.Extensions": {
+            "target": "Package",
+            "version": "[4.10.0.20240616, )"
+          },
+          "OpenCvSharp4.runtime.win": {
             "target": "Package",
             "version": "[4.10.0.20240616, )"
           },
