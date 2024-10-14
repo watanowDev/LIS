@@ -139,30 +139,30 @@ namespace WATA.LIS.Core.Services
 
 
 
-            DispatcherTimer BuzzerTimer = new DispatcherTimer();
-            BuzzerTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            BuzzerTimer.Tick += new EventHandler(BuzzerTimerEvent);
+            //DispatcherTimer BuzzerTimer = new DispatcherTimer();
+            //BuzzerTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //BuzzerTimer.Tick += new EventHandler(BuzzerTimerEvent);
 
 
 
-            DispatcherTimer AliveTimer = new DispatcherTimer(); //성웅 팀장님과 논의 후 제거
-            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            AliveTimer.Start();
+            //DispatcherTimer AliveTimer = new DispatcherTimer(); //성웅 팀장님과 논의 후 제거
+            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            //AliveTimer.Start();
 
 
 
-            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
-            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            SendProdDataTimer.Start();
+            //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            //SendProdDataTimer.Start();
 
 
 
-            DispatcherTimer IndicatorTimer = new DispatcherTimer();
-            IndicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            IndicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
-            IndicatorTimer.Start();
+            //DispatcherTimer IndicatorTimer = new DispatcherTimer();
+            //IndicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //IndicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
+            //IndicatorTimer.Start();
 
 
 
@@ -615,7 +615,7 @@ namespace WATA.LIS.Core.Services
 
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($"Send Indicator", Tools.ELogType.DisplayLog);
+            Tools.Log($"Send Indicator", Tools.ELogType.BackEndLog);
         }
 
 

@@ -23,10 +23,18 @@ using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Events.Indicator;
+using WATA.LIS.Core.Model.Indicator;
+using WATA.LIS.Core.Events.VisionCam;
+using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Services;
 using Windows.ApplicationModel.UserDataTasks;
 using Windows.Devices.Bluetooth.Advertisement;
 using static System.Net.WebRequestMethods;
+using WATA.LIS.Core.Interfaces;
+using OpenCvSharp;
+using WATA.LIS.Core.Model.SystemConfig;
+using System.IO;
+using File = System.IO.File;
 
 namespace WATA.LIS.IF.BE.ViewModels
 {
@@ -66,13 +74,31 @@ namespace WATA.LIS.IF.BE.ViewModels
         DispatcherTimer _JobTimer3;
         DispatcherTimer _JobTimer4;
 
+
+        // Livox
         private LIVOXModel m_livoxModel = new LIVOXModel();
         private float m_livox_width = 0;
         private float m_livox_height = 0;
         private float m_livox_depth = 0;
+        private string m_livox_points = "";
 
         PublisherSocket _publisherSocket;
         SubscriberSocket _subscriberSocket;
+
+        // Indicator
+        IndicatorModel m_indicatorModel = new IndicatorModel();
+        DispatcherTimer _indicatorTimer = new DispatcherTimer();
+        private int _mCommand = 0;
+
+
+        //VisonCam
+        VisionCamModel m_visoncammodel = new VisionCamModel();
+
+
+
+        // 테스트용 로그 파일 경로
+        private int m_weight = 100;
+        private readonly string _weightLogFilePath;
 
 
 
@@ -88,27 +114,53 @@ namespace WATA.LIS.IF.BE.ViewModels
             TagInfo = "DC4353495520008203224731";
 
 
-            _JobTimer1 = new DispatcherTimer();
-            _JobTimer1.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _JobTimer1.Tick += new EventHandler(JobEvent1);
+            //_JobTimer1 = new DispatcherTimer();
+            //_JobTimer1.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //_JobTimer1.Tick += new EventHandler(JobEvent1);
 
-            _JobTimer2 = new DispatcherTimer();
-            _JobTimer2.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _JobTimer2.Tick += new EventHandler(JobEvent2);
+            //_JobTimer2 = new DispatcherTimer();
+            //_JobTimer2.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //_JobTimer2.Tick += new EventHandler(JobEvent2);
 
-            _JobTimer3 = new DispatcherTimer();
-            _JobTimer3.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _JobTimer3.Tick += new EventHandler(JobEvent3);
+            //_JobTimer3 = new DispatcherTimer();
+            //_JobTimer3.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //_JobTimer3.Tick += new EventHandler(JobEvent3);
 
-            _JobTimer4 = new DispatcherTimer();
-            _JobTimer4.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            _JobTimer4.Tick += new EventHandler(JobEvent4);
+            //_JobTimer4 = new DispatcherTimer();
+            //_JobTimer4.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //_JobTimer4.Tick += new EventHandler(JobEvent4);
 
+            // Livox
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
+
+            // Indicator
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+
+            _indicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            _indicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
+            _indicatorTimer.Start();
+
+            // VisonCam
+            //_eventAggregator.GetEvent<>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+
+
+
 
             InitLivox();
 
+
+            // 프로그램 시작 경로에 weight_log.txt 파일 경로를 설정합니다.
+            _weightLogFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_weight_log.txt");
+
+            // 프로그램 시작 시 로그 파일에서 _m_weight 값을 읽어옵니다.
+            m_weight = ReadWeightFromLog();
+
+        }
+
+        private void OnVisionEvent(VisionCamModel model)
+        {
+            m_visoncammodel = model;
         }
 
         private int _jobcnt1 = 0;
@@ -576,14 +628,15 @@ namespace WATA.LIS.IF.BE.ViewModels
                         {
                             // Livox part
                             SendToLivox(1);
-                            Thread.Sleep(3000);
-                            if (Subscribe() == true)
+                            Thread.Sleep(4000);
+                            _mCommand = 1;
+                            if (GetSizeData() == true)
                             {
                                 SendToLivox(0);
                             }
 
                             // Indicator Part
-
+                            SendPickUpEvent();
 
                             break;
                         }
@@ -591,6 +644,8 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                     case "DROP":
                         {
+                            // Indicator Part
+                            SendDropEvent();
                             break;
                         }
 
@@ -701,7 +756,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             }
         }
 
-        private bool Subscribe()
+        private bool GetSizeData()
         {
             bool ret = false;
             try
@@ -743,16 +798,30 @@ namespace WATA.LIS.IF.BE.ViewModels
                         m_livox_height = eventModel.height;
                         m_livox_width = eventModel.width;
                         m_livox_depth = eventModel.length;
+                        m_livox_points = eventModel.points;
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"{m_livox_height}, ", Tools.ELogType.BackEndLog);
+                        Tools.Log($"height:{m_livox_height}, width:{m_livox_width}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
 
                         return ret = true;
+                    }
+                    else
+                    {
+                        // 부피사이즈를 읽어오지 못했을 때 처리
+                        m_livox_height = -1;
+                        m_livox_width = -1;
+                        m_livox_depth = -1;
+                        m_livox_points = "";
                     }
                 }
                 else
                 {
                     // 타임아웃 발생 시 처리
+                    m_livox_height = -1;
+                    m_livox_width = -1;
+                    m_livox_depth = -1;
+                    m_livox_points = "";
+
                     SendToLivox(1);
                     Tools.Log("Timeout occurred while receiving message", Tools.ELogType.BackEndLog);
                 }
@@ -763,17 +832,132 @@ namespace WATA.LIS.IF.BE.ViewModels
                 SendToLivox(1);
                 Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.BackEndLog);
             }
-            
+
             return ret;
         }
 
 
-        /// indicator
-        /// 
+        /// <summary>
+        /// Indicator 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <exception cref="NotImplementedException"></exception>
 
-        private void OnIndicatorEvent(string obj)
+        private void OnIndicatorEvent(string status)
         {
-            throw new NotImplementedException();
+            Tools.Log($"OnIndicatorEvent {status}", Tools.ELogType.DisplayLog);
+
+            // 통합 모니터링
+            if (status == "start_unload")
+            {
+                //m_is_unload = true;
+            }
+
+            if (status == "stop_unload")
+            {
+                //m_is_unload = false;
+            }
+
+
+            //판토스 인디케이터
+            if (status == "set_load")
+            {
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
+
+            if (status == "set_unload")
+            {
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
+
+            if (status == "set_normal")
+            {
+                SendDropEvent();
+                Tools.Log(status, Tools.ELogType.BackEndLog);
+            }
+        }
+
+        private void IndicatorSendTimerEvent(object sender, EventArgs e)
+        {
+            IndicatorModel Model = new IndicatorModel();
+            Model.forklift_status.command = _mCommand;
+            Model.forklift_status.QR = m_visoncammodel.QR;
+            Model.forklift_status.weightTotal = m_weight;
+            Model.forklift_status.visionHeight = m_livox_height;
+            Model.forklift_status.visionWidth = m_livox_width;
+            Model.forklift_status.visionDepth = m_livox_depth;
+            Model.forklift_status.epc = "";
+            Model.forklift_status.networkStatus = true;
+            Model.forklift_status.weightSensorStatus = true;
+            Model.forklift_status.visionCamStatus = true;
+            Model.forklift_status.lidar2dStatus = true;
+            Model.forklift_status.lidar3dStatus = true;
+            Model.forklift_status.heightSensorStatus = true;
+            Model.forklift_status.rfidStatus = true;
+
+            string json_body = Util.ObjectToJson(Model);
+            _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
+            Tools.Log($" Send Command : {_mCommand}, weight:{Model.forklift_status.weightTotal}, height:{m_livox_height}, width:{m_livox_width}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
+        }
+
+        private void SendPickUpEvent()
+        {
+
+            // _m_weight 값을 1 증가시키고 로그에 남깁니다.
+            m_weight++;
+            LogWeight(m_weight);
+
+            Tools.Log($" Send Command : {_mCommand}, height:{m_livox_height}, width:{m_livox_width}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
+        }
+
+        private void SendDropEvent()
+        {
+            _mCommand = 0;
+            m_livox_height = 0;
+            m_livox_width = 0;
+            m_livox_depth = 0;
+
+            Tools.Log($"Send Command : {_mCommand}", Tools.ELogType.BackEndLog);
+        }
+
+
+        /// <summary>
+        /// 테스트용 중량 로그 파일 경로
+        /// </summary>
+        /// <param name="weight"></param>
+
+        private void LogWeight(int weight)
+        {
+            try
+            {
+                File.WriteAllText(_weightLogFilePath, weight.ToString());
+                Tools.Log($"Current weight: {m_weight}", Tools.ELogType.BackEndLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Error logging weight: {ex.Message}", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        private int ReadWeightFromLog()
+        {
+            try
+            {
+                if (File.Exists(_weightLogFilePath))
+                {
+                    string weightText = File.ReadAllText(_weightLogFilePath);
+                    if (int.TryParse(weightText, out int weight))
+                    {
+                        return weight;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Error reading weight from log: {ex.Message}", Tools.ELogType.BackEndLog);
+            }
+
+            return 100; // 로그 파일이 없거나 읽기 실패 시 기본값 0 반환
         }
     }
 }

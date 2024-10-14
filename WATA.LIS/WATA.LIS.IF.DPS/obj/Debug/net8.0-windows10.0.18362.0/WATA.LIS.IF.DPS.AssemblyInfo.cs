@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.IF.DPS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93f8c0b0d64fa40ec6c972306b943a41cb43117d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f690d7ac9fd4861c674af8d41c61e11fd69fc958")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.IF.DPS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.IF.DPS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

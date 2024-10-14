@@ -39,7 +39,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         private DispatcherTimer mGetImageTimer;
         private DispatcherTimer mCurrQRTimer;
         private bool mConnected = false;
-        private string mLastQRCode = string.Empty;
+        public string mLastQRCode = string.Empty;
 
         private VideoCapture _capture;
 
@@ -70,7 +70,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
-            openVisionCam();
+            //openVisionCam();
             //InitializeWeChatQRCode();
         }
 
@@ -89,7 +89,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                 try
                 {
                     string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
-                    _capture = new VideoCapture(rtspUrl);
+                    //_capture = new VideoCapture(rtspUrl);
+                    _capture = new VideoCapture(0);
 
                     if (!_capture.IsOpened())
                     {
@@ -120,7 +121,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                 await Task.Run(() => {
                     // 카메라의 RTSP URL 설정
                     string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
-                    _capture = new VideoCapture(rtspUrl);
+                    //_capture = new VideoCapture(rtspUrl);
+                    _capture = new VideoCapture(0);
 
                     if (!_capture.IsOpened())
                     {
@@ -153,31 +155,40 @@ namespace WATA.LIS.VISION.CAM.Camera
         /// <param name="e"></param>
         private void GetFrame(object sender, EventArgs e)
         {
-            using (var frame = new Mat())
+
+            try
             {
-                _capture.Read(frame);
-
-                if (!frame.Empty())
+                using (var frame = new Mat())
                 {
-                    byte[] currentFrameBytes = frame.ToBytes();
+                    _capture.Read(frame);
 
-                    VisionCamModel eventModels = new VisionCamModel();
-                    eventModels.QR = GetQRcodeID(frame);
-                    //eventModels.QR = GetQRcodeIDByWeChat(frame);
-                    eventModels.STATUS = "NONE";
-                    eventModels.FRAME = currentFrameBytes;
+                    if (!frame.Empty())
+                    {
+                        byte[] currentFrameBytes = frame.ToBytes();
 
-                    mLastQRCode = eventModels.QR;
+                        VisionCamModel eventModels = new VisionCamModel();
+                        eventModels.QR = GetQRcodeID(frame);
+                        //eventModels.QR = GetQRcodeIDByWeChat(frame);
+                        eventModels.STATUS = "NONE";
+                        eventModels.FRAME = currentFrameBytes;
 
-                    //if (eventModels.QR != mLastQRCode)
-                    //{
-                    //    mLastQRCode = eventModels.QR;
-                    //    WriteLog(); // QR 코드가 변경되었을 때만 로그 작성
-                    //}
+                        mLastQRCode = eventModels.QR;
 
-                    _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                        //if (eventModels.QR != mLastQRCode)
+                        //{
+                        //    mLastQRCode = eventModels.QR;
+                        //    WriteLog(); // QR 코드가 변경되었을 때만 로그 작성
+                        //}
+
+                        _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                Tools.Log($"VisionCam Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+            }
+
         }
         private WeChatQRCode weChatQRCode;
         private void InitializeWeChatQRCode()

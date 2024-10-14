@@ -9,8 +9,11 @@
       "WATA.LIS.IF.BE/1.0.0": {
         "dependencies": {
           "NetMQ": "4.0.1.13",
+          "OpenCvSharp4": "4.10.0.20240616",
+          "OpenCvSharp4.runtime.win": "4.10.0.20240616",
           "Prism.Wpf": "8.1.97",
           "WATA.LIS.Core": "1.0.0",
+          "ZXing.Net": "0.16.9",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
         },
         "runtime": {
@@ -163,9 +166,9 @@
           }
         }
       },
-      "OpenCvSharp4/4.5.5.20211231": {
+      "OpenCvSharp4/4.10.0.20240616": {
         "dependencies": {
-          "System.Memory": "4.5.4",
+          "System.Memory": "4.5.5",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "runtime": {
@@ -177,7 +180,7 @@
       },
       "OpenCvSharp4.Extensions/4.5.5.20211231": {
         "dependencies": {
-          "OpenCvSharp4": "4.5.5.20211231",
+          "OpenCvSharp4": "4.10.0.20240616",
           "System.Drawing.Common": "5.0.3"
         },
         "runtime": {
@@ -187,27 +190,27 @@
           }
         }
       },
-      "OpenCvSharp4.runtime.win/4.5.5.20211231": {
+      "OpenCvSharp4.runtime.win/4.10.0.20240616": {
         "runtimeTargets": {
           "runtimes/win-x64/native/OpenCvSharpExtern.dll": {
             "rid": "win-x64",
             "assetType": "native",
             "fileVersion": "0.0.0.0"
           },
-          "runtimes/win-x64/native/opencv_videoio_ffmpeg455_64.dll": {
+          "runtimes/win-x64/native/opencv_videoio_ffmpeg4100_64.dll": {
             "rid": "win-x64",
             "assetType": "native",
-            "fileVersion": "2021.12.0.0"
+            "fileVersion": "2024.5.0.0"
           },
           "runtimes/win-x86/native/OpenCvSharpExtern.dll": {
             "rid": "win-x86",
             "assetType": "native",
             "fileVersion": "0.0.0.0"
           },
-          "runtimes/win-x86/native/opencv_videoio_ffmpeg455.dll": {
+          "runtimes/win-x86/native/opencv_videoio_ffmpeg4100.dll": {
             "rid": "win-x86",
             "assetType": "native",
-            "fileVersion": "2021.12.0.0"
+            "fileVersion": "2024.5.0.0"
           }
         }
       },
@@ -243,7 +246,7 @@
         }
       },
       "System.Formats.Asn1/5.0.0": {},
-      "System.Memory/4.5.4": {},
+      "System.Memory/4.5.5": {},
       "System.Numerics.Vectors/4.5.0": {},
       "System.Private.ServiceModel/4.9.0": {
         "dependencies": {
@@ -357,11 +360,11 @@
           "System.Drawing.Common": "5.0.3"
         }
       },
-      "ZXing.Net/0.16.6": {
+      "ZXing.Net/0.16.9": {
         "runtime": {
-          "lib/netcoreapp3.1/zxing.dll": {
-            "assemblyVersion": "0.16.6.0",
-            "fileVersion": "0.16.6.0"
+          "lib/net7.0/zxing.dll": {
+            "assemblyVersion": "0.16.9.0",
+            "fileVersion": "0.16.9.0"
           }
         }
       },
@@ -372,11 +375,11 @@
           "MaterialDesignThemes.MahApps": "0.2.5",
           "NetMQ": "4.0.1.13",
           "Newtonsoft.Json": "13.0.1",
-          "OpenCvSharp4": "4.5.5.20211231",
+          "OpenCvSharp4": "4.10.0.20240616",
           "OpenCvSharp4.Extensions": "4.5.5.20211231",
-          "OpenCvSharp4.runtime.win": "4.5.5.20211231",
+          "OpenCvSharp4.runtime.win": "4.10.0.20240616",
           "Prism.Wpf": "8.1.97",
-          "ZXing.Net": "0.16.6",
+          "ZXing.Net": "0.16.9",
           "log4net": "2.0.15"
         },
         "runtime": {
@@ -504,12 +507,12 @@
       "path": "newtonsoft.json/13.0.1",
       "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
-    "OpenCvSharp4/4.5.5.20211231": {
+    "OpenCvSharp4/4.10.0.20240616": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-if3zWvwJHo4FAupCdrv+B1PN+50MP7OdQHQSiy5Am9/fGepvEzNxbamd3Hk0akKHnLtzsHa5icGta4Vr4lGLQw==",
-      "path": "opencvsharp4/4.5.5.20211231",
-      "hashPath": "opencvsharp4.4.5.5.20211231.nupkg.sha512"
+      "sha512": "sha512-+iaFSUq0Cp+B9s1sUqDwB3PvQ5HdWWvRE50WsAw1PL8smD3VZNbe0P786E4Yfu7LHM7jeqkulOwjk2CoihsZeg==",
+      "path": "opencvsharp4/4.10.0.20240616",
+      "hashPath": "opencvsharp4.4.10.0.20240616.nupkg.sha512"
     },
     "OpenCvSharp4.Extensions/4.5.5.20211231": {
       "type": "package",
@@ -518,12 +521,12 @@
       "path": "opencvsharp4.extensions/4.5.5.20211231",
       "hashPath": "opencvsharp4.extensions.4.5.5.20211231.nupkg.sha512"
     },
-    "OpenCvSharp4.runtime.win/4.5.5.20211231": {
+    "OpenCvSharp4.runtime.win/4.10.0.20240616": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hywJLVuHQTHxroPTYWPhj59VIpoPTGoKJYyvHWWs0hnqPLPemnPCWZLJtdehdpf00U6l1QgvARJMFqc3RtSXGQ==",
-      "path": "opencvsharp4.runtime.win/4.5.5.20211231",
-      "hashPath": "opencvsharp4.runtime.win.4.5.5.20211231.nupkg.sha512"
+      "sha512": "sha512-dpQNIR6PpeB/oZM0e0fZpt9lOS3Htjm6ZjtOgLyxN7QwjRekbNevrmO8VbgezUoetk68CRwxYZGaymCm2vt8Sg==",
+      "path": "opencvsharp4.runtime.win/4.10.0.20240616",
+      "hashPath": "opencvsharp4.runtime.win.4.10.0.20240616.nupkg.sha512"
     },
     "Prism.Core/8.1.97": {
       "type": "package",
@@ -560,12 +563,12 @@
       "path": "system.formats.asn1/5.0.0",
       "hashPath": "system.formats.asn1.5.0.0.nupkg.sha512"
     },
-    "System.Memory/4.5.4": {
+    "System.Memory/4.5.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw==",
-      "path": "system.memory/4.5.4",
-      "hashPath": "system.memory.4.5.4.nupkg.sha512"
+      "sha512": "sha512-XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+      "path": "system.memory/4.5.5",
+      "hashPath": "system.memory.4.5.5.nupkg.sha512"
     },
     "System.Numerics.Vectors/4.5.0": {
       "type": "package",
@@ -672,12 +675,12 @@
       "path": "system.windows.extensions/5.0.0",
       "hashPath": "system.windows.extensions.5.0.0.nupkg.sha512"
     },
-    "ZXing.Net/0.16.6": {
+    "ZXing.Net/0.16.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0+6EcJ7Ve1BocwqvqpAmgMa7xF3wxqROcM3KvAE6WGNIqXLA5YEziLjRX+kKYVrcttlFRz1IaoRSzt/o6Ttviw==",
-      "path": "zxing.net/0.16.6",
-      "hashPath": "zxing.net.0.16.6.nupkg.sha512"
+      "sha512": "sha512-7WaVMHklpT3Ye2ragqRIwlFRsb6kOk63BOGADV0fan3ulVfGLUYkDi5yNUsZS/7FVNkWbtHAlDLmu4WnHGfqvQ==",
+      "path": "zxing.net/0.16.9",
+      "hashPath": "zxing.net.0.16.9.nupkg.sha512"
     },
     "WATA.LIS.Core/1.0.0": {
       "type": "project",
