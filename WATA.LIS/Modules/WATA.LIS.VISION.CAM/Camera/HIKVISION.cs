@@ -52,6 +52,8 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         // weChatQRCode
         private WeChatQRCode m_WeChatQRCode;
+        [DllImport("kernel32.dll")]
+        private static extern bool AllocConsole(); // 콘솔 할당 함수
 
 
         public HIKVISION(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
@@ -59,6 +61,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             _eventAggregator = eventAggregator;
             _visioncammodel = visioncammodel;
             visioncamConfig = (VisionCamConfigModel)_visioncammodel;
+            AllocConsole();
         }
 
         public void Init()
@@ -73,7 +76,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             m_CheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             m_GetImageTimer = new DispatcherTimer();
-            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
             m_GetImageTimer.Tick += new EventHandler(GetFrame);
 
             //mCurrQRTimer = new DispatcherTimer();
@@ -93,10 +96,14 @@ namespace WATA.LIS.VISION.CAM.Camera
         private void InitializeWeChatQRCode()
         {
             string exePath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string detectorPrototxtPath = $"{exePath}\\sr.prototxt";
-            string detectorCaffeModelPath = $"{exePath}\\detect.caffemodel";
-            string superResolutionPrototxtPath = $"{exePath}\\sr.prototxt";
-            string superResolutionCaffeModelPath = $"{exePath}\\sr.caffemodel";
+            //string detectorPrototxtPath = $"{exePath}\\sr.prototxt";
+            //string detectorCaffeModelPath = $"{exePath}\\detect.caffemodel";
+            //string superResolutionPrototxtPath = $"{exePath}\\sr.prototxt";
+            //string superResolutionCaffeModelPath = $"{exePath}\\sr.caffemodel";
+            string detectorPrototxtPath = @"C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
+            string detectorCaffeModelPath = @"C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
+            string superResolutionPrototxtPath = @"C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
+            string superResolutionCaffeModelPath = @"C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
 
             // 모델 파일 경로 확인
             if (!File.Exists(detectorPrototxtPath) || !File.Exists(detectorCaffeModelPath) ||
@@ -127,8 +134,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
 
                         //m_CheckConnTimer.Start();
-                        //m_GetImageTimer.Start();
-                        GetFrame(null, null);
+                        m_GetImageTimer.Start();
                     }
                     else if (!m_Capture.IsOpened())
                     {
@@ -199,17 +205,12 @@ namespace WATA.LIS.VISION.CAM.Camera
                     return;
                 }
 
-                GetQRcode(m_MatImage);
-
-
+                m_LastQRCode = GetQRcode(m_MatImage);
                 byte[] currentFrameBytes = m_MatImage.ToBytes();
 
                 VisionCamModel eventModels = new VisionCamModel();
                 eventModels.QR = m_LastQRCode;
-                eventModels.STATUS = "NONE";
                 eventModels.FRAME = currentFrameBytes;
-
-                //m_LastQRCode = eventModels.QR;
 
                 _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
             }

@@ -2020,6 +2020,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0-windows10.0.18362": [
+      "OpenCvSharp4 >= 4.10.0.20240616",
       "OpenCvSharp4.Extensions >= 4.10.0.20240616",
       "OpenCvSharp4.runtime.win >= 4.10.0.20240616",
       "Prism.Wpf >= 8.1.97",
@@ -2082,6 +2083,10 @@
       "net8.0-windows10.0.18362": {
         "targetAlias": "net8.0-windows10.0.18362.0",
         "dependencies": {
+          "OpenCvSharp4": {
+            "target": "Package",
+            "version": "[4.10.0.20240616, )"
+          },
           "OpenCvSharp4.Extensions": {
             "target": "Package",
             "version": "[4.10.0.20240616, )"
