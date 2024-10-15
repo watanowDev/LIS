@@ -886,6 +886,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             Model.forklift_status.visionHeight = m_livox_height;
             Model.forklift_status.visionWidth = m_livox_width;
             Model.forklift_status.visionDepth = m_livox_depth;
+            Model.forklift_status.points = m_livox_points;
             Model.forklift_status.epc = "";
             Model.forklift_status.networkStatus = true;
             Model.forklift_status.weightSensorStatus = true;

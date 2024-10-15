@@ -83,8 +83,13 @@ namespace WATA.LIS.VISION.CAM.Camera
             //mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             //mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
+            //InitializeCamera();
             InitializeWeChatQRCode();
             openVisionCam();
+        }
+
+        private void InitializeCamera()
+        {
         }
 
         /// <summary>
@@ -127,6 +132,8 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     m_CameraIndex = 1;
                     m_Capture = new VideoCapture(m_CameraIndex);
+                    m_Capture.FrameWidth = 3840;
+                    m_Capture.FrameHeight = 2060;
 
                     if (m_Capture.IsOpened())
                     {
