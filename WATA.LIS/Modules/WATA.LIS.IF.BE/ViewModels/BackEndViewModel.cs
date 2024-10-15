@@ -93,6 +93,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
         //VisonCam
         VisionCamModel m_visoncammodel = new VisionCamModel();
+        private string m_lastQRcode = "";
 
 
 
@@ -161,6 +162,10 @@ namespace WATA.LIS.IF.BE.ViewModels
         private void OnVisionEvent(VisionCamModel model)
         {
             m_visoncammodel = model;
+            if (m_visoncammodel.QR.Contains("wata"))
+            {
+                m_lastQRcode = m_visoncammodel.QR;
+            }
         }
 
         private int _jobcnt1 = 0;
@@ -628,11 +633,12 @@ namespace WATA.LIS.IF.BE.ViewModels
                         {
                             // Livox part
                             SendToLivox(1);
-                            Thread.Sleep(4000);
+
                             _mCommand = 1;
                             if (GetSizeData() == true)
                             {
                                 SendToLivox(0);
+                                return;
                             }
 
                             // Indicator Part
@@ -772,8 +778,8 @@ namespace WATA.LIS.IF.BE.ViewModels
                 _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
 
                 // 메시지를 수신합니다.
-                string RcvStr;
-                if (_subscriberSocket.TryReceiveFrameString(out RcvStr))
+                string RcvStr = _subscriberSocket.ReceiveFrameString();
+                if (!"".Equals(RcvStr))
                 {
                     if (!RcvStr.Contains("MID360>LIS"))
                     {
@@ -881,7 +887,7 @@ namespace WATA.LIS.IF.BE.ViewModels
         {
             IndicatorModel Model = new IndicatorModel();
             Model.forklift_status.command = _mCommand;
-            Model.forklift_status.QR = m_visoncammodel.QR;
+            Model.forklift_status.QR = m_lastQRcode;
             Model.forklift_status.weightTotal = m_weight;
             Model.forklift_status.visionHeight = m_livox_height;
             Model.forklift_status.visionWidth = m_livox_width;
