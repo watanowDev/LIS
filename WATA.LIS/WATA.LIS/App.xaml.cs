@@ -21,6 +21,7 @@ using WATA.LIS.Views;
 using WATA.LIS.VISION.Camera;
 using WATA.LIS.VISION.CAM;
 using WATA.LIS.SENSOR.LIVOX;
+using WATA.LIS.Core.Services.ServiceImpl;
 
 namespace WATA.LIS
 {
@@ -121,7 +122,11 @@ namespace WATA.LIS
             }
             else if (mainobj.device_type == "Singapore")//Singapore POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 POC용 원민섭 주임 신규개발
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 DHL POC용 원민섭 주임 신규개발
+            }
+            else if (mainobj.device_type == "Clark")//Clark POC
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();//Clark POC용 원민섭 주임 신규개발
             }
         }
 

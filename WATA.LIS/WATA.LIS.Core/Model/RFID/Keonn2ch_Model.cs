@@ -10,9 +10,9 @@ namespace WATA.LIS.Core.Model.RFID
     public class Keonn2ch_Model
     {
         public string EPC { get; set; }
-        public DateTime TS { get; set; }
         public int RSSI { get; set; }
-        public int COUNT { get; set; }
+        public int READCNT { get; set; }
+        public DateTime TS { get; set; }
 
     }
 }

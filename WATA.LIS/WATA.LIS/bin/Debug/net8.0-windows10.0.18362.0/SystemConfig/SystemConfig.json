@@ -15,12 +15,12 @@
 	},
 	"distancesensor": 
 	{
-		"comport": "COM3",
+		"comport": "COM5",
 		"pick_up_distance_threshold" : 100
 	},
 	"weightsensor": 
 	{
-		"comport": "COM4",
+		"comport": "COM6",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
 	},

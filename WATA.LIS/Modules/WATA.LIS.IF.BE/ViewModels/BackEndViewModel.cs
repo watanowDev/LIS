@@ -774,9 +774,6 @@ namespace WATA.LIS.IF.BE.ViewModels
                 // "VISION" 주제를 구독합니다.
                 _subscriberSocket.Subscribe("MID360>LIS");
 
-                // 타임아웃 설정 (예: 5초)
-                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
-
                 // 메시지를 수신합니다.
                 string RcvStr = _subscriberSocket.ReceiveFrameString();
                 if (!"".Equals(RcvStr))
@@ -904,7 +901,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {_mCommand}, weight:{Model.forklift_status.weightTotal}, height:{m_livox_height}, width:{m_livox_width}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
+            Tools.Log($" Send Command : {_mCommand}, weight:{Model.forklift_status.weightTotal}, width:{m_livox_width}, height:{m_livox_height}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
         }
 
         private void SendPickUpEvent()
@@ -914,7 +911,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             m_weight++;
             LogWeight(m_weight);
 
-            Tools.Log($" Send Command : {_mCommand}, height:{m_livox_height}, width:{m_livox_width}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
+            Tools.Log($" Send Command : {_mCommand}, width:{m_livox_width}, height:{m_livox_height}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
         }
 
         private void SendDropEvent()

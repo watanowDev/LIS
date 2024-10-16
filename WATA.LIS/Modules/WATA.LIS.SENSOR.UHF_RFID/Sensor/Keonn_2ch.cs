@@ -162,7 +162,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 keonn2chEventModel.EPC = tag.EpcString;
                 keonn2chEventModel.TS = tag.Time;
                 keonn2chEventModel.RSSI = tag.Rssi;
-                keonn2chEventModel.COUNT = tag.ReadCount;
+                keonn2chEventModel.READCNT = tag.ReadCount;
 
                 eventModels.Add(keonn2chEventModel);
             }

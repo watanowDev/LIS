@@ -296,9 +296,9 @@ namespace WATA.LIS.Core.Services
             {
                 foreach (var epc in epcData)
                 {
-                    Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.COUNT}, TS:{epc.TS}", ELogType.RFIDLog);
+                    Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.READCNT}, TS:{epc.TS}", ELogType.RFIDLog);
                 }
-                Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].COUNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
+                Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].READCNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
             }
         }
 

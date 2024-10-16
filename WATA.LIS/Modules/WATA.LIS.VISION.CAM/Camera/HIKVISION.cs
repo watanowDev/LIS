@@ -105,10 +105,10 @@ namespace WATA.LIS.VISION.CAM.Camera
             //string detectorCaffeModelPath = $"{exePath}\\detect.caffemodel";
             //string superResolutionPrototxtPath = $"{exePath}\\sr.prototxt";
             //string superResolutionCaffeModelPath = $"{exePath}\\sr.caffemodel";
-            string detectorPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
-            string detectorCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
-            string superResolutionPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
-            string superResolutionCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
+            string detectorPrototxtPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
+            string detectorCaffeModelPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
+            string superResolutionPrototxtPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
+            string superResolutionCaffeModelPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
 
             // 모델 파일 경로 확인
             if (!File.Exists(detectorPrototxtPath) || !File.Exists(detectorCaffeModelPath) ||
@@ -130,10 +130,10 @@ namespace WATA.LIS.VISION.CAM.Camera
                     //string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
                     //_capture = new VideoCapture(rtspUrl);
 
-                    m_CameraIndex = 0;
+                    m_CameraIndex = 1;
                     m_Capture = new VideoCapture(m_CameraIndex);
-                    m_Capture.FrameWidth = 3840/2;
-                    m_Capture.FrameHeight = 2060/2;
+                    m_Capture.FrameWidth = 3840;
+                    m_Capture.FrameHeight = 2060;
 
                     if (m_Capture.IsOpened())
                     {
@@ -213,8 +213,13 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
 
                 m_LastQRCode = GetQRcode(m_MatImage);
-                byte[] currentFrameBytes = m_MatImage.ToBytes();
 
+                // Resize the frame
+                Mat resizedFrame = new Mat();
+                Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(1920 / 2, 1080 / 2)); // Set the desired resolution
+                byte[] currentFrameBytes = resizedFrame.ToBytes();
+
+                // Publish the event
                 VisionCamModel eventModels = new VisionCamModel();
                 eventModels.QR = m_LastQRCode;
                 eventModels.FRAME = currentFrameBytes;
