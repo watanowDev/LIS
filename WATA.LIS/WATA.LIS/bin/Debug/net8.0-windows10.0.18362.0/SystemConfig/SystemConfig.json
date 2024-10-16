@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore
+		"device_type" : "Clark", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
 		"workLocationId" : "PANTOS_FLAT_001",
 		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
 		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
@@ -10,17 +10,17 @@
 	},
 	"led_buzzer": 
 	{
-		"volume": 5,
+		"volume": 0,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
 	"distancesensor": 
 	{
-		"comport": "COM5",
+		"comport": "COM3",
 		"pick_up_distance_threshold" : 100
 	},
 	"weightsensor": 
 	{
-		"comport": "COM6",
+		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
 	},

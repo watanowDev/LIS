@@ -30,8 +30,8 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
         private bool mConnected = false;
         private string mSubMsg = string.Empty;
 
-        PublisherSocket _publisherSocket;
-        SubscriberSocket _subscriberSocket;
+        public PublisherSocket _publisherSocket;
+        public SubscriberSocket _subscriberSocket;
 
         public PubSub(IEventAggregator eventAggregator, ILivoxModel livoxmodel)
         {

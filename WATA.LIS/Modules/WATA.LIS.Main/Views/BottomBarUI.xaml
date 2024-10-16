@@ -108,7 +108,7 @@
             <Grid Grid.Column="5">
                 <RadioButton IsChecked="{Binding BackEndChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_BackEnd" Cursor="Hand">
                     <TextBlock
-                    Text="BACK END"
+                    Text="SIMULATOR"
                     Width="Auto"/>
                 </RadioButton>
             </Grid>

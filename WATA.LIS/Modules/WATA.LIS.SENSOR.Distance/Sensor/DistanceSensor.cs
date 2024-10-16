@@ -51,7 +51,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             //Thread.Sleep(2000);
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
         }
@@ -144,7 +144,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.DistanceLog);
             }
-            Thread.Sleep(300);
+            Thread.Sleep(30);
         }
 
         public string AverageData(byte[] RecvBytes, int nSize)

@@ -55,7 +55,7 @@ namespace WATA.LIS.TCPSocket
                     byte[] response = Encoding.UTF8.GetBytes(SendMessage);
                     await stream.WriteAsync(response, 0, response.Length);
 
-                    Tools.Log($"{SendMessage}", Tools.ELogType.DisplayLog);
+                    //Tools.Log($"{SendMessage}", Tools.ELogType.DisplayLog);
 
                 }
 

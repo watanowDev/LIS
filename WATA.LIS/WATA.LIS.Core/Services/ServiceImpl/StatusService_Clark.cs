@@ -208,6 +208,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             GetCellListFromPlatform();
             GetBasicInfoFromBackEnd();
+            InitLivox();
         }
 
 
@@ -567,6 +568,29 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// LIVOX 센서
         /// </summary>
         /// <param name="status"></param>
+
+        private void InitLivox()
+        {
+            try
+            {
+                _publisherSocket = new PublisherSocket();
+                // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
+                _publisherSocket.Bind("tcp://127.0.0.1:5002");
+
+                Tools.Log($"InitLivox", Tools.ELogType.BackEndLog);
+
+                _subscriberSocket = new SubscriberSocket();
+                // 서브스크라이버 소켓을 5555 포트에 연결합니다.
+                _subscriberSocket.Connect("tcp://127.0.0.1:5001");
+
+                // 타임아웃 설정 (예: 5초)
+                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+            }
+        }
         private void OnLivoxSensorEvent(LIVOXModel LivoxSensorModel)
         {
             m_livoxModel = LivoxSensorModel;
@@ -707,17 +731,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.visionDepth = m_envet_length;
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
-            //m_indicatorModel.forklift_status.networkStatus = true;
-            //m_indicatorModel.forklift_status.weightSensorStatus = true;
-            //m_indicatorModel.forklift_status.visionCamStatus = true;
-            //m_indicatorModel.forklift_status.lidar2dStatus = true;
-            //m_indicatorModel.forklift_status.lidar3dStatus = true;
-            //m_indicatorModel.forklift_status.heightSensorStatus = true;
-            //m_indicatorModel.forklift_status.rfidStatus = true;
+            m_indicatorModel.forklift_status.networkStatus = true;
+            m_indicatorModel.forklift_status.weightSensorStatus = true;
+            m_indicatorModel.forklift_status.visionCamStatus = true;
+            m_indicatorModel.forklift_status.lidar2dStatus = false;
+            m_indicatorModel.forklift_status.lidar3dStatus = true;
+            m_indicatorModel.forklift_status.heightSensorStatus = true;
+            m_indicatorModel.forklift_status.rfidStatus = false;
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {_mCommand}, weight:{m_weightModel.GrossWeight}, height:{m_livoxModel.width}, width:{m_livoxModel.height}, depth:{m_livoxModel.length}", Tools.ELogType.BackEndLog);
+            Tools.Log($" Send Command : {_mCommand}, weight:{m_weightModel.GrossWeight}, height:{m_livoxModel.width}, width:{m_livoxModel.height}, depth:{m_livoxModel.length}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -955,11 +979,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
             if (m_weightModel.GrossWeight < 10)
-            {
-                return;
-            }
-
-            if (m_event_QRcode == "" || m_event_QRcode == null)
             {
                 return;
             }

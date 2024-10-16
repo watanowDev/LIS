@@ -72,7 +72,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
 
             m_CheckConnTimer = new DispatcherTimer();
-            m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             m_CheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             m_GetImageTimer = new DispatcherTimer();
@@ -83,13 +83,8 @@ namespace WATA.LIS.VISION.CAM.Camera
             //mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             //mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
-            //InitializeCamera();
             InitializeWeChatQRCode();
             openVisionCam();
-        }
-
-        private void InitializeCamera()
-        {
         }
 
         /// <summary>
@@ -105,10 +100,10 @@ namespace WATA.LIS.VISION.CAM.Camera
             //string detectorCaffeModelPath = $"{exePath}\\detect.caffemodel";
             //string superResolutionPrototxtPath = $"{exePath}\\sr.prototxt";
             //string superResolutionCaffeModelPath = $"{exePath}\\sr.caffemodel";
-            string detectorPrototxtPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
-            string detectorCaffeModelPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
-            string superResolutionPrototxtPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
-            string superResolutionCaffeModelPath = @"C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
+            string detectorPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
+            string detectorCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
+            string superResolutionPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
+            string superResolutionCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
 
             // 모델 파일 경로 확인
             if (!File.Exists(detectorPrototxtPath) || !File.Exists(detectorCaffeModelPath) ||
@@ -130,10 +125,10 @@ namespace WATA.LIS.VISION.CAM.Camera
                     //string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
                     //_capture = new VideoCapture(rtspUrl);
 
-                    m_CameraIndex = 1;
+                    m_CameraIndex = 0;
                     m_Capture = new VideoCapture(m_CameraIndex);
-                    m_Capture.FrameWidth = 3840;
-                    m_Capture.FrameHeight = 2060;
+                    m_Capture.FrameWidth = 3840 / 2;
+                    m_Capture.FrameHeight = 2060 / 2;
 
                     if (m_Capture.IsOpened())
                     {

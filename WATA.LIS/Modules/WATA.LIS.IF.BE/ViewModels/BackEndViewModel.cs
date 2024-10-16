@@ -35,6 +35,8 @@ using OpenCvSharp;
 using WATA.LIS.Core.Model.SystemConfig;
 using System.IO;
 using File = System.IO.File;
+using WATA.LIS.Core.Events.WeightSensor;
+using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.IF.BE.ViewModels
 {
@@ -95,6 +97,12 @@ namespace WATA.LIS.IF.BE.ViewModels
         VisionCamModel m_visoncammodel = new VisionCamModel();
         private string m_lastQRcode = "";
 
+        // 중량센서 모델
+        private WeightSensorModel m_weightModel;
+        private List<WeightSensorModel> m_weight_list = new List<WeightSensorModel>();
+        private const int m_weight_sample_size = 50;
+        private int m_event_weight = 0;
+
 
 
         // 테스트용 로그 파일 경로
@@ -145,27 +153,20 @@ namespace WATA.LIS.IF.BE.ViewModels
             //_eventAggregator.GetEvent<>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
 
+            _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(onWeightEvent, ThreadOption.BackgroundThread, true);
 
+            m_weightModel = new WeightSensorModel();
 
 
             InitLivox();
 
 
-            // 프로그램 시작 경로에 weight_log.txt 파일 경로를 설정합니다.
-            _weightLogFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_weight_log.txt");
+            //// 프로그램 시작 경로에 weight_log.txt 파일 경로를 설정합니다.
+            //_weightLogFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_weight_log.txt");
 
-            // 프로그램 시작 시 로그 파일에서 _m_weight 값을 읽어옵니다.
-            m_weight = ReadWeightFromLog();
+            //// 프로그램 시작 시 로그 파일에서 _m_weight 값을 읽어옵니다.
+            //m_weight = ReadWeightFromLog();
 
-        }
-
-        private void OnVisionEvent(VisionCamModel model)
-        {
-            m_visoncammodel = model;
-            if (m_visoncammodel.QR.Contains("wata"))
-            {
-                m_lastQRcode = m_visoncammodel.QR;
-            }
         }
 
         private int _jobcnt1 = 0;
@@ -885,7 +886,7 @@ namespace WATA.LIS.IF.BE.ViewModels
             IndicatorModel Model = new IndicatorModel();
             Model.forklift_status.command = _mCommand;
             Model.forklift_status.QR = m_lastQRcode;
-            Model.forklift_status.weightTotal = m_weight;
+            Model.forklift_status.weightTotal = m_weightModel.GrossWeight;
             Model.forklift_status.visionHeight = m_livox_height;
             Model.forklift_status.visionWidth = m_livox_width;
             Model.forklift_status.visionDepth = m_livox_depth;
@@ -906,10 +907,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
         private void SendPickUpEvent()
         {
-
             // _m_weight 값을 1 증가시키고 로그에 남깁니다.
-            m_weight++;
-            LogWeight(m_weight);
 
             Tools.Log($" Send Command : {_mCommand}, width:{m_livox_width}, height:{m_livox_height}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
         }
@@ -929,39 +927,63 @@ namespace WATA.LIS.IF.BE.ViewModels
         /// 테스트용 중량 로그 파일 경로
         /// </summary>
         /// <param name="weight"></param>
-
-        private void LogWeight(int weight)
+        private void onWeightEvent(WeightSensorModel obj)
         {
-            try
+            m_weight_list.Add(obj);
+
+            if (m_weight_list.Count >= m_weight_sample_size)
             {
-                File.WriteAllText(_weightLogFilePath, weight.ToString());
-                Tools.Log($"Current weight: {m_weight}", Tools.ELogType.BackEndLog);
+                m_weightModel.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
+                m_weightModel.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
+                m_weightModel.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
+
+                m_weight_list.RemoveAt(0);
             }
-            catch (Exception ex)
+            else
             {
-                Tools.Log($"Error logging weight: {ex.Message}", Tools.ELogType.BackEndLog);
+                m_weightModel.LeftWeight = obj.LeftWeight <= 0 ? 0 : obj.LeftWeight;
+                m_weightModel.RightWeight = obj.RightWeight <= 0 ? 0 : obj.RightWeight;
+                m_weightModel.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
             }
         }
 
-        private int ReadWeightFromLog()
+        private int GetStableValue(List<int> weight_list)
         {
-            try
+            int ret = 0;
+            if (weight_list.Count > 0)
             {
-                if (File.Exists(_weightLogFilePath))
-                {
-                    string weightText = File.ReadAllText(_weightLogFilePath);
-                    if (int.TryParse(weightText, out int weight))
-                    {
-                        return weight;
-                    }
-                }
+                int average = (int)weight_list.Average();
+
+                int squaredDifferencesSum = weight_list.Sum(x => (x - average) * (x - average));
+
+                double variance = squaredDifferencesSum / weight_list.Count;
+
+                double standardDeviation = Math.Sqrt(variance);
+
+                List<int> filteredList = weight_list.Where(x => Math.Abs(x - average) <= standardDeviation).ToList();
+
+                ret = (int)filteredList.Average();
             }
-            catch (Exception ex)
+            else
             {
-                Tools.Log($"Error reading weight from log: {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Weight Sensor Read Error!!!", ELogType.SystemLog);
             }
 
-            return 100; // 로그 파일이 없거나 읽기 실패 시 기본값 0 반환
+            if (ret < 0)
+            {
+                ret = 0;
+            }
+
+            return ret;
+        }
+
+        private void OnVisionEvent(VisionCamModel model)
+        {
+            m_visoncammodel = model;
+            if (m_visoncammodel.QR.Contains("wata"))
+            {
+                m_lastQRcode = m_visoncammodel.QR;
+            }
         }
     }
 }

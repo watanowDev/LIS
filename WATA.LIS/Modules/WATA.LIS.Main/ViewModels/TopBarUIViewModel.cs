@@ -10,16 +10,18 @@ using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.VISION;
+using WATA.LIS.Core.Model.VisionCam;
 
 namespace WATA.LIS.Main.ViewModels
 {
     public class TopBarUIViewModel : BindableBase
     {
-        
+
 
         private string _VersionContext;
         public string VersionContext { get { return _VersionContext; } set { SetProperty(ref _VersionContext, value); } }
@@ -28,15 +30,21 @@ namespace WATA.LIS.Main.ViewModels
         private string _Date;
         public string Date { get { return _Date; } set { SetProperty(ref _Date, value); } }
 
+
         private string _Time;
         public string Time { get { return _Time; } set { SetProperty(ref _Time, value); } }
+
 
         private string _LivingTime;
         public string LivingTime { get { return _LivingTime; } set { SetProperty(ref _LivingTime, value); } }
 
-        private string _VisionEvent;
 
-        public string VisionEvent { get { return _VisionEvent; } set { SetProperty(ref _VisionEvent, value); } }
+        private string _VisionCamEvent;
+        public string VisionCamEvent { get { return _VisionCamEvent; } set { SetProperty(ref _VisionCamEvent, value); } }
+
+
+        private string _RFIDEvent;
+        public string RFIDEvent { get { return _RFIDEvent; } set { SetProperty(ref _RFIDEvent, value); } }
 
         public DelegateCommand<string> ButtonFunc { get; set; }
         IEventAggregator _eventAggregator;
@@ -46,7 +54,7 @@ namespace WATA.LIS.Main.ViewModels
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
-            _eventAggregator.GetEvent<VISION_Event>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
 
 
             DispatcherTimer DateTimer = new DispatcherTimer();
@@ -55,21 +63,15 @@ namespace WATA.LIS.Main.ViewModels
             DateTimer.Start();
 
 
-            VisionEvent = "None";
+            VisionCamEvent = "None";
 
         }
 
-        public void OnVISIONEvent(VISON_Model obj)
+        public void OnVISIONEvent(VisionCamModel obj)
         {
-            if (obj.status == "pickup")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            if (obj.QR != null || obj.QR != "")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
-                VisionEvent = "pickup";
-
-            }
-            else if (obj.status == "drop")
-            {
-                VisionEvent = "drop";
-
+                VisionCamEvent = $"{obj.QR}";
             }
         }
 
@@ -112,7 +114,7 @@ namespace WATA.LIS.Main.ViewModels
             {
 
 
-      
+
 
 
                 if (command == null) return;
@@ -162,7 +164,7 @@ namespace WATA.LIS.Main.ViewModels
             }
             catch (Exception ex)
             {
-         
+
             }
         }
     }
