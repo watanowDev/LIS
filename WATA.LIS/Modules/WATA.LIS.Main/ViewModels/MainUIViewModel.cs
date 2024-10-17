@@ -32,6 +32,7 @@ namespace WATA.LIS.Main.ViewModels
         public ObservableCollection<Log> ListDistancetLog { get; set; }
         public ObservableCollection<Log> ListRFIDLog { get; set; }
         public ObservableCollection<Log> ListIndicatortLog { get; set; }
+        public ObservableCollection<Log> ListActionLog { get; set; }
 
 
 
@@ -64,6 +65,9 @@ namespace WATA.LIS.Main.ViewModels
         //Text
         private string _Weight_Value;
         public string Weight_Value { get { return _Weight_Value; } set { SetProperty(ref _Weight_Value, value); } }
+
+        //private List<string> _Weight_Value_List;
+        //public List<string> Weight_Value_List { get { return _Weight_Value_List; } set { SetProperty(ref _Weight_Value_List, value); } }
 
 
         private string _Distance_Value;
@@ -98,7 +102,7 @@ namespace WATA.LIS.Main.ViewModels
             ListDistancetLog = Tools.logInfo.ListDistanceLog;
             ListRFIDLog = Tools.logInfo.ListRFIDLog;
             ListIndicatortLog = Tools.logInfo.ListDisplayLog;
-            //VisionLog = Tools.logInfo.ListVisionLog;
+            ListActionLog = Tools.logInfo.ListActionLog;
 
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.SystemLog);
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.VisionCamLog);
@@ -123,6 +127,10 @@ namespace WATA.LIS.Main.ViewModels
             BACKEND_Active = Disable;
         }
 
+        /// <summary>
+        /// WeightSensorData
+        /// </summary>
+        /// <param name="model"></param>
         private void OnWeightSensorData(WeightSensorModel model)
         {
             if(model != null)

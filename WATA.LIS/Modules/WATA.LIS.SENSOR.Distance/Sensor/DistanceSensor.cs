@@ -51,7 +51,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             //Thread.Sleep(2000);
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 50);
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
         }
@@ -176,7 +176,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
             if (log_enable)
             {
-                Tools.Log($"Distance : {AverageDistance}", Tools.ELogType.DistanceLog);
+                //Tools.Log($"Distance : {AverageDistance}", Tools.ELogType.DistanceLog);
             }
             return retStr;
         }
@@ -193,7 +193,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             {
                 strData += String.Format("0x{0:x2} ", HexData[i]);
             }
-            Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.DistanceLog);
+            //Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.DistanceLog);
         }
     }
 }

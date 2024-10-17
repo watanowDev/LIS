@@ -29,7 +29,7 @@ namespace WATA.LIS.Core.Common
         public static string WeightLowBattery = "0402";
 
 
-        public static string DisplayConnErr = "0501"; // App Display
+        public static string IndicatorConnErr = "0501"; // App Display
 
 
         public static string DPSConnErr = "0601";

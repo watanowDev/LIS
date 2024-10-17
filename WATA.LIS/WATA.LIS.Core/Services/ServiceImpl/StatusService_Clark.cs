@@ -57,6 +57,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private DistanceConfigModel distanceConfig;
         private LIVOXConfigModel livoxConfig;
 
+        // Error Check 변수
+        private int m_errCnt_indicator;
+
+
         // 기초 데이터 모델
         private BasicInfoModel m_basicInfoModel;
         private CellInfoModel m_cellInfoModel;
@@ -71,8 +75,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // 중량센서 모델
         private WeightSensorModel m_weightModel;
-        private List<WeightSensorModel> m_weight_list;
-        private const int m_weight_sample_size = 50;
+        public List<WeightSensorModel> m_weight_list;
+        private const int m_weight_sample_size = 10;
         private int m_event_weight = 0;
 
         // 높이센서 모델
@@ -98,15 +102,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // 인디케이터 모델
         private IndicatorModel m_indicatorModel;
-        private int _mCommand = 0;
+        private int m_Command = 0;
+        private bool m_set_item = false;
 
-        // 통신상태 모델
-
-
-
+        // 타이머 클래스
+        DispatcherTimer m_ErrorCheckTimer;
+        DispatcherTimer m_IndicatorTimer;
         DispatcherTimer m_IsPickUpTimer;
         DispatcherTimer m_IsDropTimer;
 
+        // 디스패처
+        DispatcherOperation _dispatcherOperation;
 
         private string m_epc { get; set; }
         //private string m_qr { get; set; }
@@ -177,19 +183,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
             //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            //SendProdDataTimer.Start();
+            //SendProdDataTimer.Start
 
 
+            m_ErrorCheckTimer = new DispatcherTimer();
+            m_ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_ErrorCheckTimer.Tick += new EventHandler(ErrorCheckTimerEvent);
+            m_ErrorCheckTimer.Start();
 
-            DispatcherTimer IndicatorTimer = new DispatcherTimer();
-            IndicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            IndicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
-            IndicatorTimer.Start();
+
+            m_IndicatorTimer = new DispatcherTimer();
+            m_IndicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_IndicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
+            m_IndicatorTimer.Start();
 
 
 
             m_IsPickUpTimer = new DispatcherTimer();
-            m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             m_IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
             m_IsPickUpTimer.Start();
 
@@ -309,6 +320,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
+        /// <summary>
+        /// Error Check
+        /// </summary>
+        /// <param name="epcData"></param>
+        private void ErrorCheckTimerEvent(object sender, EventArgs e)
+        {
+            m_errCnt_indicator++;
+
+            if (m_errCnt_indicator > 10)
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY);
+            }
+        }
+
 
         /// <summary>
         /// RFID 센서
@@ -332,16 +357,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-
         /// <summary>
         /// 중량 센서
         /// </summary>
-        /// <param name="obj"></param>
-        private void OnWeightSensorEvent(WeightSensorModel obj)
+        /// <param name="model"></param>
+        private void OnWeightSensorEvent(WeightSensorModel model)
         {
-            m_weight_list.Add(obj);
+            if (model.GrossWeight > 0)
+            {
+                m_weight_list.Add(model);
+            }
 
-            if (m_weight_list.Count >= m_weight_sample_size)
+            if (m_weight_list.Count > m_weight_sample_size)
             {
                 m_weightModel.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
                 m_weightModel.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
@@ -351,9 +378,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             else
             {
-                m_weightModel.LeftWeight = obj.LeftWeight <= 0 ? 0 : obj.LeftWeight;
-                m_weightModel.RightWeight = obj.RightWeight <= 0 ? 0 : obj.RightWeight;
-                m_weightModel.GrossWeight = obj.GrossWeight <= 0 ? 0 : obj.GrossWeight;
+                m_weightModel.LeftWeight = model.LeftWeight <= 0 ? 0 : model.LeftWeight;
+                m_weightModel.RightWeight = model.RightWeight <= 0 ? 0 : model.RightWeight;
+                m_weightModel.GrossWeight = model.GrossWeight <= 0 ? 0 : model.GrossWeight;
             }
         }
 
@@ -370,9 +397,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 double standardDeviation = Math.Sqrt(variance);
 
-                List<int> filteredList = weight_list.Where(x => Math.Abs(x - average) <= standardDeviation).ToList();
+                List<double> parsedList = weight_list.Select(x => double.Parse(x.ToString())).Where(x => Math.Abs(x - average) <= standardDeviation).ToList();
 
-                ret = (int)filteredList.Average();
+                ret = (int)Math.Round(parsedList.Average());
             }
             else
             {
@@ -388,14 +415,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-
         /// <summary>
         /// 높이 센서
         /// </summary>
-        /// <param name="obj"></param>
-        private void OnDistanceSensorEvent(DistanceSensorModel obj)
+        /// <param name="model"></param>
+        private void OnDistanceSensorEvent(DistanceSensorModel model)
         {
-            m_event_distance = obj.Distance_mm;
+            m_event_distance = model.Distance_mm;
 
             //Tools.Log($"!! :  {m_lastHeight}", ELogType.SystemLog);
         }
@@ -556,7 +582,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-
         /// <summary>
         /// LIVOX 센서
         /// </summary>
@@ -584,9 +609,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"Failed InitLivox Clark : {ex.Message}", Tools.ELogType.BackEndLog);
             }
         }
-        private void OnLivoxSensorEvent(LIVOXModel LivoxSensorModel)
+
+        private void OnLivoxSensorEvent(LIVOXModel model)
         {
-            m_livoxModel = LivoxSensorModel;
+            m_livoxModel = model;
         }
 
         private void SendToLivox(int commandNum)
@@ -683,40 +709,30 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="status"></param>
         private void OnIndicatorEvent(string status)
         {
-            Tools.Log($"OnIndicatorEvent {status}", ELogType.DisplayLog);
+            Tools.Log($"Indicator : {status}", ELogType.DisplayLog);
 
-            // 통합 모니터링
-            if (status == "start_unload")
+            if (status == "res")
             {
-                m_is_unload = true;
+                m_errCnt_indicator = 0;
+                SysAlarm.RemoveErrorCodes(SysAlarm.IndicatorConnErr);
             }
 
-            if (status == "stop_unload")
+            if (status == "set_item")
             {
-                m_is_unload = false;
+                m_set_item = true;
+                Tools.Log($"{status}", ELogType.ActionLog);
             }
 
-
-            //판토스 인디케이터
-            if (status == "set_load")
+            if (status == "clear_item")
             {
-                Tools.Log(status, ELogType.BackEndLog);
-            }
-
-            if (status == "set_unload")
-            {
-                Tools.Log(status, ELogType.BackEndLog);
-            }
-
-            if (status == "set_normal")
-            {
-                Tools.Log(status, ELogType.BackEndLog);
+                m_set_item = false;
+                Tools.Log($"{status}", ELogType.ActionLog);
             }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
-            m_indicatorModel.forklift_status.command = _mCommand;
+            m_indicatorModel.forklift_status.command = m_Command;
             m_indicatorModel.forklift_status.weightTotal = m_event_weight;
             m_indicatorModel.forklift_status.QR = m_event_QRcode;
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
@@ -734,10 +750,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {_mCommand}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {_mCommand}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
         }
-
 
 
         /// <summary>
@@ -887,7 +902,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-
         /// <summary>
         /// 백엔드 전송
         /// </summary>
@@ -963,7 +977,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-
         /// <summary>
         /// 서비스 로직
         /// </summary>
@@ -974,12 +987,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             bool ret = false;
 
-            if(m_weightModel.GrossWeight < 10)
+            if (m_weightModel.GrossWeight < 10)
             {
+                m_Command = 0;
                 ret = false;
             }
             else
             {
+                m_Command = 1;
                 ret = true;
             }
 
@@ -988,14 +1003,45 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
-            if(m_isPickUp == true)
+            // 픽업 판단 조건
+            if (m_isPickUp == true) return;
+
+            if (m_weight_list.Count < m_weight_sample_size) return;
+
+            if (m_weightModel.GrossWeight < 10) return;
+
+            if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 2) return;
+
+            //QR 코드가 없고 작업자가 물류를 직접 지시하지도 않을 경우
+            if (m_event_QRcode == "" && m_set_item == false)
             {
-                return;
+                int cnt = 0;
+                var dispatcher = Dispatcher.CurrentDispatcher;
+                _dispatcherOperation = dispatcher.InvokeAsync(async () =>
+                {
+                    while (cnt < 10)
+                    {
+                        if (m_set_item == true)
+                        {
+                            _dispatcherOperation.Abort();
+                            m_isPickUp = true;
+                            PickUpEvent();
+                            //m_isPickUp = false;
+                            //DropEvent();
+                            return;
+                        }
+
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
+                        await Task.Delay(500); // 비동기 대기
+                        cnt++;
+                    }
+                });
             }
 
-            if (m_weightModel.GrossWeight < 10)
+            // 로그
+            for (int i = 0; i < m_weight_list.Count; i++)
             {
-                return;
+                Tools.Log($"Pickup Weight No.{i + 1} in {m_weight_list.Count} : {m_weight_list[i].GrossWeight}kg", ELogType.ActionLog);
             }
 
             m_isPickUp = true;
@@ -1004,16 +1050,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void PickUpEvent()
         {
-            // 픽업 시 값 고정
-            m_event_weight = m_weightModel.GrossWeight;
-            m_event_distance = m_livoxModel.height;
-            m_event_QRcode = m_event_QRcode;
-            m_event_width = m_livoxModel.width;
-            m_event_height = m_livoxModel.height;
-            m_envet_length = m_livoxModel.length;
-            m_event_points = m_livoxModel.points;
-            m_event_epc = m_rfidModel.EPC;
-
             // 부피, 형상 리복스 데이터 요청
             int getLivoxctn = 0;
             while (getLivoxctn < 100)
@@ -1027,12 +1063,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 getLivoxctn++;
             }
 
+            // 픽업 시 값 고정
+            m_event_weight = m_weightModel.GrossWeight;
+            m_event_distance = m_livoxModel.height;
+            //m_event_QRcode = m_event_QRcode;
+            m_event_width = m_livoxModel.width;
+            m_event_height = m_livoxModel.height;
+            m_envet_length = m_livoxModel.length;
+            m_event_points = m_livoxModel.points;
+            m_event_epc = m_rfidModel.EPC;
+
             // 인디케이터 통신 핸들
-            _mCommand = 1;
+            m_Command = 1;
 
             // 부저 컨트롤
             Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
 
+            //로그
+            Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height{m_event_height}, depth:{m_envet_length}", ELogType.ActionLog);
+            Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}", ELogType.ActionLog);
         }
 
         private void IsDropTimerEvent(object sender, EventArgs e)
@@ -1064,10 +1113,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_event_epc = "";
 
             // 인디케이터 통신 핸들
-            _mCommand = 0;
+            m_Command = 0;
+            m_set_item = false;
 
             // 부저 컨트롤
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+
+            //로그
+            Tools.Log($"Drop Event!!! ", ELogType.ActionLog);
         }
     }
 }

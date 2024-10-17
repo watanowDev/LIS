@@ -17,8 +17,8 @@ using WATA.LIS.Core.Events.Indicator;
 using Windows.Media.Protection.PlayReady;
 
 namespace WATA.LIS.TCPSocket
-{ 
-    class TcpServerSimple 
+{
+    class TcpServerSimple
     {
         Socket _passiveReceiveSocket;
         Thread _passiveTCPReceive;
@@ -30,7 +30,7 @@ namespace WATA.LIS.TCPSocket
 
         private readonly IEventAggregator _eventAggregator;
 
-        public TcpServerSimple(IEventAggregator eventAggregator) 
+        public TcpServerSimple(IEventAggregator eventAggregator)
         {
             this._eventAggregator = eventAggregator;
 
@@ -40,7 +40,7 @@ namespace WATA.LIS.TCPSocket
 
         public async void onSendMessageAsync(string SendMessage)
         {
-            if(_client == null)
+            if (_client == null)
             {
                 return;
 
@@ -66,8 +66,8 @@ namespace WATA.LIS.TCPSocket
 
             }
 
-            
-            
+
+
         }
 
 
@@ -86,7 +86,7 @@ namespace WATA.LIS.TCPSocket
 
                 // 클라이언트 연결 대기
                 server.Start();
-                
+
                 Tools.Log($"ServerStart", Tools.ELogType.DisplayLog);
 
                 while (true)
@@ -127,9 +127,9 @@ namespace WATA.LIS.TCPSocket
                 while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
                 {
                     string receivedMessage = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Tools.Log($"Receive Message: {receivedMessage}", Tools.ELogType.DisplayLog);
+                    //Tools.Log($"Receive Message: {receivedMessage}", Tools.ELogType.DisplayLog);
 
-              
+
 
 
 
@@ -151,13 +151,11 @@ namespace WATA.LIS.TCPSocket
             }
             catch (Exception ex)
             {
-          
                 Tools.Log($"Error: {ex.Message}", Tools.ELogType.DisplayLog);
             }
             finally
             {
                 _client.Close();
-               
             }
         }
 

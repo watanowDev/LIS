@@ -60,40 +60,40 @@
                         <Setter Property="HorizontalAlignment" Value="Center"/>
                         <Setter Property="FontSize" Value="30"/>
                         <Setter Property="FontWeight" Value="Bold"/>
-                        <Setter Property="Margin" Value="20,0,0,0"/>
+                        <Setter Property="Margin" Value="10,0,0,0"/>
                     </Style.Setters>
                 </Style>
             </Grid.Resources>
-            
+
             <Grid Grid.Column="0">
                 <RadioButton IsChecked="{Binding MainChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Main" Cursor="Hand">
                     <TextBlock
                     Text="Main"
-                    Width="Auto"/>
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
-            
+
             <Grid Grid.Column="1">
-                <RadioButton IsChecked="{Binding RFIDChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_RFID" Cursor="Hand">
-                    <TextBlock
-                    Text="RFID"
-                    Width="Auto"/>
-                </RadioButton>
-            </Grid>
-            
-            <Grid Grid.Column="2">
                 <RadioButton IsChecked="{Binding WeightChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Weight" Cursor="Hand">
                     <TextBlock
                     Text="WEIGHT"
-                    Width="Auto"/>
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
-            
-            <Grid Grid.Column="3">
+
+            <Grid Grid.Column="2">
                 <RadioButton IsChecked="{Binding DistanceChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Distance" Cursor="Hand">
                     <TextBlock
                     Text="HEIGHT"
-                    Width="Auto"/>
+                    Width="Auto" FontSize="20"/>
+                </RadioButton>
+            </Grid>
+
+            <Grid Grid.Column="3">
+                <RadioButton IsChecked="{Binding RFIDChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_RFID" Cursor="Hand">
+                    <TextBlock
+                    Text="RFID"
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
 
@@ -101,39 +101,47 @@
                 <RadioButton IsChecked="{Binding VisionCamChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_VisionCam" Cursor="Hand">
                     <TextBlock
                     Text="CAM"
-                    Width="Auto"/>
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
-            
+
             <Grid Grid.Column="5">
-                <RadioButton IsChecked="{Binding BackEndChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_BackEnd" Cursor="Hand">
+                <RadioButton IsChecked="{Binding IndicatorChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Indicator" Cursor="Hand">
                     <TextBlock
-                    Text="SIMULATOR"
-                    Width="Auto"/>
+                    Text="INDICATOR"
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
 
             <Grid Grid.Column="6">
-                <RadioButton IsChecked="{Binding IndicatorChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Indicator" Cursor="Hand">
+                <RadioButton IsChecked="{Binding LiDAR2DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR2D" Cursor="Hand">
                     <TextBlock
-                    Text="DISPLAY"
-                    Width="Auto"/>
+                        Text="2D LiDAR"
+                        Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
 
             <Grid Grid.Column="7">
-                <RadioButton IsChecked="{Binding DPSChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_DPS" Cursor="Hand">
+                <RadioButton IsChecked="{Binding LiDAR3DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR3D" Cursor="Hand">
                     <TextBlock
-                    Text="DPS"
-                    Width="Auto"/>
+                    Text="3D LiDAR"
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
 
             <Grid Grid.Column="8">
-                <RadioButton IsChecked="{Binding LiDAR3DChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_LiDAR3D" Cursor="Hand">
+                <RadioButton IsChecked="{Binding ActionChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_Action" Cursor="Hand">
                     <TextBlock
-                    Text="3D LiDAR"
-                    Width="Auto"/>
+                    Text="ACTION"
+                    Width="Auto" FontSize="20"/>
+                </RadioButton>
+            </Grid>
+
+            <Grid Grid.Column="9">
+                <RadioButton IsChecked="{Binding BackEndChecked}" Command="{Binding MenuSelectButton}" CommandParameter="Content_BackEnd" Cursor="Hand">
+                    <TextBlock
+                    Text="SIMUL"
+                    Width="Auto" FontSize="20"/>
                 </RadioButton>
             </Grid>
 

@@ -34,7 +34,7 @@ namespace WATA.LIS.VISION.Camera.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
 
 
-            _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
 
 
         }

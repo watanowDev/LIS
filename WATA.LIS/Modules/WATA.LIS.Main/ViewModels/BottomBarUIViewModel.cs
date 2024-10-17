@@ -36,20 +36,8 @@ namespace WATA.LIS.Main.ViewModels
         public bool DistanceChecked { get { return _DistanceChecked; } set { SetProperty(ref _DistanceChecked, value); } }
 
 
-        private bool _CameraChecked;
-        public bool CameraChecked { get { return _CameraChecked; } set { SetProperty(ref _CameraChecked, value); } }
-
-
-        private bool _BackEndChecked;
-        public bool BackEndChecked { get { return _BackEndChecked; } set { SetProperty(ref _BackEndChecked, value); } }
-
-
         private bool _IndicatorChecked;
         public bool IndicatorChecked { get { return _IndicatorChecked; } set { SetProperty(ref _IndicatorChecked, value); } }
-
-
-        private bool _DPSChecked;
-        public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
 
 
         private bool _VisionCamChecked;
@@ -62,6 +50,22 @@ namespace WATA.LIS.Main.ViewModels
 
         private bool _LiDAR3DChecked;
         public bool LiDAR3DChecked { get { return _LiDAR3DChecked; } set { SetProperty(ref _LiDAR3DChecked, value); } }
+
+
+        private bool _ActionChecked;
+        public bool ActionChecked { get { return _ActionChecked; } set { SetProperty(ref _ActionChecked, value); } }
+
+
+        private bool _BackEndChecked;
+        public bool BackEndChecked { get { return _BackEndChecked; } set { SetProperty(ref _BackEndChecked, value); } }
+
+
+        //private bool _DPSChecked;
+        //public bool DPSChecked { get { return _DPSChecked; } set { SetProperty(ref _DPSChecked, value); } }
+
+
+        //private bool _CameraChecked;
+        //public bool CameraChecked { get { return _CameraChecked; } set { SetProperty(ref _CameraChecked, value); } }
 
 
 
@@ -97,13 +101,14 @@ namespace WATA.LIS.Main.ViewModels
             RFIDChecked = false;
             WeightChecked = false;
             DistanceChecked = false;
-            CameraChecked = false;
-            BackEndChecked = false;
-            IndicatorChecked = false;
-            DPSChecked = false;
             VisionCamChecked = false;
+            IndicatorChecked = false;
             LiDAR2DChecked = false;
             LiDAR3DChecked = false;
+            BackEndChecked = false;
+            ActionChecked = false;
+            //CameraChecked = false;
+            //DPSChecked = false;
 
             if (command != null)
             {
@@ -111,10 +116,6 @@ namespace WATA.LIS.Main.ViewModels
                 {
                     case "Content_Main":
                         MainChecked = true;
-                        break;
-                    
-                    case "Content_RFID":
-                        RFIDChecked = true;
                         break;
 
                     case "Content_Weight":
@@ -124,25 +125,17 @@ namespace WATA.LIS.Main.ViewModels
                     case "Content_Distance":
                         DistanceChecked = true;
                         break;
-                    
-                    case "Content_Camera":
-                        CameraChecked = true;
-                        break;
 
-                    case "Content_BackEnd":
-                        BackEndChecked = true;
-                        break;
-
-                    case "Content_Indicator":
-                        IndicatorChecked = true;
-                        break;
-
-                    case "Content_DPS":
-                        DPSChecked = true;
+                    case "Content_RFID":
+                        RFIDChecked = true;
                         break;
 
                     case "Content_VisionCam":
                         VisionCamChecked = true;
+                        break;
+
+                    case "Content_Indicator":
+                        IndicatorChecked = true;
                         break;
 
                     case "Content_LiDAR2D":
@@ -152,6 +145,22 @@ namespace WATA.LIS.Main.ViewModels
                     case "Content_LiDAR3D":
                         LiDAR3DChecked = true;
                         break;
+
+                    case "Content_Action":
+                        ActionChecked = true;
+                        break;
+
+                    case "Content_BackEnd":
+                        BackEndChecked = true;
+                        break;
+
+                        //case "Content_DPS":
+                        //    DPSChecked = true;
+                        //    break;
+
+                        //case "Content_Camera":
+                        //    CameraChecked = true;
+                        //    break;
                 }
                 _regionManager.RequestNavigate(RegionNames.Content_Main, command);
             }

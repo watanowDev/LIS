@@ -162,13 +162,12 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 model.RightWeight = nRightWeight;
                 model.LeftWeight = nLeftWeight;
 
-                Tools.Log($"nGrossWeight : {nGrossWeight}", Tools.ELogType.WeightLog);
-                Tools.Log($"nRightWeight : {nRightWeight}", Tools.ELogType.WeightLog);
-                Tools.Log($"nLeftWeight : {nLeftWeight}", Tools.ELogType.WeightLog);
-                Tools.Log($"right_forkpower : {right_forkpower}", Tools.ELogType.WeightLog);
-                Tools.Log($"left_forkpower : {left_forkpower}", Tools.ELogType.WeightLog);
-
-                Tools.Log($"[DataRecive] {nGrossWeight} ", Tools.ELogType.WeightLog);
+                //Tools.Log($"nGrossWeight : {nGrossWeight}", Tools.ELogType.WeightLog);
+                //Tools.Log($"nRightWeight : {nRightWeight}", Tools.ELogType.WeightLog);
+                //Tools.Log($"nLeftWeight : {nLeftWeight}", Tools.ELogType.WeightLog);
+                //Tools.Log($"right_forkpower : {right_forkpower}", Tools.ELogType.WeightLog);
+                //Tools.Log($"left_forkpower : {left_forkpower}", Tools.ELogType.WeightLog);
+                //Tools.Log($"[DataRecive] {nGrossWeight} ", Tools.ELogType.WeightLog);
                 _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
             }
 
@@ -188,7 +187,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 strData += String.Format("0x{0:x2} ", HexData[i]);
             }
-            Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
+            //Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
         }
 
         private void DataRecive(object sender, SerialDataReceivedEventArgs e)

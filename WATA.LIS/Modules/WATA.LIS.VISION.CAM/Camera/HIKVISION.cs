@@ -211,7 +211,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 // Resize the frame
                 Mat resizedFrame = new Mat();
-                Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(1920 / 2, 1080 / 2)); // Set the desired resolution
+                Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(640 / 4, 480 / 4)); // Set the desired resolution
                 byte[] currentFrameBytes = resizedFrame.ToBytes();
 
                 // Publish the event
