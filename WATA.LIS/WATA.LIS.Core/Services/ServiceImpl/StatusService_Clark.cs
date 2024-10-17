@@ -105,6 +105,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
         DispatcherTimer m_IsPickUpTimer;
+        DispatcherTimer m_IsDropTimer;
 
 
         private string m_epc { get; set; }
@@ -123,6 +124,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private bool m_event_value = false;
         private bool m_is_unload = false;
+
+        private bool m_isPickUp = false;
 
 
         public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel, ILivoxModel livoxModel)
@@ -192,10 +195,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
 
-            //m_IsDropTimer = new DispatcherTimer();
-            //m_IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
-            //m_IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
-            //m_IsDropTimer.Start();
+            m_IsDropTimer = new DispatcherTimer();
+            m_IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
+            m_IsDropTimer.Start();
 
 
             m_rfidModel = new Keonn2ch_Model();
@@ -209,6 +212,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             GetCellListFromPlatform();
             GetBasicInfoFromBackEnd();
             InitLivox();
+            InitGetPickupStatus();
         }
 
 
@@ -342,16 +346,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_weightModel.LeftWeight = GetStableValue(m_weight_list.Select(w => w.LeftWeight).ToList());
                 m_weightModel.RightWeight = GetStableValue(m_weight_list.Select(w => w.RightWeight).ToList());
                 m_weightModel.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
-                //Tools.Log($"Weight {m_weight}", Tools.ELogType.SystemLog);
-
-                if (m_weightModel.GrossWeight >= 10)
-                {
-                    m_is_load = false;
-                }
-                else
-                {
-                    m_is_load = true;
-                }
 
                 m_weight_list.RemoveAt(0);
             }
@@ -430,7 +424,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// VisonCam 센서
         /// </summary>
         /// <param name="obj"></param>
-
         private void OnVisionEvent(VisionCamModel model)
         {
             m_visionModel = model;
@@ -588,7 +581,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed InitLivox Clark : {ex.Message}", Tools.ELogType.BackEndLog);
             }
         }
         private void OnLivoxSensorEvent(LIVOXModel LivoxSensorModel)
@@ -649,7 +642,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"height:{eventModel.width}, width:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"width:{eventModel.width}, height:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.BackEndLog);
 
                         return ret = true;
                     }
@@ -734,14 +727,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.networkStatus = true;
             m_indicatorModel.forklift_status.weightSensorStatus = true;
             m_indicatorModel.forklift_status.visionCamStatus = true;
-            m_indicatorModel.forklift_status.lidar2dStatus = false;
+            m_indicatorModel.forklift_status.lidar2dStatus = true;
             m_indicatorModel.forklift_status.lidar3dStatus = true;
             m_indicatorModel.forklift_status.heightSensorStatus = true;
             m_indicatorModel.forklift_status.rfidStatus = false;
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {_mCommand}, weight:{m_weightModel.GrossWeight}, height:{m_livoxModel.width}, width:{m_livoxModel.height}, depth:{m_livoxModel.length}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {_mCommand}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {_mCommand}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -971,18 +965,40 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
         /// <summary>
-        /// 픽업 이벤트
+        /// 서비스 로직
         /// </summary>
         /// <param name="naviX"></param>
         /// <param name="naviY"></param>
         /// <param name="bDrop"></param>
+        private bool InitGetPickupStatus()
+        {
+            bool ret = false;
+
+            if(m_weightModel.GrossWeight < 10)
+            {
+                ret = false;
+            }
+            else
+            {
+                ret = true;
+            }
+
+            return m_isPickUp = ret;
+        }
+
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
+            if(m_isPickUp == true)
+            {
+                return;
+            }
+
             if (m_weightModel.GrossWeight < 10)
             {
                 return;
             }
 
+            m_isPickUp = true;
             PickUpEvent();
         }
 
@@ -991,7 +1007,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 픽업 시 값 고정
             m_event_weight = m_weightModel.GrossWeight;
             m_event_distance = m_livoxModel.height;
-            m_event_QRcode = m_visionModel.QR;
+            m_event_QRcode = m_event_QRcode;
             m_event_width = m_livoxModel.width;
             m_event_height = m_livoxModel.height;
             m_envet_length = m_livoxModel.length;
@@ -1014,17 +1030,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 인디케이터 통신 핸들
             _mCommand = 1;
 
+            // 부저 컨트롤
+            Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
+
         }
 
-
-
-        /// <summary>
-        /// 드롭 이벤트
-        /// </summary>
-        /// <param name="naviX"></param>
-        /// <param name="naviY"></param>
-        /// <param name="bDrop"></param>
         private void IsDropTimerEvent(object sender, EventArgs e)
+        {
+            if (m_isPickUp == false)
+            {
+                return;
+            }
+
+            if (m_weightModel.GrossWeight >= 10)
+            {
+                return;
+            }
+
+            m_isPickUp = false;
+            DropEvent();
+        }
+
+        private void DropEvent()
         {
             // 드롭 시 값 고정
             m_event_weight = 0;
@@ -1036,22 +1063,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_event_points = "";
             m_event_epc = "";
 
-            //if (m_weightModel.GrossWeight >= 10)
-            //{
-            //    return;
-            //}
+            // 인디케이터 통신 핸들
+            _mCommand = 0;
 
-            //if (m_qr != "" || m_qr != null)
-            //{
-            //    return;
-            //}
-
-            DropEvent();
-        }
-
-        private void DropEvent()
-        {
-            CalcDistanceAndGetZoneID(m_naviX, m_naviY, true);
+            // 부저 컨트롤
+            Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
         }
     }
 }

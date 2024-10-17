@@ -42,7 +42,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         public void Init()
         {
-            InitLivox();
+            //InitLivox();
         }
 
         private void InitLivox()
@@ -64,7 +64,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed InitLivox PubSub: {ex.Message}", Tools.ELogType.BackEndLog);
             }
         }
 

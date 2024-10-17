@@ -174,7 +174,7 @@
 
 
             <Grid Grid.Column="3">
-                <Label  Grid.Row="0" Grid.Column="0" Content="QR COde" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="15" Margin="0,6,0,0"/>
+                <Label  Grid.Row="0" Grid.Column="0" Content="QR Code" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="15" Margin="0,6,0,0"/>
                 <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VisionCamEvent}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="96,8,0,0" Width="500" Height="24" FontWeight="Bold" FontSize="15"/>
 
                 <Label  Grid.Row="0" Grid.Column="0" Content="EPC" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="0,36,0,0" Width="96" Height="26" FontWeight="Bold" FontSize="15"/>

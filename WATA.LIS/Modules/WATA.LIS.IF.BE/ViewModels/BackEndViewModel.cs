@@ -902,7 +902,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
             string json_body = Util.ObjectToJson(Model);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {_mCommand}, weight:{Model.forklift_status.weightTotal}, width:{m_livox_width}, height:{m_livox_height}, depth:{m_livox_depth}", Tools.ELogType.BackEndLog);
+            Tools.Log($" Send Command : {_mCommand}, weight:{m_event_weight}, width:{m_livoxModel.width}, height:{m_livoxModel.height}, depth:{m_livoxModel.length}", Tools.ELogType.DisplayLog);
         }
 
         private void SendPickUpEvent()

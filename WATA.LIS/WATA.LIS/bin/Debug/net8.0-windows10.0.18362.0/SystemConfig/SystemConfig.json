@@ -10,7 +10,7 @@
 	},
 	"led_buzzer": 
 	{
-		"volume": 0,
+		"volume": 1,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
 	"distancesensor": 
