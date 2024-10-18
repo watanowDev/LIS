@@ -32,6 +32,11 @@ namespace WATA.LIS
     {
         protected override Window CreateShell()
         {
+            var mainWindow = Container.Resolve<MainWindow>();
+            mainWindow.WindowState = WindowState.Maximized;
+            mainWindow.ResizeMode = ResizeMode.CanMinimize;
+            mainWindow.ResizeMode = ResizeMode.CanResize;
+            mainWindow.WindowStyle = WindowStyle.None;
             return Container.Resolve<MainWindow>();
         }
 

@@ -9,6 +9,7 @@ namespace WATA.LIS.Core.Model.DistanceSensor
     public class DistanceSensorModel
     {
         public int Distance_mm { get; set; }
+        public bool connected = false;
     }
 }
 

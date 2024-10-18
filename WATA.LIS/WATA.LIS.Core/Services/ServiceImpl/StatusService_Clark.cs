@@ -57,9 +57,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private DistanceConfigModel distanceConfig;
         private LIVOXConfigModel livoxConfig;
 
-        // Error Check 변수
+        // 카운트 변수
         private int m_errCnt_indicator;
-
+        private int m_errCnt_visioncam;
+        private int m_errCnt_weight;
+        private int m_errCnt_distance;
+        private int m_noQRcnt_visioncam;
 
         // 기초 데이터 모델
         private BasicInfoModel m_basicInfoModel;
@@ -110,9 +113,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_IndicatorTimer;
         DispatcherTimer m_IsPickUpTimer;
         DispatcherTimer m_IsDropTimer;
-
-        // 디스패처
-        DispatcherOperation _dispatcherOperation;
 
         private string m_epc { get; set; }
         //private string m_qr { get; set; }
@@ -327,10 +327,33 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void ErrorCheckTimerEvent(object sender, EventArgs e)
         {
             m_errCnt_indicator++;
+            m_errCnt_visioncam++;
+            m_errCnt_weight++;
+            m_errCnt_distance++;
 
             if (m_errCnt_indicator > 10)
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.EMERGENCY);
+                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
+                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSORERROR);
+            }
+            else if (m_errCnt_visioncam > 10)
+            {
+                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
+                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSORERROR);
+            }
+            else if (m_errCnt_weight > 10)
+            {
+                Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
+                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSORERROR);
+            }
+            else if (m_errCnt_distance > 10)
+            {
+                Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
+                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSORERROR);
+            }
+            else
+            {
+                //Pattlite_Buzzer_LED(ePlayBuzzerLed.ALARMCLEAR);
             }
         }
 
@@ -363,7 +386,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnWeightSensorEvent(WeightSensorModel model)
         {
-            if (model.GrossWeight > 0)
+            if (model.RightOnline == true && model.LeftOnline == true)
+            {
+                m_errCnt_weight = 0;
+            }
+            else
+            {
+                Tools.Log($"Weight Sensor Online disconnected!!!", ELogType.SystemLog);
+                return;
+            }
+
+            m_weightModel.LeftWeight = model.LeftWeight <= 0 ? 0 : model.LeftWeight;
+            m_weightModel.RightWeight = model.RightWeight <= 0 ? 0 : model.RightWeight;
+            m_weightModel.GrossWeight = model.GrossWeight <= 0 ? 0 : model.GrossWeight;
+
+            if (m_weightModel.GrossWeight >= 0 && model != null)
             {
                 m_weight_list.Add(model);
             }
@@ -375,12 +412,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_weightModel.GrossWeight = GetStableValue(m_weight_list.Select(w => w.GrossWeight).ToList());
 
                 m_weight_list.RemoveAt(0);
-            }
-            else
-            {
-                m_weightModel.LeftWeight = model.LeftWeight <= 0 ? 0 : model.LeftWeight;
-                m_weightModel.RightWeight = model.RightWeight <= 0 ? 0 : model.RightWeight;
-                m_weightModel.GrossWeight = model.GrossWeight <= 0 ? 0 : model.GrossWeight;
             }
         }
 
@@ -421,6 +452,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnDistanceSensorEvent(DistanceSensorModel model)
         {
+            if (model.connected == true) m_errCnt_distance = 0;
+
             m_event_distance = model.Distance_mm;
 
             //Tools.Log($"!! :  {m_lastHeight}", ELogType.SystemLog);
@@ -452,11 +485,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="obj"></param>
         private void OnVisionEvent(VisionCamModel model)
         {
+            if (model.connected == true) m_errCnt_visioncam = 0;
+
             m_visionModel = model;
+
             if (m_visionModel.QR.Contains("wata"))
             {
                 m_event_QRcode = m_visionModel.QR;
             }
+
+            //if (m_visionModel.QR == "")
+            //{
+            //    m_noQRcnt_visioncam++;
+            //}
+
+            //if(m_noQRcnt_visioncam > 10)
+            //{
+            //    m_noQRcnt_visioncam = 0;
+            //    m_event_QRcode = "";
+            //}
         }
 
 
@@ -595,7 +642,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
                 _publisherSocket.Bind("tcp://127.0.0.1:5002");
 
-                Tools.Log($"InitLivox", Tools.ELogType.BackEndLog);
+                Tools.Log($"InitLivox", Tools.ELogType.SystemLog);
 
                 _subscriberSocket = new SubscriberSocket();
                 // 서브스크라이버 소켓을 5555 포트에 연결합니다.
@@ -606,7 +653,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox Clark : {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed InitLivox Clark : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
@@ -625,11 +672,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 주제와 메시지를 결합하여 퍼블리시
                 _publisherSocket.SendFrame(message);
 
-                Tools.Log($"SendToLivox : {message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"SendToLivox : {message}", Tools.ELogType.SystemLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
@@ -668,7 +715,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"width:{eventModel.width}, height:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"width:{eventModel.width}, height:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.SystemLog);
 
                         return ret = true;
                     }
@@ -689,13 +736,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     eventModel.length = -1;
                     eventModel.points = "";
 
-                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.BackEndLog);
+                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.SystemLog);
                 }
             }
             catch (Exception ex)
             {
                 // 예외 처리
-                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.SystemLog);
             }
 
             return ret;
@@ -741,11 +788,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
             m_indicatorModel.forklift_status.networkStatus = true;
-            m_indicatorModel.forklift_status.weightSensorStatus = true;
-            m_indicatorModel.forklift_status.visionCamStatus = true;
+            m_indicatorModel.forklift_status.weightSensorStatus = m_errCnt_weight > 10 ? false : true;
+            m_indicatorModel.forklift_status.visionCamStatus = m_errCnt_visioncam > 10 ? false : true;
             m_indicatorModel.forklift_status.lidar2dStatus = true;
             m_indicatorModel.forklift_status.lidar3dStatus = true;
-            m_indicatorModel.forklift_status.heightSensorStatus = true;
+            m_indicatorModel.forklift_status.heightSensorStatus = m_errCnt_distance > 10 ? false : true;
             m_indicatorModel.forklift_status.rfidStatus = false;
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
@@ -828,33 +875,36 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void Pattlite_Buzzer_LED(ePlayBuzzerLed value)
         {
-            if (value == ePlayBuzzerLed.ACTION_FAIL)
+            if (value == ePlayBuzzerLed.PIKCUP)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
+                model.LED_Color = eLEDColors.Cyan;
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
-            else if (value == ePlayBuzzerLed.ACTION_START)
+
+            else if (value == ePlayBuzzerLed.MEASRUE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
                 model.LED_Color = eLEDColors.Blue;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
-            else if (value == ePlayBuzzerLed.ACTION_FINISH)
+
+            else if (value == ePlayBuzzerLed.NO_QR)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern1;
                 model.LED_Color = eLEDColors.Purple;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern4;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
+
             else if (value == ePlayBuzzerLed.DROP)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
@@ -864,6 +914,37 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
+
+            else if (value == ePlayBuzzerLed.ACTION_START)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Blue;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+
+            else if (value == ePlayBuzzerLed.ACTION_FINISH)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern1;
+                model.LED_Color = eLEDColors.Green;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern4;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+
+            else if (value == ePlayBuzzerLed.ACTION_FAIL)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern1;
+                model.LED_Color = eLEDColors.Red;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+
             else if (value == ePlayBuzzerLed.EMERGENCY)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
@@ -872,8 +953,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern1;
                 model.BuzzerCount = 0;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                //BuzzerTimer.Start();
-
             }
 
             else if (value == ePlayBuzzerLed.EMERGENCY2)
@@ -884,21 +963,27 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern2;
                 model.BuzzerCount = 0;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                //BuzzerTimer.Start();
-
             }
 
-            else if (value == ePlayBuzzerLed.MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.SEONSORERROR)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Pattern1;
-                model.LED_Color = eLEDColors.Green;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Red;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-
+            else if (value == ePlayBuzzerLed.CLEAR)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Green;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
         }
 
 
@@ -1008,35 +1093,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_weight_list.Count < m_weight_sample_size) return;
 
-            if (m_weightModel.GrossWeight < 10) return;
+            if (m_weightModel.GrossWeight < 30) return;
 
-            if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 2) return;
+            if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 4) return;
 
-            //QR 코드가 없고 작업자가 물류를 직접 지시하지도 않을 경우
-            if (m_event_QRcode == "" && m_set_item == false)
-            {
-                int cnt = 0;
-                var dispatcher = Dispatcher.CurrentDispatcher;
-                _dispatcherOperation = dispatcher.InvokeAsync(async () =>
-                {
-                    while (cnt < 10)
-                    {
-                        if (m_set_item == true)
-                        {
-                            _dispatcherOperation.Abort();
-                            m_isPickUp = true;
-                            PickUpEvent();
-                            //m_isPickUp = false;
-                            //DropEvent();
-                            return;
-                        }
+            // 인디케이터 통신 핸들
+            m_Command = -1;
 
-                        Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_FAIL);
-                        await Task.Delay(500); // 비동기 대기
-                        cnt++;
-                    }
-                });
-            }
+            // 부저 컨트롤
+            Pattlite_Buzzer_LED(ePlayBuzzerLed.PIKCUP);
 
             // 로그
             for (int i = 0; i < m_weight_list.Count; i++)
@@ -1050,6 +1115,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void PickUpEvent()
         {
+            //QR 코드가 없고 작업자가 물류를 직접 지시하지도 않을 경우
+            if (m_event_QRcode == "" && m_set_item == false)
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR);
+            }
+            // QR 코드는 없지만 작업자가 물류를 직접 지시한 경우    
+            else if (m_event_QRcode == "" && m_set_item == true)
+            {
+
+            }
+
             // 부피, 형상 리복스 데이터 요청
             int getLivoxctn = 0;
             while (getLivoxctn < 100)
@@ -1077,7 +1153,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_Command = 1;
 
             // 부저 컨트롤
-            Pattlite_Buzzer_LED(ePlayBuzzerLed.ACTION_START);
+            //Pattlite_Buzzer_LED(ePlayBuzzerLed.MEASRUE_OK);
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height{m_event_height}, depth:{m_envet_length}", ELogType.ActionLog);
@@ -1086,14 +1162,33 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void IsDropTimerEvent(object sender, EventArgs e)
         {
-            if (m_isPickUp == false)
-            {
-                return;
-            }
 
-            if (m_weightModel.GrossWeight >= 10)
+            try
             {
-                return;
+                if (m_isPickUp == false)
+                {
+                    return;
+                }
+
+                if (m_weight_list.Count == 0 || m_weight_list == null)
+                {
+                    return;
+                }
+
+                if (m_weightModel.GrossWeight > 10)
+                {
+                    return;
+                }
+
+                //if (m_weight_list.FindAll(w => w.GrossWeight < 10).Count < 5)
+                //{
+                //    return;
+                //}
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Weight sensor Error : {m_weight_list}", ELogType.SystemLog);
+                Tools.Log($"Weight sensor Error : {ex.Message}", ELogType.SystemLog);
             }
 
             m_isPickUp = false;

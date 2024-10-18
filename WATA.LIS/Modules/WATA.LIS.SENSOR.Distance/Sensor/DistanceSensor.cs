@@ -172,6 +172,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             int AverageDistance = (int)list_distance.Average();
             DistanceSensorModel DisTanceObject = new DistanceSensorModel();
             DisTanceObject.Distance_mm = Math.Abs(AverageDistance);
+            DisTanceObject.connected = true;
             _eventAggregator.GetEvent<DistanceSensorEvent>().Publish(DisTanceObject);
 
             if (log_enable)

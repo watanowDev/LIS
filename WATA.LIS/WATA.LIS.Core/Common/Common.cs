@@ -80,13 +80,17 @@ namespace WATA.LIS.Core.Common
     }
     public enum ePlayBuzzerLed
     {
-        ACTION_FAIL,
+        PIKCUP,
+        MEASRUE_OK,
+        NO_QR,
+        DROP,
         ACTION_START,
         ACTION_FINISH,
-        DROP,
+        ACTION_FAIL,
+        SEONSORERROR,
         EMERGENCY,
         EMERGENCY2,
-        MEASRUE_OK
+        CLEAR
     }
 
     public enum ePlayBuzzerLed_NXDPOC

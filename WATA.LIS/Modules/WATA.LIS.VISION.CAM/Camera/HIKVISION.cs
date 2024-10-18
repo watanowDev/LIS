@@ -42,6 +42,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private DispatcherTimer m_CheckConnTimer;
         private DispatcherTimer m_GetImageTimer;
+        private DispatcherTimer m_GetQRSimpleTimer;
         //private DispatcherTimer mCurrQRTimer;
         private bool m_Connected = false;
         public string m_LastQRCode = string.Empty;
@@ -78,6 +79,10 @@ namespace WATA.LIS.VISION.CAM.Camera
             m_GetImageTimer = new DispatcherTimer();
             m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
             m_GetImageTimer.Tick += new EventHandler(GetFrame);
+
+            m_GetQRSimpleTimer = new DispatcherTimer();
+            m_GetQRSimpleTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
+            m_GetQRSimpleTimer.Tick += new EventHandler(GetFrameSimple);
 
             //mCurrQRTimer = new DispatcherTimer();
             //mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -137,6 +142,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                         //m_CheckConnTimer.Start();
                         m_GetImageTimer.Start();
+                        //m_GetQRSimpleTimer.Start();
                     }
                     else if (!m_Capture.IsOpened())
                     {
@@ -218,6 +224,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 VisionCamModel eventModels = new VisionCamModel();
                 eventModels.QR = m_LastQRCode;
                 eventModels.FRAME = currentFrameBytes;
+                eventModels.connected = true;
 
                 _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
             }
@@ -258,6 +265,71 @@ namespace WATA.LIS.VISION.CAM.Camera
                             Cv2.Polylines(frame, new[] { points }, isClosed: true, color: new Scalar(0, 255, 0), thickness: 2);
                         }
                     }
+                }
+                else
+                {
+                    //// ZXing 라이브러리를 사용하여 QR 코드 디코딩
+                    //var reader = new BarcodeReader();
+                    //var bitmap = BitmapConverter.ToBitmap(frame);
+                    //// 비트맵에서 QR 코드 읽기
+                    //var result = reader.Decode(bitmap);
+
+                    //if (result != null)
+                    //{
+                    //    ret = result.Text;
+                    //    Tools.Log($"ZXing QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
+                    //}
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Fail Read QR: {ex.Message}", Tools.ELogType.VisionCamLog);
+            }
+
+            return ret;
+        }
+
+        private void GetFrameSimple(object sender, EventArgs e)
+        {
+            try
+            {
+                m_Capture.Read(m_MatImage); // same as cvQueryFrame
+
+                if (m_MatImage.Empty())
+                {
+                    Tools.Log($"No Image", Tools.ELogType.VisionCamLog);
+                    return;
+                }
+
+                m_LastQRCode = GetQRCodeSimple(m_MatImage);
+
+                // Publish the event
+                VisionCamModel eventModels = new VisionCamModel();
+                eventModels.QR = m_LastQRCode;
+                eventModels.connected = true;
+
+                _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"VisionCam Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+            }
+        }
+
+        private string GetQRCodeSimple(Mat frame)
+        {
+            string ret = string.Empty;
+
+            try
+            {
+                // weChatQRCode 라이브러리를 사용하여 QR 코드 디코딩
+                m_WeChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] results);
+
+                if (results.Length > 0)
+                {
+                    ret = results[0];
+                    //m_LastQRCode = ret;
+                    Tools.Log($"WeChat QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
                 }
                 else
                 {

@@ -59,10 +59,9 @@
                                     <GradientStop Color="#FF0C0202" Offset="1"/>
                                 </LinearGradientBrush>
                             </TabControl.Background>
-                            <TabItem Header="Cam Streaming" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <Grid Background="DarkGray">
-                                    <Image Source="{Binding CurrentFrame}" Stretch="Uniform" />
-                                </Grid>
+                            <TabItem Header="System Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                                <ListBox FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
+                                </ListBox>
                             </TabItem>
                         </TabControl>
                     </Grid>
@@ -160,12 +159,19 @@
                         <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Weight(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
+                    <Label Content="Weight(kg), L:%, R:%" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                     <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding Weight_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
                 </Grid>
 
                 <Grid Grid.Row="4" Grid.Column="0" Margin="5">
-                    <Label Content="{Binding Weight_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15"></Label>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{Binding Weight_Value}" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15"></Label>
+                    <Label Content="{Binding LeftBattery_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15"></Label>
+                    <Label Content="{Binding RightBattery_Value}" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15"></Label>
                 </Grid>
 
                 <Grid Grid.Row="5" Grid.Column="0" Margin="5">
@@ -197,9 +203,10 @@
                                 <GradientStop Color="#FF0C0202" Offset="1"/>
                             </LinearGradientBrush>
                         </TabControl.Background>
-                        <TabItem Header="System" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                            <ListBox FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
-                            </ListBox>
+                        <TabItem Header="VisionCam" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
+                            <Grid Background="DarkGray">
+                                <Image Source="{Binding CurrentFrame}" Stretch="Uniform" />
+                            </Grid>
                         </TabItem>
                     </TabControl>
                 </Grid>

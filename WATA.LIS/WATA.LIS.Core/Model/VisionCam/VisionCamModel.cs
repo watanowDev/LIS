@@ -14,7 +14,7 @@ namespace WATA.LIS.Core.Model.VisionCam
     public class VisionCamModel
     {
         public string QR { get; set; }
-        public string STATUS { get; set; }
         public byte[] FRAME { get; set; }
+        public bool connected = false;
     }
 }

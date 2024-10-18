@@ -66,8 +66,13 @@ namespace WATA.LIS.Main.ViewModels
         private string _Weight_Value;
         public string Weight_Value { get { return _Weight_Value; } set { SetProperty(ref _Weight_Value, value); } }
 
-        //private List<string> _Weight_Value_List;
-        //public List<string> Weight_Value_List { get { return _Weight_Value_List; } set { SetProperty(ref _Weight_Value_List, value); } }
+
+        private string _RightBattery_Value;
+        public string RightBattery_Value { get { return _RightBattery_Value; } set { SetProperty(ref _RightBattery_Value, value); } }
+
+
+        private string _LeftBattery_Value;
+        public string LeftBattery_Value { get { return _LeftBattery_Value; } set { SetProperty(ref _LeftBattery_Value, value); } }
 
 
         private string _Distance_Value;
@@ -133,9 +138,11 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="model"></param>
         private void OnWeightSensorData(WeightSensorModel model)
         {
-            if(model != null)
+            if(model != null || model.LeftOnline !=true || model.RightOnline != true)
             {
                 Weight_Active = Active;
+                LeftBattery_Value = model.LeftBattery.ToString();
+                RightBattery_Value = model.RightBattery.ToString();
                 Weight_Value = model.GrossWeight.ToString();
             }
             else
@@ -150,7 +157,7 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="model"></param>
         private void OnVisionCamStreaming(VisionCamModel model)
         {
-            if (model?.FRAME != null)
+            if (model?.connected == true)
             {
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {

@@ -49,7 +49,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         {
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 200);
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
 
@@ -117,7 +117,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 if (bytesize >= 25)
                 {
 
-                    LogRawData(buffer);
+                    //LogRawData(buffer);
                     ParseData(buffer, bytesize);
                     SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
@@ -149,18 +149,39 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 Array.Reverse(LeftWeight);
 
 
-
                 int nGrossWeight = BitConverter.ToInt16(GrossWeight, 0);
                 int nRightWeight = BitConverter.ToInt16(RightWeight, 0);
                 int nLeftWeight = BitConverter.ToInt16(LeftWeight, 0);
 
-                int right_forkpower = RecvBytes[13];
-                int left_forkpower = RecvBytes[16];
+
+                int right_battery = RecvBytes[16];
+                int right_charge_status = RecvBytes[17];
+                int right_online_satus = RecvBytes[18];
+
+
+                int left_battery = RecvBytes[19];
+                int left_charge_status = RecvBytes[20];
+                int left_online_satus = RecvBytes[21];
+
+                int gross_net = RecvBytes[22];
+                int overload = RecvBytes[23];
+                int out_of_tolerance = RecvBytes[24];
+
 
                 WeightSensorModel model = new WeightSensorModel();
                 model.GrossWeight = nGrossWeight;
                 model.RightWeight = nRightWeight;
                 model.LeftWeight = nLeftWeight;
+                model.RightBattery = right_battery;
+                model.LeftBattery = left_battery;
+                model.RightIsCharging = right_charge_status == 1 ? true : false;
+                model.leftIsCharging = left_charge_status == 1 ? true : false;
+                model.RightOnline = right_online_satus == 0 ? true : false;
+                model.LeftOnline = left_online_satus == 0 ? true : false;
+                model.GrossNet = gross_net == 1 ? true : false;
+                model.OverLoad = overload == 1 ? true : false;
+                model.OutOfTolerance = out_of_tolerance == 0 ? false : true;
+
 
                 //Tools.Log($"nGrossWeight : {nGrossWeight}", Tools.ELogType.WeightLog);
                 //Tools.Log($"nRightWeight : {nRightWeight}", Tools.ELogType.WeightLog);
@@ -187,7 +208,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 strData += String.Format("0x{0:x2} ", HexData[i]);
             }
-            //Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
+            Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
         }
 
         private void DataRecive(object sender, SerialDataReceivedEventArgs e)
@@ -206,7 +227,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
 
 
-                    LogRawData(RecvBytes);
+                    //LogRawData(RecvBytes);
 
                 }
             }
@@ -216,5 +237,16 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             Thread.Sleep(300);
         }
+
+        // 1.The data transmission order is to send high bytes first																	
+        //2.Length field: The number of bytes of data following this length field																	
+        //3.The battery is a percentage of 0-100;																	
+        //4.Charging state：0:Uncharged  1:Charging																	
+        //5.Online status：0:Online；1：Offline；2：Hardware failure																	
+        //6.Gross and net weight mark：0:Gross weight；1：Net weight																	
+        //7.Overload mark：0:Not overloaded；1：Overload																	
+        //8.Out of tolerance mark：0:Not out of tolerance；1：Left out of tolerance   2：Right out of tolerance																	
+        //9.Communication interface：RS485, 9600， 8N1;																	
+        //10.Return status: 0 indicates normal; Non 0 is an exception
     }
 }

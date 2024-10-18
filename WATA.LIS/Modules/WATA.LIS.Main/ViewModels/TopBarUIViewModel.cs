@@ -64,14 +64,17 @@ namespace WATA.LIS.Main.ViewModels
 
 
             VisionCamEvent = "None";
-
         }
 
-        public void OnVISIONEvent(VisionCamModel obj)
+        public void OnVISIONEvent(VisionCamModel model)
         {
-            if (obj.QR != null || obj.QR != "")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
+            if (model.QR != null || model.QR != "")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
             {
-                VisionCamEvent = $"{obj.QR}";
+                VisionCamEvent = $"{model.QR}";
+            }
+            else
+            {
+                VisionCamEvent = $"None";
             }
         }
 
