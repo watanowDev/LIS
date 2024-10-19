@@ -57,40 +57,42 @@ namespace WATA.LIS.Core.Common
     {
         OFF = 0,
         Continuous = 1,
-        Pattern1 = 2,
-        Pattern2 = 3,
-        Pattern3 = 4,
-        Pattern4 = 5,
-        Pattern5 = 6,
-        Pattern6 = 7,
+        Pattern1 = 2,   // -- -- -- --
+        Pattern2 = 3,   // -  -  -  -
+        Pattern3 = 4,   // .. .. .. ..
+        Pattern4 = 5,   // .  .  .  .
+        Pattern5 = 6,   // ,  ,  ,  ,
+        Pattern6 = 7,   // ,. ,. ,. ,.
         Other = 0xF
     }
 
     public enum eBuzzerPatterns
     {
         OFF = 0,
-        Continuous = 1,
-        Pattern1 = 2,
-        Pattern2 = 3,
-        Pattern3 = 4,
-        Pattern4 = 5,
-        Pattern5 = 6,
-        Pattern6 = 7,
+        Continuous = 1, //Beep-
+        Pattern1 = 2,   //Bee~ ing~
+        Pattern2 = 3,   //Be Be Be Be Beep!
+        Pattern3 = 4,   //Beep-! Beep-! Beep-! Beep-! Beep-!
+        Pattern4 = 5,   //Beep, Beep, Beep, Beep, Beep
+        Pattern5 = 6,   //Twinkle Twinkle Little Star Song
+        Pattern6 = 7,   //How's the weather Song
         Other = 0xF
     }
     public enum ePlayBuzzerLed
     {
         PIKCUP,
         MEASRUE_OK,
-        NO_QR,
+        SET_ITEM,
+        NO_QR_PICKUP,
+        NO_QR_MEASRUE_OK,
         DROP,
         ACTION_START,
         ACTION_FINISH,
         ACTION_FAIL,
-        SEONSORERROR,
+        SEONSOR_ERROR,
         EMERGENCY,
         EMERGENCY2,
-        CLEAR
+        CLEAR_ITEM
     }
 
     public enum ePlayBuzzerLed_NXDPOC
