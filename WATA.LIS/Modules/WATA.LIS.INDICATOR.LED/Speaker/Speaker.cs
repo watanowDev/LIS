@@ -147,7 +147,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             try
             {
                 Thread.Sleep(200);
-                Tools.Log($"PlaySound {FileName}", Tools.ELogType.BackEndLog);
+                Tools.Log($"PlaySound {FileName}", Tools.ELogType.ActionLog);
                 MediaPlayer mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.Open(new Uri("WaveResource\\" + FileName, UriKind.RelativeOrAbsolute));
                 mMediaPlayer.Play();
@@ -157,7 +157,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             catch
             {
 
-                Tools.Log($"PlaySound Exception", Tools.ELogType.SystemLog);
+                Tools.Log($"PlaySound Exception", Tools.ELogType.ActionLog);
 
             }
 

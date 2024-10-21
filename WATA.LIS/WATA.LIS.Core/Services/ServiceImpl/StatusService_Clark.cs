@@ -368,6 +368,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.OFF;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.MEASRUE_OK)
@@ -377,7 +378,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.LED_Color = eLEDColors.Blue;
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
+                model.PlayInfoSpeaker = ePlayInfoSpeaker.weight_check_complete;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.NO_QR_PICKUP)
@@ -388,6 +391,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern2;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.NO_QR_MEASRUE_OK)
@@ -397,7 +401,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.LED_Color = eLEDColors.Purple;
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
+                model.PlayInfoSpeaker = ePlayInfoSpeaker.weight_check_complete;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.SET_ITEM)
@@ -408,6 +414,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.CLEAR_ITEM)
@@ -418,6 +425,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.DROP)
@@ -428,6 +436,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.ACTION_START)
@@ -438,6 +447,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern1;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.ACTION_FINISH)
@@ -448,6 +458,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern4;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.ACTION_FAIL)
@@ -458,6 +469,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.EMERGENCY)
@@ -468,6 +480,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern1;
                 model.BuzzerCount = 0;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.EMERGENCY2)
@@ -478,6 +491,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Pattern2;
                 model.BuzzerCount = 0;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
             else if (value == ePlayBuzzerLed.SEONSOR_ERROR)
@@ -488,6 +502,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
         }
 
@@ -668,13 +683,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_event_QRcode = m_visionModel.QR;
             }
 
-            // 프레임 50장동안 QR 없으면 QR해제
+            // 5초동안 QR 없으면 QR해제
             if (m_visionModel.QR == "")
             {
                 m_noQRcnt_visioncam++;
             }
 
-            if (m_noQRcnt_visioncam > 50)
+            if (m_noQRcnt_visioncam > 30 * 5)
             {
                 m_event_QRcode = "";
             }
@@ -846,11 +861,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 주제와 메시지를 결합하여 퍼블리시
                 _publisherSocket.SendFrame(message);
 
-                Tools.Log($"SendToLivox : {message}", Tools.ELogType.SystemLog);
+                Tools.Log($"SendToLivox : {message}", Tools.ELogType.ActionLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.ActionLog);
             }
         }
 

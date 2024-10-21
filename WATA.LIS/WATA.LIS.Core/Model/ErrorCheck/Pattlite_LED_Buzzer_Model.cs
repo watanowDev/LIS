@@ -13,6 +13,7 @@ namespace WATA.LIS.Core.Model.ErrorCheck
         public eLEDColors LED_Color { get; set; }
         public eLEDPatterns LED_Pattern { get; set; }
         public eBuzzerPatterns BuzzerPattern { get; set; }
+        public ePlayInfoSpeaker PlayInfoSpeaker { get; set; }
         public int BuzzerCount { get; set; }
     }
 }
