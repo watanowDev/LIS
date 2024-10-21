@@ -367,8 +367,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.LED_Color = eLEDColors.Blue;
                 model.BuzzerPattern = eBuzzerPatterns.OFF;
                 model.BuzzerCount = 1;
+                model.PlayInfoSpeaker = ePlayInfoSpeaker.weight_check_start;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1500);
             }
 
             else if (value == ePlayBuzzerLed.MEASRUE_OK)
@@ -381,6 +383,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.PlayInfoSpeaker = ePlayInfoSpeaker.weight_check_complete;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1000);
             }
 
             else if (value == ePlayBuzzerLed.NO_QR_PICKUP)
@@ -390,8 +393,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.LED_Color = eLEDColors.Purple;
                 model.BuzzerPattern = eBuzzerPatterns.Pattern2;
                 model.BuzzerCount = 1;
+                model.PlayInfoSpeaker = ePlayInfoSpeaker.qr_check_fail;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1500);
             }
 
             else if (value == ePlayBuzzerLed.NO_QR_MEASRUE_OK)
@@ -404,6 +409,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.PlayInfoSpeaker = ePlayInfoSpeaker.weight_check_complete;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1000);
             }
 
             else if (value == ePlayBuzzerLed.SET_ITEM)
@@ -415,6 +421,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1500);
             }
 
             else if (value == ePlayBuzzerLed.CLEAR_ITEM)
@@ -426,6 +433,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //Thread.Sleep(1500);
             }
 
             else if (value == ePlayBuzzerLed.DROP)
@@ -436,74 +444,74 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 model.BuzzerPattern = eBuzzerPatterns.Continuous;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+                //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
             }
 
-            else if (value == ePlayBuzzerLed.ACTION_START)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Blue;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.ACTION_START)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Continuous;
+            //    model.LED_Color = eLEDColors.Blue;
+            //    model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+            //    model.BuzzerCount = 1;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
 
-            else if (value == ePlayBuzzerLed.ACTION_FINISH)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Pattern1;
-                model.LED_Color = eLEDColors.Green;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern4;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.ACTION_FINISH)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Pattern1;
+            //    model.LED_Color = eLEDColors.Green;
+            //    model.BuzzerPattern = eBuzzerPatterns.Pattern4;
+            //    model.BuzzerCount = 1;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
 
-            else if (value == ePlayBuzzerLed.ACTION_FAIL)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Pattern1;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Continuous;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.ACTION_FAIL)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Pattern1;
+            //    model.LED_Color = eLEDColors.Red;
+            //    model.BuzzerPattern = eBuzzerPatterns.Continuous;
+            //    model.BuzzerCount = 1;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
 
-            else if (value == ePlayBuzzerLed.EMERGENCY)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
-                model.BuzzerCount = 0;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.EMERGENCY)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Continuous;
+            //    model.LED_Color = eLEDColors.Red;
+            //    model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+            //    model.BuzzerCount = 0;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
 
-            else if (value == ePlayBuzzerLed.EMERGENCY2)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern2;
-                model.BuzzerCount = 0;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.EMERGENCY2)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Continuous;
+            //    model.LED_Color = eLEDColors.Red;
+            //    model.BuzzerPattern = eBuzzerPatterns.Pattern2;
+            //    model.BuzzerCount = 0;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
 
-            else if (value == ePlayBuzzerLed.SEONSOR_ERROR)
-            {
-                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-                model.LED_Pattern = eLEDPatterns.Continuous;
-                model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Continuous;
-                model.BuzzerCount = 1;
-                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
-            }
+            //else if (value == ePlayBuzzerLed.SEONSOR_ERROR)
+            //{
+            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+            //    model.LED_Pattern = eLEDPatterns.Continuous;
+            //    model.LED_Color = eLEDColors.Red;
+            //    model.BuzzerPattern = eBuzzerPatterns.Continuous;
+            //    model.BuzzerCount = 1;
+            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(model.PlayInfoSpeaker);
+            //}
         }
 
 
@@ -683,13 +691,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_event_QRcode = m_visionModel.QR;
             }
 
-            // 5초동안 QR 없으면 QR해제
-            if (m_visionModel.QR == "")
+            // 중량값이 10미만이고 150Frame동안 인식되는 QR 없으면 QR해제
+            if (m_event_weight < 10 && m_visionModel.QR == "")
             {
                 m_noQRcnt_visioncam++;
             }
 
-            if (m_noQRcnt_visioncam > 30 * 5)
+            if (m_noQRcnt_visioncam > 150)
             {
                 m_event_QRcode = "";
             }
@@ -904,7 +912,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"width:{eventModel.width}, height:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.SystemLog);
+                        //Tools.Log($"width:{eventModel.width}, height:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.SystemLog);
 
                         return ret = true;
                     }
@@ -944,7 +952,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="status"></param>
         private void OnIndicatorEvent(string status)
         {
-            Tools.Log($"Indicator : {status}", ELogType.DisplayLog);
+            //Tools.Log($"Indicator : {status}", ELogType.DisplayLog);
 
             if (status == "res")
             {
@@ -988,8 +996,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
+            //Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
+            //Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -1103,21 +1111,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 4) return;
 
-            // 인디케이터 통신 핸들
-            m_Command = -1;
-
-            // 로그
-            for (int i = 0; i < m_weight_list.Count; i++)
-            {
-                Tools.Log($"Pickup Weight No.{i + 1} in {m_weight_list.Count} : {m_weight_list[i].GrossWeight}kg", ELogType.ActionLog);
-            }
-
-            m_isPickUp = true;
-            PickUpEvent();
-        }
-
-        private void PickUpEvent()
-        {
             //QR 코드가 없고 작업자가 물류를 직접 지시하지도 않을 경우
             if (m_event_QRcode == "" && m_set_item == false)
             {
@@ -1134,6 +1127,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.PIKCUP);
             }
 
+            // 인디케이터 통신 핸들
+            m_Command = -1;
+
+            // 로그
+            for (int i = 0; i < m_weight_list.Count; i++)
+            {
+                Tools.Log($"Pickup Weight No.{i + 1} in {m_weight_list.Count} : {m_weight_list[i].GrossWeight}kg", ELogType.ActionLog);
+            }
+
+            m_isPickUp = true;
+            PickUpEvent();
+        }
+
+        private void PickUpEvent()
+        {
             // 부피, 형상 리복스 데이터 요청
             int getLivoxctn = 0;
             while (getLivoxctn < 100)
@@ -1233,7 +1241,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
 
             //로그
-            Tools.Log($"Drop Event!!! ", ELogType.ActionLog);
+            //Tools.Log($"Drop Event!!! ", ELogType.ActionLog);
         }
     }
 }

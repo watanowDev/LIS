@@ -29,6 +29,7 @@ using System.Data;
 using OpenCvSharp.Internal.Vectors;
 using OpenCvSharp.Internal;
 using System.Windows.Media.Imaging;
+using System.Diagnostics;
 
 
 namespace WATA.LIS.VISION.CAM.Camera
@@ -50,6 +51,8 @@ namespace WATA.LIS.VISION.CAM.Camera
         private int m_CameraIndex = 0;
         private VideoCapture m_Capture;
         Mat m_MatImage = new Mat();
+        private Stopwatch _stopwatch_fps = new Stopwatch();
+        private Stopwatch _stopwatch_getqr = new Stopwatch();
 
         // weChatQRCode
         private WeChatQRCode m_WeChatQRCode;
@@ -77,16 +80,8 @@ namespace WATA.LIS.VISION.CAM.Camera
             m_CheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             m_GetImageTimer = new DispatcherTimer();
-            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
+            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             m_GetImageTimer.Tick += new EventHandler(GetFrame);
-
-            m_GetQRSimpleTimer = new DispatcherTimer();
-            m_GetQRSimpleTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
-            m_GetQRSimpleTimer.Tick += new EventHandler(GetFrameSimple);
-
-            //mCurrQRTimer = new DispatcherTimer();
-            //mCurrQRTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            //mCurrQRTimer.Tick += new EventHandler(StampQRCode);
 
             InitializeWeChatQRCode();
             openVisionCam();
@@ -124,20 +119,24 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             try
             {
-                Tools.Log("VisionCam Initiating...", Tools.ELogType.VisionCamLog);
+                Tools.Log("VisionCam Initiating...", Tools.ELogType.SystemLog);
                 await Task.Run(() => {
                     // 카메라의 RTSP URL 설정
                     //string rtspUrl = $"rtsp://{visioncamConfig.vision_id}:{visioncamConfig.vision_pw}@{visioncamConfig.vision_ip}:554/Stream/Channels/101?transportmode=unicast";
                     //_capture = new VideoCapture(rtspUrl);
+                    if (m_Capture != null) m_Capture.Dispose();
 
                     m_CameraIndex = 0;
                     m_Capture = new VideoCapture(m_CameraIndex);
-                    m_Capture.FrameWidth = 3840 / 2;
-                    m_Capture.FrameHeight = 2060 / 2;
+                    m_Capture.FrameWidth = 3840;
+                    m_Capture.FrameHeight = 2160;
+                    m_Capture.Set(VideoCaptureProperties.Fps, 30); // 초당 프레임 설정
+                    m_Capture.Set(VideoCaptureProperties.BufferSize, 1); // 버퍼 크기 최소화
+                    m_Capture.Set(VideoCaptureProperties.Focus, 2.0); // 카메라 초점거리 설정
 
                     if (m_Capture.IsOpened())
                     {
-                        Tools.Log("VisionCam Open Success", Tools.ELogType.VisionCamLog);
+                        Tools.Log("VisionCam Open Success", Tools.ELogType.SystemLog);
                         SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
 
                         //m_CheckConnTimer.Start();
@@ -146,7 +145,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                     }
                     else if (!m_Capture.IsOpened())
                     {
-                        Tools.Log("VisionCam is not opened", Tools.ELogType.VisionCamLog);
+                        Tools.Log("VisionCam is not opened", Tools.ELogType.SystemLog);
                         SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
                         return;
                     }
@@ -154,7 +153,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
             catch (Exception ex)
             {
-                Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+                Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.SystemLog);
                 SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
             }
         }
@@ -164,7 +163,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             if (!m_Capture.IsOpened())
             {
                 SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                Tools.Log("VisionCam is disconnected", Tools.ELogType.VisionCamLog);
+                Tools.Log("VisionCam is disconnected", Tools.ELogType.SystemLog);
 
                 try
                 {
@@ -174,22 +173,22 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     if (!m_Capture.IsOpened())
                     {
-                        Tools.Log("VisionCam connection is failed", Tools.ELogType.VisionCamLog);
+                        Tools.Log("VisionCam connection is failed", Tools.ELogType.SystemLog);
                         return;
                     }
 
-                    Tools.Log("VisionCam Open again", Tools.ELogType.VisionCamLog);
+                    Tools.Log("VisionCam Open again", Tools.ELogType.SystemLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
                 }
                 catch (Exception ex)
                 {
-                    Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+                    Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.SystemLog);
                     SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
                 }
             }
             else
             {
-                Tools.Log("VisionCam is alive", Tools.ELogType.VisionCamLog);
+                Tools.Log("VisionCam is alive", Tools.ELogType.SystemLog);
                 SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
             }
         }
@@ -205,19 +204,39 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             try
             {
+                _stopwatch_fps.Restart();
                 m_Capture.Read(m_MatImage); // same as cvQueryFrame
 
                 if (m_MatImage.Empty())
                 {
-                    Tools.Log($"No Image", Tools.ELogType.VisionCamLog);
+                    openVisionCam();
+                    Tools.Log($"No Image", Tools.ELogType.SystemLog);
                     return;
                 }
 
-                m_LastQRCode = GetQRcode(m_MatImage);
+                //// Convert to grayscale
+                //Mat grayImage = new Mat();
+                //Cv2.CvtColor(m_MatImage, grayImage, ColorConversionCodes.BGR2GRAY);
+
+                // FPS 계산
+                _stopwatch_fps.Stop();
+                double elapsedTime_fps = _stopwatch_fps.Elapsed.TotalSeconds;
+                double _fps = 1.0 / elapsedTime_fps;
+
+                _stopwatch_getqr.Restart();
+                m_LastQRCode = GetQRcode(m_MatImage, 150);
+
+                // Get QR Code 계산
+                _stopwatch_getqr.Stop();
+                double _getqr = _stopwatch_getqr.Elapsed.TotalMilliseconds;
+
+                // FPS 정보, GET QR 소요시간 프레임에 오버레이
+                Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(150, 300), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(150, 550), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
 
                 // Resize the frame
                 Mat resizedFrame = new Mat();
-                Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(640 / 4, 480 / 4));
+                Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(640, 480));
                 byte[] currentFrameBytes = resizedFrame.ToBytes();
 
                 // Publish the event
@@ -230,125 +249,66 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
             catch (Exception ex)
             {
-                Tools.Log($"VisionCam Error : {ex.Message}", Tools.ELogType.VisionCamLog);
+                Tools.Log($"VisionCam Error : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
-        private string GetQRcode(Mat frame)
+        private string GetQRcode(Mat frame, int timeoutMilliseconds)
         {
             string ret = string.Empty;
 
             try
             {
-                // weChatQRCode 라이브러리를 사용하여 QR 코드 디코딩
-                m_WeChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] results);
-
-                if (results.Length > 0)
+                // frame 객체 유효성 검사
+                if (frame == null || frame.Empty())
                 {
-                    ret = results[0];
-                    //m_LastQRCode = ret;
-                    Tools.Log($"WeChat QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
+                    Tools.Log("Invalid frame: frame is null or empty", Tools.ELogType.SystemLog);
+                    return ret;
+                }
 
-                    // 바운딩 박스 그리기
-                    foreach (var box in bbox)
-                    {
-                        // 바운딩 박스의 점들을 추출
-                        if (box.Total() >= 4) // 최소 4개의 점이 필요
+                using (var cts = new CancellationTokenSource())
+                {
+                    cts.CancelAfter(timeoutMilliseconds);
+
+                    var task = Task.Run(() => {
+                        m_WeChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] results);
+
+                        if (results.Length > 0)
                         {
-                            OpenCvSharp.Point[] points = new OpenCvSharp.Point[4];
-                            for (int j = 0; j < 4; j++)
-                            {
-                                points[j] = new OpenCvSharp.Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
-                            }
+                            ret = results[0];
 
                             // 바운딩 박스 그리기
-                            Cv2.Polylines(frame, new[] { points }, isClosed: true, color: new Scalar(0, 255, 0), thickness: 2);
+                            foreach (var box in bbox)
+                            {
+                                // 바운딩 박스의 점들을 추출
+                                if (box.Total() >= 4) // 최소 4개의 점이 필요
+                                {
+                                    OpenCvSharp.Point[] points = new OpenCvSharp.Point[4];
+                                    for (int j = 0; j < 4; j++)
+                                    {
+                                        points[j] = new OpenCvSharp.Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
+                                    }
+
+                                    // 바운딩 박스 그리기
+                                    Cv2.Polylines(frame, new[] { points }, isClosed: true, color: new Scalar(0, 255, 0), thickness: 2);
+                                }
+                            }
                         }
+                    }, cts.Token);
+
+                    try
+                    {
+                        task.Wait(cts.Token); // 동기적으로 작업을 기다림
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        //Tools.Log("GetQRcode operation timed out", Tools.ELogType.SystemLog);
                     }
                 }
-                else
-                {
-                    //// ZXing 라이브러리를 사용하여 QR 코드 디코딩
-                    //var reader = new BarcodeReader();
-                    //var bitmap = BitmapConverter.ToBitmap(frame);
-                    //// 비트맵에서 QR 코드 읽기
-                    //var result = reader.Decode(bitmap);
-
-                    //if (result != null)
-                    //{
-                    //    ret = result.Text;
-                    //    Tools.Log($"ZXing QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
-                    //}
-                }
             }
             catch (Exception ex)
             {
-                Tools.Log($"Fail Read QR: {ex.Message}", Tools.ELogType.VisionCamLog);
-            }
-
-            return ret;
-        }
-
-        private void GetFrameSimple(object sender, EventArgs e)
-        {
-            try
-            {
-                m_Capture.Read(m_MatImage); // same as cvQueryFrame
-
-                if (m_MatImage.Empty())
-                {
-                    Tools.Log($"No Image", Tools.ELogType.VisionCamLog);
-                    return;
-                }
-
-                m_LastQRCode = GetQRCodeSimple(m_MatImage);
-
-                // Publish the event
-                VisionCamModel eventModels = new VisionCamModel();
-                eventModels.QR = m_LastQRCode;
-                eventModels.connected = true;
-
-                _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
-            }
-            catch (Exception ex)
-            {
-                Tools.Log($"VisionCam Error : {ex.Message}", Tools.ELogType.VisionCamLog);
-            }
-        }
-
-        private string GetQRCodeSimple(Mat frame)
-        {
-            string ret = string.Empty;
-
-            try
-            {
-                // weChatQRCode 라이브러리를 사용하여 QR 코드 디코딩
-                m_WeChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] results);
-
-                if (results.Length > 0)
-                {
-                    ret = results[0];
-                    //m_LastQRCode = ret;
-                    Tools.Log($"WeChat QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
-                }
-                else
-                {
-                    //// ZXing 라이브러리를 사용하여 QR 코드 디코딩
-                    //var reader = new BarcodeReader();
-                    //var bitmap = BitmapConverter.ToBitmap(frame);
-                    //// 비트맵에서 QR 코드 읽기
-                    //var result = reader.Decode(bitmap);
-
-                    //if (result != null)
-                    //{
-                    //    ret = result.Text;
-                    //    Tools.Log($"ZXing QR : {m_LastQRCode}", Tools.ELogType.VisionCamLog);
-                    //}
-                }
-            }
-            catch (Exception ex)
-            {
-                Tools.Log($"Fail Read QR: {ex.Message}", Tools.ELogType.VisionCamLog);
+                Tools.Log($"Fail Read QR: {ex.Message}", Tools.ELogType.SystemLog);
             }
 
             return ret;

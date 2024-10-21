@@ -146,14 +146,15 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
         {
             try
             {
-                Thread.Sleep(200);
-                Tools.Log($"PlaySound {FileName}", Tools.ELogType.ActionLog);
+                //Thread.Sleep(2000);
                 MediaPlayer mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.Open(new Uri("WaveResource\\" + FileName, UriKind.RelativeOrAbsolute));
                 mMediaPlayer.Play();
+                Thread.Sleep(300);
+                //Tools.Log($"PlaySound {FileName}", Tools.ELogType.ActionLog);
                 //mMediaPlayer.Close();
 
-             }
+            }
             catch
             {
 

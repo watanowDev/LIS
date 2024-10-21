@@ -22,21 +22,21 @@
           "WATA.LIS.SENSOR.WEIGHT": "1.0.0",
           "WATA.LIS.VISION.CAM": "1.0.0",
           "WATA.LIS.VISION.Camera": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.31"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
         },
         "runtime": {
           "WATA.LIS.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.31"
+            "fileVersion": "10.0.18362.34"
           },
           "WinRT.Runtime.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.4.44211"
+            "fileVersion": "2.0.8.46841"
           }
         }
       },
@@ -956,7 +956,10 @@
           "log4net": "2.0.15"
         },
         "runtime": {
-          "WATA.LIS.Core.dll": {}
+          "WATA.LIS.Core.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.IF.BE/1.0.0": {
@@ -969,7 +972,10 @@
           "ZXing.Net": "0.16.9"
         },
         "runtime": {
-          "WATA.LIS.IF.BE.dll": {}
+          "WATA.LIS.IF.BE.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.IF.DPS/1.0.0": {
@@ -978,7 +984,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.IF.DPS.dll": {}
+          "WATA.LIS.IF.DPS.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.INDICATOR.DISPLAY/1.0.0": {
@@ -988,7 +997,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.INDICATOR.DISPLAY.dll": {}
+          "WATA.LIS.INDICATOR.DISPLAY.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.INDICATOR.LED/1.0.0": {
@@ -998,7 +1010,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.INDICATOR.LED.dll": {}
+          "WATA.LIS.INDICATOR.LED.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.Main/1.0.0": {
@@ -1008,7 +1023,10 @@
           "WATA.LIS.IF.DPS": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.Main.dll": {}
+          "WATA.LIS.Main.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "9.9.9.10"
+          }
         }
       },
       "WATA.LIS.SENSOR.Distance/1.0.0": {
@@ -1019,7 +1037,10 @@
           "WATA.LIS.SENSOR.UHF_RFID": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.SENSOR.Distance.dll": {}
+          "WATA.LIS.SENSOR.Distance.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.SENSOR.LIVOX/1.0.0": {
@@ -1029,7 +1050,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.SENSOR.LIVOX.dll": {}
+          "WATA.LIS.SENSOR.LIVOX.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.SENSOR.NAV/1.0.0": {
@@ -1040,7 +1064,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.SENSOR.NAV.dll": {}
+          "WATA.LIS.SENSOR.NAV.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.SENSOR.UHF_RFID/1.0.0": {
@@ -1052,7 +1079,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.SENSOR.UHF_RFID.dll": {}
+          "WATA.LIS.SENSOR.UHF_RFID.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.SENSOR.WEIGHT/1.0.0": {
@@ -1062,7 +1092,10 @@
           "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.SENSOR.WEIGHT.dll": {}
+          "WATA.LIS.SENSOR.WEIGHT.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.VISION.CAM/1.0.0": {
@@ -1076,7 +1109,10 @@
           "ZXing.Net": "0.16.9"
         },
         "runtime": {
-          "WATA.LIS.VISION.CAM.dll": {}
+          "WATA.LIS.VISION.CAM.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "WATA.LIS.VISION.Camera/1.0.0": {
@@ -1088,7 +1124,10 @@
           "WATA.LIS.SENSOR.WEIGHT": "1.0.0"
         },
         "runtime": {
-          "WATA.LIS.VISION.Camera.dll": {}
+          "WATA.LIS.VISION.Camera.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "BlinkStickDotNet/1.0.8538.25354": {
@@ -1155,7 +1194,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
