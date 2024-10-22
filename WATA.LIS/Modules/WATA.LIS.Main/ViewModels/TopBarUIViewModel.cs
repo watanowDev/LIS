@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.VISION;
 using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
@@ -54,8 +55,8 @@ namespace WATA.LIS.Main.ViewModels
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
-            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
-
+            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<CurrentQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
             DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -66,16 +67,9 @@ namespace WATA.LIS.Main.ViewModels
             VisionCamEvent = "None";
         }
 
-        public void OnVISIONEvent(VisionCamModel model)
+        private void OnCurrentQREvent(string obj)
         {
-            if (model.QR != null || model.QR != "")//지게차가 물건을 올렸을경우 선반 에서는 물건이 빠질경우
-            {
-                VisionCamEvent = $"{model.QR}";
-            }
-            else
-            {
-                VisionCamEvent = $"None";
-            }
+            VisionCamEvent = obj;
         }
 
         private static int LivingCount = 0;

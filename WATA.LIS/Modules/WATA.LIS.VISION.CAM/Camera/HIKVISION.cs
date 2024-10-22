@@ -80,7 +80,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             m_CheckConnTimer.Tick += new EventHandler(CheckConnection);
 
             m_GetImageTimer = new DispatcherTimer();
-            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
+            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
             m_GetImageTimer.Tick += new EventHandler(GetFrame);
 
             InitializeWeChatQRCode();
@@ -128,11 +128,10 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     m_CameraIndex = 0;
                     m_Capture = new VideoCapture(m_CameraIndex);
-                    m_Capture.FrameWidth = 3840;
-                    m_Capture.FrameHeight = 2160;
+                    m_Capture.FrameWidth = 3840 / 2;
+                    m_Capture.FrameHeight = 2160 / 2;
                     m_Capture.Set(VideoCaptureProperties.Fps, 30); // 초당 프레임 설정
-                    m_Capture.Set(VideoCaptureProperties.BufferSize, 1); // 버퍼 크기 최소화
-                    m_Capture.Set(VideoCaptureProperties.Focus, 2.0); // 카메라 초점거리 설정
+                    m_Capture.Set(VideoCaptureProperties.Focus, 1.5); // 카메라 초점거리 설정
 
                     if (m_Capture.IsOpened())
                     {
@@ -224,15 +223,17 @@ namespace WATA.LIS.VISION.CAM.Camera
                 double _fps = 1.0 / elapsedTime_fps;
 
                 _stopwatch_getqr.Restart();
-                m_LastQRCode = GetQRcode(m_MatImage, 150);
+                m_LastQRCode = GetQRcode(m_MatImage, 100);
 
                 // Get QR Code 계산
                 _stopwatch_getqr.Stop();
                 double _getqr = _stopwatch_getqr.Elapsed.TotalMilliseconds;
 
                 // FPS 정보, GET QR 소요시간 프레임에 오버레이
-                Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(150, 300), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
-                Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(150, 550), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                //Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(150, 300), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                //Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(150, 550), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(50, 150), HersheyFonts.HersheySimplex, 4, Scalar.Red, 8);
+                Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(50, 300), HersheyFonts.HersheySimplex, 4, Scalar.Red, 8);
 
                 // Resize the frame
                 Mat resizedFrame = new Mat();
