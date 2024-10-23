@@ -90,6 +90,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_event_QRcode = "";
         private int m_noQRcnt_visioncam;
         private string m_last_QRcode = "";
+        private string m_monitoringQR = "";
 
         // LiDAR_2D 모델
         private long m_naviX { get; set; }
@@ -125,10 +126,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool m_isPickUp = false;
 
         // 타이머 클래스
-        DispatcherTimer m_ErrorCheckTimer;
-        DispatcherTimer m_IndicatorTimer;
-        DispatcherTimer m_IsPickUpTimer;
-        DispatcherTimer m_IsDropTimer;
+        DispatcherTimer m_ErrorCheck_Timer;
+        DispatcherTimer m_Indicator_Timer;
+        DispatcherTimer m_IsPickUp_Timer;
+        DispatcherTimer m_IsDrop_Timer;
+        DispatcherTimer m_MonitoringQR_Timer;
 
 
         public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel, ILivoxModel livoxModel)
@@ -184,30 +186,37 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //SendProdDataTimer.Start
 
 
-            m_ErrorCheckTimer = new DispatcherTimer();
-            m_ErrorCheckTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            m_ErrorCheckTimer.Tick += new EventHandler(ErrorCheckTimerEvent);
-            m_ErrorCheckTimer.Start();
+            m_ErrorCheck_Timer = new DispatcherTimer();
+            m_ErrorCheck_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_ErrorCheck_Timer.Tick += new EventHandler(ErrorCheckTimerEvent);
+            m_ErrorCheck_Timer.Start();
 
 
-            m_IndicatorTimer = new DispatcherTimer();
-            m_IndicatorTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            m_IndicatorTimer.Tick += new EventHandler(IndicatorSendTimerEvent);
-            m_IndicatorTimer.Start();
-
-
-
-            m_IsPickUpTimer = new DispatcherTimer();
-            m_IsPickUpTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-            m_IsPickUpTimer.Tick += new EventHandler(IsPickUpTimerEvent);
-            m_IsPickUpTimer.Start();
+            m_Indicator_Timer = new DispatcherTimer();
+            m_Indicator_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_Indicator_Timer.Tick += new EventHandler(IndicatorSendTimerEvent);
+            m_Indicator_Timer.Start();
 
 
 
-            m_IsDropTimer = new DispatcherTimer();
-            m_IsDropTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_IsDropTimer.Tick += new EventHandler(IsDropTimerEvent);
-            m_IsDropTimer.Start();
+            m_IsPickUp_Timer = new DispatcherTimer();
+            m_IsPickUp_Timer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            m_IsPickUp_Timer.Tick += new EventHandler(IsPickUpTimerEvent);
+            m_IsPickUp_Timer.Start();
+
+
+
+            m_IsDrop_Timer = new DispatcherTimer();
+            m_IsDrop_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_IsDrop_Timer.Tick += new EventHandler(IsDropTimerEvent);
+            m_IsDrop_Timer.Start();
+
+
+
+            m_MonitoringQR_Timer = new DispatcherTimer();
+            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringQRTimerEvent);
+            m_MonitoringQR_Timer.Start();
 
 
             m_rfidModel = new Keonn2ch_Model();
@@ -624,27 +633,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_noQRcnt_visioncam = 0;
                 m_event_QRcode = m_visionModel.QR;
             }
-
-            // 중량값이 10미만이고 500 Frame동안 인식되는 QR 없으면 QR해제
-            if (m_event_weight < 10 && m_visionModel.QR == "")
-            {
-                m_noQRcnt_visioncam++;
-            }
-
-            if (m_noQRcnt_visioncam > 250)
-            {
-                m_event_QRcode = "";
-            }
-
-            // QR코드 이벤트 발생
-            _eventAggregator.GetEvent<CurrentQR_Event>().Publish(m_event_QRcode);
         }
 
         private void OnCurrentQREvent(string obj)
         {
             if (obj != "" && m_last_QRcode != obj)
             {
-                // QR코드 이벤트 발생
+                // QR 인식 음성 가이드 제공
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_complete);
                 m_last_QRcode = obj;
             }
@@ -652,6 +647,36 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 m_last_QRcode = obj;
             }
+        }
+
+        private void MonitoringQRTimerEvent(object sender, EventArgs e)
+        {
+            // 픽업 전 QR 인식한 상태
+            if (m_event_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
+            {
+                // 마지막 QR 코드값이 현재 QR값과 일치하지 않을 때(새로 인식 된 QR일 경우)
+                if (m_event_QRcode != "" && m_last_QRcode != m_event_QRcode)
+                {
+                    m_Command = -1;
+                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_complete);
+                }
+            }
+            // 픽업 전 QR 인식 못한 상태
+            else
+            {
+                m_noQRcnt_visioncam++;
+            }
+
+            if (m_noQRcnt_visioncam > 50)
+            {
+                // Clear QR Code
+                m_Command = 0;
+                m_event_QRcode = "";
+                m_noQRcnt_visioncam = 0;
+            }
+
+            // QR코드 이벤트 발생
+            _eventAggregator.GetEvent<CurrentQR_Event>().Publish(m_event_QRcode);
         }
 
 
@@ -1053,13 +1078,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
-            // 무게 측정 시작 사운드 제공
-            //if (m_weightModel.GrossWeight >= 30 && m_isPickUp == false)
-            //{
-            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_start);
-            //}
-
-
             // 픽업 판단 조건
             if (m_isPickUp == true) return;
 
@@ -1086,15 +1104,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.PIKCUP);
             }
-
-            // 인디케이터 통신 핸들
-            m_Command = 99;
-
-            // 로그
-            //for (int i = 0; i < m_weight_list.Count; i++)
-            //{
-            //    Tools.Log($"Pickup Weight No.{i + 1} in {m_weight_list.Count} : {m_weight_list[i].GrossWeight}kg", ELogType.ActionLog);
-            //}
 
             m_isPickUp = true;
             PickUpEvent();
