@@ -4,6 +4,7 @@ using Prism.Modularity;
 using WATA.LIS.Core;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.SENSOR.Distance.Sensor;
 using WATA.LIS.SENSOR.Distance.Views;
 
@@ -18,8 +19,25 @@ namespace WATA.LIS.SENSOR.Distance
         {
             _eventAggregator = eventAggregator;
             _distancemodel = distancemodel;
-            DistanceSensor TeraBeeSensor = new DistanceSensor(_eventAggregator, _distancemodel);
-            TeraBeeSensor.SerialInit();
+
+            DistanceConfigModel _DistanceConfig = (DistanceConfigModel)_distancemodel;
+
+            if(_DistanceConfig.model_name == "TF_Luna")
+            {
+                //TF_Luna TeraBeeSensor = new TF_Luna(_eventAggregator, _distancemodel);
+                //TeraBeeSensor.SerialInit();
+            }
+            else if(_DistanceConfig.model_name == "TF_Mini")
+            {
+                TF_Mini TF_Mini = new TF_Mini(_eventAggregator, _distancemodel);
+                TF_Mini.SerialInit();
+            }
+            else
+            {
+                DistanceSensor TeraBeeSensor = new DistanceSensor(_eventAggregator, _distancemodel);
+                TeraBeeSensor.SerialInit();
+            }
+
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

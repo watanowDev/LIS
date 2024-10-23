@@ -46,6 +46,7 @@ namespace WATA.LIS.Core.Parser
                         main.vehicleId = json["main"]["vehicleId"].ToString();
 
 
+                        distance.model_name = json["distancesensor"]["model_name"].ToString();
                         distance.ComPort = json["distancesensor"]["comport"].ToString();
                         distance.pick_up_distance_threshold = (int)json["distancesensor"]["pick_up_distance_threshold"];
 

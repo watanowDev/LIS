@@ -10,12 +10,13 @@
 	},
 	"led_buzzer": 
 	{
-		"volume": 2,
+		"volume": 1,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
 	"distancesensor": 
 	{
-		"comport": "COM3",
+		"model_name": "TF_Mini",
+		"comport": "COM7",
 		"pick_up_distance_threshold" : 100
 	},
 	"weightsensor": 
@@ -67,7 +68,7 @@
 	},
 	"QR":
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,

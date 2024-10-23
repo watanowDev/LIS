@@ -11,21 +11,21 @@
           "NetMQ": "4.0.1.13",
           "Prism.Wpf": "8.1.97",
           "WATA.LIS.Core": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.31"
         },
         "runtime": {
           "WATA.LIS.SENSOR.LIVOX.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.34"
+            "fileVersion": "10.0.18362.31"
           },
           "WinRT.Runtime.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "fileVersion": "2.0.4.44211"
           }
         }
       },
@@ -380,10 +380,7 @@
           "log4net": "2.0.15"
         },
         "runtime": {
-          "WATA.LIS.Core.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "WATA.LIS.Core.dll": {}
         }
       }
     }
@@ -394,7 +391,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

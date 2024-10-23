@@ -206,11 +206,11 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="obj"></param>
         public void OnDistanceSensorData(DistanceSensorModel obj)
         {
-           if (obj.Distance_mm == -100)
+           if (obj.connected == false)
            {
                 Distance_Active = Disconnect;
            }
-           else
+           else if (obj.connected == true)
            {
                 Distance_Active = Active;
            }
