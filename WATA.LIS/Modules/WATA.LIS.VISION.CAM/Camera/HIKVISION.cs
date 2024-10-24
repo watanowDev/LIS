@@ -229,15 +229,17 @@ namespace WATA.LIS.VISION.CAM.Camera
                 _stopwatch_getqr.Stop();
                 double _getqr = _stopwatch_getqr.Elapsed.TotalMilliseconds;
 
-                // FPS 정보, GET QR 소요시간 프레임에 오버레이
-                //Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(150, 300), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
-                //Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(150, 550), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
-                Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(50, 150), HersheyFonts.HersheySimplex, 4, Scalar.Red, 8);
-                Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(50, 300), HersheyFonts.HersheySimplex, 4, Scalar.Red, 8);
-
                 // Resize the frame
                 Mat resizedFrame = new Mat();
                 Cv2.Resize(m_MatImage, resizedFrame, new OpenCvSharp.Size(640, 480));
+                Cv2.Rotate(m_MatImage, resizedFrame, RotateFlags.Rotate90Clockwise);
+
+                // FPS 정보, GET QR 소요시간 프레임에 오버레이
+                //Cv2.PutText(m_MatImage, $"FPS: {_fps:F2}", new OpenCvSharp.Point(150, 300), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                //Cv2.PutText(m_MatImage, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(150, 550), HersheyFonts.HersheySimplex, 10, Scalar.Red, 20);
+                Cv2.PutText(resizedFrame, $"FPS: {_fps:F2}", new OpenCvSharp.Point(10, 100), HersheyFonts.HersheySimplex, 3, Scalar.Red, 7);
+                Cv2.PutText(resizedFrame, $"GET QR: {_getqr:F2} ms", new OpenCvSharp.Point(10, 200), HersheyFonts.HersheySimplex, 3, Scalar.Red, 7);
+
                 byte[] currentFrameBytes = resizedFrame.ToBytes();
 
                 // Publish the event
@@ -290,8 +292,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         points[j] = new OpenCvSharp.Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
                                     }
 
-                                    // 바운딩 박스 그리기
-                                    Cv2.Polylines(frame, new[] { points }, isClosed: true, color: new Scalar(0, 255, 0), thickness: 2);
+                                    // 바운딩 박스 그리기 (빨간색, 굵기 4)
+                                    Cv2.Polylines(frame, new[] { points }, isClosed: true, color: new Scalar(0, 0, 255), thickness: 15);
                                 }
                             }
                         }

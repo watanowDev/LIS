@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj": {}
+    "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj": {
+    "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+        "projectUniqueName": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
         "projectName": "WATA.LIS.VISION.CAM",
-        "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
-        "packagesPath": "C:\\Users\\wata_iot_dev\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
+        "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\wata_iot_dev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -33,8 +33,8 @@
           "net8.0-windows10.0.18362": {
             "targetAlias": "net8.0-windows10.0.18362.0",
             "projectReferences": {
-              "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-                "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+              "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+                "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
               }
             }
           }
@@ -111,20 +111,20 @@
         }
       }
     },
-    "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+    "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
+        "projectUniqueName": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
         "projectName": "WATA.LIS.Core",
-        "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
-        "packagesPath": "C:\\Users\\wata_iot_dev\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
+        "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
+        "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\wata_iot_dev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],

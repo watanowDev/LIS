@@ -44,6 +44,7 @@ using NetMQ.Sockets;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Events.VisionCam;
 using Microsoft.Xaml.Behaviors.Media;
+using System.Net.NetworkInformation;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
@@ -115,10 +116,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool m_set_item = false;
 
         // ErrorCnt 데이터 클래스
-        private int m_errCnt_indicator;
-        private int m_errCnt_visioncam;
         private int m_errCnt_weight;
         private int m_errCnt_distance;
+        private int m_errCnt_indicator;
+        private int m_errCnt_visioncam;
+        private int m_errCnt_lidar3d;
+        private bool m_isError = false;
 
         // 서비스 로직 데이터 클래스
         private bool m_isPickUp = false;
@@ -448,62 +451,90 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            //else if (value == ePlayBuzzerLed.SEONSOR_ERROR)
-            //{
-            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-            //    model.LED_Pattern = eLEDPatterns.Pattern3;
-            //    model.LED_Color = eLEDColors.Red;
-            //    model.BuzzerPattern = eBuzzerPatterns.Pattern2;
-            //    model.BuzzerCount = 1;
-            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            //}
+            else if (value == ePlayBuzzerLed.DEVICE_ERROR)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern3;
+                model.LED_Color = eLEDColors.Red;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern2;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
 
-            //else if (value == ePlayBuzzerLed.SENSOR_ERROR_CLEAR)
-            //{
-            //    Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
-            //    model.LED_Pattern = eLEDPatterns.Continuous;
-            //    model.LED_Color = eLEDColors.Green;
-            //    model.BuzzerPattern = eBuzzerPatterns.Continuous;
-            //    model.BuzzerCount = 1;
-            //    _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
-            //}
+            else if (value == ePlayBuzzerLed.DEVICE_ERROR_CLEAR)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Continuous;
+                model.LED_Color = eLEDColors.Green;
+                model.BuzzerPattern = eBuzzerPatterns.Continuous;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
         }
 
 
         /// <summary>
-        /// Error Check
+        /// Sensor Error Check
         /// </summary>
         /// <param name="epcData"></param>
         private void ErrorCheckTimerEvent(object sender, EventArgs e)
         {
-            m_errCnt_indicator++;
-            m_errCnt_visioncam++;
             m_errCnt_weight++;
             m_errCnt_distance++;
+            m_errCnt_visioncam++;
+            //m_errCnt_lidar3d++;
+            m_errCnt_indicator++;
 
-            if (m_errCnt_indicator > 30)
+            if (m_errCnt_weight > 10 && m_errCnt_weight % 10 == 0)
             {
-                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
-                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSOR_ERROR);
-            }
-            else if (m_errCnt_visioncam > 30)
-            {
-                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
-                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSOR_ERROR);
-            }
-            else if (m_errCnt_weight > 30)
-            {
+                m_isError = true;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_weight);
                 Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
-                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSOR_ERROR);
             }
-            else if (m_errCnt_distance > 30)
+
+            if (m_errCnt_distance > 10 && m_errCnt_distance % 10 == 0)
             {
+                m_isError = true;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_distance);
                 Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
-                //Pattlite_Buzzer_LED(ePlayBuzzerLed.SEONSOR_ERROR);
             }
-            else
+
+            if (m_errCnt_visioncam > 10 && m_errCnt_visioncam % 10 == 0)
             {
-                //Pattlite_Buzzer_LED(ePlayBuzzerLed.ALARMCLEAR);
+                m_isError = true;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_visoncam);
+                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_errCnt_lidar3d > 10 && m_errCnt_lidar3d % 10 == 0)
+            {
+                m_isError = true;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar3d);
+                Tools.Log($"3D LiDAR disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_errCnt_indicator > 10 && m_errCnt_indicator % 10 == 0)
+            {
+                m_isError = true;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_indicator);
+                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_errCnt_weight <= 10 &&
+                m_errCnt_distance <= 10 &&
+                m_errCnt_visioncam <= 10 &&
+                m_errCnt_lidar3d <= 10 &&
+                m_errCnt_indicator <= 10 &&
+                m_isError == true)
+            {
+                m_isError = false;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR_CLEAR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_clear);
             }
         }
 
@@ -676,7 +707,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear QR Code
-            if (m_no_QRcnt > 80)
+            if (m_no_QRcnt > 50 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -826,12 +857,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 서브스크라이버 소켓을 5555 포트에 연결합니다.
                 _subscriberSocket.Connect("tcp://127.0.0.1:5001");
 
-                // 타임아웃 설정 (예: 5초)
-                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+                // 타임아웃 설정
+                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(10);
+
+                // _subscriberSocket가 정상적으로 열렸을 때
+                m_errCnt_lidar3d = 0;
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox Clark : {ex.Message}", Tools.ELogType.SystemLog);
+                m_errCnt_lidar3d = 10;
+                Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
@@ -850,10 +885,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 주제와 메시지를 결합하여 퍼블리시
                 _publisherSocket.SendFrame(message);
 
+                m_errCnt_lidar3d = 0;
                 Tools.Log($"SendToLivox : {message}", Tools.ELogType.ActionLog);
             }
             catch (Exception ex)
             {
+                m_errCnt_lidar3d++;
                 Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.ActionLog);
             }
         }
@@ -935,6 +972,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             if (status == "res")
             {
+                Tools.Log($"{status}", ELogType.DisplayLog);
                 m_errCnt_indicator = 0;
             }
 
@@ -952,7 +990,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_set_item = false;
                 Tools.Log($"{status}", ELogType.ActionLog);
 
-                if(m_isPickUp == true)
+                if (m_isPickUp == true)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.CLEAR_ITEM);
                 }
@@ -1101,7 +1139,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_error);
-                Thread.Sleep(500);
+                Thread.Sleep(1000);
             }
             // 앱 물류 선택 X, QR 코드 O
             else if (m_set_item == false && m_event_QRcode.Contains("wata"))
@@ -1136,6 +1174,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     break;
                 }
                 getLivoxctn++;
+                Thread.Sleep(100);
             }
 
             // 픽업 시 값 고정

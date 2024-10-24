@@ -136,6 +136,30 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("kr_clear_item.mp3");
                 }
+                else if (speaker == ePlayInfoSpeaker.device_error_clear)
+                {
+                    PlaySound("kr_device_error_clear.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_weight)
+                {
+                    PlaySound("kr_device_error_weight.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_distance)
+                {
+                    PlaySound("kr_device_error_distance.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_visoncam)
+                {
+                    PlaySound("kr_device_error_visoncam.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_lidar3d)
+                {
+                    PlaySound("kr_device_error_lidar3d.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_indicator)
+                {
+                    PlaySound("kr_device_error_indicator.mp3");
+                }
 
             }
             else //en
