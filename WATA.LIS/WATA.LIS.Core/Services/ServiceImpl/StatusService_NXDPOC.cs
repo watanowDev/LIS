@@ -794,7 +794,7 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"Weight Fail", Tools.ELogType.BackEndLog);
                 IsSendBackend = false;
 
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_fail);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_error);
 
 
                 Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.FAIL);
@@ -820,7 +820,7 @@ namespace WATA.LIS.Core.Services
             {
                 m_container_qr = m_qr = "NA";
                 Tools.Log($"QR Check Failed.", Tools.ELogType.BackEndLog);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_fail);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_error);
                 Pattlite_Buzzer_LED(ePlayBuzzerLed_NXDPOC.FAIL);
             }
 

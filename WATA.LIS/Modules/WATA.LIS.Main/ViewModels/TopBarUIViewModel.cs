@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.RFID;
-using WATA.LIS.Core.Events.VISION;
 using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
@@ -56,7 +55,7 @@ namespace WATA.LIS.Main.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<CurrentQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
             DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);

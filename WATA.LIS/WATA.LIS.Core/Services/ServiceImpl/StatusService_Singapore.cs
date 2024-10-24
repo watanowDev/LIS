@@ -753,7 +753,7 @@ namespace WATA.LIS.Core.Services
 
             }
 
-            else if (value == ePlayBuzzerLed.MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.QR_MEASRUE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern1;

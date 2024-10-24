@@ -221,7 +221,7 @@ namespace WATA.LIS.Core.Services
 
             if (status == "pick_up")
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.MEASRUE_OK);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASRUE_OK);
             }
         }
 
@@ -791,7 +791,7 @@ namespace WATA.LIS.Core.Services
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            else if (value == ePlayBuzzerLed.MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.QR_MEASRUE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern1;

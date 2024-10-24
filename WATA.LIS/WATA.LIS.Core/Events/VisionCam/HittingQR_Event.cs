@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WATA.LIS.Core.Events.VISION
+namespace WATA.LIS.Core.Events.VisionCam
 {
-    public class CurrentQR_Event : PubSubEvent<string>
+    public class HittingQR_Event : PubSubEvent<string>
     {
 
     }

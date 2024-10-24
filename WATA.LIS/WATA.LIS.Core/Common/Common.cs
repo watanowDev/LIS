@@ -80,19 +80,22 @@ namespace WATA.LIS.Core.Common
     }
     public enum ePlayBuzzerLed
     {
-        PIKCUP,
-        MEASRUE_OK,
-        SET_ITEM,
+        QR_PIKCUP,
+        QR_MEASRUE_OK,
         NO_QR_PICKUP,
         NO_QR_MEASRUE_OK,
+        SET_ITEM,
+        SET_ITEM_PICKUP,
+        SET_ITEM_MEASRUE_OK,
+        CLEAR_ITEM,
         DROP,
         ACTION_START,
         ACTION_FINISH,
         ACTION_FAIL,
-        SEONSOR_ERROR,
         EMERGENCY,
         EMERGENCY2,
-        CLEAR_ITEM
+        SEONSOR_ERROR,
+        SENSOR_ERROR_CLEAR
     }
 
     public enum ePlayBuzzerLed_NXDPOC
@@ -111,15 +114,11 @@ namespace WATA.LIS.Core.Common
 
     public enum ePlayInfoSpeaker
     {
-        size_check_complete,
-        size_check_start,
-        weight_check_complete,
-        weight_check_start,
-        weight_check_fail,
-        qr_check_complete,
-        qr_check_fail,
-        set_item,
-        clear_item,
+        qr_check_start, qr_check_complete, qr_check_error,
+        weight_check_start, weight_check_complete, weight_check_error,
+        size_check_start, size_check_complete, size_check_error,
+        weight_size_check_start, weight_size_check_complete, weight_size_check_error,
+        set_item, clear_item,
         dummy,
     }
 

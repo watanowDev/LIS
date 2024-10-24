@@ -59,11 +59,11 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("jp_weight_check_complete.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_fail)
+                else if (speaker == ePlayInfoSpeaker.weight_check_error)
                 {
                     PlaySound("jp_weight_error.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.qr_check_fail)
+                else if (speaker == ePlayInfoSpeaker.qr_check_error)
                 {
                     PlaySound("jp_qr_error.mp3");
                 }
@@ -76,13 +76,21 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             }
             else if (_ledBuzzer.InfoLanguage == "KR")
             {
-                if (speaker == ePlayInfoSpeaker.size_check_start)
+                if (speaker == ePlayInfoSpeaker.dummy)
                 {
-                    PlaySound("kr_size_check_start.mp3");
+                    PlaySound("dummy.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.size_check_complete)
+                else if (speaker == ePlayInfoSpeaker.qr_check_start)
                 {
-                    PlaySound("kr_size_check_complete.mp3");
+                    PlaySound("kr_qr_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.qr_check_complete)
+                {
+                    PlaySound("kr_qr_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.qr_check_error)
+                {
+                    PlaySound("kr_qr_check_error.mp3");
                 }
                 else if (speaker == ePlayInfoSpeaker.weight_check_start)
                 {
@@ -92,17 +100,33 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("kr_weight_check_complete.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_fail)
+                else if (speaker == ePlayInfoSpeaker.weight_check_error)
                 {
-                    PlaySound("kr_weight_error.mp3");
+                    PlaySound("kr_weight_check_error.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.qr_check_complete)
+                else if (speaker == ePlayInfoSpeaker.size_check_start)
                 {
-                    PlaySound("kr_qr_check_complete.mp3");
+                    PlaySound("kr_size_check_start.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.qr_check_fail)
+                else if (speaker == ePlayInfoSpeaker.size_check_complete)
                 {
-                    PlaySound("kr_qr_error.mp3");
+                    PlaySound("kr_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_error)
+                {
+                    PlaySound("kr_size_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_start)
+                {
+                    PlaySound("kr_weight_size_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_complete)
+                {
+                    PlaySound("kr_weight_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_error)
+                {
+                    PlaySound("kr_weight_size_check_error.mp3");
                 }
                 else if (speaker == ePlayInfoSpeaker.set_item)
                 {
@@ -111,10 +135,6 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 else if (speaker == ePlayInfoSpeaker.clear_item)
                 {
                     PlaySound("kr_clear_item.mp3");
-                }
-                else if (speaker == ePlayInfoSpeaker.dummy)
-                {
-                    PlaySound("dummy.mp3");
                 }
 
             }
@@ -139,11 +159,11 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("en_weight_check_complete");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_fail)
+                else if (speaker == ePlayInfoSpeaker.weight_check_error)
                 {
                     PlaySound("en_weight_error.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.qr_check_fail)
+                else if (speaker == ePlayInfoSpeaker.qr_check_error)
                 {
                     PlaySound("en_qr_error.mp3");
                 }
