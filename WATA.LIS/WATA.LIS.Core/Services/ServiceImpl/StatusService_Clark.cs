@@ -54,10 +54,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // Config 데이터 클래스
         private RFIDConfigModel rfidConfig;
-        private VisionConfigModel visionConfig;
+        private VisionCamConfigModel visionCamConfig;
         private WeightConfigModel weightConfig;
         private DistanceConfigModel distanceConfig;
         private LIVOXConfigModel livoxConfig;
+        private DisplayConfigModel displayConfig;
 
         // 기초 데이터 클래스
         private BasicInfoModel m_basicInfoModel;
@@ -118,9 +119,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         // ErrorCnt 데이터 클래스
         private int m_errCnt_weight;
         private int m_errCnt_distance;
-        private int m_errCnt_indicator;
+        private int m_errCnt_rfid;
         private int m_errCnt_visioncam;
         private int m_errCnt_lidar3d;
+        private int m_errCnt_indicator;
         private bool m_isError = false;
 
         // 서비스 로직 데이터 클래스
@@ -134,7 +136,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_MonitoringQR_Timer;
 
 
-        public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, IVisionModel visionModel, IWeightModel weightmodel, IDistanceModel distanceModel, ILivoxModel livoxModel)
+        public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, 
+                                    IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel, 
+                                    ILivoxModel livoxModel, IDisplayModel displayModel)
         {
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorEvent, ThreadOption.BackgroundThread, true);
@@ -146,11 +150,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
 
 
-            rfidConfig = (RFIDConfigModel)rfidmodel;
-            visionConfig = (VisionConfigModel)visionModel;
             weightConfig = (WeightConfigModel)weightmodel;
             distanceConfig = (DistanceConfigModel)distanceModel;
+            rfidConfig = (RFIDConfigModel)rfidmodel;
+            visionCamConfig = (VisionCamConfigModel)visioncCamModel;
             livoxConfig = (LIVOXConfigModel)livoxModel;
+            displayConfig = (DisplayConfigModel)displayModel;
 
 
             MainConfigModel mainobj = (MainConfigModel)main;
@@ -480,13 +485,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="epcData"></param>
         private void ErrorCheckTimerEvent(object sender, EventArgs e)
         {
-            m_errCnt_weight++;
-            m_errCnt_distance++;
-            m_errCnt_visioncam++;
-            //m_errCnt_lidar3d++;
-            m_errCnt_indicator++;
 
-            if (m_errCnt_weight > 5 && m_errCnt_weight % 10 == 0)
+            m_errCnt_weight = weightConfig.weight_enable == 0 ? m_errCnt_weight = 0 : m_errCnt_weight++;
+            m_errCnt_distance = distanceConfig.distance_enable == 0 ? m_errCnt_distance = 0 : m_errCnt_distance++;
+            m_errCnt_visioncam = visionCamConfig.vision_enable == 0 ? m_errCnt_visioncam = 0 : m_errCnt_visioncam++;
+            //m_errCnt_lidar3d++;
+            m_errCnt_indicator = displayConfig.display_enable == 0 ? m_errCnt_indicator = 0 : m_errCnt_indicator++;
+
+            if (weightConfig.weight_enable != 0 && m_errCnt_weight > 5 && m_errCnt_weight % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -494,7 +500,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_distance > 5 && m_errCnt_distance % 10 == 0)
+            if (distanceConfig.distance_enable != 0 && m_errCnt_distance > 5 && m_errCnt_distance % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -502,7 +508,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_visioncam > 5 && m_errCnt_visioncam % 10 == 0)
+            if (visionCamConfig.vision_enable != 0 && m_errCnt_visioncam > 5 && m_errCnt_visioncam % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -656,15 +662,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 foreach (var epc in epcData)
                 {
-                    Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.READCNT}, TS:{epc.TS}", ELogType.RFIDLog);
+                    //Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.READCNT}, TS:{epc.TS}", ELogType.RFIDLog);
                 }
-                Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].READCNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
+                //Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].READCNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
+
+                m_rfidModel.EPC = epcData[0].EPC;
+                m_rfidModel.RSSI = epcData[0].RSSI;
+                m_rfidModel.READCNT = epcData[0].READCNT;
+                m_rfidModel.TS = epcData[0].TS;
+            }
+            else
+            {
+                m_rfidModel.EPC = "";
+                m_rfidModel.RSSI = 0;
+                m_rfidModel.READCNT = 0;
+                m_rfidModel.TS = DateTime.Now;
             }
 
-            m_rfidModel.EPC = epcData[0].EPC;
-            m_rfidModel.RSSI = epcData[0].RSSI;
-            m_rfidModel.READCNT = epcData[0].READCNT;
-            m_rfidModel.TS = epcData[0].TS;
+            _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_rfidModel.EPC);
         }
 
 
@@ -1021,10 +1036,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
             m_indicatorModel.forklift_status.networkStatus = true;
-            m_indicatorModel.forklift_status.weightSensorStatus = m_errCnt_weight > 5 ? false : true;
-            m_indicatorModel.forklift_status.heightSensorStatus = m_errCnt_distance > 5 ? false : true;
-            m_indicatorModel.forklift_status.rfidStatus = true;
-            m_indicatorModel.forklift_status.visionCamStatus = m_errCnt_visioncam > 5 ? false : true;
+            m_indicatorModel.forklift_status.weightSensorStatus = weightConfig.weight_enable != 0 && m_errCnt_weight > 5 ? false : true;
+            m_indicatorModel.forklift_status.heightSensorStatus = distanceConfig.distance_enable != 0 && m_errCnt_distance > 5 ? false : true;
+            m_indicatorModel.forklift_status.rfidStatus = rfidConfig.rfid_enable != 0 && m_errCnt_rfid > 5 ? false : true;
+            m_indicatorModel.forklift_status.visionCamStatus = visionCamConfig.vision_enable != 0 && m_errCnt_visioncam > 5 ? false : true;
             m_indicatorModel.forklift_status.lidar2dStatus = true;
             m_indicatorModel.forklift_status.lidar3dStatus = true;
 

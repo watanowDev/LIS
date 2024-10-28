@@ -46,7 +46,10 @@ namespace WATA.LIS
 
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel, ILivoxModel livoxmodel) = parser.LoadJsonfile();
+            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, 
+                IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, 
+                IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel, 
+                ILivoxModel livoxmodel, IDisplayModel displaymodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
             containerRegistry.RegisterSingleton<IDistanceModel>(x => distance);
@@ -58,6 +61,7 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<INAVModel>(x => navmodel);
             containerRegistry.RegisterSingleton<IVisionCamModel>(x => visioncammodel);
             containerRegistry.RegisterSingleton<ILivoxModel>(x => livoxmodel);
+            containerRegistry.RegisterSingleton<IDisplayModel>(x => displaymodel);
 
             if (!containerRegistry.IsRegistered<IWeightModel>())
                 containerRegistry.RegisterSingleton<IWeightModel, WeightConfigModel>();
@@ -88,6 +92,9 @@ namespace WATA.LIS
 
             if (!containerRegistry.IsRegistered<ILivoxModel>())
                 containerRegistry.RegisterSingleton<ILivoxModel, LIVOXConfigModel>();
+
+            if (!containerRegistry.IsRegistered<IDisplayModel>())
+                containerRegistry.RegisterSingleton<IDisplayModel, DisplayConfigModel>();
 
 
             MainConfigModel mainobj = (MainConfigModel)main;

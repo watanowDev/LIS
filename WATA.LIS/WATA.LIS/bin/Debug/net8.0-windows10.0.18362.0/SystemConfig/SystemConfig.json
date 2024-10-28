@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "Clark", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
+		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
 		"workLocationId" : "PANTOS_FLAT_001",
 		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
 		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
@@ -10,17 +10,20 @@
 	},
 	"led_buzzer": 
 	{
-		"volume": 1,
+		"led_enable": 1,
+		"volume": 0,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
-	"distancesensor": 
+	"distance_sensor": 
 	{
+		"distance_enable" : 1,
 		"model_name": "TF_Mini",
 		"comport": "COM7",
 		"pick_up_distance_threshold" : 100
 	},
-	"weightsensor": 
+	"weight_sensor": 
 	{
+		"weight_enable": 1,
 		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
@@ -39,9 +42,9 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_enable" : 0,
+		"rfid_enable" : 1,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
-		"comport": "COM6",
+		"comport": "COM8",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
 		"radio_power": 28,
 		"tx_on_time": 200,
@@ -66,13 +69,17 @@
 		"IP" : "169.254.4.63",
 		"PORT" : 2111
 	},
-	"QR":
+	"vision":
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
 		"vision_id" : "admin",
 		"vision_pw" : "wata2024"
+	},
+	"display":
+	{
+		display_enable: 0
 	}
 }

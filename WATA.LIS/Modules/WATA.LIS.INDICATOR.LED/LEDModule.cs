@@ -3,6 +3,7 @@ using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
 using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.INDICATOR.LED.StatusLED;
 using WATA.LIS.INDICATOR.LED.Views;
 
@@ -19,6 +20,13 @@ namespace WATA.LIS.INDICATOR.LED
             Patlite.Init();
 
             Speaker spekaer = new Speaker(eventAggregator, ledBuzzer);
+
+            Led_Buzzer_ConfigModel led_Buzzer_ConfigModel = (Led_Buzzer_ConfigModel)ledBuzzer;
+
+            if (led_Buzzer_ConfigModel.led_enable == 0)
+            {
+                return;
+            }
 
             spekaer.Init();
         }

@@ -122,10 +122,19 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 return;
             }
 
+            
+
             try
             {
                 //Start reading
                 TagReadData[] tagsRead = await Task.Run(() => reader.Read(800));
+
+                // If no tags are read, return
+                if (tagsRead.Length == 0)
+                {
+                    _eventAggregator.GetEvent<Keonn2chEvent>().Publish(new List<Keonn2ch_Model>());
+                    return;
+                }
 
                 List<TagReadData> filteredTags = new List<TagReadData>();
 

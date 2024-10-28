@@ -56,6 +56,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
             DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -64,6 +65,11 @@ namespace WATA.LIS.Main.ViewModels
 
 
             VisionCamEvent = "None";
+        }
+
+        private void OnCurrentRFIDEvent(string obj)
+        {
+            RFIDEvent = obj;
         }
 
         private void OnCurrentQREvent(string obj)

@@ -23,6 +23,11 @@ namespace WATA.LIS.SENSOR.WEIGHT
 
             WeightConfigModel _weightConfig = (WeightConfigModel)_weightmodel;
 
+            if (_weightConfig.weight_enable == 0)
+            {
+                return;
+            }
+
             if (_weightConfig.sensor_value == "TJ")
             {
                 Tools.Log($"TJ", Tools.ELogType.WeightLog);

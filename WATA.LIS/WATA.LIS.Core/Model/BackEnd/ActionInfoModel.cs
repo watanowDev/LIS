@@ -17,17 +17,17 @@ namespace WATA.LIS.Core.Model.BackEnd
         public string projectId { get; set; }
         public string mappingId { get; set; }
         public string mapId { get; set; }
-        public string action { get; set; }
         public string vehicleId { get; set; }
+        public string action { get; set; }
+        public string loadRate { get; set; }
+        public float loadWeight { get; set; }
+        public string height { get; set; }
         public string epc { get; set; }
         public string cepc { get; set; }
-        public bool shelf { get; set; }
-        public string height { get; set; }
         public string loadId { get; set; }
-        public string loadRate { get; set; }
+        public bool shelf { get; set; }
         public string loadMatrixRaw { get; set; }
         public string loadMatrixColumn { get; set; }
-        public float loadWeight { get; set; }
         public float visionWidth { get; set; }
         public float visionHeight { get; set; }
         public float visionDepth { get; set; }

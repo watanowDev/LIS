@@ -9,6 +9,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
 {
     public class WeightConfigModel : IWeightModel
     {
+        public int weight_enable { get; set; }
         public string ComPort { get; set; }
         public int loadweight_timeout { get; set; }
 

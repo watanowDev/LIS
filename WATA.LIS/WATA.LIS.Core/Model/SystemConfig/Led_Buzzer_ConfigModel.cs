@@ -9,6 +9,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
 {
     public class Led_Buzzer_ConfigModel : ILedBuzzertModel
     {
+        public int led_enable { get; set; }
         public int volume { get; set; }
         public string InfoLanguage { get; set; }
     }

@@ -16,6 +16,7 @@ namespace WATA.LIS.INDICATOR.DISPLAY
     {
 
         private readonly IEventAggregator _eventAggregator;
+        private readonly IDisplayModel _displaymodel;
 
 
         //ZMQServer _IndicatorServer;
@@ -24,9 +25,17 @@ namespace WATA.LIS.INDICATOR.DISPLAY
 
 
 
-        public DISPLAYModule(IEventAggregator eventAggregator)
+        public DISPLAYModule(IEventAggregator eventAggregator, IDisplayModel displayModel)
         {
             _eventAggregator = eventAggregator;
+            _displaymodel = displayModel;
+
+            DisplayConfigModel _displayConfig = (DisplayConfigModel)_displaymodel;
+
+            if (_displayConfig.display_enable == 0)
+            {
+                return;
+            }
 
             TcpServerSimple _tcpServer = new TcpServerSimple(_eventAggregator);
             _tcpServer.initAsync();

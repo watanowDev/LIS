@@ -24,6 +24,12 @@ namespace WATA.LIS.SENSOR.UHF_RFID
 
             RFIDConfigModel rfid_config = (RFIDConfigModel)rfidmodel;
 
+
+            if (rfid_config.rfid_enable == 0)
+            {
+                return;
+            }
+
             if (rfid_config.rfid_name == "Keonn2ch")
             {
                 Keonn_2ch rfid = new Keonn_2ch(_eventAggregator, _rfidmodel);
