@@ -85,7 +85,9 @@ namespace WATA.LIS.Core.Services
 
         // RFID 데이터 클래스
         private Keonn2ch_Model m_rfidModel;
+        private string m_curr_epc = "";
         private string m_event_epc = "";
+        private int m_no_epcCnt;
 
         // VisionCam 데이터 클래스
         private VisionCamModel m_visionModel;
@@ -114,8 +116,8 @@ namespace WATA.LIS.Core.Services
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
-        private int m_Command = 0;
-        private bool m_set_item = false;
+        //private int m_Command = 0;
+        //private bool m_set_item = false;
 
         // ErrorCnt 데이터 클래스
         private int m_errCnt_weight;
@@ -167,23 +169,30 @@ namespace WATA.LIS.Core.Services
 
 
 
-            //DispatcherTimer AliveTimer = new DispatcherTimer();
-            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            //AliveTimer.Start();
+            DispatcherTimer AliveTimer = new DispatcherTimer();
+            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            AliveTimer.Start();
 
 
 
-            //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
-            //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            //SendProdDataTimer.Start
+            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            SendProdDataTimer.Start();
 
 
             m_ErrorCheck_Timer = new DispatcherTimer();
             m_ErrorCheck_Timer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             m_ErrorCheck_Timer.Tick += new EventHandler(ErrorCheckTimerEvent);
             m_ErrorCheck_Timer.Start();
+
+
+
+            m_MonitoringQR_Timer = new DispatcherTimer();
+            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
+            m_MonitoringQR_Timer.Start();
 
 
 
@@ -221,7 +230,6 @@ namespace WATA.LIS.Core.Services
             m_indicatorModel = new IndicatorModel();
             m_visionModel = new VisionCamModel();
 
-            IndicatorSendTimerEvent(null, null);
             InitGetPickupStatus();
             GetCellListFromPlatform();
             GetBasicInfoFromBackEnd();
@@ -661,11 +669,8 @@ namespace WATA.LIS.Core.Services
         {
             if (epcData != null && epcData.Count > 0)
             {
-                foreach (var epc in epcData)
-                {
-                    //Tools.Log($"All EPC:{epc.EPC}, RSSI:{epc.RSSI}, COUNT:{epc.READCNT}, TS:{epc.TS}", ELogType.RFIDLog);
-                }
-                //Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].READCNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
+                m_no_epcCnt = 0;
+                m_curr_epc = epcData[0].EPC;
 
                 m_rfidModel.CONNECTED = true;
                 m_rfidModel.EPC = epcData[0].EPC;
@@ -673,19 +678,36 @@ namespace WATA.LIS.Core.Services
                 m_rfidModel.READCNT = epcData[0].READCNT;
                 m_rfidModel.TS = epcData[0].TS;
             }
-            else
-            {
-                m_rfidModel.CONNECTED = false;
-                m_rfidModel.EPC = "";
-                m_rfidModel.RSSI = 0;
-                m_rfidModel.READCNT = 0;
-                m_rfidModel.TS = DateTime.Now;
-            }
-
-            m_event_epc = m_rfidModel.EPC;
-            _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
         }
 
+        private void MonitoringEPCTimerEvent(object sender, EventArgs e)
+        {
+            // EPC 인식한 상태
+            if (m_curr_epc != "")
+            {
+                // 새로 인식된 EPC일 경우
+                if (m_event_epc != m_curr_epc)
+                {
+                    m_event_epc = m_curr_epc;
+                    _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
+                    SendBackEndContainerGateEvent();
+                }
+            }
+
+            // EPC 인식 없을 시 No EPC 카운트
+            if (m_rfidModel.EPC == "")
+            {
+                m_no_epcCnt++;
+                m_curr_epc = "";
+            }
+
+            // Clear EPC Code
+            if (m_no_epcCnt > 50)
+            {
+                m_event_epc = "";
+                _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
+            }
+        }
 
         /// <summary>
         /// VisonCam 센서
@@ -698,7 +720,7 @@ namespace WATA.LIS.Core.Services
             m_visionModel = model;
 
             // QR에 wata 포함 시 QR 할당
-            if (m_visionModel.QR.Contains("wata") == m_set_item == false)
+            if (m_visionModel.QR.Contains("wata") && m_isPickUp == false)
             {
                 m_no_QRcnt = 0;
                 m_curr_QRcode = m_visionModel.QR;
@@ -708,12 +730,11 @@ namespace WATA.LIS.Core.Services
         private void MonitoringQRTimerEvent(object sender, EventArgs e)
         {
             // 픽업 전 QR 인식한 상태
-            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
+            if (m_curr_QRcode.Contains("wata") && m_isPickUp == false && m_event_weight < 30)
             {
                 // 새로 인식된 QR일 경우
                 if (m_event_QRcode != m_curr_QRcode)
                 {
-                    m_Command = -1;
                     m_event_QRcode = m_curr_QRcode;
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_complete);
                     _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
@@ -721,22 +742,15 @@ namespace WATA.LIS.Core.Services
             }
 
             // QR에 wata 없을 시 No QR 카운트
-            if (m_visionModel.QR == "" && m_set_item == false)
+            if (m_visionModel.QR == "" && m_isPickUp == false)
             {
                 m_no_QRcnt++;
                 m_curr_QRcode = "";
             }
 
-            // 앱 물류 지정시 No QR 카운트 초기화
-            if (m_set_item == true)
-            {
-                m_no_QRcnt = 0;
-            }
-
             // Clear QR Code
             if (m_no_QRcnt > 30 && m_isPickUp == false)
             {
-                m_Command = 0;
                 m_event_QRcode = "";
                 _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
             }
@@ -1002,36 +1016,10 @@ namespace WATA.LIS.Core.Services
                 Tools.Log($"{status}", ELogType.DisplayLog);
                 m_errCnt_indicator = 0;
             }
-
-            if (status == "set_item")
-            {
-                m_set_item = true;
-                Tools.Log($"{status}", ELogType.ActionLog);
-
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.set_item);
-            }
-
-            if (status == "clear_item")
-            {
-                m_set_item = false;
-                Tools.Log($"{status}", ELogType.ActionLog);
-
-                if (m_isPickUp == true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.CLEAR_ITEM);
-                }
-                else if (m_isPickUp == false)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
-                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.clear_item);
-                }
-            }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
         {
-            m_indicatorModel.forklift_status.command = m_Command;
             m_indicatorModel.forklift_status.weightTotal = m_event_weight;
             m_indicatorModel.forklift_status.QR = m_event_QRcode;
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
@@ -1049,9 +1037,6 @@ namespace WATA.LIS.Core.Services
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            //Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
-            //Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -1068,7 +1053,7 @@ namespace WATA.LIS.Core.Services
         private void SendAliveEvent()
         {
             AliveModel alive_obj = new AliveModel();
-            alive_obj.alive.workLocationId = "CTR_PROJECT";
+            alive_obj.alive.workLocationId = m_workLocationId;
             alive_obj.alive.vehicleId = m_vehicle;
             alive_obj.alive.projectId = m_projectId;
             alive_obj.alive.mappingId = m_mappingId;
@@ -1087,7 +1072,6 @@ namespace WATA.LIS.Core.Services
 
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-
         }
 
         private void SendProdDataToBackEnd(object sender, EventArgs e)
@@ -1140,12 +1124,10 @@ namespace WATA.LIS.Core.Services
         {
             if (m_weightModel.GrossWeight < 30)
             {
-                m_Command = 0;
                 m_isPickUp = false;
             }
             else
             {
-                m_Command = 1;
                 m_isPickUp = true;
             }
         }
@@ -1169,27 +1151,17 @@ namespace WATA.LIS.Core.Services
             if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.01) return;
 
 
-            // 앱 물류 선택 X, QR 코드 X
-            if (m_set_item == false && m_event_QRcode == "")
+            // QR 코드 X
+            if (m_event_QRcode == "")
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_error);
                 Thread.Sleep(1000);
             }
-            // 앱 물류 선택 X, QR 코드 O
-            else if (m_set_item == false && m_event_QRcode.Contains("wata"))
+            // QR 코드 O
+            else if (m_event_QRcode.Contains("wata"))
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
-            }
-            // 앱 물류 선택 O, QR 코드 X
-            else if (m_set_item == true && m_event_QRcode == "")
-            {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
-            }
-            // 앱 물류 선택 O, QR 코드 O
-            else if (m_set_item == true && m_event_QRcode.Contains("wata"))
-            {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
             }
 
             m_isPickUp = true;
@@ -1222,36 +1194,26 @@ namespace WATA.LIS.Core.Services
             m_event_length = m_livoxModel.length;
             m_event_points = m_livoxModel.points;
 
-            // 앱 물류 선택 X, QR 코드 X
-            if (m_set_item == false && m_event_QRcode == "")
+            // QR 코드 X
+            if (m_event_QRcode == "")
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASRUE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
             }
-            // 앱 물류 선택 X, QR 코드 O
-            else if (m_set_item == false && m_event_QRcode.Contains("wata"))
+            // QR 코드 O
+            else if (m_event_QRcode.Contains("wata"))
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASRUE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
             }
-            // 앱 물류 선택 O, QR 코드 X
-            else if (m_set_item == true && m_event_QRcode == "")
-            {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASRUE_OK);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
-            }
-            // 앱 물류 선택 O, QR 코드 O
-            else if (m_set_item == true && m_event_QRcode.Contains("wata"))
-            {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASRUE_OK);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
-            }
 
+            // 백엔드 전송
             SendBackEndPickupAction();
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height{m_event_height}, depth:{m_event_length}", ELogType.ActionLog);
-            Tools.Log($"Pickup Event!!! QR Code:{m_curr_QRcode}", ELogType.ActionLog);
+            Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}", ELogType.ActionLog);
+            Tools.Log($"Pickup Event!!! EPC Data:{m_event_epc}", ELogType.ActionLog);
         }
 
         private void IsDropTimerEvent(object sender, EventArgs e)
@@ -1297,9 +1259,8 @@ namespace WATA.LIS.Core.Services
             m_event_points = "";
             m_event_epc = "";
 
-            // 인디케이터 통신 핸들
-            m_Command = 0;
-            m_set_item = false;
+            // 백엔드 전송
+            SendBackEndDropAction();
 
             // 부저 컨트롤
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
@@ -1364,6 +1325,20 @@ namespace WATA.LIS.Core.Services
         private void SendBackEndDropAction()
         {
 
+        }
+
+        private void SendBackEndContainerGateEvent()
+        {
+            if (m_event_epc == "") return;
+
+            ContainerGateEventModel model = new ContainerGateEventModel();
+            model.containerInfo.vehicleId = m_vehicle;
+            model.containerInfo.projectId = m_projectId;
+            model.containerInfo.mappingId = m_mappingId;
+            model.containerInfo.mapId = m_mapId;
+            model.containerInfo.cepc = m_zoneName + m_event_epc;
+            model.containerInfo.depc = m_zoneName + m_event_epc;
+            model.containerInfo.loadId = m_event_QRcode;
         }
     }
 }
