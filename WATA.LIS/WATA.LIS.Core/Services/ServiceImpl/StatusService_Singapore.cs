@@ -169,17 +169,17 @@ namespace WATA.LIS.Core.Services
 
 
 
-            DispatcherTimer AliveTimer = new DispatcherTimer();
-            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            AliveTimer.Start();
+            //DispatcherTimer AliveTimer = new DispatcherTimer();
+            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            //AliveTimer.Start();
 
 
 
-            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
-            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            SendProdDataTimer.Start();
+            //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            //SendProdDataTimer.Start();
 
 
             m_ErrorCheck_Timer = new DispatcherTimer();
@@ -1339,6 +1339,13 @@ namespace WATA.LIS.Core.Services
             model.containerInfo.cepc = m_zoneName + m_event_epc;
             model.containerInfo.depc = m_zoneName + m_event_epc;
             model.containerInfo.loadId = m_event_QRcode;
+
+            string json_body = Util.ObjectToJson(model);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndContainer;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
     }
 }
