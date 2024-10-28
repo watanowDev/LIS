@@ -486,7 +486,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //m_errCnt_lidar3d++;
             m_errCnt_indicator++;
 
-            if (m_errCnt_weight > 3 && m_errCnt_weight % 3 == 0)
+            if (m_errCnt_weight > 5 && m_errCnt_weight % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -494,7 +494,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_distance > 3 && m_errCnt_distance % 3 == 0)
+            if (m_errCnt_distance > 5 && m_errCnt_distance % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -502,7 +502,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_visioncam > 3 && m_errCnt_visioncam % 3 == 0)
+            if (m_errCnt_visioncam > 5 && m_errCnt_visioncam % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -510,15 +510,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_lidar3d > 3 && m_errCnt_lidar3d % 3 == 0)
+            if (m_errCnt_lidar3d > 5 && m_errCnt_lidar3d % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar3d);
-                Tools.Log($"3D LiDAR disconnected!!!", ELogType.SystemLog);
+                Tools.Log($"5D LiDAR disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_indicator > 3 && m_errCnt_indicator % 3 == 0)
+            if (m_errCnt_indicator > 5 && m_errCnt_indicator % 10 == 0)
             {
                 m_isError = true;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
@@ -526,11 +526,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
             }
 
-            if (m_errCnt_weight <= 3 &&
-                m_errCnt_distance <= 3 &&
-                m_errCnt_visioncam <= 3 &&
-                m_errCnt_lidar3d <= 3 &&
-                m_errCnt_indicator <= 3 &&
+            if (m_errCnt_weight <= 5 &&
+                m_errCnt_distance <= 5 &&
+                m_errCnt_visioncam <= 5 &&
+                m_errCnt_lidar3d <= 5 &&
+                m_errCnt_indicator <= 5 &&
                 m_isError == true)
             {
                 m_isError = false;
@@ -873,7 +873,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             catch (Exception ex)
             {
-                m_errCnt_lidar3d = 3;
+                m_errCnt_lidar3d = 5;
                 Tools.Log($"Failed InitLivox : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
@@ -1021,10 +1021,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
             m_indicatorModel.forklift_status.networkStatus = true;
-            m_indicatorModel.forklift_status.weightSensorStatus = m_errCnt_weight > 3 ? false : true;
-            m_indicatorModel.forklift_status.heightSensorStatus = m_errCnt_distance > 3 ? false : true;
+            m_indicatorModel.forklift_status.weightSensorStatus = m_errCnt_weight > 5 ? false : true;
+            m_indicatorModel.forklift_status.heightSensorStatus = m_errCnt_distance > 5 ? false : true;
             m_indicatorModel.forklift_status.rfidStatus = true;
-            m_indicatorModel.forklift_status.visionCamStatus = m_errCnt_visioncam > 3 ? false : true;
+            m_indicatorModel.forklift_status.visionCamStatus = m_errCnt_visioncam > 5 ? false : true;
             m_indicatorModel.forklift_status.lidar2dStatus = true;
             m_indicatorModel.forklift_status.lidar3dStatus = true;
 
@@ -1112,7 +1112,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
         /// <summary>
-        /// 서비스 로직
+        /// 비즈니스 로직
         /// </summary>
         /// <param name="naviX"></param>
         /// <param name="naviY"></param>
@@ -1141,6 +1141,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_weightModel.GrossWeight < 30) return;
 
             if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 4) return;
+
+            int currentWeight = m_weightModel.GrossWeight;
+            int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
+
+            if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.01) return;
 
 
             // 앱 물류 선택 X, QR 코드 X

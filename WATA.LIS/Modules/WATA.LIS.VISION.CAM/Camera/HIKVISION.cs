@@ -208,7 +208,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 if (m_MatImage.Empty())
                 {
-                    openVisionCam();
+                    //openVisionCam();
                     Tools.Log($"No Image", Tools.ELogType.SystemLog);
                     return;
                 }
