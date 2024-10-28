@@ -667,6 +667,7 @@ namespace WATA.LIS.Core.Services
                 }
                 //Tools.Log($"Most EPC:{epcData[0].EPC}, RSSI:{epcData[0].RSSI}, COUNT:{epcData[0].READCNT}, TS:{epcData[0].TS}", ELogType.RFIDLog);
 
+                m_rfidModel.CONNECTED = true;
                 m_rfidModel.EPC = epcData[0].EPC;
                 m_rfidModel.RSSI = epcData[0].RSSI;
                 m_rfidModel.READCNT = epcData[0].READCNT;
@@ -674,6 +675,7 @@ namespace WATA.LIS.Core.Services
             }
             else
             {
+                m_rfidModel.CONNECTED = false;
                 m_rfidModel.EPC = "";
                 m_rfidModel.RSSI = 0;
                 m_rfidModel.READCNT = 0;
@@ -1161,8 +1163,10 @@ namespace WATA.LIS.Core.Services
 
             int currentWeight = m_weightModel.GrossWeight;
             int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
+            int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
 
             if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.01) return;
+            if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.01) return;
 
 
             // 앱 물류 선택 X, QR 코드 X
@@ -1318,8 +1322,8 @@ namespace WATA.LIS.Core.Services
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
             ActionObj.actionInfo.height = m_event_height.ToString();
-            ActionObj.actionInfo.epc = "DP" + m_zoneName + m_event_epc;
-            ActionObj.actionInfo.cepc = "DP" + m_zoneName + m_event_epc;
+            ActionObj.actionInfo.epc = m_zoneName + m_event_epc;
+            ActionObj.actionInfo.cepc = m_zoneName + m_event_epc;
             ActionObj.actionInfo.loadId = m_event_QRcode;
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
@@ -1355,6 +1359,11 @@ namespace WATA.LIS.Core.Services
             post_obj.type = eMessageType.BackEndAction;
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+        }
+
+        private void SendBackEndDropAction()
+        {
+
         }
     }
 }

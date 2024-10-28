@@ -168,6 +168,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             foreach (TagReadData tag in tagsRead)
             {
                 Keonn2ch_Model keonn2chEventModel = new Keonn2ch_Model();
+                keonn2chEventModel.CONNECTED = true;
                 keonn2chEventModel.EPC = tag.EpcString;
                 keonn2chEventModel.TS = tag.Time;
                 keonn2chEventModel.RSSI = tag.Rssi;

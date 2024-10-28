@@ -1159,8 +1159,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             int currentWeight = m_weightModel.GrossWeight;
             int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
+            int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
 
             if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.01) return;
+            if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.01) return;
 
 
             // 앱 물류 선택 X, QR 코드 X
