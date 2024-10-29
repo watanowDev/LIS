@@ -18,4 +18,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ob_csharp">
+      <HintPath>Model\ob_csharp.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>
