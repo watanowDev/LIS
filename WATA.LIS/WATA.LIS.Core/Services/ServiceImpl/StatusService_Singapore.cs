@@ -191,15 +191,16 @@ namespace WATA.LIS.Core.Services
 
             m_MonitoringQR_Timer = new DispatcherTimer();
             m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
+            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringQRTimerEvent);
             m_MonitoringQR_Timer.Start();
 
 
 
             m_MonitoringQR_Timer = new DispatcherTimer();
             m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringQRTimerEvent);
+            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
             m_MonitoringQR_Timer.Start();
+
 
 
             m_Indicator_Timer = new DispatcherTimer();
@@ -386,7 +387,7 @@ namespace WATA.LIS.Core.Services
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            else if (value == ePlayBuzzerLed.QR_MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.QR_MEASURE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
@@ -406,7 +407,7 @@ namespace WATA.LIS.Core.Services
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            else if (value == ePlayBuzzerLed.NO_QR_MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.NO_QR_MEASURE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
@@ -436,7 +437,7 @@ namespace WATA.LIS.Core.Services
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            else if (value == ePlayBuzzerLed.SET_ITEM_MEASRUE_OK)
+            else if (value == ePlayBuzzerLed.SET_ITEM_MEASURE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
@@ -667,7 +668,7 @@ namespace WATA.LIS.Core.Services
         /// <param name="epcData"></param>
         private void OnRfidSensorEvent(List<Keonn2ch_Model> epcData)
         {
-            if (epcData != null && epcData.Count > 0)
+            if (epcData != null && epcData.Count > 0 && m_isPickUp == true)
             {
                 m_no_epcCnt = 0;
                 m_curr_epc = epcData[0].EPC;
@@ -678,12 +679,22 @@ namespace WATA.LIS.Core.Services
                 m_rfidModel.READCNT = epcData[0].READCNT;
                 m_rfidModel.TS = epcData[0].TS;
             }
+            else if (epcData != null && epcData.Count == 0 && m_isPickUp == false)
+            {
+                m_curr_epc = "";
+
+                m_rfidModel.CONNECTED = true;
+                m_rfidModel.EPC = "";
+                m_rfidModel.RSSI = 0;
+                m_rfidModel.READCNT = 0;
+                m_rfidModel.TS = DateTime.Now;
+            }
         }
 
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
             // EPC 인식한 상태
-            if (m_curr_epc != "")
+            if (m_curr_epc != "" && m_isPickUp == true)
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -1115,6 +1126,133 @@ namespace WATA.LIS.Core.Services
 
 
         /// <summary>
+        /// 백엔드 통신 핸들
+        /// </summary>
+        private void SendBackEndPickupAction()
+        {
+            ActionInfoModel ActionObj = new ActionInfoModel();
+            ActionObj.actionInfo.workLocationId = m_workLocationId;
+            ActionObj.actionInfo.vehicleId = m_vehicle;
+            ActionObj.actionInfo.projectId = m_projectId;
+            ActionObj.actionInfo.mappingId = m_mappingId;
+            ActionObj.actionInfo.mapId = m_mapId;
+            ActionObj.actionInfo.action = "pickup";
+            ActionObj.actionInfo.loadRate = m_event_weight.ToString();
+            ActionObj.actionInfo.loadWeight = m_event_weight;
+            ActionObj.actionInfo.height = m_event_height.ToString();
+            ActionObj.actionInfo.epc = m_zoneName + m_event_epc;
+            ActionObj.actionInfo.cepc = m_zoneName + m_event_epc;
+            ActionObj.actionInfo.loadId = m_event_QRcode;
+            ActionObj.actionInfo.shelf = false;
+            ActionObj.actionInfo.loadMatrixRaw = "10";
+            ActionObj.actionInfo.loadMatrixColumn = "10";
+            ActionObj.actionInfo.visionWidth = m_event_width;
+            ActionObj.actionInfo.visionHeight = m_event_height;
+            ActionObj.actionInfo.visionDepth = m_event_length;
+            ActionObj.actionInfo.loadMatrix = [10, 10, 10];
+            ActionObj.actionInfo.plMatrix = m_event_points;
+
+            if (m_zoneId == null || m_zoneId.Equals(""))
+            {
+                ActionObj.actionInfo.zoneId = "NA";
+            }
+            else
+            {
+                ActionObj.actionInfo.zoneId = m_zoneId;
+            }
+
+
+            if (m_zoneName == null || m_zoneId.Equals(""))
+            {
+                ActionObj.actionInfo.zoneName = "NA";
+            }
+            else
+            {
+                ActionObj.actionInfo.zoneName = m_zoneName;
+            }
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+        }
+
+        private void SendBackEndDropAction()
+        {
+            ActionInfoModel ActionObj = new ActionInfoModel();
+            ActionObj.actionInfo.workLocationId = m_workLocationId;
+            ActionObj.actionInfo.vehicleId = m_vehicle;
+            ActionObj.actionInfo.projectId = m_projectId;
+            ActionObj.actionInfo.mappingId = m_mappingId;
+            ActionObj.actionInfo.mapId = m_mapId;
+            ActionObj.actionInfo.action = "drop";
+            ActionObj.actionInfo.loadRate = "";
+            ActionObj.actionInfo.loadWeight = 0;
+            ActionObj.actionInfo.height = "";
+            ActionObj.actionInfo.epc = "";
+            ActionObj.actionInfo.cepc = "";
+            ActionObj.actionInfo.loadId = "";
+            ActionObj.actionInfo.shelf = false;
+            ActionObj.actionInfo.loadMatrixRaw = "10";
+            ActionObj.actionInfo.loadMatrixColumn = "10";
+            ActionObj.actionInfo.visionWidth = 0;
+            ActionObj.actionInfo.visionHeight = 0;
+            ActionObj.actionInfo.visionDepth = 0;
+            ActionObj.actionInfo.loadMatrix = [10, 10, 10];
+            ActionObj.actionInfo.plMatrix = "";
+
+            if (m_zoneId == null || m_zoneId.Equals(""))
+            {
+                ActionObj.actionInfo.zoneId = "NA";
+            }
+            else
+            {
+                ActionObj.actionInfo.zoneId = m_zoneId;
+            }
+
+
+            if (m_zoneName == null || m_zoneId.Equals(""))
+            {
+                ActionObj.actionInfo.zoneName = "NA";
+            }
+            else
+            {
+                ActionObj.actionInfo.zoneName = m_zoneName;
+            }
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+        }
+
+        private void SendBackEndContainerGateEvent()
+        {
+            if (m_event_epc == "") return;
+
+            ContainerGateEventModel model = new ContainerGateEventModel();
+            model.containerInfo.vehicleId = m_vehicle;
+            model.containerInfo.projectId = m_projectId;
+            model.containerInfo.mappingId = m_mappingId;
+            model.containerInfo.mapId = m_mapId;
+            model.containerInfo.cepc = m_zoneName + m_event_epc;
+            model.containerInfo.depc = m_zoneName + m_event_epc;
+            model.containerInfo.loadId = m_event_QRcode;
+
+            string json_body = Util.ObjectToJson(model);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndContainer;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+        }
+
+
+        /// <summary>
         /// 비즈니스 로직
         /// </summary>
         /// <param name="naviX"></param>
@@ -1197,13 +1335,13 @@ namespace WATA.LIS.Core.Services
             // QR 코드 X
             if (m_event_QRcode == "")
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASRUE_OK);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
             }
             // QR 코드 O
             else if (m_event_QRcode.Contains("wata"))
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASRUE_OK);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_size_check_complete);
             }
 
@@ -1266,86 +1404,7 @@ namespace WATA.LIS.Core.Services
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
-            Thread.Sleep(3000);
-        }
-
-        private void SendBackEndPickupAction()
-        {
-
-            // 백엔드 통신 핸들
-            ActionInfoModel ActionObj = new ActionInfoModel();
-            ActionObj.actionInfo.workLocationId = m_workLocationId;
-            ActionObj.actionInfo.vehicleId = m_vehicle;
-            ActionObj.actionInfo.projectId = m_projectId;
-            ActionObj.actionInfo.mappingId = m_mappingId;
-            ActionObj.actionInfo.mapId = m_mapId;
-            ActionObj.actionInfo.action = "pickup";
-            ActionObj.actionInfo.loadRate = m_event_weight.ToString();
-            ActionObj.actionInfo.loadWeight = m_event_weight;
-            ActionObj.actionInfo.height = m_event_height.ToString();
-            ActionObj.actionInfo.epc = m_zoneName + m_event_epc;
-            ActionObj.actionInfo.cepc = m_zoneName + m_event_epc;
-            ActionObj.actionInfo.loadId = m_event_QRcode;
-            ActionObj.actionInfo.shelf = false;
-            ActionObj.actionInfo.loadMatrixRaw = "10";
-            ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.visionWidth = m_event_width;
-            ActionObj.actionInfo.visionHeight = m_event_height;
-            ActionObj.actionInfo.visionDepth = m_event_length;
-            ActionObj.actionInfo.loadMatrix = [10, 10, 10];
-            ActionObj.actionInfo.plMatrix = m_event_points;
-
-            if (m_zoneId == null || m_zoneId.Equals(""))
-            {
-                ActionObj.actionInfo.zoneId = "NA";
-            }
-            else
-            {
-                ActionObj.actionInfo.zoneId = m_zoneId;
-            }
-
-
-            if (m_zoneName == null || m_zoneId.Equals(""))
-            {
-                ActionObj.actionInfo.zoneName = "NA";
-            }
-            else
-            {
-                ActionObj.actionInfo.zoneName = m_zoneName;
-            }
-
-            string json_body = Util.ObjectToJson(ActionObj);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.body = json_body;
-            post_obj.type = eMessageType.BackEndAction;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-        }
-
-        private void SendBackEndDropAction()
-        {
-
-        }
-
-        private void SendBackEndContainerGateEvent()
-        {
-            if (m_event_epc == "") return;
-
-            ContainerGateEventModel model = new ContainerGateEventModel();
-            model.containerInfo.vehicleId = m_vehicle;
-            model.containerInfo.projectId = m_projectId;
-            model.containerInfo.mappingId = m_mappingId;
-            model.containerInfo.mapId = m_mapId;
-            model.containerInfo.cepc = m_zoneName + m_event_epc;
-            model.containerInfo.depc = m_zoneName + m_event_epc;
-            model.containerInfo.loadId = m_event_QRcode;
-
-            string json_body = Util.ObjectToJson(model);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.body = json_body;
-            post_obj.type = eMessageType.BackEndContainer;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
-            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+            Thread.Sleep(1000);
         }
     }
 }

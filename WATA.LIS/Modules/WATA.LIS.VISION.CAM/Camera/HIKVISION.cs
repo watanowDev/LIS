@@ -40,7 +40,6 @@ using System.Net.NetworkInformation;
 using static System.Formats.Asn1.AsnWriter;
 using Point = OpenCvSharp.Point;
 
-
 namespace WATA.LIS.VISION.CAM.Camera
 {
     public class HIKVISION : System.Windows.Window
@@ -72,11 +71,11 @@ namespace WATA.LIS.VISION.CAM.Camera
         // 펨토메가 관련 코드
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-        //private const string detectorPrototxtPath = @"C:\Users\WATA06\Desktop\LIS-ForkLift_mswon\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
-        //private const string detectorCaffeModelPath = @"C:\Users\WATA06\Desktop\LIS-ForkLift_mswon\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
-        //private const string superResolutionPrototxtPath = @"C:\Users\WATA06\Desktop\LIS-ForkLift_mswon\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
-        //private const string superResolutionCaffeModelPath = @"C:\Users\WATA06\Desktop\LIS-ForkLift_mswon\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
-        //private WeChatQRCode weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
+        private const string detectorPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
+        private const string detectorCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
+        private const string superResolutionPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
+        private const string superResolutionCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
+        private WeChatQRCode weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
         //private BarcodeReader barcodeReader = new BarcodeReader();
 
         float cx = 326.956f; // 주점 x 위치
@@ -90,7 +89,11 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private OpenCvSharp.Rect _detectedQRRect;
 
+        //private byte[] resultFrame;
         private string resultQR;
+        private int resultHeight;
+        private int resultWidth;
+        private int resultDepth;
 
 
         public HIKVISION(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
@@ -116,241 +119,254 @@ namespace WATA.LIS.VISION.CAM.Camera
             m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
             m_GetImageTimer.Tick += new EventHandler(GetFrame);
 
-            InitializeWeChatQRCode();
-            openVisionCam();
+            //InitializeWeChatQRCode();
+            //openVisionCam();
 
             //펨토메가 관련 코드
-            //InitializeMultiStream();
+            InitializeMultiStream();
         }
+
 
         /// <summary>
         /// 펨토메가 관련 코드
         /// </summary>
         /// <param name="yValues"></param>
         /// <returns></returns>
-        //public int CalculateAverage(List<double> yValues)
-        //{
-        //    var sortedYValues = yValues.OrderBy(y => y).ToList();
-        //    int count = sortedYValues.Count;
-        //    int removeCount = (int)(count * 0.2);
-        //    var trimmedYValues = sortedYValues.Skip(removeCount).Take(count - 2 * removeCount).ToList();
+        private void InitializeMultiStream()
+        {
+            try
+            {
+                Pipeline pipeline = new Pipeline();
+                StreamProfile colorProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840 / 2, 2160 / 2, Format.OB_FORMAT_RGB, 25);
+                StreamProfile depthProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
-        //    return (int)trimmedYValues.Average();
-        //}
+                Config config = new Config();
+                config.EnableStream(colorProfile);
+                config.EnableStream(depthProfile);
 
-        //private string GetQRcodeIDByWeChat(Mat frame)
-        //{
-        //    string ret = string.Empty;
+                pipeline.Start(config);
 
-        //    weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
-
-        //    var zXingResult = barcodeReader.Decode(frame.ToBitmap());
-
-        //    if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
-        //    {
-        //        int x1 = (int)zXingResult.ResultPoints[0].X;
-        //        int y1 = (int)zXingResult.ResultPoints[0].Y;
-        //        int x2 = (int)zXingResult.ResultPoints[1].X;
-        //        int y2 = (int)zXingResult.ResultPoints[1].Y;
-        //        int x3 = (int)zXingResult.ResultPoints[2].X;
-        //        int y3 = (int)zXingResult.ResultPoints[2].Y;
-        //        int x4 = (int)zXingResult.ResultPoints[3].X;
-        //        int y4 = (int)zXingResult.ResultPoints[3].Y;
-
-        //        int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
-        //        int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
-        //        int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
-        //        int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
-
-        //        _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-        //        ret = zXingResult.Text;
-        //    }
-
-        //    if (weChatResult != null && weChatResult.Length > 0 && weChatResult[0].Contains("wata"))
-        //    {
-        //        ret = weChatResult[0];
-
-        //        foreach (var box in bbox)
-        //        {
-        //            OpenCvSharp.Point[] detectedQRpoints = new OpenCvSharp.Point[4];
-
-        //            if (box.Total() >= 4)
-        //            {
-        //                for (int j = 0; j < 4; j++)
-        //                {
-        //                    detectedQRpoints[j] = new OpenCvSharp.Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
-        //                }
-
-        //                int minX = detectedQRpoints.Min(p => p.X);
-        //                int minY = detectedQRpoints.Min(p => p.Y);
-        //                int maxX = detectedQRpoints.Max(p => p.X);
-        //                int maxY = detectedQRpoints.Max(p => p.Y);
-
-        //                _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-        //            }
-        //        }
-        //    }
-        //    Console.WriteLine("QR : " + ret);
-        //    return ret;
-        //}
-
-        //public void InitializeMultiStream()
-        //{
-        //    try
-        //    {
-        //        Pipeline pipeline = new Pipeline();
-        //        StreamProfile colorProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_RGB, 25);
-        //        StreamProfile depthProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
-
-        //        Config config = new Config();
-        //        config.EnableStream(colorProfile);
-        //        config.EnableStream(depthProfile);
-
-        //        pipeline.Start(config);
-
-        //        Task.Factory.StartNew(() => {
-        //            while (!tokenSource.Token.IsCancellationRequested)
-        //            {
-        //                using (var frames = pipeline.WaitForFrames(100))
-        //                {
-        //                    var colorFrame = frames?.GetColorFrame();
-        //                    var depthFrame = frames?.GetDepthFrame();
+                Task.Factory.StartNew(() => {
+                    while (!tokenSource.Token.IsCancellationRequested)
+                    {
+                        using (var frames = pipeline.WaitForFrames(100))
+                        {
+                            var colorFrame = frames?.GetColorFrame();
+                            var depthFrame = frames?.GetDepthFrame();
 
 
-        //                    if (colorFrame != null)
-        //                    {
-        //                        int colorWidth = (int)colorFrame.GetWidth();
-        //                        int colorHeight = (int)colorFrame.GetHeight();
+                            if (colorFrame != null)
+                            {
+                                int colorWidth = (int)colorFrame.GetWidth();
+                                int colorHeight = (int)colorFrame.GetHeight();
 
-        //                        byte[] colorData = new byte[colorFrame.GetDataSize()];
-        //                        colorFrame.CopyData(ref colorData);
+                                byte[] colorData = new byte[colorFrame.GetDataSize()];
+                                colorFrame.CopyData(ref colorData);
 
-        //                        Mat colorImage = new Mat(colorHeight, colorWidth, MatType.CV_8UC3);
-        //                        Marshal.Copy(colorData, 0, colorImage.Data, colorData.Length);
+                                Mat colorImage = new Mat(colorHeight, colorWidth, MatType.CV_8UC3);
+                                Marshal.Copy(colorData, 0, colorImage.Data, colorData.Length);
 
-        //                        Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
-        //                        Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
+                                Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
+                                Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
-        //                        string qr = GetQRcodeIDByWeChat(colorImage);
-        //                        if (qr.Contains("wata"))
-        //                        {
-        //                            resultQR = qr;
-        //                            Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 255, 0), thickness: 4);
-        //                        }
+                                string qr = GetQRcodeIDByWeChat(colorImage);
+                                if (qr.Contains("wata"))
+                                {
+                                    resultQR = qr;
+                                    Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 255, 0), thickness: 4);
+                                }
 
-        //                        Cv2.NamedWindow("COLOR", WindowFlags.KeepRatio);
-        //                        Cv2.ResizeWindow("COLOR", 720, 1280);
-        //                        Cv2.ImShow("COLOR", colorImage);
-        //                        Cv2.WaitKey(1);
-        //                    }
+                                //resultFrame = colorImage.ToBytes();
 
-        //                    if (depthFrame != null)
-        //                    {
-        //                        if (!"".Equals(resultQR))
-        //                        {
-        //                            // 포인트 클라우드 데이터
-        //                            PointCloudFilter pointCloud = new PointCloudFilter();
-        //                            var cameraParam = pipeline.GetCameraParam();
-        //                            pointCloud.SetCameraParam(cameraParam);
-        //                            pointCloud.SetPositionDataScaled(1);
+                                Cv2.NamedWindow("COLOR", WindowFlags.KeepRatio);
+                                Cv2.ResizeWindow("COLOR", 720, 1280);
+                                Cv2.ImShow("COLOR", colorImage);
+                                Cv2.WaitKey(1);
+                            }
 
-        //                            Orbbec.Frame pointFrame = pointCloud.Process(depthFrame);
+                            if (depthFrame != null)
+                            {
+                                if (!"".Equals(resultQR))
+                                {
+                                    // 포인트 클라우드 데이터
+                                    PointCloudFilter pointCloud = new PointCloudFilter();
+                                    var cameraParam = pipeline.GetCameraParam();
+                                    pointCloud.SetCameraParam(cameraParam);
+                                    pointCloud.SetPositionDataScaled(1);
 
-        //                            byte[] pointData = new byte[pointFrame.GetDataSize()];
-        //                            pointFrame.CopyData(ref pointData);
+                                    Orbbec.Frame pointFrame = pointCloud.Process(depthFrame);
 
-
-        //                            int depthWidth = (int)depthFrame.GetWidth();
-        //                            int depthHeight = (int)depthFrame.GetHeight();
+                                    byte[] pointData = new byte[pointFrame.GetDataSize()];
+                                    pointFrame.CopyData(ref pointData);
 
 
-        //                            Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_32FC3);
-        //                            Marshal.Copy(pointData, 0, depthImage.Data, pointData.Length);
+                                    int depthWidth = (int)depthFrame.GetWidth();
+                                    int depthHeight = (int)depthFrame.GetHeight();
 
-        //                            Cv2.Rotate(depthImage, depthImage, RotateFlags.Rotate90Counterclockwise);
 
-        //                            Parallel.For(0, depthImage.Rows, i =>
-        //                            {
-        //                                for (int j = 0; j < depthImage.Cols; j++)
-        //                                {
-        //                                    Vec3f depthVec = depthImage.At<Vec3f>(i, j);
-        //                                    float zValue = depthVec[2];
+                                    Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_32FC3);
+                                    Marshal.Copy(pointData, 0, depthImage.Data, pointData.Length);
 
-        //                                    if (zValue < 1200.0f || zValue > 2200.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
-        //                                    {
-        //                                        depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
-        //                                    }
-        //                                }
-        //                            });
+                                    Cv2.Rotate(depthImage, depthImage, RotateFlags.Rotate90Counterclockwise);
 
-        //                            double minYValue, maxYValue;
-        //                            Point minYLoc, maxYLoc;
+                                    Parallel.For(0, depthImage.Rows, i => {
+                                        for (int j = 0; j < depthImage.Cols; j++)
+                                        {
+                                            Vec3f depthVec = depthImage.At<Vec3f>(i, j);
+                                            float zValue = depthVec[2];
 
-        //                            Mat yChannel = new Mat();
-        //                            Cv2.ExtractChannel(depthImage, yChannel, 0);
+                                            if (zValue < 1200.0f || zValue > 2200.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
+                                            {
+                                                depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
+                                            }
+                                        }
+                                    });
 
-        //                            Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
+                                    double minYValue, maxYValue;
+                                    Point minYLoc, maxYLoc;
 
-        //                            Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
-        //                            Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
+                                    Mat yChannel = new Mat();
+                                    Cv2.ExtractChannel(depthImage, yChannel, 0);
 
-        //                            if (maxYValue == 0)
-        //                            {
-        //                                double maxNegativeValue = double.MinValue;
-        //                                for (int i = 0; i < yChannel.Rows; i++)
-        //                                {
-        //                                    for (int j = 0; j < yChannel.Cols; j++)
-        //                                    {
-        //                                        float yValue = yChannel.At<Vec3f>(i, j)[1];
-        //                                        if (yValue < 0 && yValue > maxNegativeValue)
-        //                                        {
-        //                                            maxNegativeValue = yValue;
-        //                                        }
-        //                                    }
-        //                                }
-        //                                maxYValue = maxNegativeValue;
-        //                            }
+                                    Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
 
-        //                            if (maxYValue != 0 && minYValue != 0)
-        //                            {
-        //                                _listTopResultY.Add(maxYValue);
-        //                                _listBotResultY.Add(minYValue);
-        //                                Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
-        //                            }
+                                    Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
+                                    Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
 
-        //                            if (_listTopResultY.Count == 8 && _listBotResultY.Count == 8)
-        //                            {
-        //                                int heightOffset = 45;
-        //                                int resultTopAvg = CalculateAverage(_listTopResultY);
-        //                                int resultBotAvg = CalculateAverage(_listBotResultY);
-        //                                int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
+                                    if (maxYValue == 0)
+                                    {
+                                        double maxNegativeValue = double.MinValue;
+                                        for (int i = 0; i < yChannel.Rows; i++)
+                                        {
+                                            for (int j = 0; j < yChannel.Cols; j++)
+                                            {
+                                                float yValue = yChannel.At<Vec3f>(i, j)[1];
+                                                if (yValue < 0 && yValue > maxNegativeValue)
+                                                {
+                                                    maxNegativeValue = yValue;
+                                                }
+                                            }
+                                        }
+                                        maxYValue = maxNegativeValue;
+                                    }
 
-        //                                _listTopResultY.Clear();
-        //                                _listBotResultY.Clear();
-        //                                resultQR = "";
+                                    if (maxYValue != 0 && minYValue != 0)
+                                    {
+                                        _listTopResultY.Add(maxYValue);
+                                        _listBotResultY.Add(minYValue);
+                                        Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
+                                    }
 
-        //                                Console.WriteLine("---------------------------------------------");
-        //                                Console.WriteLine($"Height : {result} mm");
-        //                                Console.WriteLine("---------------------------------------------");
-        //                            }
+                                    if (_listTopResultY.Count == 8 && _listBotResultY.Count == 8)
+                                    {
+                                        int heightOffset = 45;
+                                        int resultTopAvg = CalculateAverage(_listTopResultY);
+                                        int resultBotAvg = CalculateAverage(_listBotResultY);
+                                        int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
 
-        //                            Cv2.NamedWindow("depthImage", WindowFlags.KeepRatio);
-        //                            Cv2.ResizeWindow("depthImage", 640, 576);
-        //                            Cv2.ImShow("depthImage", depthImage);
-        //                            Cv2.WaitKey(1);
+                                        _listTopResultY.Clear();
+                                        _listBotResultY.Clear();
+                                        resultQR = "";
+                                        resultHeight = result;
 
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }, tokenSource.Token);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        MessageBox.Show(e.Message);
-        //        Application.Current.Shutdown();
-        //    }
-        //}
+                                        Console.WriteLine("---------------------------------------------");
+                                        Console.WriteLine($"Height : {result} mm");
+                                        Console.WriteLine("---------------------------------------------");
+                                    }
+
+                                    Cv2.NamedWindow("depthImage", WindowFlags.KeepRatio);
+                                    Cv2.ResizeWindow("depthImage", 640, 576);
+                                    Cv2.ImShow("depthImage", depthImage);
+                                    Cv2.WaitKey(1);
+
+                                }
+                            }
+                        }
+
+                        // Publish the event
+                        VisionCamModel eventModels = new VisionCamModel();
+                        eventModels.QR = resultQR == null ? "" : resultQR;
+                        eventModels.WIDTH = 0;
+                        eventModels.HEIGHT = resultHeight;
+                        eventModels.DEPTH = 0;
+                        eventModels.connected = true;
+                        _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                    }
+                }, tokenSource.Token);
+            }
+            catch (Exception e)
+            {
+                //MessageBox.Show(e.Message);
+                Application.Current.Shutdown();
+            }
+        }
+
+        public int CalculateAverage(List<double> yValues)
+        {
+            var sortedYValues = yValues.OrderBy(y => y).ToList();
+            int count = sortedYValues.Count;
+            int removeCount = (int)(count * 0.2);
+            var trimmedYValues = sortedYValues.Skip(removeCount).Take(count - 2 * removeCount).ToList();
+
+            return (int)trimmedYValues.Average();
+        }
+
+        private string GetQRcodeIDByWeChat(Mat frame)
+        {
+            string ret = string.Empty;
+
+            weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
+
+            //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
+
+            //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
+            //{
+            //    int x1 = (int)zXingResult.ResultPoints[0].X;
+            //    int y1 = (int)zXingResult.ResultPoints[0].Y;
+            //    int x2 = (int)zXingResult.ResultPoints[1].X;
+            //    int y2 = (int)zXingResult.ResultPoints[1].Y;
+            //    int x3 = (int)zXingResult.ResultPoints[2].X;
+            //    int y3 = (int)zXingResult.ResultPoints[2].Y;
+            //    int x4 = (int)zXingResult.ResultPoints[3].X;
+            //    int y4 = (int)zXingResult.ResultPoints[3].Y;
+
+            //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
+            //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
+            //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
+            //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
+
+            //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
+            //    ret = zXingResult.Text;
+            //}
+
+            if (weChatResult != null && weChatResult.Length > 0 && weChatResult[0].Contains("wata"))
+            {
+                ret = weChatResult[0];
+
+                foreach (var box in bbox)
+                {
+                    OpenCvSharp.Point[] detectedQRpoints = new OpenCvSharp.Point[4];
+
+                    if (box.Total() >= 4)
+                    {
+                        for (int j = 0; j < 4; j++)
+                        {
+                            detectedQRpoints[j] = new OpenCvSharp.Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
+                        }
+
+                        int minX = detectedQRpoints.Min(p => p.X);
+                        int minY = detectedQRpoints.Min(p => p.Y);
+                        int maxX = detectedQRpoints.Max(p => p.X);
+                        int maxY = detectedQRpoints.Max(p => p.Y);
+
+                        _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
+                    }
+                }
+            }
+            Console.WriteLine("QR : " + ret);
+
+            return ret;
+        }
 
 
 
@@ -522,7 +538,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 // Publish the event
                 VisionCamModel eventModels = new VisionCamModel();
                 eventModels.QR = m_LastQRCode;
-                eventModels.FRAME = currentFrameBytes;
+                //eventModels.FRAME = currentFrameBytes;
                 eventModels.connected = true;
 
                 _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);

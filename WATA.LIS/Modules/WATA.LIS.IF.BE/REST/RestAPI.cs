@@ -42,9 +42,13 @@ namespace WATA.LIS.IF.BE.REST
 
                 logtype = Tools.ELogType.BackEndLog;
             }
-            else
+            else if (Model.type == eMessageType.BackEndCurrent)
             {
                 logtype = Tools.ELogType.BackEndCurrentLog;
+            }
+            else
+            {
+                logtype = Tools.ELogType.BackEndLog;
             }
             Tools.Log($"Request Post URI : {Model.url} ", logtype);
             Tools.Log(Model.body, logtype);

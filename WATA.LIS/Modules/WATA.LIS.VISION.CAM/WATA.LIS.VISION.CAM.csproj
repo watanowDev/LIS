@@ -20,7 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ob_csharp">
-      <HintPath>Model\ob_csharp.dll</HintPath>
+      <HintPath>Modules\WATA.LIS.VISION.CAM\Model\ob_csharp.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Modules\WATA.LIS.VISION.CAM\Model\ob_csharp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

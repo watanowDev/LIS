@@ -121,7 +121,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
             
             
@@ -161,7 +161,7 @@ namespace WATA.LIS.Main.ViewModels
             {
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {
-                    CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                    //CurrentFrame = ConvertToBitmapImage(model.FRAME);
                     VISIONCAM_Active = Active;
                 });
             }

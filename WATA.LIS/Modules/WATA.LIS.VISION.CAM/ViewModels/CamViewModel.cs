@@ -39,11 +39,11 @@ namespace WATA.LIS.VISION.CAM.ViewModels
 
         private void OnVisionCamStreaming(VisionCamModel model)
         {
-            if (model?.FRAME != null)
+            if (model?.connected == true)
             {
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {
-                    CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                    //CurrentFrame = ConvertToBitmapImage(model.FRAME);
                 });
             }
         }

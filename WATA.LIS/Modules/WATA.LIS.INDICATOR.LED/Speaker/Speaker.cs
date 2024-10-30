@@ -108,9 +108,17 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("kr_size_check_start.mp3");
                 }
+                else if (speaker == ePlayInfoSpeaker.size_check_start_please_stop)
+                {
+                    PlaySound("kr_size_check_start_please_stop.mp3");
+                }
                 else if (speaker == ePlayInfoSpeaker.size_check_complete)
                 {
                     PlaySound("kr_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_complete_please_pickup)
+                {
+                    PlaySound("kr_size_check_complete_please_pickup.mp3");
                 }
                 else if (speaker == ePlayInfoSpeaker.size_check_error)
                 {
