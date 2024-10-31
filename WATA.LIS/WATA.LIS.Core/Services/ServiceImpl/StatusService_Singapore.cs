@@ -93,6 +93,9 @@ namespace WATA.LIS.Core.Services
         private VisionCamModel m_visionModel;
         private string m_curr_QRcode = "";
         private string m_event_QRcode = "";
+        private int m_curr_height = 0;
+        private int m_event_height = 0;
+        private string m_event_points = "";
         private int m_no_QRcnt;
 
         // LiDAR_2D 데이터 클래스
@@ -110,14 +113,16 @@ namespace WATA.LIS.Core.Services
         PublisherSocket _publisherSocket;
         SubscriberSocket _subscriberSocket;
         private float m_event_width = 0;
-        private float m_event_height = 0;
+        //private float m_event_height = 0;
         private float m_event_length = 0;
-        private string m_event_points = "";
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
-        //private int m_Command = 0;
-        //private bool m_set_item = false;
+        private int m_Command = 0;
+        private bool m_set_item = false;
+        private bool m_set_load = false;
+        private bool m_set_unload = false;
+        private bool m_set_normal = false;
 
         // ErrorCnt 데이터 클래스
         private int m_errCnt_weight;
@@ -137,6 +142,7 @@ namespace WATA.LIS.Core.Services
         DispatcherTimer m_IsPickUp_Timer;
         DispatcherTimer m_IsDrop_Timer;
         DispatcherTimer m_MonitoringQR_Timer;
+        DispatcherTimer m_MonitoringEPC_Timer;
 
 
         public StatusService_Singapore(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
@@ -196,10 +202,10 @@ namespace WATA.LIS.Core.Services
 
 
 
-            m_MonitoringQR_Timer = new DispatcherTimer();
-            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
-            m_MonitoringQR_Timer.Start();
+            m_MonitoringEPC_Timer = new DispatcherTimer();
+            m_MonitoringEPC_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_MonitoringEPC_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
+            m_MonitoringEPC_Timer.Start();
 
 
 
@@ -713,12 +719,13 @@ namespace WATA.LIS.Core.Services
             }
 
             // Clear EPC Code
-            if (m_no_epcCnt > 50)
+            if (m_no_epcCnt > 30)
             {
                 m_event_epc = "";
                 _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
             }
         }
+
 
         /// <summary>
         /// VisonCam 센서
@@ -741,27 +748,49 @@ namespace WATA.LIS.Core.Services
         private void MonitoringQRTimerEvent(object sender, EventArgs e)
         {
             // 픽업 전 QR 인식한 상태
-            if (m_curr_QRcode.Contains("wata") && m_isPickUp == false && m_event_weight < 30)
+            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
             {
                 // 새로 인식된 QR일 경우
                 if (m_event_QRcode != m_curr_QRcode)
                 {
+                    m_Command = -1;
                     m_event_QRcode = m_curr_QRcode;
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_complete);
+                    Thread.Sleep(1000);
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
+                    Thread.Sleep(2500);
                     _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
+                    m_curr_height = m_visionModel.HEIGHT;
+
+                    // 물류 높이 값이 이전과 다를 경우
+                    if (m_event_height != m_curr_height && m_curr_height > 10)
+                    {
+                        m_event_height = m_curr_height;
+                        m_event_points = m_visionModel.POINTS;
+                        _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete_please_pickup);
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+                    }
                 }
             }
 
             // QR에 wata 없을 시 No QR 카운트
-            if (m_visionModel.QR == "" && m_isPickUp == false)
+            if (m_visionModel.QR == "" && m_set_item == false)
             {
                 m_no_QRcnt++;
                 m_curr_QRcode = "";
             }
 
-            // Clear QR Code
-            if (m_no_QRcnt > 30 && m_isPickUp == false)
+            // 앱 물류 지정시 No QR 카운트 초기화
+            if (m_set_item == true)
             {
+                m_no_QRcnt = 0;
+            }
+
+            // Clear QR Code
+            if (m_no_QRcnt > 50 && m_isPickUp == false)
+            {
+                m_Command = 0;
                 m_event_QRcode = "";
                 _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
             }
@@ -1026,6 +1055,55 @@ namespace WATA.LIS.Core.Services
             {
                 Tools.Log($"{status}", ELogType.DisplayLog);
                 m_errCnt_indicator = 0;
+            }
+
+            if (status == "set_item")
+            {
+                m_set_item = true;
+                Tools.Log($"{status}", ELogType.ActionLog);
+
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.set_item);
+            }
+
+            if (status == "clear_item")
+            {
+                m_set_item = false;
+                Tools.Log($"{status}", ELogType.ActionLog);
+
+                if (m_isPickUp == true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.CLEAR_ITEM);
+                }
+                else if (m_isPickUp == false)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.clear_item);
+                }
+            }
+
+            if (status == "set_load")
+            {
+                m_set_load = true;
+                m_set_unload = false;
+                m_set_normal = false;
+                Tools.Log($"{status}", ELogType.ActionLog);
+            }
+
+            if (status == "set_unload")
+            {
+                m_set_load = false;
+                m_set_unload = true;
+                m_set_normal = false;
+                Tools.Log($"{status}", ELogType.ActionLog);
+            }
+
+            if (status == "set_normal")
+            {
+                m_set_load = false;
+                m_set_unload = false;
+                m_set_normal = true;
+                Tools.Log($"{status}", ELogType.ActionLog);
             }
         }
 
@@ -1330,7 +1408,7 @@ namespace WATA.LIS.Core.Services
             m_event_width = m_livoxModel.width;
             m_event_height = m_livoxModel.height;
             m_event_length = m_livoxModel.length;
-            m_event_points = m_livoxModel.points;
+            //m_event_points = m_livoxModel.points;
 
             // QR 코드 X
             if (m_event_QRcode == "")
@@ -1351,7 +1429,6 @@ namespace WATA.LIS.Core.Services
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height{m_event_height}, depth:{m_event_length}", ELogType.ActionLog);
             Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}", ELogType.ActionLog);
-            Tools.Log($"Pickup Event!!! EPC Data:{m_event_epc}", ELogType.ActionLog);
         }
 
         private void IsDropTimerEvent(object sender, EventArgs e)
@@ -1390,7 +1467,7 @@ namespace WATA.LIS.Core.Services
             // 드롭 시 값 초기화
             m_event_weight = 0;
             m_event_distance = 0;
-            m_event_QRcode = "";
+            //m_event_QRcode = m_event_QRcode;
             m_event_width = 0;
             m_event_height = 0;
             m_event_length = 0;

@@ -17,6 +17,7 @@ namespace WATA.LIS.Core.Model.VisionCam
         public int WIDTH { get; set; }
         public int HEIGHT { get; set; }
         public int DEPTH { get; set; }
+        public string POINTS { get; set; } // 형상측정값
         //public byte[] FRAME { get; set; }
         public bool connected = false;
     }

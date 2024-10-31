@@ -168,6 +168,10 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("kr_device_error_indicator.mp3");
                 }
+                else if (speaker == ePlayInfoSpeaker.register_item)
+                {
+                    PlaySound("kr_register_item.mp3");
+                }
 
             }
             else //en

@@ -39,6 +39,7 @@ using ZXing.PDF417.Internal;
 using System.Net.NetworkInformation;
 using static System.Formats.Asn1.AsnWriter;
 using Point = OpenCvSharp.Point;
+using Newtonsoft.Json.Linq;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -145,6 +146,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                 config.EnableStream(depthProfile);
 
                 pipeline.Start(config);
+
+                JObject point = new JObject();
+                JObject points = new JObject();
 
                 Task.Factory.StartNew(() => {
                     while (!tokenSource.Token.IsCancellationRequested)
@@ -257,7 +261,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
                                     }
 
-                                    if (_listTopResultY.Count == 8 && _listBotResultY.Count == 8)
+                                    if (_listTopResultY.Count == 8 && _listBotResultY.Count == 8) // 속도 빠르면 15, 20 테스트
                                     {
                                         int heightOffset = 45;
                                         int resultTopAvg = CalculateAverage(_listTopResultY);
@@ -268,6 +272,25 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         _listBotResultY.Clear();
                                         resultQR = "";
                                         resultHeight = result;
+
+                                        Mat resizedImage = new Mat();
+                                        Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 2, depthHeight / 2));
+
+                                        for (int y = 0; y < resizedImage.Rows; y++)
+                                        {
+                                            for (int x = 0; x < resizedImage.Cols; x++)
+                                            {
+                                                Vec3f pt = resizedImage.At<Vec3f>(y, x);
+                                                if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
+                                                {
+                                                    point["x"] = pt.Item0;
+                                                    point["y"] = pt.Item1;
+                                                    point["z"] = pt.Item2;
+                                                    points.Add(point);
+                                                    Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
+                                                }
+                                            }
+                                        }
 
                                         Console.WriteLine("---------------------------------------------");
                                         Console.WriteLine($"Height : {result} mm");
@@ -289,6 +312,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         eventModels.WIDTH = 0;
                         eventModels.HEIGHT = resultHeight;
                         eventModels.DEPTH = 0;
+                        eventModels.POINTS = points.ToString();
                         eventModels.connected = true;
                         _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                     }

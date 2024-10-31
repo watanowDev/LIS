@@ -94,6 +94,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_event_QRcode = "";
         private int m_curr_height = 0;
         private int m_event_height = 0;
+        private string m_event_points = "";
         private int m_no_QRcnt;
 
         // LiDAR_2D 데이터 클래스
@@ -113,12 +114,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private float m_event_width = 0;
         //private float m_event_height = 0;
         private float m_event_length = 0;
-        private string m_event_points = "";
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
         private int m_Command = 0;
         private bool m_set_item = false;
+        private bool m_set_load = false;
+        private bool m_set_unload = false;
+        private bool m_set_normal = false;
 
         // ErrorCnt 데이터 클래스
         private int m_errCnt_weight;
@@ -138,10 +141,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_IsPickUp_Timer;
         DispatcherTimer m_IsDrop_Timer;
         DispatcherTimer m_MonitoringQR_Timer;
+        DispatcherTimer m_MonitoringEPC_Timer;
 
 
-        public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel, 
-                                    IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel, 
+        public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
+                                    IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel,
                                     ILivoxModel livoxModel, IDisplayModel displayModel)
         {
             _eventAggregator = eventAggregator;
@@ -197,10 +201,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
 
-            m_MonitoringQR_Timer = new DispatcherTimer();
-            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
-            m_MonitoringQR_Timer.Start();
+            m_MonitoringEPC_Timer = new DispatcherTimer();
+            m_MonitoringEPC_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_MonitoringEPC_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
+            m_MonitoringEPC_Timer.Start();
 
 
 
@@ -735,7 +739,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear EPC Code
-            if (m_no_epcCnt > 50)
+            if (m_no_epcCnt > 30)
             {
                 m_event_epc = "";
                 _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
@@ -783,6 +787,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     if (m_event_height != m_curr_height && m_curr_height > 10)
                     {
                         m_event_height = m_curr_height;
+                        m_event_points = m_visionModel.POINTS;
                         _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete_please_pickup);
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
                     }
@@ -1096,6 +1101,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.clear_item);
                 }
             }
+
+            if (status == "complete_item")
+            {
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
+            }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
@@ -1137,7 +1147,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void SendAliveEvent()
         {
             AliveModel alive_obj = new AliveModel();
-            alive_obj.alive.workLocationId = "CTR_PROJECT";
+            alive_obj.alive.workLocationId = m_workLocationId;
             alive_obj.alive.vehicleId = m_vehicle;
             alive_obj.alive.projectId = m_projectId;
             alive_obj.alive.mappingId = m_mappingId;
@@ -1416,10 +1426,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //m_event_distance = m_event_distance;
             //m_event_epc = m_rfidModel.EPC;
             //m_event_QRcode = m_event_QRcode;
-            m_event_width = 1;
+            m_event_width = 0;
             //m_event_height = m_livoxModel.height;
-            m_event_length = 1;
-            m_event_points = m_livoxModel.points;
+            m_event_length = 0;
+            //m_event_points = m_livoxModel.points;
 
             // 인디케이터 통신 핸들
             m_Command = 1;
@@ -1497,7 +1507,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 드롭 시 값 초기화
             m_event_weight = 0;
             m_event_distance = 0;
-            m_event_QRcode = m_event_QRcode;
+            //m_event_QRcode = m_event_QRcode;
             m_event_width = 0;
             m_event_height = 0;
             m_event_length = 0;
