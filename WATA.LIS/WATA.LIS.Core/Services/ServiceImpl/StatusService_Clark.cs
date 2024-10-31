@@ -131,8 +131,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_errCnt_lidar3d;
         private int m_errCnt_indicator;
         private bool m_isError = false;
+        private bool m_stop_alarm = false;
 
-        // 서비스 로직 데이터 클래스
+        // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
 
         // 타이머 클래스
@@ -521,12 +522,27 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="epcData"></param>
         private void ErrorCheckTimerEvent(object sender, EventArgs e)
         {
+            if(weightConfig.weight_enable == 1 && m_stop_alarm == false)
+            {
+                m_errCnt_weight++;
+            }
 
-            m_errCnt_weight = weightConfig.weight_enable == 0 ? m_errCnt_weight = 0 : m_errCnt_weight++;
-            m_errCnt_distance = distanceConfig.distance_enable == 0 ? m_errCnt_distance = 0 : m_errCnt_distance++;
-            m_errCnt_visioncam = visionCamConfig.vision_enable == 0 ? m_errCnt_visioncam = 0 : m_errCnt_visioncam++;
-            //m_errCnt_lidar3d++;
-            m_errCnt_indicator = displayConfig.display_enable == 0 ? m_errCnt_indicator = 0 : m_errCnt_indicator++;
+            if (distanceConfig.distance_enable == 1 && m_stop_alarm == false)
+            {
+                m_errCnt_distance++;
+            }
+
+            if (visionCamConfig.vision_enable == 1 && m_stop_alarm == false)
+            {
+                m_errCnt_visioncam++;
+            }
+
+            if (displayConfig.display_enable == 1 && m_stop_alarm == false)
+            {
+                m_errCnt_indicator++;
+            }
+
+
 
             if (weightConfig.weight_enable != 0 && m_errCnt_weight > 5 && m_errCnt_weight % 10 == 0)
             {
@@ -943,7 +959,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// LiDAR 3D
         /// </summary>
         /// <param name="status"></param>
-
         //private void InitLivox()
         //{
         //    try
@@ -1106,6 +1121,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             }
+
+            if (status == "stop_alarm")
+            {
+                m_stop_alarm = true;
+                m_errCnt_weight = 0;
+                m_errCnt_distance = 0;
+                m_errCnt_rfid = 0;
+                m_errCnt_visioncam = 0;
+                m_errCnt_lidar3d = 0;
+                m_errCnt_indicator = 0;
+            }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
@@ -1114,7 +1140,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.weightTotal = m_event_weight;
             m_indicatorModel.forklift_status.QR = m_event_QRcode;
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
-            m_indicatorModel.forklift_status.visionHeight = m_event_height;
+            //m_indicatorModel.forklift_status.visionHeight = m_event_height;
+            m_indicatorModel.forklift_status.visionHeight = 100;
             m_indicatorModel.forklift_status.visionDepth = m_event_length;
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
@@ -1128,8 +1155,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
-            //Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_envet_length}", Tools.ELogType.DisplayLog);
-            //Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {m_Command}, weight:{m_event_weight}, width:{m_event_width}, height:{m_event_height}, depth:{m_event_length}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
             Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
@@ -1439,28 +1466,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
-                Thread.Sleep(200);
+                Thread.Sleep(500);
             }
             // 앱 물류 선택 X, QR 코드 O
             else if (m_set_item == false && m_event_QRcode.Contains("wata"))
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
-                Thread.Sleep(200);
+                Thread.Sleep(500);
             }
             // 앱 물류 선택 O, QR 코드 X
             else if (m_set_item == true && m_event_QRcode == "")
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
-                Thread.Sleep(200);
+                Thread.Sleep(500);
             }
             // 앱 물류 선택 O, QR 코드 O
             else if (m_set_item == true && m_event_QRcode.Contains("wata"))
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
-                Thread.Sleep(200);
+                Thread.Sleep(500);
             }
 
             // 백엔드 전송

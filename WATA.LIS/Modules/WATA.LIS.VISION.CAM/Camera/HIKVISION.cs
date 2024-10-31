@@ -148,7 +148,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                 pipeline.Start(config);
 
                 JObject point = new JObject();
-                JObject points = new JObject();
+                //JObject points = new JObject();
+                JArray points = new JArray();
 
                 Task.Factory.StartNew(() => {
                     while (!tokenSource.Token.IsCancellationRequested)
@@ -274,7 +275,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         resultHeight = result;
 
                                         Mat resizedImage = new Mat();
-                                        Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 2, depthHeight / 2));
+                                        Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 6, depthHeight / 6));
 
                                         for (int y = 0; y < resizedImage.Rows; y++)
                                         {
@@ -312,7 +313,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         eventModels.WIDTH = 0;
                         eventModels.HEIGHT = resultHeight;
                         eventModels.DEPTH = 0;
-                        eventModels.POINTS = points.ToString();
+                        //eventModels.POINTS = points.ToString();
                         eventModels.connected = true;
                         _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                     }
