@@ -10,6 +10,7 @@ namespace WATA.LIS.Core.Model.Indicator
     public class IndicatorModel
     {
         public forklift_status forklift_status = new forklift_status();
+        public bool tail = true;
     }
 
     public class forklift_status

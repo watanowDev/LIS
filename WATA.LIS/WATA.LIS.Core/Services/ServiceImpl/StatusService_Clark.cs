@@ -95,7 +95,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_curr_height = 0;
         private int m_event_height = 0;
         private string m_event_points = "";
+        private bool m_send_points = false;
         private int m_no_QRcnt;
+        private int m_overHeightCnt = 0;
+        private bool m_guideSizeComplete = false;
 
         // LiDAR_2D 데이터 클래스
         private long m_naviX { get; set; }
@@ -522,7 +525,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="epcData"></param>
         private void ErrorCheckTimerEvent(object sender, EventArgs e)
         {
-            if(weightConfig.weight_enable == 1 && m_stop_alarm == false)
+            if (weightConfig.weight_enable == 1 && m_stop_alarm == false)
             {
                 m_errCnt_weight++;
             }
@@ -792,21 +795,55 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_Command = -1;
                     m_event_QRcode = m_curr_QRcode;
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.qr_check_complete);
-                    Thread.Sleep(1000);
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
-                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
-                    Thread.Sleep(2500);
+                    Thread.Sleep(500);
+                    //Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+                    //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
+                    //Thread.Sleep(2500);
                     _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
-                    m_curr_height = m_visionModel.HEIGHT;
+                }
+            }
 
-                    // 물류 높이 값이 이전과 다를 경우
-                    if (m_event_height != m_curr_height && m_curr_height > 10)
-                    {
-                        m_event_height = m_curr_height;
-                        m_event_points = m_visionModel.POINTS;
-                        _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete_please_pickup);
-                        Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
-                    }
+            // 높이 값 400 이상인 객체 시간 체크
+            if (m_visionModel.HEIGHT > 400 && m_isPickUp == false && m_guideSizeComplete == false)
+            {
+                m_overHeightCnt++;
+            }
+            else if (m_visionModel.HEIGHT <= 400 && m_isPickUp == false && m_guideSizeComplete == true)
+            {
+                // 취득한 물류값 해제
+                m_overHeightCnt = 0;
+                m_guideSizeComplete = false;
+                m_event_height = 0;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+            }
+
+            // 물류 높이 값이 400 이상일 경우 부피측정중 안내멘트
+            //if (m_visionModel.HEIGHT > 400 && m_isPickUp == false && m_guideSizeComplete == false)
+            //{
+            //    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+            //    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
+            //    Thread.Sleep(2000);
+            //}
+
+            // 물류 높이 값이 400 이상일 경우 부피측정중 안내멘트
+            if (m_visionModel.HEIGHT > 400 && m_overHeightCnt >= 15 && m_overHeightCnt % 15 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
+            {
+                m_curr_height = m_visionModel.HEIGHT;
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
+                Thread.Sleep(2000);
+
+                // 물류 높이 값이 이전값보다 10%이상 차이날 경우
+                if (Math.Abs(m_event_height - m_curr_height) / 100 > 0.10)
+                {
+                    m_Command = -1;
+                    m_overHeightCnt = 0;
+                    m_guideSizeComplete = true;
+                    m_event_height = m_curr_height;
+                    //m_event_points = m_visionModel.POINTS;
+                    _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete_please_pickup);
+                    Thread.Sleep(500);
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
                 }
             }
 
@@ -824,7 +861,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear QR Code
-            if (m_no_QRcnt > 60 && m_isPickUp == false)
+            if (m_no_QRcnt > 70 && m_guideSizeComplete == false && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -1090,6 +1127,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"{status}", ELogType.DisplayLog);
                 m_errCnt_indicator = 0;
+
+                if (m_Indicator_Timer != null && m_Indicator_Timer.IsEnabled == false)
+                {
+                    //m_Indicator_Timer.Start();
+                }
             }
 
             if (status == "set_item")
@@ -1144,6 +1186,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //m_indicatorModel.forklift_status.visionHeight = 100;
             m_indicatorModel.forklift_status.visionDepth = m_event_length;
             m_indicatorModel.forklift_status.points = m_event_points;
+            //if(m_event_points != null && m_event_points != "" && m_send_points == false)
+            //{
+            //    m_indicatorModel.forklift_status.points = m_event_points;
+            //    m_event_points = "";
+            //    m_send_points = true;
+            //}
             m_indicatorModel.forklift_status.epc = m_event_epc;
             m_indicatorModel.forklift_status.networkStatus = true;
             m_indicatorModel.forklift_status.weightSensorStatus = weightConfig.weight_enable != 0 && m_errCnt_weight > 5 ? false : true;
@@ -1152,6 +1200,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.visionCamStatus = visionCamConfig.vision_enable != 0 && m_errCnt_visioncam > 5 ? false : true;
             m_indicatorModel.forklift_status.lidar2dStatus = true;
             m_indicatorModel.forklift_status.lidar3dStatus = true;
+            m_indicatorModel.tail = true;
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
             _eventAggregator.GetEvent<IndicatorSendEvent>().Publish(json_body);
@@ -1457,6 +1506,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //m_event_height = m_livoxModel.height;
             m_event_length = 0;
             //m_event_points = m_livoxModel.points;
+            m_event_points = m_visionModel.POINTS;
 
             // 인디케이터 통신 핸들
             m_Command = 1;
@@ -1492,6 +1542,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 백엔드 전송
             SendBackEndPickupAction();
+
+            //res 들어올 때 까지 인디케이터 송신 중단
+            IndicatorSendTimerEvent(null, null);
+            //m_Indicator_Timer.Stop();
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height{m_event_height}, depth:{m_event_length}", ELogType.ActionLog);
