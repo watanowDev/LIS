@@ -233,10 +233,23 @@ namespace WATA.LIS.VISION.CAM.Camera
                                     Mat yChannel = new Mat();
                                     Cv2.ExtractChannel(depthImage, yChannel, 0);
 
+                                    Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
+                                    Cv2.Erode(yChannel, yChannel, kernel);
+                                    Cv2.Dilate(yChannel, yChannel, kernel);
+
                                     Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
 
-                                    Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
-                                    Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
+                                    for (int i = 580; i < 630; i++)
+                                    {
+                                        minYValue = yChannel.At<Vec3f>(i, 288)[1];
+                                        //Console.WriteLine("minYValue : " + minYValue);
+                                        if (minYValue < -500)
+                                        {
+                                            minYLoc = new Point(288, i);
+                                            break;
+                                        }
+                                    }
+
 
                                     if (maxYValue == 0)
                                     {
@@ -249,11 +262,16 @@ namespace WATA.LIS.VISION.CAM.Camera
                                                 if (yValue < 0 && yValue > maxNegativeValue)
                                                 {
                                                     maxNegativeValue = yValue;
+                                                    maxYLoc = new Point(j, i);
                                                 }
                                             }
                                         }
                                         maxYValue = maxNegativeValue;
                                     }
+
+
+                                    Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
+                                    Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
 
                                     if (maxYValue != 0 && minYValue != 0)
                                     {
@@ -262,9 +280,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
                                     }
 
-                                    if (_listTopResultY.Count == 8 && _listBotResultY.Count == 8) // 속도 빠르면 15, 20 테스트
+                                    if (_listTopResultY.Count == 10 && _listBotResultY.Count == 10) // 속도 빠르면 15, 20 테스트
                                     {
-                                        int heightOffset = 45;
+                                        int heightOffset = 40;
                                         int resultTopAvg = CalculateAverage(_listTopResultY);
                                         int resultBotAvg = CalculateAverage(_listBotResultY);
                                         int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
@@ -288,7 +306,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                                     point["y"] = pt.Item1;
                                                     point["z"] = pt.Item2;
                                                     points.Add(point);
-                                                    Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
+                                                    //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
                                                 }
                                             }
                                         }

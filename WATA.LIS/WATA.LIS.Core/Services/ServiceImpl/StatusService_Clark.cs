@@ -824,7 +824,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear QR Code
-            if (m_no_QRcnt > 50 && m_isPickUp == false)
+            if (m_no_QRcnt > 60 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -1140,8 +1140,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.weightTotal = m_event_weight;
             m_indicatorModel.forklift_status.QR = m_event_QRcode;
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
-            //m_indicatorModel.forklift_status.visionHeight = m_event_height;
-            m_indicatorModel.forklift_status.visionHeight = 100;
+            m_indicatorModel.forklift_status.visionHeight = m_event_height;
+            //m_indicatorModel.forklift_status.visionHeight = 100;
             m_indicatorModel.forklift_status.visionDepth = m_event_length;
             m_indicatorModel.forklift_status.points = m_event_points;
             m_indicatorModel.forklift_status.epc = m_event_epc;
