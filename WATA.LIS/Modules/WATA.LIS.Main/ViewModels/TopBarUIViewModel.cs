@@ -39,8 +39,12 @@ namespace WATA.LIS.Main.ViewModels
         public string LivingTime { get { return _LivingTime; } set { SetProperty(ref _LivingTime, value); } }
 
 
-        private string _VisionCamEvent;
-        public string VisionCamEvent { get { return _VisionCamEvent; } set { SetProperty(ref _VisionCamEvent, value); } }
+        private string _VisionCamQREvent;
+        public string VisionCamQREvent { get { return _VisionCamQREvent; } set { SetProperty(ref _VisionCamQREvent, value); } }
+
+
+        private string _VisionCamSizeEvent;
+        public string VisionCamSizeEvent { get { return _VisionCamSizeEvent; } set { SetProperty(ref _VisionCamSizeEvent, value); } }
 
 
         private string _RFIDEvent;
@@ -56,6 +60,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
@@ -64,7 +69,14 @@ namespace WATA.LIS.Main.ViewModels
             DateTimer.Start();
 
 
-            VisionCamEvent = "None";
+            VisionCamQREvent = "None";
+            VisionCamSizeEvent = "None";
+            RFIDEvent = "None";
+        }
+
+        private void OnCurrentSizeEvent(string obj)
+        {
+            VisionCamSizeEvent = obj;
         }
 
         private void OnCurrentRFIDEvent(string obj)
@@ -74,7 +86,7 @@ namespace WATA.LIS.Main.ViewModels
 
         private void OnCurrentQREvent(string obj)
         {
-            VisionCamEvent = obj;
+            VisionCamQREvent = obj;
         }
 
         private static int LivingCount = 0;
@@ -83,8 +95,8 @@ namespace WATA.LIS.Main.ViewModels
         {
             Date = DateTime.Now.ToString("yyyy-MM-dd");
             Time = DateTime.Now.ToString("HH:mm:ss");
-            LivingTime = LivingCount.ToString();
-            LivingCount++;
+            //LivingTime = LivingCount.ToString();
+            //LivingCount++;
         }
 
 
@@ -105,20 +117,12 @@ namespace WATA.LIS.Main.ViewModels
                 processList_vision[i].Kill();
                 processList_vision[i].Close();
             }
-
-
-
         }
 
         private void ButtonFuncClick(string command)
         {
             try
             {
-
-
-
-
-
                 if (command == null) return;
                 switch (command)
                 {
@@ -126,9 +130,7 @@ namespace WATA.LIS.Main.ViewModels
 
                         if (MessageBox.Show(" Do you want to exit the program? ", "Program", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
                         {
-
                             ClearProcess();
-
                             Environment.Exit(0);
                         }
                         break;

@@ -69,7 +69,14 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private static extern bool AllocConsole(); // 콘솔 할당 함수
 
+
+
+
         // 펨토메가 관련 코드
+        private Pipeline m_pipeline;
+        private StreamProfile m_colorProfile;
+        private StreamProfile m_depthProfile;
+
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         private const string detectorPrototxtPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
@@ -113,12 +120,13 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
 
             m_CheckConnTimer = new DispatcherTimer();
-            m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            m_CheckConnTimer.Tick += new EventHandler(CheckConnection);
+            m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            m_CheckConnTimer.Tick += new EventHandler(CheckConnectionEvent);
+            m_CheckConnTimer.Start();
 
-            m_GetImageTimer = new DispatcherTimer();
-            m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
-            m_GetImageTimer.Tick += new EventHandler(GetFrame);
+            //m_GetImageTimer = new DispatcherTimer();
+            //m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
+            //m_GetImageTimer.Tick += new EventHandler(GetFrame);
 
             //InitializeWeChatQRCode();
             //openVisionCam();
@@ -137,15 +145,15 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             try
             {
-                Pipeline pipeline = new Pipeline();
-                StreamProfile colorProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840 / 2, 2160 / 2, Format.OB_FORMAT_RGB, 25);
-                StreamProfile depthProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
+                m_pipeline = new Pipeline();
+                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840 / 2, 2160 / 2, Format.OB_FORMAT_RGB, 25);
+                m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
                 Config config = new Config();
-                config.EnableStream(colorProfile);
-                config.EnableStream(depthProfile);
+                config.EnableStream(m_colorProfile);
+                config.EnableStream(m_depthProfile);
 
-                pipeline.Start(config);
+                m_pipeline.Start(config);
 
                 JObject point = new JObject();
                 //JObject points = new JObject();
@@ -154,7 +162,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 Task.Factory.StartNew(() => {
                     while (!tokenSource.Token.IsCancellationRequested)
                     {
-                        using (var frames = pipeline.WaitForFrames(100))
+                        using (var frames = m_pipeline.WaitForFrames(100))
                         {
                             var colorFrame = frames?.GetColorFrame();
                             var depthFrame = frames?.GetDepthFrame();
@@ -174,14 +182,12 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
                                 Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
-                                string qr = GetQRcodeIDByWeChat(colorImage);
+                                string qr = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
                                 if (qr.Contains("wata"))
                                 {
                                     resultQR = qr;
-                                    Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 255, 0), thickness: 4);
+                                    Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 0, 255), thickness: 4);
                                 }
-
-                                //resultFrame = colorImage.ToBytes();
 
                                 Cv2.NamedWindow("COLOR", WindowFlags.KeepRatio);
                                 Cv2.ResizeWindow("COLOR", 720, 1280);
@@ -197,7 +203,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 //}
                                 // 포인트 클라우드 데이터
                                 PointCloudFilter pointCloud = new PointCloudFilter();
-                                var cameraParam = pipeline.GetCameraParam();
+                                var cameraParam = m_pipeline.GetCameraParam();
                                 pointCloud.SetCameraParam(cameraParam);
                                 pointCloud.SetPositionDataScaled(1);
 
@@ -342,6 +348,9 @@ namespace WATA.LIS.VISION.CAM.Camera
             {
                 //MessageBox.Show(e.Message);
                 Application.Current.Shutdown();
+                m_pipeline = null;
+                m_colorProfile = null;
+                m_depthProfile = null;
             }
         }
 
@@ -355,7 +364,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             return (int)trimmedYValues.Average();
         }
 
-        private string GetQRcodeIDByWeChat(Mat frame)
+        private string GetQRcodeIDByWeChat(Mat frame, int colorWidth, int colorHeight)
         {
             string ret = string.Empty;
 
@@ -383,15 +392,16 @@ namespace WATA.LIS.VISION.CAM.Camera
             //    ret = zXingResult.Text;
             //}
 
-            if (weChatResult != null && weChatResult.Length > 0 && weChatResult[0].Contains("wata"))
+            Console.WriteLine("colorWidth : " + colorWidth + " bbox : " + bbox.Length);
+            if (weChatResult != null && weChatResult.Length > 0)
             {
-                ret = weChatResult[0];
-
+                double closestDistance = double.MaxValue;
+                int cnt = 0;
                 foreach (var box in bbox)
                 {
                     OpenCvSharp.Point[] detectedQRpoints = new OpenCvSharp.Point[4];
 
-                    if (box.Total() >= 4)
+                    if (box.Total() >= 4 && weChatResult[cnt].Contains("wata"))
                     {
                         for (int j = 0; j < 4; j++)
                         {
@@ -403,13 +413,38 @@ namespace WATA.LIS.VISION.CAM.Camera
                         int maxX = detectedQRpoints.Max(p => p.X);
                         int maxY = detectedQRpoints.Max(p => p.Y);
 
-                        _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-                    }
-                }
-            }
-            Console.WriteLine("QR : " + ret);
+                        var qrRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
+                        int centerX = qrRect.X + qrRect.Width / 2;
 
+                        double distance = Math.Abs(centerX - colorHeight / 2);
+
+                        Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
+                        if (distance < closestDistance)
+                        {
+                            closestDistance = distance;
+                            _detectedQRRect = qrRect;
+                            ret = weChatResult[cnt];
+                        }
+                    }
+                    cnt++;
+                }
+
+            }
             return ret;
+        }
+
+        private void CheckConnectionEvent(object sender, EventArgs e)
+        {
+            if (m_pipeline == null)
+            {
+                Tools.Log("VisionCam is disconnected", Tools.ELogType.SystemLog);
+                InitializeMultiStream();
+                return;
+            }
+            else
+            {
+                //Tools.Log("VisionCam is alive", Tools.ELogType.SystemLog);
+            }
         }
 
 

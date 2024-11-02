@@ -25,7 +25,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
         RFIDConfigModel rfidConfig;
 
-        private DispatcherTimer mCheckConnTimer;
+        private DispatcherTimer mCheckConnectionTimer;
         private DispatcherTimer mGetInventoryTimer;
         private bool mConnected = false;
 
@@ -45,15 +45,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 return;
             }
 
-            mCheckConnTimer = new DispatcherTimer();
-            mCheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            mCheckConnTimer.Tick += new EventHandler(CheckConnTimer);
-            mCheckConnTimer.Start();
+            mCheckConnectionTimer = new DispatcherTimer();
+            mCheckConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            mCheckConnectionTimer.Tick += new EventHandler(CheckConnectionEvenet);
+            mCheckConnectionTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
             mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
-            mGetInventoryTimer.Start();
 
             RfidReaderInit();
         }
@@ -87,23 +86,25 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 mConnected = true;
                 SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
 
-                //reader.Destroy();
+                mGetInventoryTimer.Start();
             }
             catch (Exception ex)
             {
                 mConnected = false;
                 SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
+                mGetInventoryTimer.Stop();
+                reader.Destroy();
                 Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
             }
         }
 
-        private void CheckConnTimer(object sender, EventArgs e)
+        private void CheckConnectionEvenet(object sender, EventArgs e)
         {
             try
             {
-                //Get the model of the reader for checking the connection
                 string model = (string)reader.ParamGet("/reader/version/model");
                 mConnected = true;
+                RfidReaderInit();
                 SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
                 Tools.Log($"[RfidReaderConnCheck] Connected !!! : {model}", Tools.ELogType.RFIDLog);
             }

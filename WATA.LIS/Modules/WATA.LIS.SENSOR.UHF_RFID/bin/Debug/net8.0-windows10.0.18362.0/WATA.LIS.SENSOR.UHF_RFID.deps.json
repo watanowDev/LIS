@@ -16,21 +16,21 @@
           "ApulsetechNet": "1.8.0.0",
           "LLRP": "1.0.0.6",
           "MercuryAPI": "1.29.4.34",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.31"
         },
         "runtime": {
           "WATA.LIS.SENSOR.UHF_RFID.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.34"
+            "fileVersion": "10.0.18362.31"
           },
           "WinRT.Runtime.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "fileVersion": "2.0.4.44211"
           }
         }
       },
@@ -906,10 +906,7 @@
           "log4net": "2.0.15"
         },
         "runtime": {
-          "WATA.LIS.Core.dll": {
-            "assemblyVersion": "1.0.0",
-            "fileVersion": "1.0.0.0"
-          }
+          "WATA.LIS.Core.dll": {}
         }
       },
       "ApulsetechNet/1.8.0.0": {
@@ -944,7 +941,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.31": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
