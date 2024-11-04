@@ -40,6 +40,7 @@ using System.Net.NetworkInformation;
 using static System.Formats.Asn1.AsnWriter;
 using Point = OpenCvSharp.Point;
 using Newtonsoft.Json.Linq;
+using System.Windows.Media.Media3D;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -85,6 +86,9 @@ namespace WATA.LIS.VISION.CAM.Camera
         private const string superResolutionCaffeModelPath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
         private WeChatQRCode weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
         //private BarcodeReader barcodeReader = new BarcodeReader();
+
+        int width = 3840; // 카메라 해상도 (x 방향)
+        int height = 2160; // 카메라 해상도 (y 방향)
 
         float cx = 326.956f; // 주점 x 위치
         float cy = 315.47f; // 주점 y 위치
@@ -132,6 +136,8 @@ namespace WATA.LIS.VISION.CAM.Camera
             //openVisionCam();
 
             //펨토메가 관련 코드
+            width = width / 2;
+            height = height / 2;
             InitializeMultiStream();
         }
 
@@ -146,7 +152,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             try
             {
                 m_pipeline = new Pipeline();
-                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840 / 2, 2160 / 2, Format.OB_FORMAT_RGB, 25);
+                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
                 m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
                 Config config = new Config();
@@ -158,6 +164,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                 JObject point = new JObject();
                 //JObject points = new JObject();
                 JArray points = new JArray();
+
+                // 가로 방향으로 화면을 3등분
+                int sectionWidth = width / 3;
 
                 Task.Factory.StartNew(() => {
                     while (!tokenSource.Token.IsCancellationRequested)
@@ -182,10 +191,27 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
                                 Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
-                                string qr = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
-                                if (qr.Contains("wata"))
+                                // 3등분한 구역을 설정
+                                OpenCvSharp.Rect roi_top =      new OpenCvSharp.Rect(180, 0, 720, 480);
+                                OpenCvSharp.Rect roi_middle =   new OpenCvSharp.Rect(180, 480, 720, 1440);
+                                OpenCvSharp.Rect roi_bottom =   new OpenCvSharp.Rect(180, 1440, 720, 1920);
+
+                                // ROI를 파란색 실선으로 표시
+                                Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
+                                Cv2.Rectangle(colorImage, roi_top, new Scalar(0, 255, 255), thickness: 4);
+                                Cv2.Rectangle(colorImage, roi_bottom, new Scalar(255, 255, 0), thickness: 4);
+
+                                List<string> qr = new List<string>();
+                                string qr1 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_middle);
+                                string qr2 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
+                                string qr3 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
+                                if (qr1.Contains("wata")) qr.Add(qr1);
+                                if (qr2.Contains("wata")) qr.Add(qr2);
+                                if (qr3.Contains("wata")) qr.Add(qr3);
+
+                                if (qr.Count != 0 && qr.Any(q => q.Contains("wata")))
                                 {
-                                    resultQR = qr;
+                                    resultQR = qr[0];
                                     Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 0, 255), thickness: 4);
                                 }
 
@@ -364,33 +390,11 @@ namespace WATA.LIS.VISION.CAM.Camera
             return (int)trimmedYValues.Average();
         }
 
-        private string GetQRcodeIDByWeChat(Mat frame, int colorWidth, int colorHeight)
+        private string GetQRcodeIDByWeChat(Mat frame, int colorWidth, int colorHeight, OpenCvSharp.Rect roi)
         {
             string ret = string.Empty;
 
             weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
-
-            //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
-
-            //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
-            //{
-            //    int x1 = (int)zXingResult.ResultPoints[0].X;
-            //    int y1 = (int)zXingResult.ResultPoints[0].Y;
-            //    int x2 = (int)zXingResult.ResultPoints[1].X;
-            //    int y2 = (int)zXingResult.ResultPoints[1].Y;
-            //    int x3 = (int)zXingResult.ResultPoints[2].X;
-            //    int y3 = (int)zXingResult.ResultPoints[2].Y;
-            //    int x4 = (int)zXingResult.ResultPoints[3].X;
-            //    int y4 = (int)zXingResult.ResultPoints[3].Y;
-
-            //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
-            //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
-            //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
-            //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
-
-            //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-            //    ret = zXingResult.Text;
-            //}
 
             Console.WriteLine("colorWidth : " + colorWidth + " bbox : " + bbox.Length);
             if (weChatResult != null && weChatResult.Length > 0)
@@ -415,20 +419,24 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                         var qrRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
                         int centerX = qrRect.X + qrRect.Width / 2;
+                        int centerY = qrRect.Y + qrRect.Height / 2;
 
-                        double distance = Math.Abs(centerX - colorHeight / 2);
-
-                        Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
-                        if (distance < closestDistance)
+                        // Check if the QR code is within the ROI
+                        if (roi.Contains(new OpenCvSharp.Point(centerX, centerY)))
                         {
-                            closestDistance = distance;
-                            _detectedQRRect = qrRect;
-                            ret = weChatResult[cnt];
+                            double distance = Math.Abs(centerX - colorHeight / 2);
+
+                            Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
+                            if (distance < closestDistance)
+                            {
+                                closestDistance = distance;
+                                _detectedQRRect = qrRect;
+                                ret = weChatResult[cnt];
+                            }
                         }
                     }
                     cnt++;
                 }
-
             }
             return ret;
         }
@@ -450,6 +458,28 @@ namespace WATA.LIS.VISION.CAM.Camera
 
 
 
+
+        //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
+
+        //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
+        //{
+        //    int x1 = (int)zXingResult.ResultPoints[0].X;
+        //    int y1 = (int)zXingResult.ResultPoints[0].Y;
+        //    int x2 = (int)zXingResult.ResultPoints[1].X;
+        //    int y2 = (int)zXingResult.ResultPoints[1].Y;
+        //    int x3 = (int)zXingResult.ResultPoints[2].X;
+        //    int y3 = (int)zXingResult.ResultPoints[2].Y;
+        //    int x4 = (int)zXingResult.ResultPoints[3].X;
+        //    int y4 = (int)zXingResult.ResultPoints[3].Y;
+
+        //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
+        //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
+        //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
+        //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
+
+        //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
+        //    ret = zXingResult.Text;
+        //}
 
 
 
