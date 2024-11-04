@@ -300,24 +300,24 @@ namespace WATA.LIS.VISION.CAM.Camera
                                     resultQR = "";
                                     resultHeight = result;
 
-                                    Mat resizedImage = new Mat();
-                                    Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 12, depthHeight / 12));
+                                    //Mat resizedImage = new Mat();
+                                    //Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 12, depthHeight / 12));
 
-                                    for (int y = 0; y < resizedImage.Rows; y++)
-                                    {
-                                        for (int x = 0; x < resizedImage.Cols; x++)
-                                        {
-                                            Vec3f pt = resizedImage.At<Vec3f>(y, x);
-                                            if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
-                                            {
-                                                point["x"] = pt.Item0;
-                                                point["y"] = pt.Item1;
-                                                point["z"] = pt.Item2;
-                                                points.Add(point);
-                                                //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
-                                            }
-                                        }
-                                    }
+                                    //for (int y = 0; y < resizedImage.Rows; y++)
+                                    //{
+                                    //    for (int x = 0; x < resizedImage.Cols; x++)
+                                    //    {
+                                    //        Vec3f pt = resizedImage.At<Vec3f>(y, x);
+                                    //        if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
+                                    //        {
+                                    //            point["x"] = pt.Item0;
+                                    //            point["y"] = pt.Item1;
+                                    //            point["z"] = pt.Item2;
+                                    //            points.Add(point);
+                                    //            //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
+                                    //        }
+                                    //    }
+                                    //}
 
                                     Console.WriteLine("---------------------------------------------");
                                     Console.WriteLine($"Height : {result} mm");

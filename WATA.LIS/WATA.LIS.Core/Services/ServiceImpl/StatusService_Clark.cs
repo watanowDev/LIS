@@ -220,14 +220,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
             m_IsPickUp_Timer = new DispatcherTimer();
-            m_IsPickUp_Timer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            m_IsPickUp_Timer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             m_IsPickUp_Timer.Tick += new EventHandler(IsPickUpTimerEvent);
             m_IsPickUp_Timer.Start();
 
 
 
             m_IsDrop_Timer = new DispatcherTimer();
-            m_IsDrop_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_IsDrop_Timer.Interval = new TimeSpan(0, 0, 0, 0, 50);
             m_IsDrop_Timer.Tick += new EventHandler(IsDropTimerEvent);
             m_IsDrop_Timer.Start();
 
@@ -428,12 +428,22 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
+            else if (value == ePlayBuzzerLed.SET_ITEM_SIZE_CHECK_START)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern6;
+                model.LED_Color = eLEDColors.Cyan;
+                model.BuzzerPattern = eBuzzerPatterns.OFF;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+
             else if (value == ePlayBuzzerLed.SET_ITEM_MEASURE_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
                 model.LED_Color = eLEDColors.Cyan;
-                model.BuzzerPattern = eBuzzerPatterns.Continuous;
+                model.BuzzerPattern = eBuzzerPatterns.OFF;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
@@ -743,21 +753,38 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 m_overHeightCnt++;
             }
-            else if (m_visionModel.HEIGHT <= 400 && m_isPickUp == false && m_guideSizeComplete == true)
+            else if (m_visionModel.HEIGHT <= 400 && m_isPickUp == false)
             {
                 m_overHeightCnt = 0;
                 m_guideSizeComplete = false;
                 m_event_height = 0;
                 m_event_points = "";
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+
+                if (m_set_item == true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                }
+                else
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+                }
+
+                _eventAggregator.GetEvent<HittingSize_Event>().Publish($"width:, height:{m_event_height}, depth:");
             }
 
             // 물류 높이 값이 400 이상인 물류 1.5초 이상 인식된 경우 부피측정 시작 음성안내 제공
             if (m_visionModel.HEIGHT > 400 && m_overHeightCnt >= 15 && m_overHeightCnt % 15 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
             {
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+                if (m_set_item == true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_SIZE_CHECK_START);
+                }
+                else
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
+                }
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
-                Thread.Sleep(1500);
+                Thread.Sleep(1800);
 
                 m_curr_height = m_visionModel.HEIGHT;
 
@@ -771,13 +798,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     //m_event_points = m_visionModel.POINTS;
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_complete_please_pickup);
                     _eventAggregator.GetEvent<HittingSize_Event>().Publish($"width:, height:{m_event_height}, depth:");
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+
+                    if (m_set_item == true)
+                    {
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                    }
+                    else
+                    {
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_MEASURE_OK);
+                    }
                     Thread.Sleep(200);
                 }
             }
 
             // QR에 wata 없을 시 No QR 카운트
-            if (m_visionModel.QR == "" && m_set_item == false)
+            if (!m_visionModel.QR.Contains("wata") && m_set_item == false)
             {
                 m_no_QRcnt++;
                 m_curr_QRcode = "";
@@ -790,7 +825,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear QR Code
-            if (m_no_QRcnt > 50 && m_guideSizeComplete == false && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 50 && m_guideSizeComplete == false && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -1228,8 +1263,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
             int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
 
-            if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.05) return;
-            if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.05) return;
+            if (Math.Abs(currentWeight - minWeight) > currentWeight * 1) return;
+            if (Math.Abs(currentWeight - maxWeight) > currentWeight * 1) return;
 
             // 안정된 중량값 할당
             m_event_weight = m_weightModel.GrossWeight;

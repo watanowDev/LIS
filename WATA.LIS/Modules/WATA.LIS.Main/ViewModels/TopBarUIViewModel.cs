@@ -60,7 +60,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingSize_Event>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
