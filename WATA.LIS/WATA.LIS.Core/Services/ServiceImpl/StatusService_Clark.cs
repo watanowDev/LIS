@@ -147,6 +147,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_IsDrop_Timer;
         DispatcherTimer m_MonitoringQR_Timer;
         DispatcherTimer m_MonitoringEPC_Timer;
+        Stopwatch m_stopwatch;
 
 
         public StatusService_Clark(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
@@ -743,7 +744,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
             {
                 // 새로 인식된 QR일 경우
-                if (m_event_QRcode != m_curr_QRcode)
+                //if (m_event_QRcode != m_curr_QRcode)
+                if (m_event_QRcode == "")
                 {
                     m_Command = -1;
                     m_event_QRcode = m_curr_QRcode;
@@ -826,8 +828,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.SIZE_CHECK_START);
                     }
 
+                    m_stopwatch = new Stopwatch();
+                    m_stopwatch.Start();
+
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
-                    Thread.Sleep(1800);
+                    Thread.Sleep(2000);
 
                     m_Command = -1;
                     m_isItemCnt = 0;
@@ -1356,6 +1361,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 Thread.Sleep(500);
             }
+
+            m_stopwatch.Stop();
+            Tools.Log($"Spend Time: {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, height{m_event_height}", ELogType.ActionLog);

@@ -202,12 +202,12 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.Rectangle(colorImage, roi_bottom, new Scalar(255, 255, 0), thickness: 4);
 
                                 List<string> qr = new List<string>();
-                                string qr1 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_middle);
-                                string qr2 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
-                                string qr3 = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
-                                if (qr1.Contains("wata")) qr.Add(qr1);
-                                if (qr2.Contains("wata")) qr.Add(qr2);
-                                if (qr3.Contains("wata")) qr.Add(qr3);
+                                string qrBottom = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
+                                string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_middle);
+                                string qrTop = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
+                                if (qrBottom.Contains("wata")) qr.Add(qrBottom);
+                                if (qrMiddle.Contains("wata")) qr.Add(qrMiddle);
+                                if (qrTop.Contains("wata")) qr.Add(qrTop);
 
                                 if (qr.Count != 0 && qr.Any(q => q.Contains("wata")))
                                 {
