@@ -74,9 +74,9 @@ namespace WATA.LIS.Main.ViewModels
             RFIDEvent = "None";
         }
 
-        private void OnCurrentSizeEvent(string obj)
+        private void OnCurrentSizeEvent(VisionCamModel obj)
         {
-            VisionCamSizeEvent = obj;
+            VisionCamSizeEvent = $"Height: {obj.HEIGHT}, Depth: {obj.DEPTH}";
         }
 
         private void OnCurrentRFIDEvent(string obj)

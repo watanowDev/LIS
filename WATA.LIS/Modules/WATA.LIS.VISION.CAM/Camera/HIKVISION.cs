@@ -107,6 +107,9 @@ namespace WATA.LIS.VISION.CAM.Camera
         private int resultWidth;
         private int resultDepth;
 
+        Vec3f checkDepthVal;
+        float checkZValue;
+
 
         public HIKVISION(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
@@ -254,6 +257,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         Vec3f depthVec = depthImage.At<Vec3f>(i, j);
                                         float zValue = depthVec[2];
 
+                                        checkDepthVal = depthVec;
+                                        checkZValue = zValue;
+
                                         if (zValue < 1200.0f || zValue > 2200.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
                                         {
                                             depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
@@ -363,7 +369,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         eventModels.QR = resultQR == null ? "" : resultQR;
                         eventModels.WIDTH = 0;
                         eventModels.HEIGHT = resultHeight;
-                        eventModels.DEPTH = 0;
+                        eventModels.DEPTH = checkZValue;
                         eventModels.POINTS = points.ToString();
                         eventModels.connected = true;
                         _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);

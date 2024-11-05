@@ -80,6 +80,14 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 {
                     PlaySound("dummy.mp3");
                 }
+                else if (speaker == ePlayInfoSpeaker.stop)
+                {
+                    PlaySound("kr_stop.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.measure_complete)
+                {
+                    PlaySound("kr_measure_complete.mp3");
+                }
                 else if (speaker == ePlayInfoSpeaker.qr_check_start)
                 {
                     PlaySound("kr_qr_check_start.mp3");

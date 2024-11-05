@@ -39,7 +39,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         {
             SerialThreadInit();
             DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
             ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
             ReceiveTimer.Start();
         }

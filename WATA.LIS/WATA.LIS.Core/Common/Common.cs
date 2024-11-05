@@ -82,6 +82,7 @@ namespace WATA.LIS.Core.Common
     {
         SIZE_CHECK_START,
         SIZE_MEASURE_OK,
+        CHECK_COMPLETE,
         QR_PIKCUP,
         QR_MEASURE_OK,
         NO_QR_PICKUP,
@@ -90,6 +91,7 @@ namespace WATA.LIS.Core.Common
         SET_ITEM_PICKUP,
         SET_ITEM_SIZE_CHECK_START,
         SET_ITEM_MEASURE_OK,
+        SET_ITEM_CHECK_COMPLETE,
         CLEAR_ITEM,
         DROP,
         ACTION_START,
@@ -117,6 +119,7 @@ namespace WATA.LIS.Core.Common
 
     public enum ePlayInfoSpeaker
     {
+        stop, measure_complete,
         qr_check_start, qr_check_complete, qr_check_error,
         weight_check_start, weight_check_complete, weight_check_error,
         size_check_start, size_check_start_please_stop, size_check_complete, size_check_complete_please_pickup, size_check_error,
