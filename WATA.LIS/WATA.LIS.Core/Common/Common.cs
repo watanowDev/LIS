@@ -80,6 +80,7 @@ namespace WATA.LIS.Core.Common
     }
     public enum ePlayBuzzerLed
     {
+        NORMAL,
         SIZE_CHECK_START,
         SIZE_MEASURE_OK,
         CHECK_COMPLETE,
@@ -89,6 +90,7 @@ namespace WATA.LIS.Core.Common
         NO_QR_MEASURE_OK,
         NO_QR_CHECK_COMPLETE,
         SET_ITEM,
+        SET_ITEM_NORMAL,
         SET_ITEM_PICKUP,
         SET_ITEM_SIZE_CHECK_START,
         SET_ITEM_MEASURE_OK,

@@ -139,8 +139,8 @@ namespace WATA.LIS.VISION.CAM.Camera
             //openVisionCam();
 
             //펨토메가 관련 코드
-            width = width / 2;
-            height = height / 2;
+            //width = width / 2;
+            //height = height / 2;
             InitializeMultiStream();
         }
 
@@ -155,6 +155,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             try
             {
                 m_pipeline = new Pipeline();
+
                 m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
                 m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
@@ -195,9 +196,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
                                 // 3등분한 구역을 설정
-                                OpenCvSharp.Rect roi_top =      new OpenCvSharp.Rect(180, 0, 720, 480);
-                                OpenCvSharp.Rect roi_middle =   new OpenCvSharp.Rect(180, 480, 720, 1440);
-                                OpenCvSharp.Rect roi_bottom =   new OpenCvSharp.Rect(180, 1440, 720, 1920);
+                                OpenCvSharp.Rect roi_top = new OpenCvSharp.Rect(180 * 2, 0, 720 * 2, 480 * 2);
+                                OpenCvSharp.Rect roi_middle = new OpenCvSharp.Rect(180 * 2, 480 * 2, 720 * 2, 1440 * 2);
+                                OpenCvSharp.Rect roi_bottom = new OpenCvSharp.Rect(180 * 2, 1440 * 2, 720 * 2, 1920 * 2);
 
                                 // ROI를 파란색 실선으로 표시
                                 Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
