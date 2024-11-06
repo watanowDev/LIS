@@ -20,11 +20,12 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         private readonly IEventAggregator _eventAggregator;
         private readonly IDistanceModel _distancemodel;
 
-        SerialPort serial = new SerialPort();
+        DistanceConfigModel _DistanceConfig;
         SerialPort _port = new SerialPort();
 
-
-        DistanceConfigModel _DistanceConfig;
+        DispatcherTimer m_receiveTimer;
+        DispatcherTimer m_checkConnectionTimer;
+        private int m_nDataSize = 0;
 
         public TF_Mini(IEventAggregator eventAggregator, IDistanceModel distancemodel)
         {
@@ -37,11 +38,16 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         public void SerialInit()
         {
+            m_receiveTimer = new DispatcherTimer();
+            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
+            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+
+            m_checkConnectionTimer = new DispatcherTimer();
+            m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
+            m_checkConnectionTimer.Start();
+
             SerialThreadInit();
-            DispatcherTimer ReceiveTimer = new DispatcherTimer();
-            ReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
-            ReceiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
-            ReceiveTimer.Start();
         }
 
         private void SerialThreadInit()
@@ -55,6 +61,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                 {
                     _port.Open();
                     _port.Handshake = Handshake.None;
+                    m_receiveTimer.Start();
                     Tools.Log($"Distance Init Success", Tools.ELogType.SystemLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
                 }
@@ -64,6 +71,21 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                 _port = null;
                 Tools.Log($"Distance Init failed!!!", Tools.ELogType.SystemLog);
                 SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+            }
+        }
+
+        private void CheckConnectionEvent(object sender, EventArgs e)
+        {
+            if (_port == null || _port.IsOpen == false || m_nDataSize < 25)
+            {
+                if (_port != null)
+                {
+                    _port.Close();
+                    _port.Dispose();
+                    _port = null;
+                }
+
+                SerialThreadInit();
             }
         }
 

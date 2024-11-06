@@ -87,6 +87,7 @@ namespace WATA.LIS.Core.Common
         QR_MEASURE_OK,
         NO_QR_PICKUP,
         NO_QR_MEASURE_OK,
+        NO_QR_CHECK_COMPLETE,
         SET_ITEM,
         SET_ITEM_PICKUP,
         SET_ITEM_SIZE_CHECK_START,

@@ -503,6 +503,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
+            else if (value == ePlayBuzzerLed.NO_QR_CHECK_COMPLETE)
+            {
+                Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
+                model.LED_Pattern = eLEDPatterns.Pattern3;
+                model.LED_Color = eLEDColors.Purple;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern2;
+                model.BuzzerCount = 1;
+                _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
+            }
+
             else if (value == ePlayBuzzerLed.SET_ITEM_CHECK_COMPLETE)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
@@ -675,7 +685,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
         /// <summary>
-        /// 높이 센서
+        /// 거리 센서
         /// </summary>
         /// <param name="model"></param>
         private void OnDistanceSensorEvent(DistanceSensorModel model)
@@ -685,7 +695,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_errCnt_distance = 0;
             m_curr_distance = model.Distance_mm;
 
-            // 1.7m ~ 2.3m 사이에 물체가 있을 경우
+            // 3.5m ~ 4.3m 사이에 물체가 있을 경우
             if (m_curr_distance >= 3500 && m_curr_distance <= 4300 && m_distance_stop_guide == false)
             {
                 m_is_itemCnt++;
@@ -697,7 +707,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_distance_stop_guide = false;
             }
 
-            if (m_is_itemCnt > 0 && m_distance_stop_guide == false)
+            if (m_is_itemCnt > 2 && m_distance_stop_guide == false)
             {
                 m_event_distance = m_curr_distance;
                 m_distance_stop_guide = true;
@@ -838,7 +848,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 물류 3초간 없을 때 값 초기화
-            if (m_noItemCnt > 20 && m_noItemCnt % 20 == 0)
+            if (m_noItemCnt > 30 && m_noItemCnt % 30 == 0)
             {
                 m_Command = 0;
                 m_guideSizeComplete = false;
@@ -872,12 +882,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     {
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_CHECK_COMPLETE);
                     }
-                    else
+                    else if (m_set_item == false)
                     {
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.CHECK_COMPLETE);
                     }
-                    if (m_stopwatch != null) m_stopwatch.Stop();
-                    Tools.Log($"Stop -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
+                    else if (m_set_item == false && !m_event_QRcode.Contains("wata"))
+                    {
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_CHECK_COMPLETE);
+                    }
+
+                    if (m_stopwatch != null)
+                    {
+                        m_stopwatch.Stop();
+                        Tools.Log($"Stop -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
+                    }
                     //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.size_check_start_please_stop);
                     //Thread.Sleep(2000);
 
@@ -1068,6 +1086,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (status == "complete_item")
             {
+                // 부저 컨트롤
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                 _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             }
 
@@ -1357,13 +1377,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_set_item == true)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_CHECK_COMPLETE);
-                    if (m_stopwatch != null) m_stopwatch.Stop();
-                    Tools.Log($"Stop -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
                 }
-                else
+                else if (m_set_item == false && m_event_QRcode.Contains("wata"))
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.CHECK_COMPLETE);
-                    if (m_stopwatch != null) m_stopwatch.Stop();
+                }
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata"))
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_CHECK_COMPLETE);
+                }
+
+                if (m_stopwatch != null)
+                {
+                    m_stopwatch.Stop();
                     Tools.Log($"Stop -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
                 }
 
@@ -1408,7 +1434,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_Command = 1;
 
             // 앱 물류 선택 X, QR 코드 X
-            if (m_set_item == false && m_event_QRcode == "")
+            if (m_set_item == false && !m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
@@ -1422,7 +1448,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //Thread.Sleep(500);
             }
             // 앱 물류 선택 O, QR 코드 X
-            else if (m_set_item == true && m_event_QRcode == "")
+            else if (m_set_item == true && !m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
@@ -1488,7 +1514,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_event_points = "";
 
             // 부저 컨트롤
-            Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+            //Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
 
             // m_stop_guide 초기화
             m_distance_stop_guide = false;

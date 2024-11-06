@@ -27,7 +27,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         private SerialPort _port = new SerialPort();
 
         private DispatcherTimer m_receiveTimer;
-        private DispatcherTimer m_checkConnection;
+        private DispatcherTimer m_checkConnectionTimer;
         private int m_nDataSize = 0;
 
         private bool log_enable = true;
@@ -45,10 +45,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            m_checkConnection = new DispatcherTimer();
-            m_checkConnection.Interval = new TimeSpan(0, 0, 0, 0, 5000);
-            m_checkConnection.Tick += new EventHandler(CheckConnectionEvent);
-            m_checkConnection.Start();
+            m_checkConnectionTimer = new DispatcherTimer();
+            m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
+            m_checkConnectionTimer.Start();
 
             SerialThreadInit();
 
@@ -84,6 +84,13 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         {
             if(_port == null || _port.IsOpen == false || m_nDataSize < 25)
             {
+                if (_port != null)
+                {
+                    _port.Close();
+                    _port.Dispose();
+                    _port = null;
+                }
+
                 SerialThreadInit();
             }
         }
