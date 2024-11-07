@@ -170,7 +170,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 JArray points = new JArray();
 
                 // 가로 방향으로 화면을 3등분
-                int sectionWidth = width / 3;
+                //int sectionWidth = width / 3;
 
                 Task.Factory.StartNew(() => {
                     while (!tokenSource.Token.IsCancellationRequested)
@@ -196,22 +196,23 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
                                 // 3등분한 구역을 설정
-                                OpenCvSharp.Rect roi_top = new OpenCvSharp.Rect(180 * 2, 0, 720 * 2, 480 * 2);
-                                OpenCvSharp.Rect roi_middle = new OpenCvSharp.Rect(180 * 2, 480 * 2, 720 * 2, 1440 * 2);
-                                OpenCvSharp.Rect roi_bottom = new OpenCvSharp.Rect(180 * 2, 1440 * 2, 720 * 2, 1920 * 2);
+                                //OpenCvSharp.Rect roi_top = new OpenCvSharp.Rect(180 * 2, 0, 720 * 2, 480 * 2);
+                                OpenCvSharp.Rect roi_middle = new OpenCvSharp.Rect(0, 0, 2160, 3840);
+                                //OpenCvSharp.Rect roi_bottom = new OpenCvSharp.Rect(180 * 2, 1440 * 2, 720 * 2, 1920 * 2);
 
                                 // ROI를 파란색 실선으로 표시
                                 Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
-                                Cv2.Rectangle(colorImage, roi_top, new Scalar(0, 255, 255), thickness: 4);
-                                Cv2.Rectangle(colorImage, roi_bottom, new Scalar(255, 255, 0), thickness: 4);
+                                //Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
+                                //Cv2.Rectangle(colorImage, roi_top, new Scalar(0, 255, 255), thickness: 4);
+                                //Cv2.Rectangle(colorImage, roi_bottom, new Scalar(255, 255, 0), thickness: 4);
 
                                 List<string> qr = new List<string>();
-                                string qrBottom = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
+                                //string qrBottom = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
                                 string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_middle);
-                                string qrTop = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
-                                if (qrBottom.Contains("wata")) qr.Add(qrBottom);
+                                //string qrTop = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
+                                //if (qrBottom.Contains("wata")) qr.Add(qrBottom);
                                 if (qrMiddle.Contains("wata")) qr.Add(qrMiddle);
-                                if (qrTop.Contains("wata")) qr.Add(qrTop);
+                                //if (qrTop.Contains("wata")) qr.Add(qrTop);
 
                                 if (qr.Count != 0 && qr.Any(q => q.Contains("wata")))
                                 {
