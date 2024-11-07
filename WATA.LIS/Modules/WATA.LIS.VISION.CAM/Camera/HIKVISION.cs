@@ -262,7 +262,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                         checkDepthVal = depthVec;
                                         checkZValue = zValue;
 
-                                        if (zValue < 1200.0f || zValue > 2200.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
+                                        if (zValue < 1200.0f || zValue > 2600.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
                                         {
                                             depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
                                         }

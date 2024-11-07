@@ -915,8 +915,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_guideSizeStart = true;
             }
 
-            // 물류 높이값 400 이상인 프레임이 8 이상 인식된 경우
-            if (m_isItemCnt >= 8 && m_isItemCnt % 8 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
+            // 물류 높이값 400 이상인 프레임이 15 이상 인식된 경우
+            if (m_isItemCnt >= 18 && m_isItemCnt % 18 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
             {
                 m_curr_height = m_visionModel.HEIGHT;
 
