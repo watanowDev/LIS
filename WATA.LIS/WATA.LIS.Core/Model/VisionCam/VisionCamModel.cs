@@ -13,11 +13,11 @@ namespace WATA.LIS.Core.Model.VisionCam
 {
     public class VisionCamModel
     {
-        public string QR { get; set; }
+        public string QR = string.Empty;
         public int WIDTH { get; set; }
         public int HEIGHT { get; set; }
         public float DEPTH { get; set; }
-        public string POINTS { get; set; } // 형상측정값
+        public string POINTS = string.Empty; // 형상측정값
         //public byte[] FRAME { get; set; }
         public bool connected = false;
     }

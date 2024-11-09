@@ -42,7 +42,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_enable" : 1,
+		"rfid_enable" : 0,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"comport": "COM8",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
@@ -71,7 +71,7 @@
 	},
 	"vision":
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
@@ -80,6 +80,6 @@
 	},
 	"display":
 	{
-		"display_enable" : 1
+		"display_enable" : 0
 	}
 }
