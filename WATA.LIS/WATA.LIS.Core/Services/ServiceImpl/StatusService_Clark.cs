@@ -364,7 +364,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
 
-            else if(value == ePlayBuzzerLed.SIZE_CHECK_START)
+            else if (value == ePlayBuzzerLed.SIZE_CHECK_START)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern3;
@@ -916,8 +916,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 물류 높이값 400 이상인 프레임이 15 이상 인식된 경우
-            if (m_isItemCnt >= 18 && m_isItemCnt % 18 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
+            if (m_isItemCnt >= 10 && m_isItemCnt % 10 == 0 && m_isPickUp == false && m_guideSizeComplete == false)
             {
+                Thread.Sleep(2000);
                 m_curr_height = m_visionModel.HEIGHT;
 
                 // 물류 높이값이 직전 높이값 보다 20% 이상 차이날 경우 새로운 물류라고 판단 후 event_height, event_points에 할당
@@ -1422,10 +1423,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //if (m_weight_list.Select(w => w.GrossWeight).Distinct().Count() > 4) return;
 
                 int currentWeight = m_weightModel.GrossWeight;
-                
+
                 int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
                 if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.1) return;
-                
+
                 int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
                 if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1) return;
 

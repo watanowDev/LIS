@@ -356,7 +356,7 @@
           }
         }
       },
-      "NetMQ/4.0.1.10": {
+      "NetMQ/4.0.1.13": {
         "dependencies": {
           "AsyncIO": "0.1.69",
           "NaCl.Net": "0.1.13",
@@ -365,8 +365,8 @@
         },
         "runtime": {
           "lib/netstandard2.1/NetMQ.dll": {
-            "assemblyVersion": "4.0.1.10",
-            "fileVersion": "4.0.1.10"
+            "assemblyVersion": "4.0.1.13",
+            "fileVersion": "4.0.1.13"
           }
         }
       },
@@ -892,6 +892,7 @@
           "MaterialDesignColors": "2.0.9",
           "MaterialDesignThemes": "4.6.1",
           "MaterialDesignThemes.MahApps": "0.2.5",
+          "NetMQ": "4.0.1.13",
           "Newtonsoft.Json": "13.0.1",
           "OpenCvSharp4": "4.5.5.20211231",
           "OpenCvSharp4.Extensions": "4.5.5.20211231",
@@ -910,7 +911,7 @@
       "WATA.LIS.SENSOR.UHF_RFID/1.0.0": {
         "dependencies": {
           "IKVM": "8.4.4",
-          "NetMQ": "4.0.1.10",
+          "NetMQ": "4.0.1.13",
           "Prism.Wpf": "8.1.97",
           "System.IO.Ports": "8.0.0",
           "WATA.LIS.Core": "1.0.0"
@@ -1141,12 +1142,12 @@
       "path": "nacl.net/0.1.13",
       "hashPath": "nacl.net.0.1.13.nupkg.sha512"
     },
-    "NetMQ/4.0.1.10": {
+    "NetMQ/4.0.1.13": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-TgqccbVif5ok1fLH6t0gyJaH42MOiFmV2nDZ7kEqAFzkhx4MI/XXLtbfeJPbF+jnvEoE767/Yx+6HjlK0WfuIA==",
-      "path": "netmq/4.0.1.10",
-      "hashPath": "netmq.4.0.1.10.nupkg.sha512"
+      "sha512": "sha512-OhjdNuwD2pGMzMYqzc5kBIDMt6DGw4dRWHxifWmrjWPXCpaeXy1A3MQAoKXJ88Z5UmWHMmF60AJ/FRWcutXxJg==",
+      "path": "netmq/4.0.1.13",
+      "hashPath": "netmq.4.0.1.13.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.1": {
       "type": "package",

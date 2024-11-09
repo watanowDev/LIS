@@ -281,7 +281,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                                 Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
 
-                                for (int i = 580; i < 630; i++)
+                                for (int i = 590; i < 630; i++)
                                 {
                                     minYValue = yChannel.At<Vec3f>(i, 288)[1];
                                     //Console.WriteLine("minYValue : " + minYValue);
@@ -324,7 +324,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                                 if (_listTopResultY.Count == 10 && _listBotResultY.Count == 10) // 속도 빠르면 15, 20 테스트
                                 {
-                                    int heightOffset = 40;
+                                    int heightOffset = 30;
                                     int resultTopAvg = CalculateAverage(_listTopResultY);
                                     int resultBotAvg = CalculateAverage(_listBotResultY);
                                     int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
