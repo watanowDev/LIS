@@ -128,7 +128,8 @@ namespace WATA.LIS.Core.Common
         size_check_start, size_check_start_please_stop, size_check_complete, size_check_complete_please_pickup, size_check_error,
         weight_size_check_start, weight_size_check_complete, weight_size_check_error,
         set_item, clear_item, register_item,
-        device_error_clear, device_error_weight, device_error_distance, device_error_visoncam, device_error_lidar3d, device_error_indicator,
+        device_error_clear, device_error_weight, device_error_distance, device_error_rfid, 
+        device_error_visoncam, device_error_lidar2d, device_error_lidar3d, device_error_indicator,
         dummy,
     }
 

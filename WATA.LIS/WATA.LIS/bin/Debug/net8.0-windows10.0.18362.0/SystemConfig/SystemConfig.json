@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "Clark", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
+		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
 		"workLocationId" : "PANTOS_FLAT_001",
 		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
 		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
@@ -11,7 +11,7 @@
 	"led_buzzer": 
 	{
 		"led_enable": 1,
-		"volume": 1,
+		"volume": 0,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
 	"distance_sensor": 
@@ -23,7 +23,7 @@
 	},
 	"weight_sensor": 
 	{
-		"weight_enable": 1,
+		"weight_enable": 0,
 		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
@@ -69,9 +69,13 @@
 		"IP" : "169.254.4.63",
 		"PORT" : 2111
 	},
+	"LIVOX": 
+	{
+		"LIVOX_Enable" : 0
+	},
 	"vision":
 	{
-		"vision_enable" : 0,
+		"vision_enable" : 1,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,

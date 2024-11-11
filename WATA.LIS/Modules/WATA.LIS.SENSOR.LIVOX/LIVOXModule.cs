@@ -4,6 +4,7 @@ using Prism.Modularity;
 using WATA.LIS.Core;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model;
+using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.SENSOR.LIVOX.MQTT;
 using WATA.LIS.SENSOR.LIVOX.Views;
 
@@ -18,6 +19,13 @@ namespace WATA.LIS.SENSOR.LIVOX
         {
             _eventAggregator = eventAggregator;
             _livoxmodel = livoxmodel;
+
+            LIVOXConfigModel livox_config = (LIVOXConfigModel)livoxmodel;
+
+            if (livox_config.LIVOX_Enable == 0)
+            {
+                return;
+            }
 
             PubSub pubsub = new PubSub(_eventAggregator, _livoxmodel);
             pubsub.Init();

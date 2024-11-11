@@ -1,12 +1,20 @@
-﻿using Prism.Events;
+﻿using Newtonsoft.Json;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
 using System;
+using System.IO;
+using System.Net;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
+using System.Text.RegularExpressions;
 using WATA.LIS.Core;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.NAV;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.SENSOR.NAV.Views;
 

@@ -9,6 +9,6 @@ namespace WATA.LIS.Core.Model.SystemConfig
 {
     public class LIVOXConfigModel : ILivoxModel
     {
-
+        public int LIVOX_Enable { get; set; }
     }
 }

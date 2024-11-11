@@ -41,6 +41,7 @@ using static System.Formats.Asn1.AsnWriter;
 using Point = OpenCvSharp.Point;
 using Newtonsoft.Json.Linq;
 using System.Windows.Media.Media3D;
+using System.Windows.Media.Animation;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -76,7 +77,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         // 펨토메가 관련 코드
         private Pipeline m_pipeline;
         private StreamProfile m_colorProfile;
-        private StreamProfile m_depthProfile;
+        //private StreamProfile m_depthProfile;
 
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
@@ -154,14 +155,40 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             try
             {
-                m_pipeline = new Pipeline();
+                Context context = new Context();
+                context.CreateNetDevice("192.168.1.10", 8090);
+                context.EnableNetDeviceEnumeration(true);
 
-                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
-                m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
+                DeviceList deviceList = context.QueryDeviceList();
+
+                m_pipeline = new Pipeline();
+                //Pipeline pipelineFemtoW = new Pipeline();
+
+                for (uint i = 0; i < deviceList.DeviceCount(); i++)
+                {
+                    Device device = deviceList.GetDevice(i);
+                    DeviceInfo deviceInfo = device.GetDeviceInfo();
+
+                    Console.WriteLine("deviceInfo.Name() : " + deviceInfo.Name());
+                    //if (deviceInfo.Name().Contains("Femto W"))
+                    //{
+                    //    pipelineFemtoW = new Pipeline(device);
+                    //}
+                    if (deviceInfo.Name().Contains("Femto Mega"))
+                    {
+                        m_pipeline = new Pipeline(device);
+                    }
+                }
+
+                //m_pipeline = new Pipeline();
+                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 25);
+                //colorProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_H264, 25);
+                //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
+                //m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
                 Config config = new Config();
                 config.EnableStream(m_colorProfile);
-                config.EnableStream(m_depthProfile);
+                //config.EnableStream(m_depthProfile);
 
                 m_pipeline.Start(config);
 
@@ -178,7 +205,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         using (var frames = m_pipeline.WaitForFrames(100))
                         {
                             var colorFrame = frames?.GetColorFrame();
-                            var depthFrame = frames?.GetDepthFrame();
+                            //var depthFrame = frames?.GetDepthFrame();
 
 
                             if (colorFrame != null)
@@ -197,18 +224,18 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                                 // 3등분한 구역을 설정
                                 //OpenCvSharp.Rect roi_top = new OpenCvSharp.Rect(180 * 2, 0, 720 * 2, 480 * 2);
-                                OpenCvSharp.Rect roi_middle = new OpenCvSharp.Rect(0, 0, 2160, 3840);
+                                //OpenCvSharp.Rect roi_middle = new OpenCvSharp.Rect(0, 0, 2160, 3840);
                                 //OpenCvSharp.Rect roi_bottom = new OpenCvSharp.Rect(180 * 2, 1440 * 2, 720 * 2, 1920 * 2);
 
                                 // ROI를 파란색 실선으로 표시
-                                Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
+                                //Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
                                 //Cv2.Rectangle(colorImage, roi_middle, new Scalar(255, 0, 0), thickness: 4);
                                 //Cv2.Rectangle(colorImage, roi_top, new Scalar(0, 255, 255), thickness: 4);
                                 //Cv2.Rectangle(colorImage, roi_bottom, new Scalar(255, 255, 0), thickness: 4);
 
                                 List<string> qr = new List<string>();
                                 //string qrBottom = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_bottom);
-                                string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_middle);
+                                string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
                                 //string qrTop = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
                                 //if (qrBottom.Contains("wata")) qr.Add(qrBottom);
                                 if (qrMiddle.Contains("wata")) qr.Add(qrMiddle);
@@ -226,144 +253,144 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Cv2.WaitKey(1);
                             }
 
-                            if (depthFrame != null)
-                            {
-                                //if (!"".Equals(resultQR))
-                                //{
+                            //if (depthFrame != null)
+                            //{
+                            //    //if (!"".Equals(resultQR))
+                            //    //{
 
-                                //}
-                                // 포인트 클라우드 데이터
-                                PointCloudFilter pointCloud = new PointCloudFilter();
-                                var cameraParam = m_pipeline.GetCameraParam();
-                                pointCloud.SetCameraParam(cameraParam);
-                                pointCloud.SetPositionDataScaled(1);
+                            //    //}
+                            //    // 포인트 클라우드 데이터
+                            //    PointCloudFilter pointCloud = new PointCloudFilter();
+                            //    var cameraParam = m_pipeline.GetCameraParam();
+                            //    pointCloud.SetCameraParam(cameraParam);
+                            //    pointCloud.SetPositionDataScaled(1);
 
-                                Orbbec.Frame pointFrame = pointCloud.Process(depthFrame);
+                            //    Orbbec.Frame pointFrame = pointCloud.Process(depthFrame);
 
-                                byte[] pointData = new byte[pointFrame.GetDataSize()];
-                                pointFrame.CopyData(ref pointData);
-
-
-                                int depthWidth = (int)depthFrame.GetWidth();
-                                int depthHeight = (int)depthFrame.GetHeight();
+                            //    byte[] pointData = new byte[pointFrame.GetDataSize()];
+                            //    pointFrame.CopyData(ref pointData);
 
 
-                                Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_32FC3);
-                                Marshal.Copy(pointData, 0, depthImage.Data, pointData.Length);
-
-                                Cv2.Rotate(depthImage, depthImage, RotateFlags.Rotate90Counterclockwise);
-
-                                Parallel.For(0, depthImage.Rows, i => {
-                                    for (int j = 0; j < depthImage.Cols; j++)
-                                    {
-                                        Vec3f depthVec = depthImage.At<Vec3f>(i, j);
-                                        float zValue = depthVec[2];
-
-                                        checkDepthVal = depthVec;
-                                        checkZValue = zValue;
-
-                                        if (zValue < 1200.0f || zValue > 2600.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
-                                        {
-                                            depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
-                                        }
-                                    }
-                                });
-
-                                double minYValue, maxYValue;
-                                Point minYLoc, maxYLoc;
-
-                                Mat yChannel = new Mat();
-                                Cv2.ExtractChannel(depthImage, yChannel, 0);
-
-                                Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
-                                Cv2.Erode(yChannel, yChannel, kernel);
-                                Cv2.Dilate(yChannel, yChannel, kernel);
-
-                                Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
-
-                                for (int i = 590; i < 630; i++)
-                                {
-                                    minYValue = yChannel.At<Vec3f>(i, 288)[1];
-                                    //Console.WriteLine("minYValue : " + minYValue);
-                                    if (minYValue < -500)
-                                    {
-                                        minYLoc = new Point(288, i);
-                                        break;
-                                    }
-                                }
+                            //    int depthWidth = (int)depthFrame.GetWidth();
+                            //    int depthHeight = (int)depthFrame.GetHeight();
 
 
-                                if (maxYValue == 0)
-                                {
-                                    double maxNegativeValue = double.MinValue;
-                                    for (int i = 0; i < yChannel.Rows; i++)
-                                    {
-                                        for (int j = 0; j < yChannel.Cols; j++)
-                                        {
-                                            float yValue = yChannel.At<Vec3f>(i, j)[1];
-                                            if (yValue < 0 && yValue > maxNegativeValue)
-                                            {
-                                                maxNegativeValue = yValue;
-                                                maxYLoc = new Point(j, i);
-                                            }
-                                        }
-                                    }
-                                    maxYValue = maxNegativeValue;
-                                }
+                            //    Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_32FC3);
+                            //    Marshal.Copy(pointData, 0, depthImage.Data, pointData.Length);
+
+                            //    Cv2.Rotate(depthImage, depthImage, RotateFlags.Rotate90Counterclockwise);
+
+                            //    Parallel.For(0, depthImage.Rows, i => {
+                            //        for (int j = 0; j < depthImage.Cols; j++)
+                            //        {
+                            //            Vec3f depthVec = depthImage.At<Vec3f>(i, j);
+                            //            float zValue = depthVec[2];
+
+                            //            checkDepthVal = depthVec;
+                            //            checkZValue = zValue;
+
+                            //            if (zValue < 1200.0f || zValue > 2600.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
+                            //            {
+                            //                depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
+                            //            }
+                            //        }
+                            //    });
+
+                            //    double minYValue, maxYValue;
+                            //    Point minYLoc, maxYLoc;
+
+                            //    Mat yChannel = new Mat();
+                            //    Cv2.ExtractChannel(depthImage, yChannel, 0);
+
+                            //    Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
+                            //    Cv2.Erode(yChannel, yChannel, kernel);
+                            //    Cv2.Dilate(yChannel, yChannel, kernel);
+
+                            //    Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
+
+                            //    for (int i = 590; i < 630; i++)
+                            //    {
+                            //        minYValue = yChannel.At<Vec3f>(i, 288)[1];
+                            //        //Console.WriteLine("minYValue : " + minYValue);
+                            //        if (minYValue < -500)
+                            //        {
+                            //            minYLoc = new Point(288, i);
+                            //            break;
+                            //        }
+                            //    }
 
 
-                                Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
-                                Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
+                            //    if (maxYValue == 0)
+                            //    {
+                            //        double maxNegativeValue = double.MinValue;
+                            //        for (int i = 0; i < yChannel.Rows; i++)
+                            //        {
+                            //            for (int j = 0; j < yChannel.Cols; j++)
+                            //            {
+                            //                float yValue = yChannel.At<Vec3f>(i, j)[1];
+                            //                if (yValue < 0 && yValue > maxNegativeValue)
+                            //                {
+                            //                    maxNegativeValue = yValue;
+                            //                    maxYLoc = new Point(j, i);
+                            //                }
+                            //            }
+                            //        }
+                            //        maxYValue = maxNegativeValue;
+                            //    }
 
-                                if (maxYValue != 0 && minYValue != 0)
-                                {
-                                    _listTopResultY.Add(maxYValue);
-                                    _listBotResultY.Add(minYValue);
-                                    Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
-                                }
 
-                                if (_listTopResultY.Count == 10 && _listBotResultY.Count == 10) // 속도 빠르면 15, 20 테스트
-                                {
-                                    int heightOffset = 30;
-                                    int resultTopAvg = CalculateAverage(_listTopResultY);
-                                    int resultBotAvg = CalculateAverage(_listBotResultY);
-                                    int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
+                            //    Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
+                            //    Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
 
-                                    _listTopResultY.Clear();
-                                    _listBotResultY.Clear();
-                                    resultQR = "";
-                                    resultHeight = result;
+                            //    if (maxYValue != 0 && minYValue != 0)
+                            //    {
+                            //        _listTopResultY.Add(maxYValue);
+                            //        _listBotResultY.Add(minYValue);
+                            //        Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
+                            //    }
 
-                                    //Mat resizedImage = new Mat();
-                                    //Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 12, depthHeight / 12));
+                            //    if (_listTopResultY.Count == 10 && _listBotResultY.Count == 10) // 속도 빠르면 15, 20 테스트
+                            //    {
+                            //        int heightOffset = 30;
+                            //        int resultTopAvg = CalculateAverage(_listTopResultY);
+                            //        int resultBotAvg = CalculateAverage(_listBotResultY);
+                            //        int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
 
-                                    //for (int y = 0; y < resizedImage.Rows; y++)
-                                    //{
-                                    //    for (int x = 0; x < resizedImage.Cols; x++)
-                                    //    {
-                                    //        Vec3f pt = resizedImage.At<Vec3f>(y, x);
-                                    //        if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
-                                    //        {
-                                    //            point["x"] = pt.Item0;
-                                    //            point["y"] = pt.Item1;
-                                    //            point["z"] = pt.Item2;
-                                    //            points.Add(point);
-                                    //            //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
-                                    //        }
-                                    //    }
-                                    //}
+                            //        _listTopResultY.Clear();
+                            //        _listBotResultY.Clear();
+                            //        resultQR = "";
+                            //        resultHeight = result;
 
-                                    Console.WriteLine("---------------------------------------------");
-                                    Console.WriteLine($"Height : {result} mm");
-                                    Console.WriteLine("---------------------------------------------");
-                                }
+                            //        //Mat resizedImage = new Mat();
+                            //        //Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 12, depthHeight / 12));
 
-                                Cv2.NamedWindow("depthImage", WindowFlags.KeepRatio);
-                                Cv2.ResizeWindow("depthImage", 640, 576);
-                                Cv2.ImShow("depthImage", depthImage);
-                                Cv2.WaitKey(1);
+                            //        //for (int y = 0; y < resizedImage.Rows; y++)
+                            //        //{
+                            //        //    for (int x = 0; x < resizedImage.Cols; x++)
+                            //        //    {
+                            //        //        Vec3f pt = resizedImage.At<Vec3f>(y, x);
+                            //        //        if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
+                            //        //        {
+                            //        //            point["x"] = pt.Item0;
+                            //        //            point["y"] = pt.Item1;
+                            //        //            point["z"] = pt.Item2;
+                            //        //            points.Add(point);
+                            //        //            //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
+                            //        //        }
+                            //        //    }
+                            //        //}
 
-                            }
+                            //        Console.WriteLine("---------------------------------------------");
+                            //        Console.WriteLine($"Height : {result} mm");
+                            //        Console.WriteLine("---------------------------------------------");
+                            //    }
+
+                            //    Cv2.NamedWindow("depthImage", WindowFlags.KeepRatio);
+                            //    Cv2.ResizeWindow("depthImage", 640, 576);
+                            //    Cv2.ImShow("depthImage", depthImage);
+                            //    Cv2.WaitKey(1);
+
+                            //}
                         }
 
                         // Publish the event
@@ -384,21 +411,21 @@ namespace WATA.LIS.VISION.CAM.Camera
                 Application.Current.Shutdown();
                 m_pipeline = null;
                 m_colorProfile = null;
-                m_depthProfile = null;
+                //m_depthProfile = null;
             }
         }
 
-        public int CalculateAverage(List<double> yValues)
-        {
-            var sortedYValues = yValues.OrderBy(y => y).ToList();
-            int count = sortedYValues.Count;
-            int removeCount = (int)(count * 0.2);
-            var trimmedYValues = sortedYValues.Skip(removeCount).Take(count - 2 * removeCount).ToList();
+        //public int CalculateAverage(List<double> yValues)
+        //{
+        //    var sortedYValues = yValues.OrderBy(y => y).ToList();
+        //    int count = sortedYValues.Count;
+        //    int removeCount = (int)(count * 0.2);
+        //    var trimmedYValues = sortedYValues.Skip(removeCount).Take(count - 2 * removeCount).ToList();
 
-            return (int)trimmedYValues.Average();
-        }
+        //    return (int)trimmedYValues.Average();
+        //}
 
-        private string GetQRcodeIDByWeChat(Mat frame, int colorWidth, int colorHeight, OpenCvSharp.Rect roi)
+        private string GetQRcodeIDByWeChat(Mat frame, int colorWidth, int colorHeight)
         {
             string ret = string.Empty;
 
@@ -429,19 +456,29 @@ namespace WATA.LIS.VISION.CAM.Camera
                         int centerX = qrRect.X + qrRect.Width / 2;
                         int centerY = qrRect.Y + qrRect.Height / 2;
 
-                        // Check if the QR code is within the ROI
-                        if (roi.Contains(new OpenCvSharp.Point(centerX, centerY)))
-                        {
-                            double distance = Math.Abs(centerX - colorHeight / 2);
+                        double distance = Math.Abs(centerX - colorHeight / 2);
 
-                            Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
-                            if (distance < closestDistance)
-                            {
-                                closestDistance = distance;
-                                _detectedQRRect = qrRect;
-                                ret = weChatResult[cnt];
-                            }
+                        Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
+                        if (distance < closestDistance)
+                        {
+                            closestDistance = distance;
+                            _detectedQRRect = qrRect;
+                            ret = weChatResult[cnt];
                         }
+
+                        //// Check if the QR code is within the ROI
+                        //if (roi.Contains(new OpenCvSharp.Point(centerX, centerY)))
+                        //{
+                        //    double distance = Math.Abs(centerX - colorHeight / 2);
+
+                        //    Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), thickness: 4);
+                        //    if (distance < closestDistance)
+                        //    {
+                        //        closestDistance = distance;
+                        //        _detectedQRRect = qrRect;
+                        //        ret = weChatResult[cnt];
+                        //    }
+                        //}
                     }
                     cnt++;
                 }
@@ -538,8 +575,8 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                     m_CameraIndex = 0;
                     m_Capture = new VideoCapture(m_CameraIndex);
-                    m_Capture.FrameWidth = 3840 / 2;
-                    m_Capture.FrameHeight = 2160 / 2;
+                    m_Capture.FrameWidth = 3840;
+                    m_Capture.FrameHeight = 2160;
                     m_Capture.Set(VideoCaptureProperties.Fps, 30); // 초당 프레임 설정
                     m_Capture.Set(VideoCaptureProperties.Focus, 1.5); // 카메라 초점거리 설정
 

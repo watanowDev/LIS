@@ -103,6 +103,8 @@ namespace WATA.LIS.Core.Parser
                         nav.IP = json["NAV"]["IP"].ToString();
                         nav.PORT = (int)json["NAV"]["PORT"];
 
+                        livox.LIVOX_Enable = (int)json["LIVOX"]["LIVOX_Enable"];
+
 
                         visioncam.vision_enable = (int)json["vision"]["vision_enable"];
                         visioncam.vision_name = json["vision"]["vision_name"].ToString();

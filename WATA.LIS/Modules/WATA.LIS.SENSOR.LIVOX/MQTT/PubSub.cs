@@ -38,11 +38,13 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             _eventAggregator = eventAggregator;
             _livoxmodel = livoxmodel;
             livoxConfig = (LIVOXConfigModel)_livoxmodel;
+
+            _eventAggregator.GetEvent<CallDataEvent>().Subscribe(OnCallDataEvent, ThreadOption.BackgroundThread, true);
         }
 
         public void Init()
         {
-            //InitLivox();
+            InitLivox();
         }
 
         private void InitLivox()
@@ -53,7 +55,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
                 _publisherSocket.Bind("tcp://127.0.0.1:5002");
 
-                Tools.Log($"InitLivox", Tools.ELogType.BackEndLog);
+                Tools.Log($"InitLivox", Tools.ELogType.SystemLog);
 
                 _subscriberSocket = new SubscriberSocket();
                 // 서브스크라이버 소켓을 5555 포트에 연결합니다.
@@ -64,11 +66,28 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox PubSub: {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed InitLivox PubSub: {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
-        private void SendToLivox(int commandNum)
+        private void OnCallDataEvent()
+        {
+            // 부피, 형상 리복스 데이터 요청
+            int getLivoxctn = 0;
+            while (getLivoxctn < 100)
+            {
+                SendToLivox(1);
+                if (GetSizeData() == true)
+                {
+                    SendToLivox(0);
+                    break;
+                }
+                getLivoxctn++;
+                Thread.Sleep(100);
+            }
+        }
+
+        public void SendToLivox(int commandNum)
         {
             try
             {
@@ -78,15 +97,15 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 // 주제와 메시지를 결합하여 퍼블리시
                 _publisherSocket.SendFrame(message);
 
-                Tools.Log($"SendToLivox : {message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"SendToLivox : {message}", Tools.ELogType.SystemLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 
-        private bool GetSizeData()
+        public bool GetSizeData()
         {
             bool ret = false;
             try
@@ -121,7 +140,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                         eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"height:{eventModel.width}, width:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.BackEndLog);
+                        Tools.Log($"height:{eventModel.width}, width:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
 
                         return ret = true;
                     }
@@ -142,13 +161,13 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                     eventModel.length = -1;
                     eventModel.points = "";
 
-                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.BackEndLog);
+                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.SystemLog);
                 }
             }
             catch (Exception ex)
             {
                 // 예외 처리
-                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.BackEndLog);
+                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.SystemLog);
             }
 
             return ret;

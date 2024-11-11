@@ -99,7 +99,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_curr_height = 0;
         private int m_event_height_femto = 0;
         private string m_event_points = "";
-        private bool m_send_points = false;
+        //private bool m_send_points = false;
         private int m_no_QRcnt;
         private int m_isItemCnt = 0;
         private int m_noItemCnt = 0;
@@ -252,19 +252,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             GetCellListFromPlatform();
             GetBasicInfoFromBackEnd();
             InitLivox();
-
-            int getLivoxctn = 0;
-            while (getLivoxctn < 100)
-            {
-                SendToLivox(1);
-                if (GetSizeData() == true)
-                {
-                    SendToLivox(0);
-                    break;
-                }
-                getLivoxctn++;
-                Thread.Sleep(100);
-            }
         }
 
 
