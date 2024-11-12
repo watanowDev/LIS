@@ -2,11 +2,11 @@
 	"main": 
 	{
 		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
-		"workLocationId" : "PANTOS_FLAT_001",
-		"projectId" : "7aca5f6e8bcc4a68a5784c68a42a3a58",
-		"mappingId" : "75dcbb56f4674fae8f91d9b1c03f0ca5",
-		"mapId" : "16b5d99e366b4f7585c49b8a4fbbc318",
-		"vehicleId": "fork_lift007"
+		"workLocationId" : "DHL",
+		"projectId" : "afbb58611535449780cdb27a615afeb2",
+		"mappingId" : "9635c20849c942e2aaf940a44b5b5e11",
+		"mapId" : "13f8da637932450594f0e076eec61585",
+		"vehicleId": "DHL_FORKLIFT_001"
 	},
 	"led_buzzer": 
 	{
@@ -65,8 +65,8 @@
 	},
 	"NAV": 
 	{
-		"NAV_Enable" : 0,
-		"IP" : "169.254.4.63",
+		"NAV_Enable" : 1,
+		"IP" : "192.168.1.200",
 		"PORT" : 2111
 	},
 	"LIVOX": 
@@ -75,7 +75,7 @@
 	},
 	"vision":
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
