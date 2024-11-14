@@ -106,6 +106,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private float m_event_height = 0;
         private float m_event_length = 0;
         private string m_event_points = "";
+        private float m_curr_height = 0;
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
@@ -125,6 +126,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_errCnt_indicator;
         private bool m_isError = false;
         private bool m_stop_alarm = false;
+        private int m_errCnt_invalid_place;
 
         // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
@@ -291,7 +293,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             catch (Exception ex)
             {
-                Tools.Log($"REST Get Client Response Error: {ex}", ELogType.BackEndLog);
+                Tools.Log($"REST Get Client Response Error: {ex}", ELogType.SystemLog);
             }
         }
 
@@ -800,8 +802,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_visionModel = model;
 
             // QR이 읽힐경우 할당
-            //if (m_visionModel.QR.Contains("wata") == m_set_item == false)
-            if (m_visionModel.QR != "" && m_set_item == false)
+            //if (m_visionModel.QR != "" && m_set_item == false)
+            if (m_visionModel.QR.Contains("wata") == m_set_item == false)
             {
                 m_no_QRcnt = 0;
                 m_curr_QRcode = m_visionModel.QR;
@@ -811,8 +813,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringVisonTimerEvent(object sender, EventArgs e)
         {
             // 픽업 전 QR 인식한 상태
-            //if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
-            if (m_curr_QRcode != "" && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
+            //if (m_curr_QRcode != "" && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
+            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
             {
                 // 새로 인식된 QR일 경우
                 if (m_event_QRcode == "")
@@ -824,16 +826,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // QR에 wata 없을 시 No QR 카운트
-            //if (!m_visionModel.QR.Contains("wata"))
-            if (m_visionModel.QR == "")
+            //if (m_visionModel.QR == "")
+            if (!m_visionModel.QR.Contains("wata"))
             {
                 m_no_QRcnt++;
                 m_curr_QRcode = "";
             }
 
             // 10 프레임간 QR 인식 안될 시 QR 초기화
-            //if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 10 && m_isPickUp == false)
-            if (m_visionModel.QR == "" && m_no_QRcnt > 10 && m_isPickUp == false)
+            //if (m_visionModel.QR == "" && m_no_QRcnt > 40 && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 40 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -887,48 +889,57 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             long distance = 300;
             //m_zoneId = "";
             //m_zoneName = "";
-            if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
+            try
             {
-                for (int i = 0; i < m_cellInfoModel.data.Count; i++)
+                if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
                 {
-                    if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
+                    for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                     {
-                        for (int j = m_cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
+                        if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                         {
-                            string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                            Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
-                            if (match.Success && match.Groups.Count == 3)
+                            for (int j = m_cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
                             {
-                                double x = double.Parse(match.Groups[1].Value);
-                                double y = double.Parse(match.Groups[2].Value);
-                                x = Math.Truncate(x * 1000);
-                                y = Math.Truncate(y * 1000);
-                                long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
-                                //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
-                                if (calcDistance < distance)
+                                string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
+                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                if (match.Success && match.Groups.Count == 3)
                                 {
-                                    if (bDrop)
-                                    {
-                                        m_ActionZoneId = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneId;
-                                        m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneName;
-                                    }
-                                    else
-                                    {
-                                        m_ActionZoneId = m_cellInfoModel.data[i].targetGeofence[j].zoneId;
-                                        m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
-                                    }
-
+                                    double x = double.Parse(match.Groups[1].Value);
+                                    double y = double.Parse(match.Groups[2].Value);
+                                    x = Math.Truncate(x * 1000);
+                                    y = Math.Truncate(y * 1000);
+                                    long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
                                     //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
-                                    break;
+                                    if (calcDistance < distance)
+                                    {
+                                        if (bDrop)
+                                        {
+                                            //m_ActionZoneId = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneId;
+                                            //m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j + 1].zoneName;
+                                            m_ActionZoneId = m_cellInfoModel.data[i].targetGeofence[j].zoneId;
+                                            m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
+                                        }
+                                        else
+                                        {
+                                            m_ActionZoneId = m_cellInfoModel.data[i].targetGeofence[j].zoneId;
+                                            m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
+                                        }
+
+                                        //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
                 }
+                else
+                {
+                    Tools.Log($"[ERROR] Can't get cellInfoModel ", ELogType.SystemLog);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Tools.Log($"[ERROR] Can't get cellInfoModel ", ELogType.BackEndLog);
+                Tools.Log($"[ERROR] CalcDistanceAndGetZoneID : {ex.Message}", Tools.ELogType.SystemLog);
             }
 
         }
@@ -944,10 +955,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_livoxModel = model;
 
-            m_event_width = m_livoxModel.width;
-            m_event_height = m_livoxModel.height - m_event_distance;
-            m_event_length = m_livoxModel.length;
-            m_event_points = m_livoxModel.points;
+            if (m_event_height != m_curr_height)
+            {
+                m_event_height = m_curr_height;
+
+                m_event_width = m_livoxModel.width;
+                m_event_height = m_livoxModel.height - m_event_distance;
+                m_event_length = m_livoxModel.length;
+                m_event_points = m_livoxModel.points;
+            }
         }
 
         private void InitLivox()
@@ -1141,11 +1157,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_set_normal = true;
             }
 
+            //if (status == "invalid_place" && m_errCnt_invalid_place % 5 == 0)
             if (status == "invalid_place")
             {
+                //m_errCnt_invalid_place++;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
                 Tools.Log($"{status}", ELogType.ActionLog);
             }
+
+            //if (status != "invalid_place")
+            //{
+            //    m_errCnt_invalid_place = 0;
+            //}
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
@@ -1264,16 +1287,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.action = "pickup";
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
-            ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
+            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
+            ActionObj.actionInfo.height = 160.ToString();
             ActionObj.actionInfo.epc = m_event_epc;
             ActionObj.actionInfo.cepc = m_event_epc;
-            ActionObj.actionInfo.loadId = m_event_QRcode;
+            if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.visionWidth = m_event_width;
-            ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
-            ActionObj.actionInfo.visionDepth = m_event_length;
+            //ActionObj.actionInfo.visionWidth = m_event_width;
+            ActionObj.actionInfo.visionWidth = 110;
+            //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
+            ActionObj.actionInfo.visionHeight = 160;
+            //ActionObj.actionInfo.visionDepth = m_event_length;
+            ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
 
@@ -1302,6 +1329,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             post_obj.type = eMessageType.BackEndAction;
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
         }
 
         private void SendBackEndDropAction()
@@ -1367,7 +1396,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             model.containerInfo.mapId = m_mainConfigModel.mapId;
             model.containerInfo.cepc = m_event_epc;
             model.containerInfo.depc = m_event_epc;
-            model.containerInfo.loadId = m_event_QRcode;
+            if (m_event_QRcode.Contains("wata")) model.containerInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
 
             string json_body = Util.ObjectToJson(model);
             RestClientPostModel post_obj = new RestClientPostModel();
@@ -1418,13 +1447,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     {
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
                     }
-                    //else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                    else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                    //else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                    else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
                     {
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
                     }
-                    //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                    else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                    //else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                    else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
                     {
                         Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
                     }
@@ -1446,6 +1475,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_event_weight = m_weightModel.GrossWeight;
                 _eventAggregator.GetEvent<CallDataEvent>().Publish();
 
+                while (m_event_height != m_curr_height)
+                {
+                    if (m_event_height == m_curr_height) break;
+                }
+
                 //// 부피, 형상 리복스 데이터 요청
                 //int getLivoxctn = 0;
                 //while (getLivoxctn < 100)
@@ -1466,13 +1500,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 }
-                //else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                //else if (m_set_item == false && m_event_QRcode != "" && m_isError != true)
+                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
                 }
-                //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                else if (m_set_item == false && m_isError != true)
+                //else if (m_set_item == false && m_isError != true)
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 }
@@ -1491,8 +1525,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     //Thread.Sleep(200);
                 }
                 // 앱 물류 선택 X, QR 코드 O
-                //else if (m_set_item == false && m_event_QRcode.Contains("wata"))
-                else if (m_set_item == false && m_event_QRcode != "")
+                //else if (m_set_item == false && m_event_QRcode != "")
+                else if (m_set_item == false && m_event_QRcode.Contains("wata"))
                 {
                     //Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
                     //Thread.Sleep(200);
@@ -1504,8 +1538,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     //Thread.Sleep(200);
                 }
                 // 앱 물류 선택 O, QR 코드 O
-                //else if (m_set_item == true && m_event_QRcode.Contains("wata"))
-                else if (m_set_item == true && m_event_QRcode != "")
+                //else if (m_set_item == true && m_event_QRcode != "")
+                else if (m_set_item == true && m_event_QRcode.Contains("wata"))
                 {
                     //Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
                     //Thread.Sleep(200);
@@ -1526,39 +1560,39 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_Command = 1;
 
             // 앱 물류 선택 X, QR 코드 X
-            //if (m_set_item == false && !m_event_QRcode.Contains("wata"))
-            if (m_set_item == false)
+            //if (m_set_item == false)
+            if (m_set_item == false && !m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 //Thread.Sleep(500);
             }
             // 앱 물류 선택 X, QR 코드 O
-            //else if (m_set_item == false && m_event_QRcode.Contains("wata"))
-            else if (m_set_item == false && m_event_QRcode != "")
+            //else if (m_set_item == false && m_event_QRcode != "")
+            else if (m_set_item == false && m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 //Thread.Sleep(500);
             }
             // 앱 물류 선택 O, QR 코드 X
-            //else if (m_set_item == true && !m_event_QRcode.Contains("wata"))
-            else if (m_set_item == true)
+            //else if (m_set_item == true)
+            else if (m_set_item == true && !m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 //Thread.Sleep(500);
             }
             // 앱 물류 선택 O, QR 코드 O
-            //else if (m_set_item == true && m_event_QRcode.Contains("wata"))
-            else if (m_set_item == true && m_event_QRcode != "")
+            //else if (m_set_item == true && m_event_QRcode != "")
+            else if (m_set_item == true && m_event_QRcode.Contains("wata"))
             {
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 //Thread.Sleep(500);
             }
 
-            //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
             SendBackEndPickupAction();
 
             //로그
@@ -1619,7 +1653,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //m_distance_stop_guide = false;
             m_guideWeightStart = false;
 
-            //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
+            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
             SendBackEndDropAction();
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
