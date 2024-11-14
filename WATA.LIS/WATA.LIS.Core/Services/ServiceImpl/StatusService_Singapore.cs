@@ -140,6 +140,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_MonitoringEPC_Timer;
         Stopwatch m_stopwatch;
 
+        //Match m_match;
+
 
         public StatusService_Singapore(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
                                     IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel,
@@ -279,10 +281,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         {
                                             double x = double.Parse(match.Groups[1].Value);
                                             double y = double.Parse(match.Groups[2].Value);
-                                            x = Math.Truncate(x * 1000);
-                                            y = Math.Truncate(y * 1000);
-                                            //Tools.Log($" Cell x : " + x + " y: " + y, Tools.ELogType.BackEndLog);
 
+                                            if (i == 0)
+                                            {
+                                                x += -3.390;
+                                                y += 4.885;
+                                            }
+                                            if (i == 1)
+                                            {
+                                                x += -2.951;
+                                                y += 5.098;
+                                            }
+
+                                            string newGeom = $"POINT({x} {y})";
+                                            m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
+                                            //Tools.Log($" Cell x : " + x + " y: " + y, Tools.ELogType.BackEndLog);
                                         }
                                     }
                                 }
@@ -836,7 +849,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 10 프레임간 QR 인식 안될 시 QR 초기화
             //if (m_visionModel.QR == "" && m_no_QRcnt > 40 && m_isPickUp == false)
-            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 40 && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 80 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -887,7 +900,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
-            long distance = 300;
+            long distance = 1000;
             //m_zoneId = "";
             //m_zoneName = "";
             try
@@ -908,6 +921,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     double y = double.Parse(match.Groups[2].Value);
                                     x = Math.Truncate(x * 1000);
                                     y = Math.Truncate(y * 1000);
+                                    //x = Math.Truncate(x * 1000.0) - 2833.0;
+                                    //y = Math.Truncate(y * 1000.0) + 5044.0;
+                                    //string updatedValue = $"POINT({x}.000 {y}.000)";
+                                    //match = Regex.Match(updatedValue, pattern);
+
                                     long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
                                     //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
                                     if (calcDistance < distance)
@@ -1291,7 +1309,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
             ActionObj.actionInfo.height = 160.ToString();
             ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
-            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc; ;
+            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
@@ -1346,8 +1364,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadRate = "";
             ActionObj.actionInfo.loadWeight = 0;
             ActionObj.actionInfo.height = "";
-            ActionObj.actionInfo.epc = "";
-            ActionObj.actionInfo.cepc = "";
+            ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
+            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
             ActionObj.actionInfo.loadId = "";
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
@@ -1599,7 +1617,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height:{m_event_height}, depth{m_event_length}", ELogType.ActionLog);
-            Tools.Log($"Pickup Event!!! QR Code:{m_curr_QRcode}", ELogType.ActionLog);
+            Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}", ELogType.ActionLog);
         }
 
         private void IsDropTimerEvent(object sender, EventArgs e)
