@@ -764,7 +764,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
             // PickUp 중에 EPC 인식한 상태
-            if (m_curr_epc.Contains("CB") && m_isPickUp == true)
+            //if (m_curr_epc.Contains("CB") && m_isPickUp == true)
+            if (m_isPickUp == true)
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -1254,7 +1255,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.y = m_navModel.naviY;
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
-                prodDataModel.load = m_isPickUp ? 0 : 1; // UnLoad : 0, Load : 1
+                prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
                 prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
                 //prodDataModel.errorCode = SysAlarm.CurrentErr;
                 prodDataModel.errorCode = "0000";
@@ -1289,8 +1290,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadWeight = m_event_weight;
             //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
             ActionObj.actionInfo.height = 160.ToString();
-            ActionObj.actionInfo.epc = m_event_epc;
-            ActionObj.actionInfo.cepc = m_event_epc;
+            ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
+            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc; ;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
@@ -1471,14 +1472,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
                 if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1) return;
 
-                // 안정된 중량값, 부피값 할당
+                // 안정된 중량값 할당 및 부피 측정 시작
                 m_event_weight = m_weightModel.GrossWeight;
                 _eventAggregator.GetEvent<CallDataEvent>().Publish();
-
-                while (m_event_height != m_curr_height)
-                {
-                    if (m_event_height == m_curr_height) break;
-                }
 
                 //// 부피, 형상 리복스 데이터 요청
                 //int getLivoxctn = 0;
@@ -1590,6 +1586,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
                 //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.weight_check_complete);
                 //Thread.Sleep(500);
+            }
+
+            // 안정된 부피값 취득할 때 까지 대기
+            while (m_event_height != m_curr_height)
+            {
+                if (m_event_height == m_curr_height) break;
             }
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
