@@ -946,6 +946,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
                                         break;
                                     }
+                                    else
+                                    {
+                                        m_ActionZoneId = "";
+                                        m_ActionZoneName = "";
+                                    }
                                 }
                             }
                         }
@@ -1266,6 +1271,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 ProdDataModel prodDataModel = new ProdDataModel();
+                prodDataModel.mapId = m_mainConfigModel.mapId;
+                prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
                 prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
                 prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
                 prodDataModel.vehicleId = m_basicInfoModel.data[0].vehicleId;
@@ -1274,7 +1281,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
                 prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
+                prodDataModel.action = m_isPickUp ? "pickup" : "drop";
                 prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
+                if (m_event_QRcode.Contains("wata")) prodDataModel.loadId = m_event_QRcode.Replace("wata", string.Empty);
+                prodDataModel.epc = "DP" + m_ActionZoneName + m_event_epc;
                 //prodDataModel.errorCode = SysAlarm.CurrentErr;
                 prodDataModel.errorCode = "0000";
 
@@ -1361,20 +1371,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.mappingId = m_mainConfigModel.mappingId;
             ActionObj.actionInfo.mapId = m_mainConfigModel.mapId;
             ActionObj.actionInfo.action = "drop";
-            ActionObj.actionInfo.loadRate = "";
-            ActionObj.actionInfo.loadWeight = 0;
-            ActionObj.actionInfo.height = "";
+            ActionObj.actionInfo.loadRate = m_event_weight.ToString();
+            ActionObj.actionInfo.loadWeight = m_event_weight;
+            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
+            ActionObj.actionInfo.height = 160.ToString();
             ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
             ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
-            ActionObj.actionInfo.loadId = "";
+            if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.visionWidth = 0;
-            ActionObj.actionInfo.visionHeight = 0;
-            ActionObj.actionInfo.visionDepth = 0;
+            //ActionObj.actionInfo.visionWidth = m_event_width;
+            ActionObj.actionInfo.visionWidth = 110;
+            //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
+            ActionObj.actionInfo.visionHeight = 160;
+            //ActionObj.actionInfo.visionDepth = m_event_length;
+            ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
-            ActionObj.actionInfo.plMatrix = "";
+            ActionObj.actionInfo.plMatrix = m_event_points;
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
@@ -1401,6 +1415,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             post_obj.type = eMessageType.BackEndAction;
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
+
+            m_event_weight = 0;
         }
 
         private void SendBackEndContainerGateEvent()
@@ -1658,13 +1676,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_weight_list = new List<WeightSensorModel>();
 
             // 드롭 시 값 초기화
-            m_event_weight = 0;
+            //m_event_weight = 0;
             //m_event_distance = 0;
             //m_event_QRcode = m_event_QRcode;
             //m_event_width = 0;
             //m_event_height = 0;
             //m_event_length = 0;
-            m_event_points = "";
+            //m_event_points = "";
 
             // 부저 컨트롤
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);

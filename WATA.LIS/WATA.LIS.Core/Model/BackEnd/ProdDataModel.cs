@@ -8,6 +8,8 @@ namespace WATA.LIS.Core.Model.BackEnd
 {
     public class ProdDataModel
     {
+        public string mapId { get; set; } //지도 id
+        public string workLocationId { get; set; } //작업장 id
         public int pidx { get; set; } //프로젝트 id
         public int vidx { get; set; } //지게차 id
         public string vehicleId { get; set; } //지게차 이름
@@ -16,7 +18,10 @@ namespace WATA.LIS.Core.Model.BackEnd
         public int t { get; set; } //지게차 헤딩 방향 (range : 0~3600)
         public int move { get; set; } //0:stop, 1:move
         public int load { get; set; } //0:unload, 1:load
+        public string action { get; set; } //pickup, drop
         public int result { get; set; } //평치측위 상태리턴 (1:정상, 1 이외 값:비정상)
+        public string loadId { get; set; } //물류 QR 코드
+        public string epc { get; set; } //EPC 코드
         public string errorCode { get; set; } //지게차 하위 edge-device의 ConnErr, Warning, Alarm
     }
 }
