@@ -2,16 +2,16 @@
 	"main": 
 	{
 		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
-		"workLocationId" : "DHL",
+		"workLocationId" : "PULMUONE",
 		"projectId" : "afbb58611535449780cdb27a615afeb2",
-		"mappingId" : "9635c20849c942e2aaf940a44b5b5e11",
-		"mapId" : "13f8da637932450594f0e076eec61585",
-		"vehicleId": "DHL_FORKLIFT_001"
+		"mappingId" : "72c729f689774c7b8c8e2339da515209",
+		"mapId" : "de20847d222448afb90c6a4f24b25758",
+		"vehicleId": "PMO_FORKLIFT_001"
 	},
 	"led_buzzer": 
 	{
 		"led_enable": 1,
-		"volume": 0,
+		"volume": 1,
 		"InfoLanguage" : "KR"//KR, JP, EN
 	},
 	"distance_sensor": 
@@ -23,7 +23,7 @@
 	},
 	"weight_sensor": 
 	{
-		"weight_enable": 0,
+		"weight_enable": 1,
 		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
@@ -42,7 +42,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_enable" : 0,
+		"rfid_enable" : 1,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"comport": "COM8",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
@@ -71,11 +71,11 @@
 	},
 	"LIVOX": 
 	{
-		"LIVOX_Enable" : 0
+		"LIVOX_Enable" : 1
 	},
 	"vision":
 	{
-		"vision_enable" : 0,
+		"vision_enable" : 1,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
@@ -84,6 +84,6 @@
 	},
 	"display":
 	{
-		"display_enable" : 0
+		"display_enable" : 1
 	}
 }

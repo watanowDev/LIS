@@ -48,8 +48,8 @@ namespace WATA.LIS.Main.ViewModels
 
         private string _Distance_Active;
         public string Distance_Active { get { return _Distance_Active; } set { SetProperty(ref _Distance_Active, value); } }
-        
-        
+
+
         private string _RFID_Active;
         public string RFID_Active { get { return _RFID_Active; } set { SetProperty(ref _RFID_Active, value); } }
 
@@ -123,8 +123,8 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
-            
-            
+
+
             Weight_Active = Disable;
             Distance_Active = Disable;
             RFID_Active = Disable;
@@ -138,7 +138,7 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="model"></param>
         private void OnWeightSensorData(WeightSensorModel model)
         {
-            if(model != null || model.LeftOnline !=true || model.RightOnline != true)
+            if (model != null || model.LeftOnline != true || model.RightOnline != true)
             {
                 Weight_Active = Active;
                 LeftBattery_Value = model.LeftBattery.ToString();
@@ -188,7 +188,7 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="status"></param>
         public void OnBackEndStatus(int status)
         {
-            if(status == -1)
+            if (status == -1)
             {
                 BACKEND_Active = Disconnect;
                 GlobalValue.IS_ERROR.backend = false;
@@ -206,21 +206,21 @@ namespace WATA.LIS.Main.ViewModels
         /// <param name="obj"></param>
         public void OnDistanceSensorData(DistanceSensorModel obj)
         {
-           if (obj.connected == false)
-           {
+            if (obj.connected == false)
+            {
                 Distance_Active = Disconnect;
-           }
-           else if (obj.connected == true)
-           {
+            }
+            else if (obj.connected == true)
+            {
                 Distance_Active = Active;
-           }
+            }
 
-            Distance_Value = obj.Distance_mm.ToString();
+            Distance_Value = (obj.Distance_mm - 30).ToString();
         }
 
         public void OnRFIDSensorData(RackRFIDEventModel obj)
         {
-            if(obj.EPC == "NA")
+            if (obj.EPC == "NA")
             {
                 RFID_Active = Disable;
             }

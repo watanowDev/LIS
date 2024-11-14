@@ -25,7 +25,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         DispatcherTimer m_receiveTimer;
         DispatcherTimer m_checkConnectionTimer;
-        private int m_nDataSize = 0;
+        //private int m_nDataSize = 0;
 
         public TF_Mini(IEventAggregator eventAggregator, IDistanceModel distancemodel)
         {
@@ -76,7 +76,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         private void CheckConnectionEvent(object sender, EventArgs e)
         {
-            if (_port == null || _port.IsOpen == false || m_nDataSize < 25)
+            if (_port == null || _port.IsOpen == false)
             {
                 if (_port != null)
                 {

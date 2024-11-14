@@ -103,7 +103,8 @@ namespace WATA.LIS.Core.Common
         EMERGENCY,
         EMERGENCY2,
         DEVICE_ERROR,
-        DEVICE_ERROR_CLEAR
+        DEVICE_ERROR_CLEAR,
+        INVALID_PLACE
     }
 
     public enum ePlayBuzzerLed_NXDPOC

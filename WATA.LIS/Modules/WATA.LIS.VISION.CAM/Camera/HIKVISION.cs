@@ -156,7 +156,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             try
             {
                 Context context = new Context();
-                context.CreateNetDevice("192.168.1.10", 8090);
+                //context.CreateNetDevice("192.168.1.10", 8090);
                 context.EnableNetDeviceEnumeration(true);
 
                 DeviceList deviceList = context.QueryDeviceList();
@@ -182,7 +182,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 //m_pipeline = new Pipeline();
                 m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 25);
-                //colorProfile = pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_H264, 25);
+                //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_H264, 25);
                 //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
                 //m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
@@ -238,10 +238,12 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
                                 //string qrTop = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight, roi_top);
                                 //if (qrBottom.Contains("wata")) qr.Add(qrBottom);
-                                if (qrMiddle.Contains("wata")) qr.Add(qrMiddle);
+                                //if (qrMiddle.Contains("wata")) qr.Add(qrMiddle);
+                                qr.Add(qrMiddle);
                                 //if (qrTop.Contains("wata")) qr.Add(qrTop);
 
-                                if (qr.Count != 0 && qr.Any(q => q.Contains("wata")))
+                                //if (qr.Count != 0 && qr.Any(q => q.Contains("wata")))
+                                if (qr.Count != 0)
                                 {
                                     resultQR = qr[0];
                                     Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 0, 255), thickness: 4);
@@ -440,7 +442,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                 {
                     OpenCvSharp.Point[] detectedQRpoints = new OpenCvSharp.Point[4];
 
-                    if (box.Total() >= 4 && weChatResult[cnt].Contains("wata"))
+                    //if (box.Total() >= 4 && weChatResult[cnt].Contains("wata"))
+                    if (box.Total() >= 4)
                     {
                         for (int j = 0; j < 4; j++)
                         {

@@ -46,9 +46,9 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             }
 
             mCheckConnectionTimer = new DispatcherTimer();
-            mCheckConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            mCheckConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
             mCheckConnectionTimer.Tick += new EventHandler(CheckConnectionEvenet);
-            mCheckConnectionTimer.Start();
+            //mCheckConnectionTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
             mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -94,7 +94,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
                 mGetInventoryTimer.Stop();
                 reader.Destroy();
-                Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
+                Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.SystemLog);
             }
         }
 

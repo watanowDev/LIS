@@ -140,7 +140,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                         eventModel.points = jsonObject["points"].ToString();
 
                         _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"height:{eventModel.width}, width:{eventModel.height}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
+                        Tools.Log($"height:{eventModel.height}, width:{eventModel.width}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
 
                         return ret = true;
                     }
