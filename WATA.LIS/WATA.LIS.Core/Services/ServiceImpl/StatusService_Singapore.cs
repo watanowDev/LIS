@@ -129,6 +129,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool m_isError = false;
         private bool m_stop_alarm = false;
         private int m_errCnt_invalid_place;
+        private int m_errCnt_invalid_place_noQR;
 
         // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
@@ -773,7 +774,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
             // PickUp 중에 컨테이너 EPC 인식한 상태
-            if (m_curr_epc.Contains("CB") && m_isPickUp == true)
+            if (m_curr_epc.Contains("DC") && m_isPickUp == true)
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -781,6 +782,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_event_epc = m_curr_epc;
                     _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
                     SendBackEndContainerGateEvent();
+                }
+
+                if (m_event_epc.Contains("DC") && m_isPickUp == true && m_event_QRcode == "")
+                {
+                    if (m_errCnt_invalid_place_noQR % 30 == 0) Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
+                    m_errCnt_invalid_place_noQR++;
                 }
             }
 
@@ -795,6 +802,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_no_epcCnt > 30)
             {
                 m_event_epc = "";
+                m_errCnt_invalid_place_noQR = 0;
                 m_container_ok_buzzer = false;
                 _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
             }
@@ -920,8 +928,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     }
                                     else
                                     {
-                                        m_ActionZoneId = "";
-                                        m_ActionZoneName = "";
+                                        if (m_ActionZoneId == "" || m_ActionZoneName == "")
+                                        {
+                                            m_ActionZoneId = "";
+                                            m_ActionZoneName = "";
+                                        }
                                     }
                                 }
                             }
@@ -1314,13 +1325,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_event_epc == "")
             {
-                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
-                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName;
             }
             else
             {
-                ActionObj.actionInfo.epc = "DC" + m_ActionZoneName + m_event_epc;
-                ActionObj.actionInfo.cepc = "DC" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.epc = m_event_epc + m_ActionZoneName;
+                ActionObj.actionInfo.cepc = "CB2024111600110000000000" + m_ActionZoneName;
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
@@ -1379,13 +1390,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_event_epc == "")
             {
-                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
-                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName;
             }
             else
             {
-                ActionObj.actionInfo.epc = "DC" + m_ActionZoneName + m_event_epc;
-                ActionObj.actionInfo.cepc = "DC" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.epc = m_event_epc + m_ActionZoneName;
+                ActionObj.actionInfo.cepc = "CB2024111600110000000000" + m_ActionZoneName;
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
@@ -1431,7 +1442,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             model.containerInfo.projectId = m_mainConfigModel.projectId;
             model.containerInfo.mappingId = m_mainConfigModel.mappingId;
             model.containerInfo.mapId = m_mainConfigModel.mapId;
-            model.containerInfo.cepc = m_event_epc;
+            model.containerInfo.cepc = "CB2024111600110000000000";
             model.containerInfo.depc = m_event_epc;
             if (m_event_QRcode.Contains("wata")) model.containerInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
 
@@ -1574,7 +1585,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void PickUpEvent()
         {
             // 인디케이터 통신 핸들
-            if (m_set_normal == true) m_Command = 1;
+            //if (m_set_normal == true) m_Command = 1;
+            m_Command = 1;
             if (m_set_load == true) m_Command = 2;
             if (m_set_unload == true) m_Command = 3;
 
