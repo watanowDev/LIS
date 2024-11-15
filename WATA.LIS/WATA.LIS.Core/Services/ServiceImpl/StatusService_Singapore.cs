@@ -289,7 +289,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                             }
                                             if (i == 1)
                                             {
-                                                x += -2.951;
+                                                x += 1.666;
                                                 y += 5.098;
                                             }
 
