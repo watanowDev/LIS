@@ -80,7 +80,7 @@ namespace WATA.LIS.Core.Common
     }
     public enum ePlayBuzzerLed
     {
-        NORMAL,
+        CONTAINER_OK,
         SIZE_CHECK_START,
         SIZE_MEASURE_OK,
         CHECK_COMPLETE,

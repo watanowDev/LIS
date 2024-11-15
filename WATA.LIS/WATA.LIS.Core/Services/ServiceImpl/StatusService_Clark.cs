@@ -354,7 +354,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="e"></param>
         private void Pattlite_Buzzer_LED(ePlayBuzzerLed value)
         {
-            if (value == ePlayBuzzerLed.NORMAL)
+            if (value == ePlayBuzzerLed.CONTAINER_OK)
             {
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Continuous;
@@ -884,7 +884,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
                 else if (m_set_item == false && m_isError != true)
                 {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NORMAL);
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.CONTAINER_OK);
                 }
 
                 VisionCamModel visionCamModel = new VisionCamModel();
@@ -1125,7 +1125,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
                 else if (m_isPickUp == false)
                 {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NORMAL);
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.CONTAINER_OK);
                     _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.clear_item);
                 }
             }

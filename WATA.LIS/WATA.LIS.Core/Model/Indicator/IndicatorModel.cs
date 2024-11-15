@@ -15,7 +15,7 @@ namespace WATA.LIS.Core.Model.Indicator
 
     public class forklift_status
     {
-        public int command { get; set; } // 0. normal, 1. normal_load, 2. 상차중load, 3. 하차중load
+        public int command { get; set; } // -1. 물류 측정중(QR인식된 상태), 0. normal, 1. normal_load, 2. 상차중load, 3. 하차중load
 
         public string QR { get; set; }
         public int weightTotal { get; set; }

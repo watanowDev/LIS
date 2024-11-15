@@ -42,6 +42,7 @@ using Point = OpenCvSharp.Point;
 using Newtonsoft.Json.Linq;
 using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation;
+//using ZXing.Presentation;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -182,6 +183,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 //m_pipeline = new Pipeline();
                 m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 25);
+                //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_RGB, 25);
                 //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(3840, 2160, Format.OB_FORMAT_H264, 25);
                 //m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(width, height, Format.OB_FORMAT_RGB, 25);
                 //m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
@@ -482,10 +484,36 @@ namespace WATA.LIS.VISION.CAM.Camera
                         //        ret = weChatResult[cnt];
                         //    }
                         //}
+
+
+                        
                     }
                     cnt++;
                 }
             }
+
+            //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
+
+            //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
+            //{
+            //    int x1 = (int)zXingResult.ResultPoints[0].X;
+            //    int y1 = (int)zXingResult.ResultPoints[0].Y;
+            //    int x2 = (int)zXingResult.ResultPoints[1].X;
+            //    int y2 = (int)zXingResult.ResultPoints[1].Y;
+            //    int x3 = (int)zXingResult.ResultPoints[2].X;
+            //    int y3 = (int)zXingResult.ResultPoints[2].Y;
+            //    int x4 = (int)zXingResult.ResultPoints[3].X;
+            //    int y4 = (int)zXingResult.ResultPoints[3].Y;
+
+            //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
+            //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
+            //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
+            //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
+
+            //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
+            //    ret = zXingResult.Text;
+            //}
+
             return ret;
         }
 
@@ -507,27 +535,6 @@ namespace WATA.LIS.VISION.CAM.Camera
 
 
 
-        //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
-
-        //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
-        //{
-        //    int x1 = (int)zXingResult.ResultPoints[0].X;
-        //    int y1 = (int)zXingResult.ResultPoints[0].Y;
-        //    int x2 = (int)zXingResult.ResultPoints[1].X;
-        //    int y2 = (int)zXingResult.ResultPoints[1].Y;
-        //    int x3 = (int)zXingResult.ResultPoints[2].X;
-        //    int y3 = (int)zXingResult.ResultPoints[2].Y;
-        //    int x4 = (int)zXingResult.ResultPoints[3].X;
-        //    int y4 = (int)zXingResult.ResultPoints[3].Y;
-
-        //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
-        //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
-        //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
-        //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
-
-        //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-        //    ret = zXingResult.Text;
-        //}
 
 
 
