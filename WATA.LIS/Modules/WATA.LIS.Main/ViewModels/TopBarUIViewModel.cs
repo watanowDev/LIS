@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using Prism.Events;
+using Prism.Modularity;
 using Prism.Mvvm;
 using Prism.Regions;
 using System;
@@ -9,11 +10,15 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.LIVOX;
+using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
+using WATA.LIS.Core.Model.LIVOX;
+using WATA.LIS.Core.Model.NAV;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Model.VisionCam;
 
@@ -50,6 +55,10 @@ namespace WATA.LIS.Main.ViewModels
         private string _RFIDEvent;
         public string RFIDEvent { get { return _RFIDEvent; } set { SetProperty(ref _RFIDEvent, value); } }
 
+
+        private string _NAVEvent;
+        public string NAVEvent { get { return _NAVEvent; } set { SetProperty(ref _NAVEvent, value); } }
+
         public DelegateCommand<string> ButtonFunc { get; set; }
         IEventAggregator _eventAggregator;
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
@@ -60,8 +69,9 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HittingSize_Event>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNavSensorEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
             DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -74,9 +84,14 @@ namespace WATA.LIS.Main.ViewModels
             RFIDEvent = "None";
         }
 
-        private void OnCurrentSizeEvent(VisionCamModel obj)
+        private void OnNavSensorEvent(NAVSensorModel model)
         {
-            VisionCamSizeEvent = $"Height: {obj.HEIGHT}, Depth: {obj.DEPTH}";
+            NAVEvent = $"X: {model.naviX}, Y: {model.naviY} Result: {model.result}";
+        }
+
+        private void OnCurrentSizeEvent(LIVOXModel obj)
+        {
+            VisionCamSizeEvent = $"Width: {obj.width}, Height: {obj.height}, Depth: {obj.length}";
         }
 
         private void OnCurrentRFIDEvent(string obj)

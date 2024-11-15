@@ -777,8 +777,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
             // PickUp 중에 EPC 인식한 상태
-            //if (m_curr_epc.Contains("CB") && m_isPickUp == true)
-            if (m_isPickUp == true)
+            //if (m_isPickUp == true)
+            if (m_curr_epc.Contains("CB") && m_isPickUp == true)
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -789,8 +789,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // EPC 인식 없을 시 No EPC 카운트
-            if (m_rfidModel.EPC == "")
+            // EPC 인식 없고, 상차하차 지시 없이 노멀인 상태에서 No EPC 카운트
+            if (m_rfidModel.EPC == "" && m_set_normal == true)
             {
                 m_no_epcCnt++;
                 m_curr_epc = "";
@@ -847,8 +847,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_curr_QRcode = "";
             }
 
-            // 10 프레임간 QR 인식 안될 시 QR 초기화
-            //if (m_visionModel.QR == "" && m_no_QRcnt > 40 && m_isPickUp == false)
+            // 80 프레임간 QR 인식 안될 시 QR 초기화
+            //if (m_visionModel.QR == "" && m_no_QRcnt > 80 && m_isPickUp == false)
             if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 80 && m_isPickUp == false)
             {
                 m_Command = 0;
@@ -1181,18 +1181,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_set_normal = true;
             }
 
-            //if (status == "invalid_place" && m_errCnt_invalid_place % 5 == 0)
-            if (status == "invalid_place")
+            if (status == "invalid_place" && m_errCnt_invalid_place % 3 == 0)
             {
-                //m_errCnt_invalid_place++;
+                m_errCnt_invalid_place++;
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
-                Tools.Log($"{status}", ELogType.ActionLog);
+                Tools.Log($"{status}", ELogType.DisplayLog);
             }
 
-            //if (status != "invalid_place")
-            //{
-            //    m_errCnt_invalid_place = 0;
-            //}
+            if (status != "invalid_place")
+            {
+                m_errCnt_invalid_place = 0;
+            }
         }
 
         private void IndicatorSendTimerEvent(object sender, EventArgs e)
@@ -1316,14 +1315,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.action = "pickup";
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
-            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
-            ActionObj.actionInfo.height = 160.ToString();
-            ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
-            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
+            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
+            ActionObj.actionInfo.height = 160.ToString();
             //ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionWidth = 110;
             //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
@@ -1333,6 +1330,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
 
+            if (m_event_epc == "")
+            {
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
+            }
+            else
+            {
+                ActionObj.actionInfo.epc = "DC" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.cepc = "DC" + m_ActionZoneName + m_event_epc;
+            }
+
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
                 ActionObj.actionInfo.zoneId = "NA";
@@ -1341,8 +1349,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 ActionObj.actionInfo.zoneId = m_ActionZoneId;
             }
-
-
             if (m_ActionZoneName == null || m_ActionZoneId.Equals(""))
             {
                 ActionObj.actionInfo.zoneName = "NA";
@@ -1373,14 +1379,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.action = "drop";
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
-            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
-            ActionObj.actionInfo.height = 160.ToString();
-            ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
-            ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
+            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
+            ActionObj.actionInfo.height = 160.ToString();
             //ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionWidth = 110;
             //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
@@ -1390,6 +1394,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
 
+            if (m_event_epc == "")
+            {
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName + m_event_epc;
+            }
+            else
+            {
+                ActionObj.actionInfo.epc = "DC" + m_ActionZoneName + m_event_epc;
+                ActionObj.actionInfo.cepc = "DC" + m_ActionZoneName + m_event_epc;
+            }
+
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
                 ActionObj.actionInfo.zoneId = "NA";
@@ -1398,8 +1413,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 ActionObj.actionInfo.zoneId = m_ActionZoneId;
             }
-
-
             if (m_ActionZoneName == null || m_ActionZoneId.Equals(""))
             {
                 ActionObj.actionInfo.zoneName = "NA";
@@ -1416,9 +1429,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-            Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
+            Tools.Log($"Drop Action {json_body}", ELogType.ActionLog);
 
+
+            // 전송 후 값 초기화
+            m_weight_list = new List<WeightSensorModel>();
             m_event_weight = 0;
+            m_event_epc = "";
+            //m_event_QRcode = "";
         }
 
         private void SendBackEndContainerGateEvent()
@@ -1546,7 +1564,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_stopwatch != null)
                 {
                     m_stopwatch.Stop();
-                    Tools.Log($"Stop -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+                    Tools.Log($"Pickup -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
                 }
 
                 // 앱 물류 선택 X, QR 코드 X
@@ -1625,10 +1643,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 안정된 부피값 취득할 때 까지 대기
+            m_stopwatch = new Stopwatch();
+            if (m_stopwatch != null) m_stopwatch.Start();
+
             while (m_event_height != m_curr_height)
             {
                 if (m_event_height == m_curr_height) break;
             }
+            m_stopwatch.Stop();
+            Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
             SendBackEndPickupAction();
@@ -1672,23 +1695,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_Command = 0;
             m_set_item = false;
 
-            // 중량값 리스트 초기화
-            m_weight_list = new List<WeightSensorModel>();
-
-            // 드롭 시 값 초기화
-            //m_event_weight = 0;
-            //m_event_distance = 0;
-            //m_event_QRcode = m_event_QRcode;
-            //m_event_width = 0;
-            //m_event_height = 0;
-            //m_event_length = 0;
-            //m_event_points = "";
-
             // 부저 컨트롤
             Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
 
-            // m_stop_guide 초기화
-            //m_distance_stop_guide = false;
             m_guideWeightStart = false;
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
