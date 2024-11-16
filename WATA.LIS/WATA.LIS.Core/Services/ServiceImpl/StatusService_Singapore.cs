@@ -972,6 +972,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_isPickUp == true) SendBackEndPickupAction();
                 else if (m_isPickUp == false) SendBackEndDropAction();
+
+
+                // 중량값, 부피 측정 완료 LED, 부저
+                if (m_set_item == true && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                }
+                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+                }
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+                }
             }
         }
 
@@ -1535,19 +1550,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //}
 
 
-                // 중량값 측정 완료 LED, 부저
-                if (m_set_item == true && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
-                }
-                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
-                }
-                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                }
+                //// 중량값 측정 완료 LED, 부저
+                //if (m_set_item == true && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                //}
+                //else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+                //}
+                //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+                //}
 
                 if (m_stopwatch != null)
                 {
