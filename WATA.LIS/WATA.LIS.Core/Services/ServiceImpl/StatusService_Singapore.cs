@@ -79,6 +79,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private DistanceSensorModel m_distanceModel;
         private List<DistanceSensorModel> m_distance_list;
         private readonly int m_distance_sample_size = 10;
+        private int m_curr_distance = 0;
         private int m_event_distance = 0;
 
         // RFID 데이터 클래스
@@ -108,7 +109,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private float m_event_length = 0;
         private string m_event_points = "";
         private float m_curr_height = 0;
-        private string m_dummy_points = @"[{""x"":-0.048055171966552734, ""y"":-0.8196065425872803, ""z"":-0.2845831513404846},{""x"":-0.06856584548950195,""y"":-0.6495615839958191,""z"":-0.266329288482666},{ ""x"":-0.11397743225097656,""y"":-0.6739144325256348,""z"":-0.18433888256549835},{ ""x"":-0.08682966232299805,""y"":-0.46766698360443115,""z"":-0.2857128977775574},{ ""x"":0.011022567749023438,""y"":-0.4979143738746643,""z"":-0.2583388686180115},{ ""x"":-0.09601449966430664,""y"":-0.4919881820678711,""z"":-0.18945272266864777},{ ""x"":0.059177398681640625,""y"":-0.04389047622680664,""z"":-0.3339698314666748},{ ""x"":-0.10425853729248047,""y"":0.029871582984924316,""z"":0.1271665394306183},{ ""x"":0.028022289276123047,""y"":0.03933560848236084,""z"":0.15691113471984863},{ ""x"":-0.09919500350952148,""y"":0.004209756851196289,""z"":0.3175625205039978},{ ""x"":0.07118368148803711,""y"":0.029395103454589844,""z"":0.31595587730407715},{ ""x"":-0.08274316787719727,""y"":-0.008076786994934082,""z"":0.4403194785118103},{ ""x"":0.07884597778320312,""y"":0.01820218563079834,""z"":0.44426819682121277},{ ""x"":-0.08893346786499023,""y"":0.19411492347717285,""z"":-0.2754833698272705},{ ""x"":0.03559112548828125,""y"":0.1572486162185669,""z"":-0.3402557969093323},{ ""x"":-0.08598089218139648,""y"":0.17258381843566895,""z"":-0.06646518409252167},{ ""x"":0.06773567199707031,""y"":0.14131712913513184,""z"":-0.004838868975639343},{ ""x"":-0.07169675827026367,""y"":0.04968845844268799,""z"":0.07082261145114899},{ ""x"":0.09965753555297852,""y"":0.1367586851119995,""z"":0.10288308560848236},{ ""x"":0.11103534698486328,""y"":0.1357135772705078,""z"":0.29861342906951904},{ ""x"":0.11475372314453125,""y"":0.14719581604003906,""z"":0.458082914352417},{ ""x"":-0.07363080978393555,""y"":0.28232455253601074,""z"":-0.28942376375198364},{ ""x"":0.06948375701904297,""y"":0.2944885492324829,""z"":-0.25576794147491455},{ ""x"":0.22002243995666504,""y"":0.3280855417251587,""z"":-0.19833888113498688},{ ""x"":-0.08700752258300781,""y"":0.27793216705322266,""z"":-0.10084129869937897},{ ""x"":0.09347963333129883,""y"":0.28981542587280273,""z"":-0.13262619078159332},{ ""x"":0.2533559799194336,""y"":0.32340049743652344,""z"":-0.170431450009346},{ ""x"":0.0889730453491211,""y"":0.28555166721343994,""z"":0.09841301292181015},{ ""x"":0.09506654739379883,""y"":0.2849094867706299,""z"":0.30092453956604004},{ ""x"":0.09845590591430664,""y"":0.27623558044433594,""z"":0.44636112451553345},{ ""x"":-0.48897743225097656,""y"":-0.2457605004310608,""z"":0.058913543820381165}]";
+        //private string m_dummy_points = @"[{""x"":-0.048055171966552734, ""y"":-0.8196065425872803, ""z"":-0.2845831513404846},{""x"":-0.06856584548950195,""y"":-0.6495615839958191,""z"":-0.266329288482666},{ ""x"":-0.11397743225097656,""y"":-0.6739144325256348,""z"":-0.18433888256549835},{ ""x"":-0.08682966232299805,""y"":-0.46766698360443115,""z"":-0.2857128977775574},{ ""x"":0.011022567749023438,""y"":-0.4979143738746643,""z"":-0.2583388686180115},{ ""x"":-0.09601449966430664,""y"":-0.4919881820678711,""z"":-0.18945272266864777},{ ""x"":0.059177398681640625,""y"":-0.04389047622680664,""z"":-0.3339698314666748},{ ""x"":-0.10425853729248047,""y"":0.029871582984924316,""z"":0.1271665394306183},{ ""x"":0.028022289276123047,""y"":0.03933560848236084,""z"":0.15691113471984863},{ ""x"":-0.09919500350952148,""y"":0.004209756851196289,""z"":0.3175625205039978},{ ""x"":0.07118368148803711,""y"":0.029395103454589844,""z"":0.31595587730407715},{ ""x"":-0.08274316787719727,""y"":-0.008076786994934082,""z"":0.4403194785118103},{ ""x"":0.07884597778320312,""y"":0.01820218563079834,""z"":0.44426819682121277},{ ""x"":-0.08893346786499023,""y"":0.19411492347717285,""z"":-0.2754833698272705},{ ""x"":0.03559112548828125,""y"":0.1572486162185669,""z"":-0.3402557969093323},{ ""x"":-0.08598089218139648,""y"":0.17258381843566895,""z"":-0.06646518409252167},{ ""x"":0.06773567199707031,""y"":0.14131712913513184,""z"":-0.004838868975639343},{ ""x"":-0.07169675827026367,""y"":0.04968845844268799,""z"":0.07082261145114899},{ ""x"":0.09965753555297852,""y"":0.1367586851119995,""z"":0.10288308560848236},{ ""x"":0.11103534698486328,""y"":0.1357135772705078,""z"":0.29861342906951904},{ ""x"":0.11475372314453125,""y"":0.14719581604003906,""z"":0.458082914352417},{ ""x"":-0.07363080978393555,""y"":0.28232455253601074,""z"":-0.28942376375198364},{ ""x"":0.06948375701904297,""y"":0.2944885492324829,""z"":-0.25576794147491455},{ ""x"":0.22002243995666504,""y"":0.3280855417251587,""z"":-0.19833888113498688},{ ""x"":-0.08700752258300781,""y"":0.27793216705322266,""z"":-0.10084129869937897},{ ""x"":0.09347963333129883,""y"":0.28981542587280273,""z"":-0.13262619078159332},{ ""x"":0.2533559799194336,""y"":0.32340049743652344,""z"":-0.170431450009346},{ ""x"":0.0889730453491211,""y"":0.28555166721343994,""z"":0.09841301292181015},{ ""x"":0.09506654739379883,""y"":0.2849094867706299,""z"":0.30092453956604004},{ ""x"":0.09845590591430664,""y"":0.27623558044433594,""z"":0.44636112451553345},{ ""x"":-0.48897743225097656,""y"":-0.2457605004310608,""z"":0.058913543820381165}]";
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
@@ -719,26 +720,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_distanceModel = model;
             m_errCnt_distance = 0;
 
-            if (m_distanceModel.Distance_mm >= -30 && model != null)
-            {
-                m_distance_list.Add(model);
-            }
+            //if (m_distanceModel.Distance_mm >= -30 && model != null)
+            //{
+            //    m_distance_list.Add(model);
+            //}
 
-            if (m_distance_list.Count > m_distance_sample_size)
-            {
-                if (m_distance_list.Count != 0) m_distance_list.RemoveAt(0);
-            }
+            //if (m_distance_list.Count > m_distance_sample_size)
+            //{
+            //    if (m_distance_list.Count != 0) m_distance_list.RemoveAt(0);
+            //}
 
-            int currentDistance = m_distanceModel.Distance_mm;
+            //int currentDistance = m_distanceModel.Distance_mm;
 
-            int minDistance = m_distance_list.Select(w => w.Distance_mm).Min();
-            if (Math.Abs(currentDistance - minDistance) > currentDistance * 1) return;
+            //int minDistance = m_distance_list.Select(w => w.Distance_mm).Min();
+            //if (Math.Abs(currentDistance - minDistance) > currentDistance * 1) return;
 
-            int maxDistance = m_distance_list.Select(w => w.Distance_mm).Max();
-            if (Math.Abs(currentDistance - maxDistance) > currentDistance * 1) return;
+            //int maxDistance = m_distance_list.Select(w => w.Distance_mm).Max();
+            //if (Math.Abs(currentDistance - maxDistance) > currentDistance * 1) return;
 
 
-            m_event_distance = model.Distance_mm;
+            m_curr_distance = m_distanceModel.Distance_mm - m_distanceConfig.pick_up_distance_threshold;
         }
 
 
@@ -962,14 +963,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_livoxModel = model;
 
-            if (m_event_height != m_curr_height)
+            if (m_event_height != m_livoxModel.length)
             {
-                m_event_height = m_curr_height;
-
                 m_event_width = m_livoxModel.width;
                 m_event_height = m_livoxModel.height - m_event_distance;
                 m_event_length = m_livoxModel.length;
                 m_event_points = m_livoxModel.points;
+
+                if (m_isPickUp == true) SendBackEndPickupAction();
+                else if (m_isPickUp == false) SendBackEndDropAction();
             }
         }
 
@@ -1192,17 +1194,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.weightTotal = m_event_weight;
             m_indicatorModel.forklift_status.QR = m_event_QRcode;
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
-            m_indicatorModel.forklift_status.visionHeight = m_event_height - m_event_distance;
+            m_indicatorModel.forklift_status.visionHeight = m_event_height;
             m_indicatorModel.forklift_status.visionDepth = m_event_length;
             m_indicatorModel.forklift_status.points = "";
             m_indicatorModel.forklift_status.epc = m_event_epc;
             m_indicatorModel.forklift_status.networkStatus = true;
-            m_indicatorModel.forklift_status.weightSensorStatus = m_weightConfig.weight_enable != 0 && m_errCnt_weight > 5 ? false : true;
-            m_indicatorModel.forklift_status.heightSensorStatus = m_distanceConfig.distance_enable != 0 && m_errCnt_distance > 5 ? false : true;
-            m_indicatorModel.forklift_status.rfidStatus = m_rfidConfig.rfid_enable != 0 && m_errCnt_rfid > 5 ? false : true;
-            m_indicatorModel.forklift_status.visionCamStatus = m_visionCamConfig.vision_enable != 0 && m_errCnt_visioncam > 5 ? false : true;
-            m_indicatorModel.forklift_status.lidar2dStatus = m_navConfig.NAV_Enable != 0 && m_errCnt_lidar2d > 5 ? false : true;
-            m_indicatorModel.forklift_status.lidar3dStatus = m_livoxConfig.LIVOX_Enable != 0 && m_errCnt_lidar3d > 5 ? false : true;
+            m_indicatorModel.forklift_status.weightSensorStatus = m_weightConfig.weight_enable != 0 && m_errCnt_weight > 10 ? false : true;
+            m_indicatorModel.forklift_status.heightSensorStatus = m_distanceConfig.distance_enable != 0 && m_errCnt_distance > 10 ? false : true;
+            m_indicatorModel.forklift_status.rfidStatus = m_rfidConfig.rfid_enable != 0 && m_errCnt_rfid > 10 ? false : true;
+            m_indicatorModel.forklift_status.visionCamStatus = m_visionCamConfig.vision_enable != 0 && m_errCnt_visioncam > 10 ? false : true;
+            m_indicatorModel.forklift_status.lidar2dStatus = m_navConfig.NAV_Enable != 0 && m_errCnt_lidar2d > 10 ? false : true;
+            m_indicatorModel.forklift_status.lidar3dStatus = m_livoxConfig.LIVOX_Enable != 0 && m_errCnt_lidar3d > 10 ? false : true;
             m_indicatorModel.tail = true;
 
             string json_body = Util.ObjectToJson(m_indicatorModel);
@@ -1311,17 +1313,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
-            ActionObj.actionInfo.height = 160.ToString();
-            //ActionObj.actionInfo.visionWidth = m_event_width;
-            ActionObj.actionInfo.visionWidth = 110;
-            //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
-            ActionObj.actionInfo.visionHeight = 160;
-            //ActionObj.actionInfo.visionDepth = m_event_length;
-            ActionObj.actionInfo.visionDepth = 110;
+            ActionObj.actionInfo.height = (m_event_height).ToString();
+            //ActionObj.actionInfo.height = 160.ToString();
+            ActionObj.actionInfo.visionWidth = m_event_width;
+            //ActionObj.actionInfo.visionWidth = 110;
+            ActionObj.actionInfo.visionHeight = m_event_height;
+            //ActionObj.actionInfo.visionHeight = 160;
+            ActionObj.actionInfo.visionDepth = m_event_length;
+            //ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
-            //ActionObj.actionInfo.plMatrix = m_event_points;
-            ActionObj.actionInfo.plMatrix = m_dummy_points;
+            ActionObj.actionInfo.plMatrix = m_event_points;
+            //ActionObj.actionInfo.plMatrix = m_dummy_points;
 
             if (m_event_epc == "")
             {
@@ -1376,17 +1378,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            //ActionObj.actionInfo.height = (m_event_height - m_event_distance).ToString();
-            ActionObj.actionInfo.height = 160.ToString();
-            //ActionObj.actionInfo.visionWidth = m_event_width;
-            ActionObj.actionInfo.visionWidth = 110;
-            //ActionObj.actionInfo.visionHeight = m_event_height - m_event_distance;
-            ActionObj.actionInfo.visionHeight = 160;
-            //ActionObj.actionInfo.visionDepth = m_event_length;
-            ActionObj.actionInfo.visionDepth = 110;
+            ActionObj.actionInfo.height = (m_event_height).ToString();
+            //ActionObj.actionInfo.height = 160.ToString();
+            ActionObj.actionInfo.visionWidth = m_event_width;
+            //ActionObj.actionInfo.visionWidth = 110;
+            ActionObj.actionInfo.visionHeight = m_event_height;
+            //ActionObj.actionInfo.visionHeight = 160;
+            ActionObj.actionInfo.visionDepth = m_event_length;
+            //ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
-            //ActionObj.actionInfo.plMatrix = m_event_points;
-            ActionObj.actionInfo.plMatrix = m_dummy_points;
+            ActionObj.actionInfo.plMatrix = m_event_points;
+            //ActionObj.actionInfo.plMatrix = m_dummy_points;
 
             if (m_event_epc == "")
             {
@@ -1430,6 +1432,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_weight_list = new List<WeightSensorModel>();
             m_event_weight = 0;
             m_event_epc = "";
+            //m_livoxModel.height = 0;
         }
 
         private void SendBackEndContainerGateEvent()
@@ -1615,15 +1618,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_stopwatch = new Stopwatch();
             if (m_stopwatch != null) m_stopwatch.Start();
 
-            while (m_event_height != m_curr_height)
-            {
-                if (m_event_height == m_curr_height) break;
-            }
+            //while (m_livoxModel.height == 0)
+            //{
+            //    if (m_livoxModel.height - m_event_distance > 0) break;
+            //}
+            m_event_distance = m_curr_distance;
             m_stopwatch.Stop();
             Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
-            SendBackEndPickupAction();
+            //SendBackEndPickupAction();
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height:{m_event_height}, depth{m_event_length}", ELogType.ActionLog);

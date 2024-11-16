@@ -215,7 +215,7 @@ namespace WATA.LIS.Main.ViewModels
                 Distance_Active = Active;
             }
 
-            Distance_Value = (obj.Distance_mm - 30).ToString();
+            Distance_Value = (obj.Distance_mm - 625).ToString();
         }
 
         public void OnRFIDSensorData(RackRFIDEventModel obj)

@@ -162,7 +162,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 DeviceList deviceList = context.QueryDeviceList();
 
-                m_pipeline = new Pipeline();
+                //m_pipeline = new Pipeline();
                 //Pipeline pipelineFemtoW = new Pipeline();
 
                 for (uint i = 0; i < deviceList.DeviceCount(); i++)
@@ -222,7 +222,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 Marshal.Copy(colorData, 0, colorImage.Data, colorData.Length);
 
                                 Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
-                                Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
+                                Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Clockwise);
 
                                 // 3등분한 구역을 설정
                                 //OpenCvSharp.Rect roi_top = new OpenCvSharp.Rect(180 * 2, 0, 720 * 2, 480 * 2);
