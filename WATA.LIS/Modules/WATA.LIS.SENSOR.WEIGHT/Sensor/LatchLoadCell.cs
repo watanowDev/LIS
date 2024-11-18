@@ -27,6 +27,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         private SerialPort _port = new SerialPort();
 
         private DispatcherTimer m_receiveTimer;
+        private DispatcherTimer m_newVerReceiveTimer;
         private DispatcherTimer m_checkConnectionTimer;
         private int m_nDataSize = 0;
 
@@ -41,18 +42,72 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void SerialInit()
         {
-            m_receiveTimer = new DispatcherTimer();
-            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            //m_receiveTimer = new DispatcherTimer();
+            //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            m_checkConnectionTimer = new DispatcherTimer();
-            m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
-            m_checkConnectionTimer.Start();
+            m_newVerReceiveTimer = new DispatcherTimer();
+            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
 
-            SerialThreadInit();
+            //m_checkConnectionTimer = new DispatcherTimer();
+            //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
+            //m_checkConnectionTimer.Start();
 
-            _eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
+            //SerialThreadInit();
+
+            //_eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
+
+
+
+            SerialThreadInit_NewVersion();
+        }
+
+        private void SerialThreadInit_NewVersion()
+        {
+            try
+            {
+                string port = _weightConfig.ComPort;
+                int bouadrate = 9600;
+                _port = new SerialPort(port, bouadrate, Parity.None, 8, StopBits.One);
+                if (_port != null)
+                {
+                    _port.Open();
+                    _port.Handshake = Handshake.None;
+                    m_newVerReceiveTimer.Start();
+                    Tools.Log($"Weight Sensor Init Success", Tools.ELogType.SystemLog);
+                }
+
+                if (_port == null || !_port.IsOpen)
+                {
+                    Tools.Log($"Port is not open", Tools.ELogType.WeightLog);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Exception in SendDataTest: {ex.Message}", Tools.ELogType.WeightLog);
+            }
+        }
+
+        private void NewVerReceiveTimerEvent(object sender, EventArgs e)
+        {
+            // 전송할 데이터
+            byte[] dataToSend = new byte[] { 0x55, 0xAB, 0x01, 0x00 };
+            _port.Write(dataToSend, 0, dataToSend.Length);
+
+            // 응답 데이터 수신
+            Thread.Sleep(10); // 잠시 대기하여 데이터 수신
+            int bytesToRead = _port.BytesToRead;
+            if (bytesToRead > 0)
+            {
+                byte[] receivedData = new byte[bytesToRead];
+                _port.Read(receivedData, 0, bytesToRead);
+
+                // 응답 데이터를 publish
+                ParseData(receivedData, receivedData.Length);
+            }
         }
 
         private void SerialThreadInit()
@@ -66,7 +121,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 {
                     _port.Open();
                     _port.Handshake = Handshake.None;
-                    m_receiveTimer.Start();
+                    //m_receiveTimer.Start();
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
@@ -82,7 +137,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         private void CheckConnectionEvent(object sender, EventArgs e)
         {
-            if(_port == null || _port.IsOpen == false || m_nDataSize < 25)
+            if (_port == null || _port.IsOpen == false || m_nDataSize < 25)
             {
                 if (_port != null)
                 {

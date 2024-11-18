@@ -75,7 +75,7 @@
 	},
 	"vision":
 	{
-		"vision_enable" : 0,
+		"vision_enable" : 1,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
