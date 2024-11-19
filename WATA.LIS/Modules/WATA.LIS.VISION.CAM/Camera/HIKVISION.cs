@@ -162,7 +162,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                 DeviceList deviceList = context.QueryDeviceList();
 
-                //m_pipeline = new Pipeline();
+                m_pipeline = new Pipeline();
                 //Pipeline pipelineFemtoW = new Pipeline();
 
                 for (uint i = 0; i < deviceList.DeviceCount(); i++)

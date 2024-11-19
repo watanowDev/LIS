@@ -491,16 +491,21 @@ namespace WATA.LIS.SENSOR.NAV
 
                 if (positionNavCount > 10 && cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode] == "1")
                 {
-                    Globals.nav_x = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
-                    Globals.nav_y = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
+                    Globals.nav_y = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
+                    Globals.nav_x = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
                     Globals.nav_phi = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100;
                     Globals.nav_dev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
 
+            
+
+                    Globals.nav_x = (Globals.nav_x)*-1 + 11566923483 - 3700;
+                    //Globals.nav_y = Globals.nav_y + 151935566;
+                    Globals.nav_y = Globals.nav_y + 151907526 + 2500;
 
                     //Globals.nav_x = Globals.nav_x + 14096616106;
                     //Globals.nav_y = Globals.nav_y + 3719121405;
-                    Globals.nav_x = Globals.nav_x + 14174083935;
-                    Globals.nav_y = Globals.nav_y + 4465793180;
+                    //Globals.nav_x = Globals.nav_x + 14174083935;
+                    //Globals.nav_y = Globals.nav_y + 4465793180;
                     //Globals.nav_y = Globals.nav_y + 4510554568;
 
                 }

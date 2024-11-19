@@ -17,7 +17,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
     public class DistanceSensor
     {
         private readonly IEventAggregator _eventAggregator;
-        private readonly IDistanceModel  _distancemodel;
+        private readonly IDistanceModel _distancemodel;
 
         SerialPort serial = new SerialPort();
         SerialPort _port = new SerialPort();
@@ -29,7 +29,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         //DistanceConfigModel _distaceConfig;
 
         public DistanceSensor(IEventAggregator eventAggregator, IDistanceModel distancemodel)
-        {                          
+        {
             _eventAggregator = eventAggregator;
             _distancemodel = distancemodel;
 
@@ -38,7 +38,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
 
             //distaceConfig(DistanceConfigModel) = ditanceModel;
-    }
+        }
 
         private bool log_enable = true;
 
@@ -81,19 +81,19 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             }
         }
 
-    private void test()
-    {
-        serial.PortName = "COM3";
-        serial.BaudRate = 115200;
-        serial.DataBits = 8;
-        serial.StopBits = StopBits.One;
-        serial.Parity = Parity.None;
-        serial.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
-        serial.Open();
-    }
+        private void test()
+        {
+            serial.PortName = "COM3";
+            serial.BaudRate = 115200;
+            serial.DataBits = 8;
+            serial.StopBits = StopBits.One;
+            serial.Parity = Parity.None;
+            serial.DataReceived += new SerialDataReceivedEventHandler(DataRecive);
+            serial.Open();
+        }
 
-    private void ReceiveTimerEvent(object sender, EventArgs e)
-    {
+        private void ReceiveTimerEvent(object sender, EventArgs e)
+        {
             if (_port == null || _port.IsOpen == false)
             {
                 SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
@@ -107,7 +107,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                 _port.Read(buffer, 0, bytesize);
                 if (bytesize > 0)
                 {
- 
+
                     LogRawData(buffer);
                     AverageData(buffer, bytesize);
                     SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
@@ -118,12 +118,12 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.DistanceLog);
                 SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
             }
-    }
+        }
 
 
 
-    private void DataRecive(object sender, SerialDataReceivedEventArgs e) 
-    {
+        private void DataRecive(object sender, SerialDataReceivedEventArgs e)
+        {
             try
             {
                 SerialPort sp = (SerialPort)sender;
@@ -155,17 +155,17 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             for (int idx = 0; idx < nSize; idx += 4)
             {
                 int stxIndex = idx;
-                int bodyIndex =stxIndex + 1;
+                int bodyIndex = stxIndex + 1;
                 if ((RecvBytes[stxIndex] == 0x54))
                 {
                     byte[] Temp = new byte[2];
                     System.Buffer.BlockCopy(RecvBytes, bodyIndex, Temp, 0, 2);
                     Array.Reverse(Temp);
-                    list_distance.Add(BitConverter.ToInt16(Temp, 0));   
+                    list_distance.Add(BitConverter.ToInt16(Temp, 0));
                 }
                 else
                 {
-                   Tools.Log($" Parse Fail", Tools.ELogType.DistanceLog);
+                    Tools.Log($" Parse Fail", Tools.ELogType.DistanceLog);
                 }
             }
 
@@ -184,11 +184,11 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         private void LogRawData(byte[] HexData)
         {
-            if(log_enable == false)
+            if (log_enable == false)
             {
                 return;
             }
-               
+
             String strData = "";
             for (int i = 0; i < HexData.Length; i++)
             {

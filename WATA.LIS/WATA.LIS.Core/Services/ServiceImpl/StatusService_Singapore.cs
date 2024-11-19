@@ -282,13 +282,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                                             if (i == 0)
                                             {
-                                                x += -3.390;
-                                                y += 4.885;
+                                                x += 4.500;
+                                                y += 1.490;
                                             }
                                             if (i == 1)
                                             {
-                                                x += 1.666;
-                                                y += 5.098;
+                                                x += 9.090;
+                                                y += 5.860;
                                             }
 
                                             string newGeom = $"POINT({x} {y})";

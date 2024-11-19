@@ -2,11 +2,11 @@
 	"main": 
 	{
 		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
-		"workLocationId" : "PULMUONE",
+		"workLocationId" : "DHL",
 		"projectId" : "afbb58611535449780cdb27a615afeb2",
-		"mappingId" : "72c729f689774c7b8c8e2339da515209",
-		"mapId" : "de20847d222448afb90c6a4f24b25758",
-		"vehicleId": "PMO_FORKLIFT_001"
+		"mappingId" : "9635c20849c942e2aaf940a44b5b5e11",
+		"mapId" : "176de1ecfe1c49708fb3ab01242aec72",
+		"vehicleId": "DHL_FORKLIFT_010"
 	},
 	"led_buzzer": 
 	{
@@ -19,7 +19,7 @@
 		"distance_enable" : 1,
 		"model_name": "Terrabee", //Terrabee, TF_Mini
 		"comport": "COM3",
-		"pick_up_distance_threshold" : 685
+		"pick_up_distance_threshold" : 605
 	},
 	"weight_sensor": 
 	{

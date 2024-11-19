@@ -46,10 +46,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            m_newVerReceiveTimer = new DispatcherTimer();
-            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
-
             //m_checkConnectionTimer = new DispatcherTimer();
             //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             //m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
@@ -59,6 +55,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
             //_eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
 
+
+            m_newVerReceiveTimer = new DispatcherTimer();
+            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
 
 
             SerialThreadInit_NewVersion();
@@ -98,7 +98,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             _port.Write(dataToSend, 0, dataToSend.Length);
 
             // 응답 데이터 수신
-            Thread.Sleep(10); // 잠시 대기하여 데이터 수신
+            Thread.Sleep(100); // 잠시 대기하여 데이터 수신
             int bytesToRead = _port.BytesToRead;
             if (bytesToRead > 0)
             {
@@ -121,7 +121,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 {
                     _port.Open();
                     _port.Handshake = Handshake.None;
-                    //m_receiveTimer.Start();
+                    m_receiveTimer.Start();
                     Tools.Log($"Init Success", Tools.ELogType.WeightLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
