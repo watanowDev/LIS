@@ -91,7 +91,7 @@ namespace WATA.LIS.Main.ViewModels
 
         private void OnCurrentSizeEvent(LIVOXModel obj)
         {
-            VisionCamSizeEvent = $"Width: {obj.width}, Height: {obj.height}, Depth: {obj.length}";
+            VisionCamSizeEvent = $"Width: {obj.width / 10}cm, Height: {obj.height / 10}cm, Depth: {obj.length / 10}cm";
         }
 
         private void OnCurrentRFIDEvent(string obj)

@@ -184,36 +184,109 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             }
             else //en
             {
-                if (speaker == ePlayInfoSpeaker.size_check_start)
+                if (speaker == ePlayInfoSpeaker.dummy)
                 {
-                    PlaySound("en_size_check_start");
-
+                    PlaySound("dummy.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.size_check_complete)
+                else if (speaker == ePlayInfoSpeaker.stop)
                 {
-                    PlaySound("en_size_check_complete");
-
+                    PlaySound("en_stop.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_start)
+                else if (speaker == ePlayInfoSpeaker.measure_complete)
                 {
-                    PlaySound("en_weight_check_start");
-
+                    PlaySound("en_measure_complete.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_complete)
+                else if (speaker == ePlayInfoSpeaker.qr_check_start)
                 {
-                    PlaySound("en_weight_check_complete");
+                    PlaySound("en_qr_check_start.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.weight_check_error)
+                else if (speaker == ePlayInfoSpeaker.qr_check_complete)
                 {
-                    PlaySound("en_weight_error.mp3");
+                    PlaySound("en_qr_check_complete.mp3");
                 }
                 else if (speaker == ePlayInfoSpeaker.qr_check_error)
                 {
-                    PlaySound("en_qr_error.mp3");
+                    PlaySound("en_qr_check_error.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.dummy)
+                else if (speaker == ePlayInfoSpeaker.weight_check_start)
                 {
-                    PlaySound("dummy.mp3");
+                    PlaySound("en_weight_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_check_complete)
+                {
+                    PlaySound("en_weight_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_check_error)
+                {
+                    PlaySound("en_weight_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_start)
+                {
+                    PlaySound("en_size_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_start_please_stop)
+                {
+                    PlaySound("en_size_check_start_please_stop.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_complete)
+                {
+                    PlaySound("en_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_complete_please_pickup)
+                {
+                    PlaySound("en_size_check_complete_please_pickup.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_error)
+                {
+                    PlaySound("en_size_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_start)
+                {
+                    PlaySound("en_weight_size_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_complete)
+                {
+                    PlaySound("en_weight_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_error)
+                {
+                    PlaySound("en_weight_size_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.set_item)
+                {
+                    PlaySound("en_set_item.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.clear_item)
+                {
+                    PlaySound("en_clear_item.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_clear)
+                {
+                    PlaySound("en_device_error_clear.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_weight)
+                {
+                    PlaySound("en_device_error_weight.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_distance)
+                {
+                    PlaySound("en_device_error_distance.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_visoncam)
+                {
+                    PlaySound("en_device_error_visoncam.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_lidar3d)
+                {
+                    PlaySound("en_device_error_lidar3d.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_indicator)
+                {
+                    PlaySound("en_device_error_indicator.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.register_item)
+                {
+                    PlaySound("en_register_item.mp3");
                 }
             }
         }
