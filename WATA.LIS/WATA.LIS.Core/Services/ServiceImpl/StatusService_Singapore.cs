@@ -280,16 +280,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                             double x = double.Parse(match.Groups[1].Value);
                                             double y = double.Parse(match.Groups[2].Value);
 
-                                            if (i == 0)
-                                            {
-                                                x += 4.500;
-                                                y += 1.490;
-                                            }
-                                            if (i == 1)
-                                            {
-                                                x += 9.090;
-                                                y += 5.860;
-                                            }
+                                            //if (i == 0)
+                                            //{
+                                            //    x += 4.400;
+                                            //    y += 0.900;
+                                            //}
+                                            //if (i == 1)
+                                            //{
+                                            //    x += 9.138;
+                                            //    y += 1.397;
+                                            //}
 
                                             string newGeom = $"POINT({x} {y})";
                                             m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
@@ -301,6 +301,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         }
                     }
                 }
+                //m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(11566919.500 151893.322)"; // PAL - 1
+                //m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(11566919.529 151894.801)"; // PAL - 2 
+                //m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(11566919.529 151896.201)"; // PAL - 3
+                //m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(11566919.529 151897.601)"; // PAL - 4 
+
+                m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(11566919.500 151893.322)"; // PAL - 1
+                m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(11566919.529 151894.801)"; // PAL - 2 
+                m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(11566919.529 151896.201)"; // PAL - 3
+                m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(11566919.529 151897.601)"; // PAL - 4 
+                m_cellInfoModel.data[0].targetGeofence[0].geom = "POINT(11566915.839 151905.987)"; // PLL - A - 1 
+                m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(11566917.239 151905.987)"; // PLL - A - 2
+                m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(11566918.639 151905.987)"; // PLL - A - 3
+                m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(11566920.039 151905.905)"; // PLL - A - 4
             }
             catch (Exception ex)
             {
@@ -889,6 +902,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
+            List<long> calcList = new List<long>();  
             long distance = 1000;
             try
             {
@@ -908,8 +922,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     double y = double.Parse(match.Groups[2].Value);
                                     x = Math.Truncate(x * 1000);
                                     y = Math.Truncate(y * 1000);
-
+                                    
                                     long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
+                                    calcList.Add(calcDistance);
+
                                     //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
                                     if (calcDistance < distance)
                                     {
@@ -925,7 +941,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         }
 
                                         //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
-                                        break;
+                                        //break;
                                     }
                                     else
                                     {
@@ -1576,6 +1592,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
             SendBackEndDropAction();
+
+            m_ActionZoneId = "";
+            m_ActionZoneName = "";
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
             Thread.Sleep(1000);
