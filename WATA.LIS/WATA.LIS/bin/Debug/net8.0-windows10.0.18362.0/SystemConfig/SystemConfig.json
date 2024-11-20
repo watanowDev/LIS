@@ -12,7 +12,7 @@
 	{
 		"led_enable": 1,
 		"volume": 1,
-		"InfoLanguage" : "KR"//KR, JP, EN
+		"InfoLanguage" : "EN"//KR, JP, EN
 	},
 	"distance_sensor": 
 	{

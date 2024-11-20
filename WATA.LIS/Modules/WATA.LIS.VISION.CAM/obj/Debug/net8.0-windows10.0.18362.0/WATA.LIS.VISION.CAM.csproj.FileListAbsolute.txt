@@ -88,3 +88,4 @@ C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.
 C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\obj\Debug\net8.0-windows10.0.18362.0\ref\WATA.LIS.VISION.CAM.dll
 C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\ob_csharp.dll
 C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\ob_csharp.dll
+C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\ob_csharp.dll

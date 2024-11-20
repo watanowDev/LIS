@@ -1436,20 +1436,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_event_weight = m_weightModel.GrossWeight;
                 _eventAggregator.GetEvent<CallDataEvent>().Publish();
 
-                //// 부피, 형상 리복스 데이터 요청
-                //int getLivoxctn = 0;
-                //while (getLivoxctn < 100)
-                //{
-                //    SendToLivox(1);
-                //    if (GetSizeData() == true)
-                //    {
-                //        SendToLivox(0);
-                //        break;
-                //    }
-                //    getLivoxctn++;
-                //    Thread.Sleep(100);
-                //}
-
 
                 //// 중량값 측정 완료 LED, 부저
                 //if (m_set_item == true && m_isError != true)
@@ -1463,7 +1449,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
                 //{
                 //    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                //}
+                //} 
 
                 if (m_stopwatch != null)
                 {
