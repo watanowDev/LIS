@@ -20,6 +20,8 @@ using System.Windows;
 using System.IO;
 using System.Windows.Media.Imaging;
 using WATA.LIS.Core.Events.WeightSensor;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
 
 namespace WATA.LIS.Main.ViewModels
 {
@@ -34,6 +36,9 @@ namespace WATA.LIS.Main.ViewModels
         public ObservableCollection<Log> ListIndicatortLog { get; set; }
         public ObservableCollection<Log> ListActionLog { get; set; }
 
+
+        // Config 데이터 클래스
+        private DistanceConfigModel m_distanceConfig;
 
 
         //CamStream
@@ -97,7 +102,7 @@ namespace WATA.LIS.Main.ViewModels
         private string Disconnect = "Red";
 
         IEventAggregator _eventAggregator;
-        public MainUIViewModel(IStatusService mainStatusModel, IEventAggregator eventAggregator)
+        public MainUIViewModel(IStatusService mainStatusModel, IEventAggregator eventAggregator, IDistanceModel distanceModel)
         {
             _eventAggregator = eventAggregator;
             ListSystemLog = Tools.logInfo.ListSystemLog;
@@ -108,6 +113,8 @@ namespace WATA.LIS.Main.ViewModels
             ListRFIDLog = Tools.logInfo.ListRFIDLog;
             ListIndicatortLog = Tools.logInfo.ListDisplayLog;
             ListActionLog = Tools.logInfo.ListActionLog;
+
+            m_distanceConfig = (DistanceConfigModel)distanceModel;
 
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.SystemLog);
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.VisionCamLog);
@@ -215,7 +222,7 @@ namespace WATA.LIS.Main.ViewModels
                 Distance_Active = Active;
             }
 
-            Distance_Value = $"{(obj.Distance_mm - 605) / 10}cm";
+            Distance_Value = $"{(obj.Distance_mm - m_distanceConfig.pick_up_distance_threshold) / 10}cm";
         }
 
         public void OnRFIDSensorData(RackRFIDEventModel obj)

@@ -1200,8 +1200,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.action = m_isPickUp ? "pickup" : "drop";
                 prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
                 if (m_event_QRcode.Contains("wata")) prodDataModel.loadId = m_event_QRcode.Replace("wata", string.Empty);
-                //prodDataModel.epc = "DP" + m_ActionZoneName + m_event_epc;
-                prodDataModel.epc = "DP" + m_event_epc;
+                prodDataModel.epc = "DP" + m_ActionZoneName + m_event_epc;
+                //prodDataModel.epc = "DP" + m_event_epc;
                 //prodDataModel.errorCode = SysAlarm.CurrentErr;
                 prodDataModel.errorCode = "0000";
 
@@ -1251,10 +1251,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_event_epc == "")
             {
-                //ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                ActionObj.actionInfo.epc = "DP";
-                //ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName;
-                ActionObj.actionInfo.cepc = "DP";
+                if (m_ActionZoneName != "")
+                {
+                    ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+                    //ActionObj.actionInfo.epc = "DP";
+                    ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                    //ActionObj.actionInfo.cepc = "DP";
+                }
+                else
+                {
+                    ActionObj.actionInfo.epc = "";
+                    //ActionObj.actionInfo.epc = "DP";
+                    ActionObj.actionInfo.cepc = "";
+                    //ActionObj.actionInfo.cepc = "DP";
+                }
             }
             else
             {
@@ -1320,17 +1330,27 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_event_epc == "")
             {
-                //ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                ActionObj.actionInfo.epc = "DP";
-                //ActionObj.actionInfo.cepc = "DP" + m_ActionZoneName;
-                ActionObj.actionInfo.cepc = "DP";
+                if (m_ActionZoneName != "")
+                {
+                    ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+                    //ActionObj.actionInfo.epc = "DP";
+                    ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                    //ActionObj.actionInfo.cepc = "DP";
+                }
+                else
+                {
+                    ActionObj.actionInfo.epc = "";
+                    //ActionObj.actionInfo.epc = "DP";
+                    ActionObj.actionInfo.cepc = "";
+                    //ActionObj.actionInfo.cepc = "DP";
+                }
             }
             else
             {
-                //ActionObj.actionInfo.epc = m_event_epc + m_ActionZoneName;
                 ActionObj.actionInfo.epc = m_event_epc;
-                //ActionObj.actionInfo.cepc = "CB2024111600110000000000" + m_ActionZoneName;
+                //ActionObj.actionInfo.epc = m_event_epc;
                 ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                //ActionObj.actionInfo.cepc = "CB2024111600110000000000";
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))

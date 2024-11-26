@@ -134,11 +134,15 @@ namespace WATA.LIS
             }
             else if (mainobj.device_type == "Singapore")//Singapore POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 DHL POC용 원민섭 주임 신규개발
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 DHL 시연 버전
             }
             else if (mainobj.device_type == "Clark")//Clark POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();//Clark POC용 원민섭 주임 신규개발
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();//Clark 시연 버전
+            }
+            else if (mainobj.device_type == "Japan")//일본 시연
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();//일본 시연 버전
             }
         }
 

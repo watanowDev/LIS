@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "Singapore", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark
+		"device_type" : "Japan", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan
 		"workLocationId" : "DHL",
 		"projectId" : "afbb58611535449780cdb27a615afeb2",
 		"mappingId" : "9635c20849c942e2aaf940a44b5b5e11",
@@ -10,20 +10,20 @@
 	},
 	"led_buzzer": 
 	{
-		"led_enable": 1,
-		"volume": 1,
+		"led_enable": 0,
+		"volume": 0,
 		"InfoLanguage" : "EN"//KR, JP, EN
 	},
 	"distance_sensor": 
 	{
-		"distance_enable" : 1,
+		"distance_enable" : 0,
 		"model_name": "Terrabee", //Terrabee, TF_Mini
 		"comport": "COM3",
-		"pick_up_distance_threshold" : 605
+		"pick_up_distance_threshold" : 600
 	},
 	"weight_sensor": 
 	{
-		"weight_enable": 1,
+		"weight_enable": 0,
 		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
@@ -65,17 +65,17 @@
 	},
 	"NAV": 
 	{
-		"NAV_Enable" : 1,
+		"NAV_Enable" : 0,
 		"IP" : "192.168.1.200",
 		"PORT" : 2111
 	},
 	"LIVOX": 
 	{
-		"LIVOX_Enable" : 1
+		"LIVOX_Enable" : 0
 	},
 	"vision":
 	{
-		"vision_enable" : 1,
+		"vision_enable" : 0,
 		"vision_name" : "HikVision", //HikVision
 		"vision_ip" : "192.168.8.2",
 		"vision_port" : 8000,
@@ -84,6 +84,6 @@
 	},
 	"display":
 	{
-		"display_enable" : 1
+		"display_enable" : 0
 	}
 }

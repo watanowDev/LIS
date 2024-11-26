@@ -73,8 +73,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 reader.ParamSet("/reader/region/id", readerSupportedRegions[5]);
 
                 //Set antennas 1 or 2
-                int[] antennaList = { 1 };
-                //int[] antennaList = { 1, 2 };
+                //int[] antennaList = { 1 };
+                int[] antennaList = { 1, 2 };
 
                 //Set use the antennas, use GEN2 protocol, don't use any filter
                 SimpleReadPlan plan = new SimpleReadPlan(antennaList, TagProtocol.GEN2, null, null, 1000);
@@ -144,6 +144,15 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC") || tag.EpcString.Contains("DA")) //CB:컨테이너, DC:도크, DA:랙
                     {
                         filteredTags.Add(tag);
+                    }
+                }
+
+                // Amplify the ant1 ReadCount value
+                foreach (TagReadData tag in filteredTags)
+                {
+                    if (tag.Antenna == 1)
+                    {
+                        tag.ReadCount *= 2;
                     }
                 }
 
