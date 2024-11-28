@@ -98,7 +98,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             _port.Write(dataToSend, 0, dataToSend.Length);
 
             // 응답 데이터 수신
-            Thread.Sleep(100); // 잠시 대기하여 데이터 수신
+            Thread.Sleep(10); // 잠시 대기하여 데이터 수신
             int bytesToRead = _port.BytesToRead;
             if (bytesToRead > 0)
             {
@@ -246,12 +246,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 model.OutOfTolerance = out_of_tolerance == 0 ? false : true;
 
 
-                //Tools.Log($"nGrossWeight : {nGrossWeight}", Tools.ELogType.WeightLog);
-                //Tools.Log($"nRightWeight : {nRightWeight}", Tools.ELogType.WeightLog);
-                //Tools.Log($"nLeftWeight : {nLeftWeight}", Tools.ELogType.WeightLog);
-                //Tools.Log($"right_forkpower : {right_forkpower}", Tools.ELogType.WeightLog);
-                //Tools.Log($"left_forkpower : {left_forkpower}", Tools.ELogType.WeightLog);
-                //Tools.Log($"[DataRecive] {nGrossWeight} ", Tools.ELogType.WeightLog);
                 _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
             }
             return;
