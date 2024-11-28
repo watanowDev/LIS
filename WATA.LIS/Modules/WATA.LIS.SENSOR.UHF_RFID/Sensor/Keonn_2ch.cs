@@ -150,7 +150,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 // Amplify the ant1 ReadCount value
                 foreach (TagReadData tag in filteredTags)
                 {
-                    if (tag.Antenna == 1)
+                    if (tag.Antenna == 2)
                     {
                         tag.ReadCount *= 2;
                     }

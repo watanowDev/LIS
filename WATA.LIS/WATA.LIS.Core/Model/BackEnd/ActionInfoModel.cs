@@ -34,6 +34,9 @@ namespace WATA.LIS.Core.Model.BackEnd
         public List<byte> loadMatrix { get; set; } = new List<byte>();
 
 
+        public long x { get; set; } //x좌표
+        public long y { get; set; } //y좌표
+        public int t { get; set; } //지게차 헤딩 방향 (range : 0~3600)
         public string zoneId { get; set; }      // 평치측위 NavSensor
         public string zoneName { get; set; }    // 평치측위 NavSensor
 

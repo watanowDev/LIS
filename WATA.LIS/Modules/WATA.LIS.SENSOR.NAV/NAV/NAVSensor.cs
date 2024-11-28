@@ -491,8 +491,8 @@ namespace WATA.LIS.SENSOR.NAV
 
                 if (positionNavCount > 10 && cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode] == "1")
                 {
-                    Globals.nav_y = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
-                    Globals.nav_x = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
+                    Globals.nav_x = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
+                    Globals.nav_y = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
                     Globals.nav_phi = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100;
                     Globals.nav_dev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
 

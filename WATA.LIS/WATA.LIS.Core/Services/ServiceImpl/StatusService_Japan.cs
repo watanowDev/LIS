@@ -722,9 +722,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void OnRfidSensorEvent(List<Keonn2ch_Model> epcData)
 
         {
-            // 테스트용 m_isPickUp = true;
-            m_isPickUp = true;
-
             if (epcData != null && epcData.Count > 0 && m_isPickUp == true)
             {
                 m_no_epcCnt = 0;
@@ -750,18 +747,22 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
-            // PickUp 중에 컨테이너 EPC 인식한 상태
-            if (m_curr_epc.Contains("DA") && m_isPickUp == true)
+            // PickUp 중에 컨테이너 EPC에 DA 나 DC가 포함되어 있고 픽업인 상태
+            if ((m_curr_epc.Contains("DA") || m_curr_epc.Contains("DC")) && m_isPickUp == true)
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
                 {
                     m_event_epc = m_curr_epc;
                     _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
-                    SendBackEndContainerGateEvent();
+
+                    if (m_curr_epc.Contains("DC"))
+                    {
+                        SendBackEndContainerGateEvent();
+                    }
                 }
 
-                if (m_event_epc.Contains("DA") && m_isPickUp == true && m_event_QRcode == "")
+                if (m_event_epc.Contains("DC") && m_isPickUp == true && m_event_QRcode == "")
                 {
                     if (m_errCnt_invalid_place_noQR % 30 == 0) Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
                     m_errCnt_invalid_place_noQR++;
@@ -866,7 +867,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
             List<long> calcList = new List<long>();
-            long distance = 1000;
+            long distance = 300;
             try
             {
                 if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
@@ -1202,39 +1203,31 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
             ActionObj.actionInfo.height = (m_event_height).ToString();
-            //ActionObj.actionInfo.height = 160.ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
-            //ActionObj.actionInfo.visionWidth = 110;
             ActionObj.actionInfo.visionHeight = m_event_height;
-            //ActionObj.actionInfo.visionHeight = 160;
             ActionObj.actionInfo.visionDepth = m_event_length;
-            //ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
-            //ActionObj.actionInfo.plMatrix = m_dummy_points;
+            ActionObj.actionInfo.x = m_navModel.naviX;
+            ActionObj.actionInfo.y = m_navModel.naviY;
+            ActionObj.actionInfo.t = (int)m_navModel.naviT;
 
             if (m_event_epc == "")
             {
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    //ActionObj.actionInfo.epc = "DP";
                     ActionObj.actionInfo.cepc = "CB2024111600110000000000";
-                    //ActionObj.actionInfo.cepc = "DP";
                 }
                 else
                 {
                     ActionObj.actionInfo.epc = "";
-                    //ActionObj.actionInfo.epc = "DP";
                     ActionObj.actionInfo.cepc = "";
-                    //ActionObj.actionInfo.cepc = "DP";
                 }
             }
             else
             {
-                //ActionObj.actionInfo.epc = m_event_epc + m_ActionZoneName;
                 ActionObj.actionInfo.epc = m_event_epc;
-                //ActionObj.actionInfo.cepc = "CB2024111600110000000000" + m_ActionZoneName;
                 ActionObj.actionInfo.cepc = "CB2024111600110000000000";
             }
 
@@ -1281,40 +1274,32 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
             ActionObj.actionInfo.height = (m_event_height).ToString();
-            //ActionObj.actionInfo.height = 160.ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
-            //ActionObj.actionInfo.visionWidth = 110;
             ActionObj.actionInfo.visionHeight = m_event_height;
-            //ActionObj.actionInfo.visionHeight = 160;
             ActionObj.actionInfo.visionDepth = m_event_length;
-            //ActionObj.actionInfo.visionDepth = 110;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
-            //ActionObj.actionInfo.plMatrix = m_dummy_points;
+            ActionObj.actionInfo.x = m_navModel.naviX;
+            ActionObj.actionInfo.y = m_navModel.naviY;
+            ActionObj.actionInfo.t = (int)m_navModel.naviT;
 
             if (m_event_epc == "")
             {
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    //ActionObj.actionInfo.epc = "DP";
                     ActionObj.actionInfo.cepc = "CB2024111600110000000000";
-                    //ActionObj.actionInfo.cepc = "DP";
                 }
                 else
                 {
                     ActionObj.actionInfo.epc = "";
-                    //ActionObj.actionInfo.epc = "DP";
                     ActionObj.actionInfo.cepc = "";
-                    //ActionObj.actionInfo.cepc = "DP";
                 }
             }
             else
             {
                 ActionObj.actionInfo.epc = m_event_epc;
-                //ActionObj.actionInfo.epc = m_event_epc;
                 ActionObj.actionInfo.cepc = "CB2024111600110000000000";
-                //ActionObj.actionInfo.cepc = "CB2024111600110000000000";
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
@@ -1353,7 +1338,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndContainerGateEvent()
         {
-            if (m_event_epc == "") return;
+            if (!m_event_epc.Contains("DC")) return;
             if (m_set_load != true) return;
 
             ContainerGateEventModel model = new ContainerGateEventModel();
