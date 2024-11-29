@@ -84,6 +84,6 @@
 	},
 	"display":
 	{
-		"display_enable" : 1
+		"display_enable" : 0
 	}
 }
