@@ -711,6 +711,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_distanceModel = model;
             m_errCnt_distance = 0;
 
+            //DistanceSensorHardCoding(m_distanceModel.Distance_mm);
+
             m_curr_distance = m_distanceModel.Distance_mm - m_distanceConfig.pick_up_distance_threshold;
         }
 
@@ -1577,6 +1579,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
             Thread.Sleep(1000);
+        }
+
+        private int DistanceSensorHardCoding(int rDistaneMM)
+        {
+            int ret = 0;
+
+            if (ret >= 0 && ret <= 200)
+            {
+
+            }
+
+            return ret;
         }
     }
 }
