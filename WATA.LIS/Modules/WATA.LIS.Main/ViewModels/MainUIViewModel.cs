@@ -222,7 +222,7 @@ namespace WATA.LIS.Main.ViewModels
                 Distance_Active = Active;
             }
 
-            Distance_Value = $"{(obj.Distance_mm - m_distanceConfig.pick_up_distance_threshold) / 10}cm";
+            Distance_Value = $"RAW:{obj.Distance_mm / 10}cm, {(obj.Distance_mm - m_distanceConfig.pick_up_distance_threshold) / 10}cm";
         }
 
         public void OnRFIDSensorData(RackRFIDEventModel obj)

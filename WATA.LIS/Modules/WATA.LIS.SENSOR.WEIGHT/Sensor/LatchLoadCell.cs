@@ -42,26 +42,26 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void SerialInit()
         {
-            m_receiveTimer = new DispatcherTimer();
-            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            //m_receiveTimer = new DispatcherTimer();
+            //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            m_checkConnectionTimer = new DispatcherTimer();
-            m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
-            m_checkConnectionTimer.Start();
+            //m_checkConnectionTimer = new DispatcherTimer();
+            //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
+            //m_checkConnectionTimer.Start();
 
-            SerialThreadInit();
+            //SerialThreadInit();
 
             //_eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
 
 
-            //m_newVerReceiveTimer = new DispatcherTimer();
-            //m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            //m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
+            m_newVerReceiveTimer = new DispatcherTimer();
+            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
 
 
-            //SerialThreadInit_NewVersion();
+            SerialThreadInit_NewVersion();
         }
 
         private void SerialThreadInit_NewVersion()
@@ -98,9 +98,9 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             _port.Write(dataToSend, 0, dataToSend.Length);
 
             // 응답 데이터 수신
-            Thread.Sleep(10); // 잠시 대기하여 데이터 수신
+            Thread.Sleep(100); // 잠시 대기하여 데이터 수신
             int bytesToRead = _port.BytesToRead;
-            if (bytesToRead > 0)
+            if (bytesToRead == 25)
             {
                 byte[] receivedData = new byte[bytesToRead];
                 _port.Read(receivedData, 0, bytesToRead);
