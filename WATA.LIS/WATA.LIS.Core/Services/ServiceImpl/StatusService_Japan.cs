@@ -1217,7 +1217,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                    ActionObj.actionInfo.cepc = "CB202412011622";
                 }
                 else
                 {
@@ -1225,10 +1225,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     ActionObj.actionInfo.cepc = "";
                 }
             }
-            else
+            else if (m_event_epc.Contains("DC"))
             {
                 ActionObj.actionInfo.epc = m_event_epc;
-                ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                ActionObj.actionInfo.cepc = "CB202412011622";
+            }
+            else if (m_event_epc.Contains("DA"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+                ActionObj.actionInfo.cepc = "";
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
@@ -1288,7 +1293,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                    ActionObj.actionInfo.cepc = "CB202412011622";
                 }
                 else
                 {
@@ -1296,10 +1301,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     ActionObj.actionInfo.cepc = "";
                 }
             }
-            else
+            else if (m_event_epc.Contains("DC"))
             {
                 ActionObj.actionInfo.epc = m_event_epc;
-                ActionObj.actionInfo.cepc = "CB2024111600110000000000";
+                ActionObj.actionInfo.cepc = "CB202412011622";
+            }
+            else if (m_event_epc.Contains("DA"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+                ActionObj.actionInfo.cepc = "";
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
