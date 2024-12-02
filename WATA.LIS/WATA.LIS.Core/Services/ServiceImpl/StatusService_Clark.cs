@@ -1135,7 +1135,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"{status}", ELogType.ActionLog);
 
                 //Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
+                //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             }
 
             if (status == "stop_alarm")

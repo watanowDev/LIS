@@ -713,7 +713,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //DistanceSensorHardCoding(m_distanceModel.Distance_mm);
 
-            m_curr_distance = m_distanceModel.Distance_mm - m_distanceConfig.pick_up_distance_threshold;
+            m_curr_distance = m_distanceModel.Distance_mm - 60 - m_distanceConfig.pick_up_distance_threshold;
         }
 
 
@@ -945,39 +945,42 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_livoxModel = model;
 
-            if (m_event_height != m_livoxModel.length)
+            m_event_distance = m_curr_distance;
+
+            m_event_width = m_livoxModel.width;
+            m_event_height = m_livoxModel.height - m_event_distance;
+            m_event_length = m_livoxModel.length;
+            m_event_points = m_livoxModel.points;
+
+            if (m_isPickUp == true)
             {
-                m_event_width = m_livoxModel.width;
-                m_event_height = m_livoxModel.height - m_event_distance;
-                m_event_length = m_livoxModel.length;
-                m_event_points = m_livoxModel.points;
+                SendBackEndPickupAction();
 
-                if (m_isPickUp == true)
-                {
-                    SendBackEndPickupAction();
-
-                    // 인디케이터 통신 핸들
-                    m_Command = 1;
-                    if (m_set_load == true) m_Command = 2;
-                    if (m_set_unload == true) m_Command = 3;
-                }
-                else if (m_isPickUp == false) SendBackEndDropAction();
-
-
-                // 중량값, 부피 측정 완료 LED, 부저
-                if (m_set_item == true && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
-                }
-                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
-                }
-                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                }
+                // 인디케이터 통신 핸들
+                m_Command = 1;
+                if (m_set_load == true) m_Command = 2;
+                if (m_set_unload == true) m_Command = 3;
             }
+            else if (m_isPickUp == false) SendBackEndDropAction();
+
+
+            // 중량값, 부피 측정 완료 LED, 부저
+            if (m_set_item == true && m_isError != true)
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+            }
+            else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+            }
+            else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+            {
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+            }
+
+            //if (m_event_height != m_livoxModel.length)
+            //{
+            //}
         }
 
 
@@ -1020,7 +1023,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (status.Contains("complete_item") && m_isError != true)
             {
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
+                //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
                 Tools.Log($"{status}", ELogType.ActionLog);
             }
 
@@ -1262,6 +1265,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
+            _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
         }
 
@@ -1520,7 +1524,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //{
             //    if (m_livoxModel.height - m_event_distance > 0) break;
             //}
-            m_event_distance = m_curr_distance;
+            //m_event_distance = m_curr_distance;
             m_stopwatch.Stop();
             Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
 

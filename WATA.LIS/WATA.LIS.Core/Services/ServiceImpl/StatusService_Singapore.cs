@@ -1053,7 +1053,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (status.Contains("complete_item") && m_isError != true)
             {
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
+                //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
                 Tools.Log($"{status}", ELogType.ActionLog);
             }
 
