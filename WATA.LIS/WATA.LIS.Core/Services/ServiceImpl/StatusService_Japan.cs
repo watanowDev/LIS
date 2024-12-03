@@ -296,6 +296,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(11566917.239 151905.987)"; // PLL - A - 2
                 //m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(11566918.639 151905.987)"; // PLL - A - 3
                 //m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(11566920.039 151905.905)"; // PLL - A - 4
+                //                                                 "POINT(-1.642317878082395 1.195068106986582)"
             }
             catch (Exception ex)
             {
@@ -870,6 +871,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             List<long> calcList = new List<long>();
             long distance = 300;
+
+            //List<string> zoneNameList = new List<string>();
             try
             {
                 if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
@@ -882,6 +885,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                             {
                                 string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
                                 Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                //string pattern = @"POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)";
+                                //Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
                                 if (match.Success && match.Groups.Count == 3)
                                 {
                                     double x = double.Parse(match.Groups[1].Value);
@@ -892,7 +897,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
                                     calcList.Add(calcDistance);
 
-                                    //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
+                                    // Create a list to store zoneName with x, y, naviX, naviY, and calcDistance
+                                    //zoneNameList.Add($"x: {x}, y: {y}, naviX: {naviX}, naviY: {naviY}, calcDistance: {calcDistance}, zoneName: {m_cellInfoModel.data[i].targetGeofence[j].zoneName}");
+
+                                    Tools.Log($"x : " + x + " y: " + y + " calcDistance: " + calcDistance + "naviX" + naviX + "naviY" + naviY, Tools.ELogType.ActionLog);
                                     if (calcDistance < distance)
                                     {
                                         if (bDrop)
@@ -906,7 +914,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                             m_ActionZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
                                         }
 
-                                        //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.BackEndLog);
+                                        //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.ActionLog);
                                         //break;
                                     }
                                     else
@@ -1362,7 +1370,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             model.containerInfo.projectId = m_mainConfigModel.projectId;
             model.containerInfo.mappingId = m_mainConfigModel.mappingId;
             model.containerInfo.mapId = m_mainConfigModel.mapId;
-            model.containerInfo.cepc = "CB2024111600110000000000";
+            model.containerInfo.cepc = "CB202412011622";
             model.containerInfo.depc = m_event_epc;
             if (m_event_QRcode.Contains("wata")) model.containerInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
 
