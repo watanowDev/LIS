@@ -1265,7 +1265,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-            _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
+            //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
         }
 

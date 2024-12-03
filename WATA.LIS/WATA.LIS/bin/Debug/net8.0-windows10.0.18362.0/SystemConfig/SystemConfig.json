@@ -12,14 +12,14 @@
 	{
 		"led_enable": 1,
 		"volume": 1,
-		"InfoLanguage" : "EN"//KR, JP, EN
+		"InfoLanguage" : "JP"//KR, JP, EN
 	},
 	"distance_sensor": 
 	{
 		"distance_enable" : 1,
 		"model_name": "Terrabee", //Terrabee, TF_Mini
 		"comport": "COM3",
-		"pick_up_distance_threshold" : 680
+		"pick_up_distance_threshold" : 660
 	},
 	"weight_sensor": 
 	{

@@ -43,13 +43,29 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
         {
              if(_ledBuzzer.InfoLanguage == "JP")
             {
-                if(speaker == ePlayInfoSpeaker.size_check_start)
+                if (speaker == ePlayInfoSpeaker.dummy)
                 {
-                    PlaySound("jp_size_check_start.mp3");
+                    PlaySound("dummy.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.size_check_complete)
+                else if (speaker == ePlayInfoSpeaker.stop)
                 {
-                    PlaySound("jp_size_check_complete.mp3");
+                    PlaySound("jp_stop.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.measure_complete)
+                {
+                    PlaySound("jp_measure_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.qr_check_start)
+                {
+                    PlaySound("jp_qr_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.qr_check_complete)
+                {
+                    PlaySound("jp_qr_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.qr_check_error)
+                {
+                    PlaySound("jp_qr_check_error.mp3");
                 }
                 else if (speaker == ePlayInfoSpeaker.weight_check_start)
                 {
@@ -61,15 +77,75 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                 }
                 else if (speaker == ePlayInfoSpeaker.weight_check_error)
                 {
-                    PlaySound("jp_weight_error.mp3");
+                    PlaySound("jp_weight_check_error.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.qr_check_error)
+                else if (speaker == ePlayInfoSpeaker.size_check_start)
                 {
-                    PlaySound("jp_qr_error.mp3");
+                    PlaySound("jp_size_check_start.mp3");
                 }
-                else if (speaker == ePlayInfoSpeaker.dummy)
+                else if (speaker == ePlayInfoSpeaker.size_check_start_please_stop)
                 {
-                    PlaySound("dummy.mp3");
+                    PlaySound("jp_size_check_start_please_stop.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_complete)
+                {
+                    PlaySound("jp_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_complete_please_pickup)
+                {
+                    PlaySound("jp_size_check_complete_please_pickup.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.size_check_error)
+                {
+                    PlaySound("jp_size_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_start)
+                {
+                    PlaySound("jp_weight_size_check_start.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_complete)
+                {
+                    PlaySound("jp_weight_size_check_complete.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.weight_size_check_error)
+                {
+                    PlaySound("jp_weight_size_check_error.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.set_item)
+                {
+                    PlaySound("jp_set_item.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.clear_item)
+                {
+                    PlaySound("jp_clear_item.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_clear)
+                {
+                    PlaySound("jp_device_error_clear.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_weight)
+                {
+                    PlaySound("jp_device_error_weight.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_distance)
+                {
+                    PlaySound("jp_device_error_distance.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_visoncam)
+                {
+                    PlaySound("jp_device_error_visoncam.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_lidar3d)
+                {
+                    PlaySound("jp_device_error_lidar3d.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.device_error_indicator)
+                {
+                    PlaySound("jp_device_error_indicator.mp3");
+                }
+                else if (speaker == ePlayInfoSpeaker.register_item)
+                {
+                    PlaySound("jp_register_item.mp3");
                 }
 
 
