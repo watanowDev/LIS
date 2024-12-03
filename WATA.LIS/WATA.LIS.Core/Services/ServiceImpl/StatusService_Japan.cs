@@ -840,7 +840,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 50 프레임간 QR 인식 안될 시 QR 초기화
-            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 50 && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 60 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -982,6 +982,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_isPickUp == true)
             {
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndPickupAction();
 
                 // 인디케이터 통신 핸들
@@ -991,11 +992,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             else if (m_isPickUp == false)
             {
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndDropAction();
             }
 
 
-            // 중량값, 부피 측정 완료 LED, 부저
+            // 부피 측정 완료 LED, 부저
             if (m_set_item == true && m_isError != true)
             {
                 Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
@@ -1275,7 +1277,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
-                ActionObj.actionInfo.zoneId = "NA";
+                //ActionObj.actionInfo.zoneId = "NA";
+                ActionObj.actionInfo.zoneId = "";
             }
             else
             {
@@ -1283,7 +1286,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             if (m_ActionZoneName == null || m_ActionZoneId.Equals(""))
             {
-                ActionObj.actionInfo.zoneName = "NA";
+                //ActionObj.actionInfo.zoneName = "NA";
+                ActionObj.actionInfo.zoneName = "";
             }
             else
             {
@@ -1361,7 +1365,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
-                ActionObj.actionInfo.zoneId = "NA";
+                //ActionObj.actionInfo.zoneId = "NA";
+                ActionObj.actionInfo.zoneId = "";
             }
             else
             {
@@ -1369,7 +1374,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             if (m_ActionZoneName == null || m_ActionZoneId.Equals(""))
             {
-                ActionObj.actionInfo.zoneName = "NA";
+                //ActionObj.actionInfo.zoneName = "NA";
+                ActionObj.actionInfo.zoneName = "";
             }
             else
             {
@@ -1591,6 +1597,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 m_event_points = "";
                 SendBackEndPickupAction();
+
+                // 측정 완료 LED, 부저
+                if (m_set_item == true && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                }
+                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+                }
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+                }
             }
 
             //로그
@@ -1662,9 +1682,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_event_points = "";
                 m_afterCallLivox = false;
                 SendBackEndDropAction();
+
+                // 측정 완료 LED, 부저
+                if (m_set_item == true && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                }
+                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+                }
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+                }
             }
             else if (m_afterCallLivox == false)
             {
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndDropAction();
             }
 

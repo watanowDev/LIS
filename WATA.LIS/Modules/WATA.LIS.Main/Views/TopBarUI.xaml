@@ -158,8 +158,8 @@
                     <RowDefinition Height="1.*"></RowDefinition>
                     <RowDefinition Height="1.*"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Content="{Binding Date}" Foreground="#FFDADADA" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
-                <Label Grid.Row="1" Content="{Binding Time}" Foreground="#FFDADADA" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
+                <Label Grid.Row="0" Content="{Binding Date}" Foreground="#FFDADADA" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
+                <Label Grid.Row="1" Content="{Binding Time}" Foreground="#FFDADADA" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
             </Grid>
 
             
@@ -189,8 +189,12 @@
                 <Label  Grid.Row="3" Grid.Column="0" Content="{Binding NAVEvent}"      VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="500" Height="20" FontWeight="Bold" FontSize="8" Margin="50,0,0,0"/>
             </Grid>
 
+            <Grid Grid.Column="6" HorizontalAlignment="Left">
+                <Button Command="{Binding StopBEbtn}" CommandParameter="Stop" Grid.Column="0" Grid.Row="0" Width="100" Content="STOP" Style="{StaticResource ButtonStyle1}" BorderThickness="2" HorizontalAlignment="Right" />
+            </Grid>
+
             <Grid Grid.Column="7" HorizontalAlignment="Right">
-                <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="109" Content="EXIT" Style="{StaticResource ButtonStyle1}" BorderThickness="2" HorizontalAlignment="Right" />
+                <Button Command="{Binding ButtonFunc}" CommandParameter="Exit" Grid.Column="0" Grid.Row="0" Width="100" Content="EXIT" Style="{StaticResource ButtonStyle1}" BorderThickness="2" HorizontalAlignment="Right" />
             </Grid>
         </Grid>
     </Border>
