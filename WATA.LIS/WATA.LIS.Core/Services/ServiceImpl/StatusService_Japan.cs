@@ -81,6 +81,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private readonly int m_distance_sample_size = 10;
         private int m_curr_distance = 0;
         private int m_event_distance = 0;
+        private bool m_withoutLivox = false;
+        private bool m_afterCallLivox = false;
 
         // RFID 데이터 클래스
         private Keonn2ch_Model m_rfidModel;
@@ -288,15 +290,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     }
                 }
                 // CellInfoModel 좌표 하드코딩 (시연용)
-                //m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(11566919.500 151893.322)"; // PAL - 4
-                //m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(11566919.529 151894.801)"; // PAL - 3 
-                //m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(11566919.529 151896.201)"; // PAL - 2
-                //m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(11566919.529 151897.601)"; // PAL - 1 
-                //m_cellInfoModel.data[0].targetGeofence[0].geom = "POINT(11566915.839 151905.987)"; // PLL - A - 1 
-                //m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(11566917.239 151905.987)"; // PLL - A - 2
-                //m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(11566918.639 151905.987)"; // PLL - A - 3
-                //m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(11566920.039 151905.905)"; // PLL - A - 4
-                //                                                 "POINT(-1.642317878082395 1.195068106986582)"
+                m_cellInfoModel.data[0].targetGeofence[0].geom = "POINT(2.291 7.677)"; // PAL - C1
+                m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(2.345 6.222)"; // PAL - C2
+                m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(2.262 4.863)"; // PAL - C3
+                m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(2.291 3.463)"; // PAL - C4
+                m_cellInfoModel.data[0].targetGeofence[4].geom = "POINT(2.291 2.063)"; // PAL - C5
+
+                m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(-1.668 -7.935)"; // PLL - A - A1
+                m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(-0.318 -7.935)"; // PLL - A - A2
+                m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(1.011 -7.935)"; // PLL - A - A3
+                m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(2.411 -7.935)"; // PLL - A - A4
+                m_cellInfoModel.data[1].targetGeofence[4].geom = "POINT(3.811 -7.935)"; // PLL - A - A5
             }
             catch (Exception ex)
             {
@@ -715,6 +719,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //DistanceSensorHardCoding(m_distanceModel.Distance_mm);
 
             m_curr_distance = m_distanceModel.Distance_mm - 60 - m_distanceConfig.pick_up_distance_threshold;
+            if (m_curr_distance < 0)
+            {
+                m_curr_distance = 0;
+            }
         }
 
 
@@ -723,9 +731,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// </summary>
         /// <param name="epcData"></param>
         private void OnRfidSensorEvent(List<Keonn2ch_Model> epcData)
-
         {
-            if (epcData != null && epcData.Count > 0 && m_isPickUp == true)
+            if (epcData != null && epcData.Count > 0)
             {
                 m_no_epcCnt = 0;
                 m_curr_epc = epcData[0].EPC;
@@ -736,7 +743,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_rfidModel.READCNT = epcData[0].READCNT;
                 m_rfidModel.TS = epcData[0].TS;
             }
-            else if (epcData != null && epcData.Count == 0 && m_isPickUp == false)
+            else if (epcData != null && epcData.Count == 0)
             {
                 m_curr_epc = "";
 
@@ -750,8 +757,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
-            // PickUp 중에 컨테이너 EPC에 DA 나 DC가 포함되어 있고 픽업인 상태
-            if ((m_curr_epc.Contains("DA") || m_curr_epc.Contains("DC")) && m_isPickUp == true)
+            // PickUp 중에 컨테이너 EPC에 DA 나 DC가 포함
+            if (m_curr_epc.Contains("DA") || m_curr_epc.Contains("DC"))
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -772,8 +779,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // EPC 인식 없고, 픽업이 아닌 상태 상태에서 No EPC 카운트
-            if (m_rfidModel.EPC == "" && m_isPickUp == false)
+            // EPC 인식 없는 상태에서 No EPC 카운트
+            if (m_rfidModel.EPC == "")
             {
                 m_no_epcCnt++;
                 m_curr_epc = "";
@@ -813,13 +820,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 픽업 전 wata 헤더 포함된 QR 인식한 상태
             if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
             {
-                // 새로 인식된 QR일 경우
-                if (m_event_QRcode == "")
-                {
-                    m_Command = -1;
-                    m_event_QRcode = m_curr_QRcode;
-                    _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
-                }
+                //// 새로 인식된 QR일 경우
+                //if (m_event_QRcode == "")
+                //{
+                //    m_Command = -1;
+                //    m_event_QRcode = m_curr_QRcode;
+                //    _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
+                //}
+                m_Command = -1;
+                m_event_QRcode = m_curr_QRcode;
+                _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
             }
 
             // QR에 wata 없을 시 No QR 카운트
@@ -870,7 +880,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
             List<long> calcList = new List<long>();
-            long distance = 300;
+            long distance = 700;
 
             //List<string> zoneNameList = new List<string>();
             try
@@ -879,14 +889,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                     {
+                        if (m_ActionZoneId != "") break;
+
                         if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                         {
                             for (int j = m_cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
                             {
-                                string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
-                                //string pattern = @"POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)";
+
+                                //string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
                                 //Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                string pattern = @"POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)";
+                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
                                 if (match.Success && match.Groups.Count == 3)
                                 {
                                     double x = double.Parse(match.Groups[1].Value);
@@ -915,15 +928,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         }
 
                                         //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.ActionLog);
-                                        //break;
+                                        break;
                                     }
                                     else
                                     {
-                                        if (m_ActionZoneId == "" || m_ActionZoneName == "")
-                                        {
-                                            m_ActionZoneId = "";
-                                            m_ActionZoneName = "";
-                                        }
+                                        m_ActionZoneId = "";
+                                        m_ActionZoneName = "";
                                     }
                                 }
                             }
@@ -955,10 +965,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_event_distance = m_curr_distance;
 
-            m_event_width = m_livoxModel.width;
-            m_event_height = m_livoxModel.height - m_event_distance;
-            m_event_length = m_livoxModel.length;
-            m_event_points = m_livoxModel.points;
+            if(!m_event_epc.Contains("DA"))
+            {
+                m_event_width = m_livoxModel.width;
+                m_event_height = m_livoxModel.height - m_event_distance;
+                m_event_length = m_livoxModel.length;
+                m_event_points = m_livoxModel.points;
+            }
+            else if (m_event_epc.Contains("DA"))
+            {
+                m_event_width = 0;
+                m_event_height = 0;
+                m_event_length = 0;
+                m_event_points = "";
+            }
 
             if (m_isPickUp == true)
             {
@@ -969,7 +989,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_set_load == true) m_Command = 2;
                 if (m_set_unload == true) m_Command = 3;
             }
-            else if (m_isPickUp == false) SendBackEndDropAction();
+            else if (m_isPickUp == false)
+            {
+                SendBackEndDropAction();
+            }
 
 
             // 중량값, 부피 측정 완료 LED, 부저
@@ -1215,7 +1238,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.height = (m_event_height).ToString();
+            ActionObj.actionInfo.height = (m_event_distance).ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionHeight = m_event_height;
             ActionObj.actionInfo.visionDepth = m_event_length;
@@ -1247,6 +1270,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 ActionObj.actionInfo.epc = m_event_epc;
                 ActionObj.actionInfo.cepc = "";
+                ActionObj.actionInfo.shelf = true;
             }
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
@@ -1275,10 +1299,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
             Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
+
+            //zone 초기화
+            m_ActionZoneId = "";
+            m_ActionZoneName = "";
         }
 
         private void SendBackEndDropAction()
         {
+            m_event_distance = m_curr_distance;
+
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
             ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
@@ -1292,7 +1322,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.shelf = false;
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.height = (m_event_height).ToString();
+            ActionObj.actionInfo.height = (m_event_distance).ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionHeight = m_event_height;
             ActionObj.actionInfo.visionDepth = m_event_length;
@@ -1324,7 +1354,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 ActionObj.actionInfo.epc = m_event_epc;
                 ActionObj.actionInfo.cepc = "";
+                ActionObj.actionInfo.shelf = true;
             }
+
+
 
             if (m_ActionZoneId == null || m_ActionZoneId.Equals(""))
             {
@@ -1358,6 +1391,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_event_weight = 0;
             m_event_epc = "";
             //m_livoxModel.height = 0;
+
+            //zone 초기화
+            m_ActionZoneId = "";
+            m_ActionZoneName = "";
         }
 
         private void SendBackEndContainerGateEvent()
@@ -1443,7 +1480,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 // 안정된 중량값 할당 및 부피 측정 시작
                 m_event_weight = m_weightModel.GrossWeight;
-                _eventAggregator.GetEvent<CallDataEvent>().Publish();
+
+                // 현재 높이센서 측정값이 1500 이하일 때, 리복스 데이터 요청
+                if (m_curr_distance <= 1500)
+                {
+                    m_withoutLivox = false;
+                    _eventAggregator.GetEvent<CallDataEvent>().Publish();
+                }
+                // 현재 높이센서 측정값이 1500 초과일 때, 리복스 데이터를 나중에 요청
+                else
+                {
+                    m_withoutLivox = true;
+                    m_afterCallLivox = true;
+                }
 
 
                 //// 중량값 측정 완료 LED, 부저
@@ -1537,7 +1586,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
-            //SendBackEndPickupAction();
+
+            if (m_withoutLivox == true)
+            {
+                m_event_points = "";
+                SendBackEndPickupAction();
+            }
 
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height:{m_event_height}, depth{m_event_length}", ELogType.ActionLog);
@@ -1584,25 +1638,41 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_guideWeightStart = false;
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
-            SendBackEndDropAction();
+
+            if (m_afterCallLivox == true && m_curr_distance <= 1500)
+            {
+                if (m_set_item == true && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
+                }
+                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
+                }
+                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                {
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
+                }
+
+                _eventAggregator.GetEvent<CallDataEvent>().Publish();
+                m_afterCallLivox = false;
+            }
+            else if (m_afterCallLivox == true && m_curr_distance > 1500)
+            {
+                m_event_points = "";
+                m_afterCallLivox = false;
+                SendBackEndDropAction();
+            }
+            else if (m_afterCallLivox == false)
+            {
+                SendBackEndDropAction();
+            }
 
             m_ActionZoneId = "";
             m_ActionZoneName = "";
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
             Thread.Sleep(1000);
-        }
-
-        private int DistanceSensorHardCoding(int rDistaneMM)
-        {
-            int ret = 0;
-
-            if (ret >= 0 && ret <= 200)
-            {
-
-            }
-
-            return ret;
         }
     }
 }
