@@ -818,7 +818,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringVisonTimerEvent(object sender, EventArgs e)
         {
             // 픽업 전 wata 헤더 포함된 QR 인식한 상태
-            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 30)
+            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 10)
             {
                 //// 새로 인식된 QR일 경우
                 //if (m_event_QRcode == "")
@@ -840,7 +840,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 50 프레임간 QR 인식 안될 시 QR 초기화
-            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 60 && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 70 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -1014,6 +1014,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //if (m_event_height != m_livoxModel.length)
             //{
             //}
+            IndicatorSendTimerEvent(null, null);
         }
 
 
@@ -1434,7 +1435,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="bDrop"></param>
         private void InitGetPickupStatus()
         {
-            if (m_weightModel.GrossWeight < 30)
+            if (m_weightModel.GrossWeight < 10)
             {
                 m_isPickUp = false;
             }
@@ -1453,7 +1454,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_weight_list.Count < m_weight_sample_size) return;
 
-                if (m_weightModel.GrossWeight < 30) return;
+                if (m_weightModel.GrossWeight < 10) return;
 
                 if (m_guideWeightStart == false)
                 {
@@ -1632,7 +1633,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     return;
                 }
 
-                if (m_weightModel.GrossWeight > 30)
+                if (m_weightModel.GrossWeight > 10)
                 {
                     return;
                 }
@@ -1659,6 +1660,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
 
+            // 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이하인 경우 리복스 데이터 사후 요청
             if (m_afterCallLivox == true && m_curr_distance <= 1500)
             {
                 if (m_set_item == true && m_isError != true)
@@ -1677,6 +1679,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 _eventAggregator.GetEvent<CallDataEvent>().Publish();
                 m_afterCallLivox = false;
             }
+            // 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이상 랙에 드롭할 경우 리복스 데이터 요청 없음
             else if (m_afterCallLivox == true && m_curr_distance > 1500)
             {
                 m_event_points = "";
@@ -1697,6 +1700,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
                 }
             }
+            // 정상적인 물류 드롭인 경우
             else if (m_afterCallLivox == false)
             {
                 CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);

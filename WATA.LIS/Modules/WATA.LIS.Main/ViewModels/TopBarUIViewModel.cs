@@ -150,6 +150,13 @@ namespace WATA.LIS.Main.ViewModels
                         }
                         break;
 
+                    case "Stop":
+                        {
+                            //_eventAggregator.GetEvent<SimulModeEvent>().Publish(obj);
+
+                            break;
+                        }
+
                     case "r1":
                         {
                             SimulationModel obj = new SimulationModel();
