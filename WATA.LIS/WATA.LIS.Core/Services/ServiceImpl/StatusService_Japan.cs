@@ -840,7 +840,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // 50 프레임간 QR 인식 안될 시 QR 초기화
-            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 70 && m_isPickUp == false)
+            if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 150 && m_isPickUp == false)
             {
                 m_Command = 0;
                 m_event_QRcode = "";
@@ -1597,6 +1597,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_withoutLivox == true)
             {
                 m_event_points = "";
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndPickupAction();
 
                 // 측정 완료 LED, 부저
@@ -1676,14 +1677,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
                 }
 
-                _eventAggregator.GetEvent<CallDataEvent>().Publish();
+                //_eventAggregator.GetEvent<CallDataEvent>().Publish();
+                m_event_points = "";
                 m_afterCallLivox = false;
+
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
+                SendBackEndDropAction();
             }
             // 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이상 랙에 드롭할 경우 리복스 데이터 요청 없음
             else if (m_afterCallLivox == true && m_curr_distance > 1500)
             {
                 m_event_points = "";
                 m_afterCallLivox = false;
+
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
                 SendBackEndDropAction();
 
                 // 측정 완료 LED, 부저
@@ -1711,7 +1718,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_ActionZoneName = "";
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
-            Thread.Sleep(1000);
+            Thread.Sleep(300);
         }
     }
 }
