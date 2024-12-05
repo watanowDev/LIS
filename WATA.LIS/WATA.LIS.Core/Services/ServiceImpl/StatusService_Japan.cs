@@ -544,7 +544,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Pattlite_LED_Buzzer_Model model = new Pattlite_LED_Buzzer_Model();
                 model.LED_Pattern = eLEDPatterns.Pattern6;
                 model.LED_Color = eLEDColors.Red;
-                model.BuzzerPattern = eBuzzerPatterns.Pattern1;
+                model.BuzzerPattern = eBuzzerPatterns.Pattern3;
                 model.BuzzerCount = 1;
                 _eventAggregator.GetEvent<Pattlite_StatusLED_Event>().Publish(model);
             }
