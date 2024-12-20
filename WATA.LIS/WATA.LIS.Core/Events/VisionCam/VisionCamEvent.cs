@@ -9,7 +9,7 @@ using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS.Core.Events.VisionCam
 {
-    public class HikVisionEvent : PubSubEvent<VisionCamModel>
+    public class VisionCamEvent : PubSubEvent<VisionCamModel>
     {
 
     }

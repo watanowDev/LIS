@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "Japan", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan
+		"device_type" : "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA
 		"workLocationId" : "JPN",
 		"projectId" : "afbb58611535449780cdb27a615afeb2",
 		"mappingId" : "caaf22ec4eec43c4b8e57e7f72c7076b",
@@ -10,20 +10,20 @@
 	},
 	"led_buzzer": 
 	{
-		"led_enable": 1,
+		"led_enable": 0,
 		"volume": 1,
 		"InfoLanguage" : "JP"//KR, JP, EN
 	},
 	"distance_sensor": 
 	{
-		"distance_enable" : 1,
+		"distance_enable" : 0,
 		"model_name": "Terrabee", //Terrabee, TF_Mini
 		"comport": "COM3",
 		"pick_up_distance_threshold" : 690
 	},
 	"weight_sensor": 
 	{
-		"weight_enable": 1,
+		"weight_enable": 0,
 		"comport": "COM4",
 		"loadweight_timeout" : 3000,
 		"sensor_value" : "TJ" //TJ, TCP
@@ -42,7 +42,7 @@
 	},
 	"rfid_receiver": 
 	{
-		"rfid_enable" : 1,
+		"rfid_enable" : 0,
 		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
 		"comport": "COM8",
 		"SPP_MAC" : "00:05:C4:C1:01:32",
@@ -65,25 +65,25 @@
 	},
 	"NAV": 
 	{
-		"NAV_Enable" : 1,
+		"NAV_Enable" : 0,
 		"IP" : "192.168.1.200",
 		"PORT" : 2111
 	},
 	"LIVOX": 
 	{
-		"LIVOX_Enable" : 1
+		"LIVOX_Enable" : 0
 	},
 	"vision":
 	{
 		"vision_enable" : 1,
-		"vision_name" : "HikVision", //HikVision
-		"vision_ip" : "192.168.8.2",
+		"vision_name" : "HikVision", //HikVision, FemtoMega
+		"vision_ip" : "192.168.1.81",
 		"vision_port" : 8000,
 		"vision_id" : "admin",
 		"vision_pw" : "wata2024"
 	},
 	"display":
 	{
-		"display_enable" : 1
+		"display_enable" : 0
 	}
 }

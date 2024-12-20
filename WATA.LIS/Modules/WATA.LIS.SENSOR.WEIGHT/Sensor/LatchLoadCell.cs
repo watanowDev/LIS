@@ -219,12 +219,12 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
                 int right_battery = RecvBytes[16];
                 int right_charge_status = RecvBytes[17];
-                int right_online_satus = RecvBytes[18];
+                int right_online_status = RecvBytes[18];
 
 
                 int left_battery = RecvBytes[19];
                 int left_charge_status = RecvBytes[20];
-                int left_online_satus = RecvBytes[21];
+                int left_online_status = RecvBytes[21];
 
                 int gross_net = RecvBytes[22];
                 int overload = RecvBytes[23];
@@ -239,8 +239,8 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 model.LeftBattery = left_battery;
                 model.RightIsCharging = right_charge_status == 1 ? true : false;
                 model.leftIsCharging = left_charge_status == 1 ? true : false;
-                model.RightOnline = right_online_satus == 0 ? true : false;
-                model.LeftOnline = left_online_satus == 0 ? true : false;
+                model.RightOnline = right_online_status == 0 ? true : false;
+                model.LeftOnline = left_online_status == 0 ? true : false;
                 model.GrossNet = gross_net == 1 ? true : false;
                 model.OverLoad = overload == 1 ? true : false;
                 model.OutOfTolerance = out_of_tolerance == 0 ? false : true;

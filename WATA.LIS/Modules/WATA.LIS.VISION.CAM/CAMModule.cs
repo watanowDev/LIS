@@ -32,6 +32,11 @@ namespace WATA.LIS.VISION.CAM
                 HIKVISION visioncam = new HIKVISION(_eventAggregator, _visioncammodel);
                 visioncam.Init();
             }
+            else if (visioncam_config.vision_name == "FemtoMega")
+            {
+                FEMTO_MEGA visioncam = new FEMTO_MEGA(_eventAggregator, _visioncammodel);
+                visioncam.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
