@@ -86,10 +86,10 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-        private const string detectorPrototxtPath = @"C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
-        private const string detectorCaffeModelPath = @"C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
-        private const string superResolutionPrototxtPath = @"C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
-        private const string superResolutionCaffeModelPath = @"C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
+        private const string detectorPrototxtPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
+        private const string detectorCaffeModelPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
+        private const string superResolutionPrototxtPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
+        private const string superResolutionCaffeModelPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
         private WeChatQRCode weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
         //private BarcodeReader barcodeReader = new BarcodeReader();
         private BarcodeReader<Bitmap> barcodeReader = new BarcodeReader<Bitmap>(null, null, null);

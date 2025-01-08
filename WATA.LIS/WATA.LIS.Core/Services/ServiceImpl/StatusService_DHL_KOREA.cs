@@ -288,18 +288,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         }
                     }
                 }
-                // CellInfoModel 좌표 하드코딩 (시연용)
-                m_cellInfoModel.data[0].targetGeofence[0].geom = "POINT(2.291 7.677)"; // PAL - C1
-                m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(2.345 6.222)"; // PAL - C2
-                m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(2.262 4.863)"; // PAL - C3
-                m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(2.291 3.463)"; // PAL - C4
-                m_cellInfoModel.data[0].targetGeofence[4].geom = "POINT(2.291 2.063)"; // PAL - C5
+                //// CellInfoModel 좌표 하드코딩 (시연용)
+                //m_cellInfoModel.data[0].targetGeofence[0].geom = "POINT(2.291 7.677)"; // PAL - C1
+                //m_cellInfoModel.data[0].targetGeofence[1].geom = "POINT(2.345 6.222)"; // PAL - C2
+                //m_cellInfoModel.data[0].targetGeofence[2].geom = "POINT(2.262 4.863)"; // PAL - C3
+                //m_cellInfoModel.data[0].targetGeofence[3].geom = "POINT(2.291 3.463)"; // PAL - C4
+                //m_cellInfoModel.data[0].targetGeofence[4].geom = "POINT(2.291 2.063)"; // PAL - C5
 
-                m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(-1.668 -7.935)"; // PLL - A - A1
-                m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(-0.318 -7.935)"; // PLL - A - A2
-                m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(1.011 -7.935)"; // PLL - A - A3
-                m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(2.411 -7.935)"; // PLL - A - A4
-                m_cellInfoModel.data[1].targetGeofence[4].geom = "POINT(3.811 -7.935)"; // PLL - A - A5
+                //m_cellInfoModel.data[1].targetGeofence[0].geom = "POINT(-1.668 -7.935)"; // PLL - A - A1
+                //m_cellInfoModel.data[1].targetGeofence[1].geom = "POINT(-0.318 -7.935)"; // PLL - A - A2
+                //m_cellInfoModel.data[1].targetGeofence[2].geom = "POINT(1.011 -7.935)"; // PLL - A - A3
+                //m_cellInfoModel.data[1].targetGeofence[3].geom = "POINT(2.411 -7.935)"; // PLL - A - A4
+                //m_cellInfoModel.data[1].targetGeofence[4].geom = "POINT(3.811 -7.935)"; // PLL - A - A5
             }
             catch (Exception ex)
             {
@@ -841,11 +841,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // PickupDepth 값이 Threshold 값 이하일 경우 픽업 카운트 증가. 반대일 경우 드롭 카운트 증가.
-            if (m_visionModel.PIKCUP_DEPTH <= 1000)
+            if (m_visionModel.PIKCUP_DEPTH <= 500)
             {
                 m_visionPickupCnt++;
             }
-            else if (m_visionModel.PIKCUP_DEPTH > 1000)
+            else if (m_visionModel.PIKCUP_DEPTH > 500)
             {
                 m_visionDropCnt++;
             }

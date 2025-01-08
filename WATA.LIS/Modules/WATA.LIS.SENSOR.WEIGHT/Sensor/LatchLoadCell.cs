@@ -42,26 +42,24 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void SerialInit()
         {
-            //m_receiveTimer = new DispatcherTimer();
-            //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            m_receiveTimer = new DispatcherTimer();
+            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+
+            SerialThreadInit();
+
+            //m_newVerReceiveTimer = new DispatcherTimer();
+            //m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
+
+            //SerialThreadInit_NewVersion();
 
             //m_checkConnectionTimer = new DispatcherTimer();
             //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
             //m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
             //m_checkConnectionTimer.Start();
 
-            //SerialThreadInit();
-
             //_eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
-
-
-            m_newVerReceiveTimer = new DispatcherTimer();
-            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
-
-
-            SerialThreadInit_NewVersion();
         }
 
         private void SerialThreadInit_NewVersion()
@@ -135,6 +133,34 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
         }
 
+        private void ReceiveTimerEvent(object sender, EventArgs e)
+        {
+            if (_port == null || _port.IsOpen == false)
+            {
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                return;
+            }
+
+            try
+            {
+                m_nDataSize = _port.BytesToRead;
+                byte[] buffer = new byte[m_nDataSize];
+                _port.Read(buffer, 0, m_nDataSize);
+                if (m_nDataSize >= 25)
+                {
+
+                    //LogRawData(buffer);
+                    ParseData(buffer, m_nDataSize);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                }
+            }
+            catch
+            {
+                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+            }
+        }
+
         private void CheckConnectionEvent(object sender, EventArgs e)
         {
             if (_port == null || _port.IsOpen == false || m_nDataSize < 25)
@@ -162,34 +188,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             _port.Write(buffer, 0, buffer.Length);
             SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
-        }
-
-        private void ReceiveTimerEvent(object sender, EventArgs e)
-        {
-            if (_port == null || _port.IsOpen == false)
-            {
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
-                return;
-            }
-
-            try
-            {
-                m_nDataSize = _port.BytesToRead;
-                byte[] buffer = new byte[m_nDataSize];
-                _port.Read(buffer, 0, m_nDataSize);
-                if (m_nDataSize >= 25)
-                {
-
-                    //LogRawData(buffer);
-                    ParseData(buffer, m_nDataSize);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
-                }
-            }
-            catch
-            {
-                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
-            }
         }
 
         public void ParseData(byte[] RecvBytes, int nSize)

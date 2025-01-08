@@ -1,89 +1,78 @@
 {
-	"main": 
-	{
-		"device_type" : "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan
-		"workLocationId" : "JPN",
-		"projectId" : "afbb58611535449780cdb27a615afeb2",
-		"mappingId" : "caaf22ec4eec43c4b8e57e7f72c7076b",
-		"mapId" : "9528ffc4960d4065b4abf3855aed194e",
-		"vehicleId": "FORKLIFT_010"
-	},
-	"led_buzzer": 
-	{
-		"led_enable": 0,
-		"volume": 1,
-		"InfoLanguage" : "JP"//KR, JP, EN
-	},
-	"distance_sensor": 
-	{
-		"distance_enable" : 0,
-		"model_name": "Terrabee", //Terrabee, TF_Mini
-		"comport": "COM5",
-		"pick_up_distance_threshold" : 30
-	},
-	"weight_sensor": 
-	{
-		"weight_enable": 0,
-		"comport": "COM4",
-		"loadweight_timeout" : 3000,
-		"sensor_value" : "TJ" //TJ, TCP
-	},
-	"visioncamera": 
-	{
-		"vision_enable" : 0,
-		"camera_height": 0.85,
-		"qr_enable" : 0,
-		"view_3d_enable" : 0,
-		"event_distance" : 1.0,
-		"pickup_wait_delay" : 2000,
-		"rack_with" : 1.46,
-		"rack_height" : 2.3,
-		"onlyshelf" : 0
-	},
-	"rfid_receiver": 
-	{
-		"rfid_enable" : 0,
-		"rfid_name" : "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
-		"comport": "COM8",
-		"SPP_MAC" : "00:05:C4:C1:01:32",
-		"radio_power": 28,
-		"tx_on_time": 200,
-		"tx_off_time" : 200,
-		"toggle" : 1,
-		"speaker_level" : 0,
-		"rssi_pickup_timeout" : 20,
-		"rssi_pickup_threshold" : -78,
-		"rssi_drop_timeout" : 20,
-		"rssi_drop_threshold" : -78,
-		"front_ant_port" : "0",
-		"ip" : "192.168.0.9"
-	},
-	"DPS": 
-	{
-		"IP" : "192.168.0.107",
-		"PORT" : 5010
-	},
-	"NAV": 
-	{
-		"NAV_Enable" : 0,
-		"IP" : "192.168.1.200",
-		"PORT" : 2111
-	},
-	"LIVOX": 
-	{
-		"LIVOX_Enable" : 0
-	},
-	"vision":
-	{
-		"vision_enable" : 1,
-		"vision_name" : "FemtoMega", //HikVision, FemtoMega
-		"vision_ip" : "192.168.1.10",
-		"vision_port" : 8000,
-		"vision_id" : "admin",
-		"vision_pw" : "wata2024"
-	},
-	"display":
-	{
-		"display_enable" : 0
-	}
+  "main": {
+    "device_type": "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA
+    "workLocationId": "JPN",
+    "projectId": "afbb58611535449780cdb27a615afeb2",
+    "mappingId": "caaf22ec4eec43c4b8e57e7f72c7076b",
+    "mapId": "9528ffc4960d4065b4abf3855aed194e",
+    "vehicleId": "FORKLIFT_010"
+  },
+  "led_buzzer": {
+    "led_enable": 1,
+    "volume": 1,
+    "InfoLanguage": "KR" //KR, JP, EN
+  },
+  "distance_sensor": {
+    "distance_enable": 1,
+    "model_name": "Terrabee", //Terrabee, TF_Mini
+    "comport": "COM3",
+    "pick_up_distance_threshold": 30
+  },
+  "weight_sensor": {
+    "weight_enable": 1,
+    "comport": "COM4",
+    "loadweight_timeout": 3000,
+    "sensor_value": "TJ" //TJ, TCP
+  },
+  "visioncamera": {
+    "vision_enable": 0,
+    "camera_height": 0.85,
+    "qr_enable": 0,
+    "view_3d_enable": 0,
+    "event_distance": 1.0,
+    "pickup_wait_delay": 2000,
+    "rack_with": 1.46,
+    "rack_height": 2.3,
+    "onlyshelf": 0
+  },
+  "rfid_receiver": {
+    "rfid_enable": 1,
+    "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
+    "comport": "COM8",
+    "SPP_MAC": "00:05:C4:C1:01:32",
+    "radio_power": 28,
+    "tx_on_time": 200,
+    "tx_off_time": 200,
+    "toggle": 1,
+    "speaker_level": 0,
+    "rssi_pickup_timeout": 20,
+    "rssi_pickup_threshold": -78,
+    "rssi_drop_timeout": 20,
+    "rssi_drop_threshold": -78,
+    "front_ant_port": "0",
+    "ip": "192.168.0.9"
+  },
+  "DPS": {
+    "IP": "192.168.0.107",
+    "PORT": 5010
+  },
+  "NAV": {
+    "NAV_Enable": 0,
+    "IP": "192.168.1.200",
+    "PORT": 2111
+  },
+  "LIVOX": {
+    "LIVOX_Enable": 0
+  },
+  "vision": {
+    "vision_enable": 1,
+    "vision_name": "FemtoMega", //HikVision, FemtoMega
+    "vision_ip": "192.168.1.10",
+    "vision_port": 8000,
+    "vision_id": "admin",
+    "vision_pw": "wata2024"
+  },
+  "display": {
+    "display_enable": 0
+  }
 }
