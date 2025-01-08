@@ -16,7 +16,7 @@ namespace WATA.LIS.Core.Model.VisionCam
         public string QR = string.Empty;
         public int WIDTH { get; set; }
         public int HEIGHT { get; set; }
-        public float DEPTH { get; set; }
+        public float PIKCUP_DEPTH { get; set; }
         public string POINTS = string.Empty; // 형상측정값
         public byte[] FRAME { get; set; }
         public bool connected = false;

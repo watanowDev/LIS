@@ -14,15 +14,15 @@
           "Prism.Wpf": "8.1.97",
           "System.Drawing.Common": "8.0.10",
           "WATA.LIS.Core": "1.0.0",
-          "ZXing.Net": "0.16.6",
+          "ZXing.Net": "0.16.9",
           "ob_csharp": "0.0.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.53"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.54"
         },
         "runtime": {
           "WATA.LIS.VISION.CAM.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.53": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
             "assemblyVersion": "10.0.18362.38",
@@ -364,11 +364,11 @@
           "System.Drawing.Common": "8.0.10"
         }
       },
-      "ZXing.Net/0.16.6": {
+      "ZXing.Net/0.16.9": {
         "runtime": {
-          "lib/netcoreapp3.1/zxing.dll": {
-            "assemblyVersion": "0.16.6.0",
-            "fileVersion": "0.16.6.0"
+          "lib/net7.0/zxing.dll": {
+            "assemblyVersion": "0.16.9.0",
+            "fileVersion": "0.16.9.0"
           }
         }
       },
@@ -383,7 +383,7 @@
           "OpenCvSharp4.Extensions": "4.10.0.20240616",
           "OpenCvSharp4.runtime.win": "4.10.0.20240616",
           "Prism.Wpf": "8.1.97",
-          "ZXing.Net": "0.16.6",
+          "ZXing.Net": "0.16.9",
           "log4net": "2.0.15"
         },
         "runtime": {
@@ -409,7 +409,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.53": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""
@@ -687,12 +687,12 @@
       "path": "system.windows.extensions/5.0.0",
       "hashPath": "system.windows.extensions.5.0.0.nupkg.sha512"
     },
-    "ZXing.Net/0.16.6": {
+    "ZXing.Net/0.16.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-0+6EcJ7Ve1BocwqvqpAmgMa7xF3wxqROcM3KvAE6WGNIqXLA5YEziLjRX+kKYVrcttlFRz1IaoRSzt/o6Ttviw==",
-      "path": "zxing.net/0.16.6",
-      "hashPath": "zxing.net.0.16.6.nupkg.sha512"
+      "sha512": "sha512-7WaVMHklpT3Ye2ragqRIwlFRsb6kOk63BOGADV0fan3ulVfGLUYkDi5yNUsZS/7FVNkWbtHAlDLmu4WnHGfqvQ==",
+      "path": "zxing.net/0.16.9",
+      "hashPath": "zxing.net.0.16.9.nupkg.sha512"
     },
     "WATA.LIS.Core/1.0.0": {
       "type": "project",

@@ -10,7 +10,7 @@
     <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20240616" />
     <PackageReference Include="Prism.Wpf" Version="8.1.97" />
     <PackageReference Include="System.Drawing.Common" Version="8.0.10" />
-    <PackageReference Include="ZXing.Net" Version="0.16.6" />
+    <PackageReference Include="ZXing.Net" Version="0.16.9" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Property\" />
@@ -24,6 +24,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Update="Model\OrbbecSDK.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Modules\WATA.LIS.VISION.CAM\Model\ob_csharp.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

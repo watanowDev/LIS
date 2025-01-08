@@ -46,6 +46,7 @@ using WATA.LIS.Core.Events.VisionCam;
 using Microsoft.Xaml.Behaviors.Media;
 using System.Net.NetworkInformation;
 using OpenCvSharp;
+using System.Net.Http;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
@@ -96,6 +97,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_curr_QRcode = "";
         private string m_event_QRcode = "";
         private int m_no_QRcnt;
+        private int m_visionPickupCnt;
+        private int m_visionDropCnt;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -136,6 +139,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
+        private bool m_isVisionPickUp = false;
 
         // 타이머 클래스
         DispatcherTimer m_ErrorCheck_Timer;
@@ -155,7 +159,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<Keonn2chEvent>().Subscribe(OnRfidSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
@@ -200,6 +204,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
 
+            m_MonitoringQR_Timer = new DispatcherTimer();
+            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringVisionPickupTimerEvent);
+            m_MonitoringQR_Timer.Start();
+
+
+
             m_MonitoringEPC_Timer = new DispatcherTimer();
             m_MonitoringEPC_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             m_MonitoringEPC_Timer.Tick += new EventHandler(MonitoringEPCTimerEvent);
@@ -236,17 +247,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_livoxModel = new LIVOXModel();
             m_indicatorModel = new IndicatorModel();
 
-            InitGetPickupStatus();
+            //InitGetPickupStatus();
             IndicatorSendTimerEvent(null, null);
-            GetCellListFromPlatform();
-            GetBasicInfoFromBackEnd();
+            _ = GetCellListFromPlatformAsync();
+            _ = GetBasicInfoFromBackEndAsync();
         }
 
-
-        /// <summary>
-        /// 기초 데이터 취득
-        /// </summary>
-        private void GetCellListFromPlatform()
+        private async Task<CellInfoModel> GetCellListFromPlatformAsync()
         {
             try
             {
@@ -254,36 +261,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 string url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?" + param;
                 Tools.Log($"REST Get Client url: {url}", ELogType.BackEndLog);
 
-                HttpWebRequest request = WebRequest.CreateHttp(url);
-                request.Method = "GET";
-                request.Timeout = 30 * 1000; // 30초
-                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                using (HttpClient client = new HttpClient())
                 {
-                    HttpStatusCode status = resp.StatusCode;
-
-                    if (status == HttpStatusCode.OK)
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    m_cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(responseBody);
+                    for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                     {
-                        Stream respStream = resp.GetResponseStream();
-                        using (StreamReader sr = new StreamReader(respStream))
+                        if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                         {
-                            m_cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(sr.ReadToEnd());
-                            for (int i = 0; i < m_cellInfoModel.data.Count; i++)
+                            for (int j = 0; j < m_cellInfoModel.data[i].targetGeofence.Count; j++)
                             {
-                                if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
+                                string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
+                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                if (match.Success && match.Groups.Count == 3)
                                 {
-                                    for (int j = 0; j < m_cellInfoModel.data[i].targetGeofence.Count; j++)
-                                    {
-                                        string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                                        Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
-                                        if (match.Success && match.Groups.Count == 3)
-                                        {
-                                            double x = double.Parse(match.Groups[1].Value);
-                                            double y = double.Parse(match.Groups[2].Value);
+                                    double x = double.Parse(match.Groups[1].Value);
+                                    double y = double.Parse(match.Groups[2].Value);
 
-                                            string newGeom = $"POINT({x} {y})";
-                                            m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
-                                        }
-                                    }
+                                    string newGeom = $"POINT({x} {y})";
+                                    m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
                                 }
                             }
                         }
@@ -306,6 +305,33 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"REST Get Client Response Error: {ex}", ELogType.SystemLog);
             }
+            return m_cellInfoModel;
+        }
+
+        private async Task<BasicInfoModel> GetBasicInfoFromBackEndAsync()
+        {
+            try
+            {
+                string param = $"projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&vehicleId={m_mainConfigModel.vehicleId}";
+                string url = $"https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?{param}";
+                Tools.Log($"REST Get BasicInfo url: {url}", ELogType.BackEndLog);
+
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    m_basicInfoModel = JsonConvert.DeserializeObject<BasicInfoModel>(responseBody);
+                    m_getBasicInfo = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_getBasicInfo = false;
+                Tools.Log($"REST Get BasicInfo Response Error: {ex}", ELogType.BackEndLog);
+            }
+            return m_basicInfoModel;
         }
 
         private void GetBasicInfoFromBackEnd()
@@ -813,6 +839,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_no_QRcnt = 0;
                 m_curr_QRcode = m_visionModel.QR;
             }
+
+            // PickupDepth 값이 Threshold 값 이하일 경우 픽업 카운트 증가. 반대일 경우 드롭 카운트 증가.
+            if (m_visionModel.PIKCUP_DEPTH <= 1000)
+            {
+                m_visionPickupCnt++;
+            }
+            else if (m_visionModel.PIKCUP_DEPTH > 1000)
+            {
+                m_visionDropCnt++;
+            }
         }
 
         private void MonitoringVisonTimerEvent(object sender, EventArgs e)
@@ -820,13 +856,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 픽업 전 wata 헤더 포함된 QR 인식한 상태
             if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_isPickUp == false && m_event_weight < 10)
             {
-                //// 새로 인식된 QR일 경우
-                //if (m_event_QRcode == "")
-                //{
-                //    m_Command = -1;
-                //    m_event_QRcode = m_curr_QRcode;
-                //    _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
-                //}
                 m_Command = -1;
                 m_event_QRcode = m_curr_QRcode;
                 _eventAggregator.GetEvent<HittingQR_Event>().Publish(m_event_QRcode);
@@ -851,6 +880,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_set_item == true)
             {
                 m_no_QRcnt = 0;
+            }
+        }
+
+        private void MonitoringVisionPickupTimerEvent(object sender, EventArgs e)
+        {
+            // Pickup, Drop 카운트의 누적값에 의한 상태 변경
+            if (m_visionPickupCnt > 10 && m_isPickUp == false)
+            {
+                m_isVisionPickUp = true;
+                m_visionDropCnt = 0;
+            }
+            else if (m_visionDropCnt > 10 && m_isPickUp == true)
+            {
+                m_isVisionPickUp = false;
+                m_visionPickupCnt = 0;
             }
         }
 
@@ -965,7 +1009,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_event_distance = m_curr_distance;
 
-            if(!m_event_epc.Contains("DA"))
+            if (!m_event_epc.Contains("DA"))
             {
                 m_event_width = m_livoxModel.width;
                 m_event_height = m_livoxModel.height - m_event_distance;
@@ -1435,7 +1479,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="bDrop"></param>
         private void InitGetPickupStatus()
         {
-            if (m_weightModel.GrossWeight < 10)
+            if (m_visionModel.PIKCUP_DEPTH > 1000)
             {
                 m_isPickUp = false;
             }
@@ -1452,10 +1496,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 픽업 판단 조건
                 if (m_isPickUp == true) return;
 
-                if (m_weight_list.Count < m_weight_sample_size) return;
+                if (m_isVisionPickUp == false) return;
 
-                if (m_weightModel.GrossWeight < 10) return;
-
+                // 물류까지의 거리 값이 1000 이하일 때 픽업 프로세스 시작 알림음 제공
                 if (m_guideWeightStart == false)
                 {
                     m_stopwatch = new Stopwatch();
@@ -1477,6 +1520,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_guideWeightStart = true;
                 }
 
+
+                // 중량값 안정화까지 픽업 판단 보류
+                if (m_weight_list.Count < m_weight_sample_size) return;
+
                 int currentWeight = m_weightModel.GrossWeight;
 
                 int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
@@ -1485,41 +1532,31 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
                 if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1) return;
 
-                // 안정된 중량값 할당 및 부피 측정 시작
                 m_event_weight = m_weightModel.GrossWeight;
 
-                // 현재 높이센서 측정값이 1500 이하일 때, 리복스 데이터 요청
-                if (m_curr_distance <= 1500)
-                {
-                    m_withoutLivox = false;
-                    _eventAggregator.GetEvent<CallDataEvent>().Publish();
-                }
-                // 현재 높이센서 측정값이 1500 초과일 때, 리복스 데이터를 나중에 요청
-                else
-                {
-                    m_withoutLivox = true;
-                    m_afterCallLivox = true;
-                }
-
-
-                //// 중량값 측정 완료 LED, 부저
-                //if (m_set_item == true && m_isError != true)
-                //{
-                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
-                //}
-                //else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                //{
-                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
-                //}
-                //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                //{
-                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                //} 
-
+                // 중량 측정 소요시간 체크
                 if (m_stopwatch != null)
                 {
                     m_stopwatch.Stop();
                     Tools.Log($"Pickup -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+                }
+
+
+                // 부피측정 시작
+                m_stopwatch = new Stopwatch();
+                if (m_stopwatch != null) m_stopwatch.Start();
+
+                // 현재 높이센서 측정값이 500 이하일 때만, 리복스 데이터 요청
+                if (m_curr_distance <= 500)
+                {
+                    m_withoutLivox = false;
+                    _eventAggregator.GetEvent<CallDataEvent>().Publish();
+                }
+                // 현재 높이센서 측정값이 500 초과일 때, 리복스 데이터를 나중에 요청
+                else
+                {
+                    m_withoutLivox = true;
+                    m_afterCallLivox = true;
                 }
 
                 // 앱 물류 선택 X, QR 코드 X
@@ -1580,18 +1617,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             }
 
-            // 안정된 부피값 취득할 때 까지 대기
-            m_stopwatch = new Stopwatch();
-            if (m_stopwatch != null) m_stopwatch.Start();
-
-            //while (m_livoxModel.height == 0)
-            //{
-            //    if (m_livoxModel.height - m_event_distance > 0) break;
-            //}
-            //m_event_distance = m_curr_distance;
-            m_stopwatch.Stop();
-            Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
-
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
 
             if (m_withoutLivox == true)
@@ -1600,7 +1625,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndPickupAction();
 
-                // 측정 완료 LED, 부저
+                // 모든 값 측정 완료 LED, 부저
                 if (m_set_item == true && m_isError != true)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
@@ -1615,6 +1640,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
+            // 모든 값 측정 소요시간 체크
+            m_stopwatch.Stop();
+            Tools.Log($"Pickup -> Size Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+
             //로그
             Tools.Log($"Pickup Event!!! weight:{m_event_weight}kg, width:{m_event_width}, height:{m_event_height}, depth{m_event_length}", ELogType.ActionLog);
             Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}", ELogType.ActionLog);
@@ -1624,20 +1653,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
-                if (m_isPickUp == false)
-                {
-                    return;
-                }
+                if (m_isPickUp == false) return;
 
-                if (m_weight_list.Count == 0 || m_weight_list == null)
-                {
-                    return;
-                }
+                if (m_isVisionPickUp == true) return;
 
-                if (m_weightModel.GrossWeight > 10)
-                {
-                    return;
-                }
+                //if (m_weight_list.Count == 0 || m_weight_list == null) return;
+
+                Tools.Log($"Drop Event!!!", ELogType.ActionLog);
             }
             catch (Exception ex)
             {
@@ -1661,54 +1683,55 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
 
-            // 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이하인 경우 리복스 데이터 사후 요청
-            if (m_afterCallLivox == true && m_curr_distance <= 1500)
-            {
-                if (m_set_item == true && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
-                }
-                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
-                }
-                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
-                }
+            //// 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이하인 경우 리복스 데이터 사후 요청
+            //if (m_afterCallLivox == true && m_curr_distance <= 1500)
+            //{
+            //    if (m_set_item == true && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_PICKUP);
+            //    }
+            //    else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_PIKCUP);
+            //    }
+            //    else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_PICKUP);
+            //    }
 
-                //_eventAggregator.GetEvent<CallDataEvent>().Publish();
-                m_event_points = "";
-                m_afterCallLivox = false;
+            //    //_eventAggregator.GetEvent<CallDataEvent>().Publish();
+            //    m_event_points = "";
+            //    m_afterCallLivox = false;
 
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
-                SendBackEndDropAction();
-            }
-            // 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이상 랙에 드롭할 경우 리복스 데이터 요청 없음
-            else if (m_afterCallLivox == true && m_curr_distance > 1500)
-            {
-                m_event_points = "";
-                m_afterCallLivox = false;
+            //    CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
+            //    SendBackEndDropAction();
+            //}
+            //// 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이상 랙에 드롭할 경우 리복스 데이터 요청 없음
+            //else if (m_afterCallLivox == true && m_curr_distance > 1500)
+            //{
+            //    m_event_points = "";
+            //    m_afterCallLivox = false;
 
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
-                SendBackEndDropAction();
+            //    CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
+            //    SendBackEndDropAction();
 
-                // 측정 완료 LED, 부저
-                if (m_set_item == true && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
-                }
-                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
-                }
-                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                }
-            }
+            //    // 측정 완료 LED, 부저
+            //    if (m_set_item == true && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+            //    }
+            //    else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+            //    }
+            //    else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+            //    {
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+            //    }
+            //}
+
             // 정상적인 물류 드롭인 경우
-            else if (m_afterCallLivox == false)
+            if (m_afterCallLivox == false)
             {
                 CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
                 SendBackEndDropAction();
@@ -1718,7 +1741,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_ActionZoneName = "";
 
             // 드롭 직후 픽업이벤트 발생하는 것을 방지
-            Thread.Sleep(300);
+            //Thread.Sleep(300);
         }
     }
 }

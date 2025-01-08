@@ -180,8 +180,8 @@
                         <ColumnDefinition Width="70"></ColumnDefinition>
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
-                    <Label Content="EPC" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Ellipse Width="20" Height="20" Grid.Column="1" Fill="{Binding RFID_Active}" StrokeThickness="1" Stroke="Black"></Ellipse>
+                    <Label Content="Vision Depth" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
+                    <Label Content="{Binding Depth_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
                 </Grid>
 
                 <Grid Grid.Row="6" Grid.Column="0" Margin="5">

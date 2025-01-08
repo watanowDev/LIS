@@ -132,21 +132,21 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();//현재 지게차용  Apulse RF수신기
             }
-            else if (mainobj.device_type == "Singapore")
+            else if (mainobj.device_type == "Singapore")//Singapore POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>(); //DHL Singapore 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 DHL 시연 버전
             }
-            else if (mainobj.device_type == "Clark")
+            else if (mainobj.device_type == "Clark")//Clark POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>(); //Clark 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();//Clark 시연 버전
             }
-            else if (mainobj.device_type == "Japan")
+            else if (mainobj.device_type == "Japan")//일본 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>(); //일본 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();//일본 시연 버전
             }
-            else if (mainobj.device_type == "DHL_KOREA")
+            else if (mainobj.device_type == "DHL_KOREA")//DHL KOREA 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>(); ////DHL KOREA 시연
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();//DHL KOREA 시연 버전
             }
         }
 

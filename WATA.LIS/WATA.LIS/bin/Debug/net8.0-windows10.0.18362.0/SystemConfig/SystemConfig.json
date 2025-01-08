@@ -1,7 +1,7 @@
 {
 	"main": 
 	{
-		"device_type" : "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA
+		"device_type" : "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan
 		"workLocationId" : "JPN",
 		"projectId" : "afbb58611535449780cdb27a615afeb2",
 		"mappingId" : "caaf22ec4eec43c4b8e57e7f72c7076b",
@@ -18,8 +18,8 @@
 	{
 		"distance_enable" : 0,
 		"model_name": "Terrabee", //Terrabee, TF_Mini
-		"comport": "COM3",
-		"pick_up_distance_threshold" : 690
+		"comport": "COM5",
+		"pick_up_distance_threshold" : 30
 	},
 	"weight_sensor": 
 	{
@@ -76,8 +76,8 @@
 	"vision":
 	{
 		"vision_enable" : 1,
-		"vision_name" : "HikVision", //HikVision, FemtoMega
-		"vision_ip" : "192.168.1.81",
+		"vision_name" : "FemtoMega", //HikVision, FemtoMega
+		"vision_ip" : "192.168.1.10",
 		"vision_port" : 8000,
 		"vision_id" : "admin",
 		"vision_pw" : "wata2024"

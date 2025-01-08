@@ -92,6 +92,10 @@ namespace WATA.LIS.Main.ViewModels
         public string BACKEND_Value { get { return _BACKEND_Value; } set { SetProperty(ref _BACKEND_Value, value); } }
 
 
+        private string _Depth_Value;
+        public string Depth_Value { get { return _Depth_Value; } set { SetProperty(ref _Depth_Value, value); } }
+
+
         //Image
         private VisionCamModel _VisionCam_Frame;
         public VisionCamModel VisionCam_Frame { get { return _VisionCam_Frame; } set { SetProperty(ref _VisionCam_Frame, value); } }
@@ -128,7 +132,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
 
 
@@ -169,6 +173,7 @@ namespace WATA.LIS.Main.ViewModels
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {
                     CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                    Depth_Value = model.PIKCUP_DEPTH.ToString()+"mm";
                     VISIONCAM_Active = Active;
                 });
             }

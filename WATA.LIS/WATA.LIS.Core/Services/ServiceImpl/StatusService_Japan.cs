@@ -46,6 +46,7 @@ using WATA.LIS.Core.Events.VisionCam;
 using Microsoft.Xaml.Behaviors.Media;
 using System.Net.NetworkInformation;
 using OpenCvSharp;
+using System.Net.Http;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
@@ -155,7 +156,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<Keonn2chEvent>().Subscribe(OnRfidSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
@@ -173,17 +174,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
 
-            DispatcherTimer AliveTimer = new DispatcherTimer();
-            AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
-            AliveTimer.Tick += new EventHandler(AliveTimerEvent);
-            AliveTimer.Start();
+            //DispatcherTimer AliveTimer = new DispatcherTimer();
+            //AliveTimer.Interval = new TimeSpan(0, 0, 0, 0, 30000);
+            //AliveTimer.Tick += new EventHandler(AliveTimerEvent);
+            //AliveTimer.Start();
 
 
 
-            DispatcherTimer SendProdDataTimer = new DispatcherTimer();
-            SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
-            SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
-            SendProdDataTimer.Start();
+            //DispatcherTimer SendProdDataTimer = new DispatcherTimer();
+            //SendProdDataTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            //SendProdDataTimer.Tick += new EventHandler(SendProdDataToBackEnd);
+            //SendProdDataTimer.Start();
 
 
             m_ErrorCheck_Timer = new DispatcherTimer();
@@ -238,15 +239,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             InitGetPickupStatus();
             IndicatorSendTimerEvent(null, null);
-            GetCellListFromPlatform();
-            GetBasicInfoFromBackEnd();
+            _ = GetCellListFromPlatformAsync();
+            _ = GetBasicInfoFromBackEndAsync();
         }
 
 
-        /// <summary>
-        /// 기초 데이터 취득
-        /// </summary>
-        private void GetCellListFromPlatform()
+        private async Task<CellInfoModel> GetCellListFromPlatformAsync()
         {
             try
             {
@@ -254,36 +252,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 string url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?" + param;
                 Tools.Log($"REST Get Client url: {url}", ELogType.BackEndLog);
 
-                HttpWebRequest request = WebRequest.CreateHttp(url);
-                request.Method = "GET";
-                request.Timeout = 30 * 1000; // 30초
-                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                using (HttpClient client = new HttpClient())
                 {
-                    HttpStatusCode status = resp.StatusCode;
-
-                    if (status == HttpStatusCode.OK)
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    m_cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(responseBody);
+                    for (int i = 0; i < m_cellInfoModel.data.Count; i++)
                     {
-                        Stream respStream = resp.GetResponseStream();
-                        using (StreamReader sr = new StreamReader(respStream))
+                        if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
                         {
-                            m_cellInfoModel = JsonConvert.DeserializeObject<CellInfoModel>(sr.ReadToEnd());
-                            for (int i = 0; i < m_cellInfoModel.data.Count; i++)
+                            for (int j = 0; j < m_cellInfoModel.data[i].targetGeofence.Count; j++)
                             {
-                                if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
+                                string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
+                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                if (match.Success && match.Groups.Count == 3)
                                 {
-                                    for (int j = 0; j < m_cellInfoModel.data[i].targetGeofence.Count; j++)
-                                    {
-                                        string pattern = @"POINT\((\d+\.\d+) (\d+\.\d+)\)";
-                                        Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
-                                        if (match.Success && match.Groups.Count == 3)
-                                        {
-                                            double x = double.Parse(match.Groups[1].Value);
-                                            double y = double.Parse(match.Groups[2].Value);
+                                    double x = double.Parse(match.Groups[1].Value);
+                                    double y = double.Parse(match.Groups[2].Value);
 
-                                            string newGeom = $"POINT({x} {y})";
-                                            m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
-                                        }
-                                    }
+                                    string newGeom = $"POINT({x} {y})";
+                                    m_cellInfoModel.data[i].targetGeofence[j].geom = newGeom;
                                 }
                             }
                         }
@@ -306,6 +296,33 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"REST Get Client Response Error: {ex}", ELogType.SystemLog);
             }
+            return m_cellInfoModel;
+        }
+
+        private async Task<BasicInfoModel> GetBasicInfoFromBackEndAsync()
+        {
+            try
+            {
+                string param = $"projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&vehicleId={m_mainConfigModel.vehicleId}";
+                string url = $"https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?{param}";
+                Tools.Log($"REST Get BasicInfo url: {url}", ELogType.BackEndLog);
+
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    HttpResponseMessage response = await client.GetAsync(url);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    m_basicInfoModel = JsonConvert.DeserializeObject<BasicInfoModel>(responseBody);
+                    m_getBasicInfo = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_getBasicInfo = false;
+                Tools.Log($"REST Get BasicInfo Response Error: {ex}", ELogType.BackEndLog);
+            }
+            return m_basicInfoModel;
         }
 
         private void GetBasicInfoFromBackEnd()

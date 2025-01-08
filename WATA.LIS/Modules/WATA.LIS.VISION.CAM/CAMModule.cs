@@ -34,7 +34,12 @@ namespace WATA.LIS.VISION.CAM
             }
             else if (visioncam_config.vision_name == "FemtoMega")
             {
-                FEMTO_MEGA visioncam = new FEMTO_MEGA(_eventAggregator, _visioncammodel);
+                FEMTOMEGA visioncam = new FEMTOMEGA(_eventAggregator, _visioncammodel);
+                visioncam.Init();
+            }
+            else if (visioncam_config.vision_name == "FemtoMega_PCD")
+            {
+                FEMTOMEGA_PCD visioncam = new FEMTOMEGA_PCD(_eventAggregator, _visioncammodel);
                 visioncam.Init();
             }
         }

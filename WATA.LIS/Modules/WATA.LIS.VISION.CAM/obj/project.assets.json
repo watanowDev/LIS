@@ -687,16 +687,16 @@
           }
         }
       },
-      "ZXing.Net/0.16.6": {
+      "ZXing.Net/0.16.9": {
         "type": "package",
         "compile": {
-          "lib/netcoreapp3.1/zxing.dll": {
-            "related": ".xml"
+          "lib/net7.0/zxing.dll": {
+            "related": ".XML"
           }
         },
         "runtime": {
-          "lib/netcoreapp3.1/zxing.dll": {
-            "related": ".xml"
+          "lib/net7.0/zxing.dll": {
+            "related": ".XML"
           }
         }
       },
@@ -1936,10 +1936,10 @@
         "version.txt"
       ]
     },
-    "ZXing.Net/0.16.6": {
-      "sha512": "0+6EcJ7Ve1BocwqvqpAmgMa7xF3wxqROcM3KvAE6WGNIqXLA5YEziLjRX+kKYVrcttlFRz1IaoRSzt/o6Ttviw==",
+    "ZXing.Net/0.16.9": {
+      "sha512": "7WaVMHklpT3Ye2ragqRIwlFRsb6kOk63BOGADV0fan3ulVfGLUYkDi5yNUsZS/7FVNkWbtHAlDLmu4WnHGfqvQ==",
       "type": "package",
-      "path": "zxing.net/0.16.6",
+      "path": "zxing.net/0.16.9",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1974,6 +1974,12 @@
         "lib/net48/zxing.dll",
         "lib/net48/zxing.presentation.XML",
         "lib/net48/zxing.presentation.dll",
+        "lib/net5.0/zxing.XML",
+        "lib/net5.0/zxing.dll",
+        "lib/net6.0/zxing.XML",
+        "lib/net6.0/zxing.dll",
+        "lib/net7.0/zxing.XML",
+        "lib/net7.0/zxing.dll",
         "lib/netcoreapp3.0/zxing.dll",
         "lib/netcoreapp3.0/zxing.xml",
         "lib/netcoreapp3.1/zxing.dll",
@@ -2008,7 +2014,8 @@
         "lib/windows8/zxing.winmd",
         "lib/wp8/zxing.wp8.0.XML",
         "lib/wp8/zxing.wp8.0.dll",
-        "zxing.net.0.16.6.nupkg.sha512",
+        "logo.jpg",
+        "zxing.net.0.16.9.nupkg.sha512",
         "zxing.net.nuspec"
       ]
     },
@@ -2026,27 +2033,27 @@
       "Prism.Wpf >= 8.1.97",
       "System.Drawing.Common >= 8.0.10",
       "WATA.LIS.Core >= 1.0.0",
-      "ZXing.Net >= 0.16.6"
+      "ZXing.Net >= 0.16.9"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\wata_iot_dev\\.nuget\\packages\\": {},
+    "C:\\Users\\wmszz\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "projectUniqueName": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
       "projectName": "WATA.LIS.VISION.CAM",
-      "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
-      "packagesPath": "C:\\Users\\wata_iot_dev\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
+      "projectPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "packagesPath": "C:\\Users\\wmszz\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\wata_iot_dev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\wmszz\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -2062,8 +2069,8 @@
         "net8.0-windows10.0.18362": {
           "targetAlias": "net8.0-windows10.0.18362.0",
           "projectReferences": {
-            "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "C:\\Users\\wata_iot_dev\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }
@@ -2077,7 +2084,8 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.100"
     },
     "frameworks": {
       "net8.0-windows10.0.18362": {
@@ -2105,7 +2113,7 @@
           },
           "ZXing.Net": {
             "target": "Package",
-            "version": "[0.16.6, )"
+            "version": "[0.16.9, )"
           }
         },
         "imports": [
@@ -2122,21 +2130,21 @@
         "downloadDependencies": [
           {
             "name": "Microsoft.Windows.SDK.NET.Ref",
-            "version": "[10.0.18362.53, 10.0.18362.53]"
+            "version": "[10.0.18362.54, 10.0.18362.54]"
           }
         ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           },
-          "Microsoft.Windows.SDK.NET.Ref": {
+          "Microsoft.Windows.SDK.NET.Ref.Windows": {
             "privateAssets": "all"
           },
           "Microsoft.WindowsDesktop.App": {
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
