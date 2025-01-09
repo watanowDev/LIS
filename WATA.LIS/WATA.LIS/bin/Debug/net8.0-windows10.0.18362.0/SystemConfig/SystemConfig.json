@@ -1,11 +1,11 @@
 {
   "main": {
     "device_type": "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA
-    "workLocationId": "JPN",
+    "workLocationId": "PULMUONE",
     "projectId": "afbb58611535449780cdb27a615afeb2",
-    "mappingId": "caaf22ec4eec43c4b8e57e7f72c7076b",
-    "mapId": "9528ffc4960d4065b4abf3855aed194e",
-    "vehicleId": "FORKLIFT_010"
+    "mappingId": "72c729f689774c7b8c8e2339da515209",
+    "mapId": "de20847d222448afb90c6a4f24b25758",
+    "vehicleId": "PMO_FORKLIFT_001"
   },
   "led_buzzer": {
     "led_enable": 1,
@@ -57,12 +57,12 @@
     "PORT": 5010
   },
   "NAV": {
-    "NAV_Enable": 0,
+    "NAV_Enable": 1,
     "IP": "192.168.1.200",
     "PORT": 2111
   },
   "LIVOX": {
-    "LIVOX_Enable": 0
+    "LIVOX_Enable": 1
   },
   "vision": {
     "vision_enable": 1,

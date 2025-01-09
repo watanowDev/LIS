@@ -99,6 +99,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_no_QRcnt;
         private int m_visionPickupCnt;
         private int m_visionDropCnt;
+        private int m_visionPickupTime;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -841,11 +842,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // PickupDepth 값이 Threshold 값 이하일 경우 픽업 카운트 증가. 반대일 경우 드롭 카운트 증가.
-            if (m_visionModel.PIKCUP_DEPTH <= 500)
+            if (m_visionModel.PIKCUP_DEPTH <= 700)
             {
                 m_visionPickupCnt++;
             }
-            else if (m_visionModel.PIKCUP_DEPTH > 500)
+            else if (m_visionModel.PIKCUP_DEPTH > 700 && m_visionModel.PIKCUP_DEPTH != 0)
             {
                 m_visionDropCnt++;
             }
@@ -891,10 +892,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_isVisionPickUp = true;
                 m_visionDropCnt = 0;
             }
-            else if (m_visionDropCnt > 10 && m_isPickUp == true)
+            else if (m_visionDropCnt > 3 && m_isPickUp == true)
             {
                 m_isVisionPickUp = false;
                 m_visionPickupCnt = 0;
+            }
+
+            // 측정대기인 상태에서 15초동안 픽업이 완료되지 않을 경우 노말상태로 변경
+            if (m_isVisionPickUp == true && m_isPickUp == false)
+            {
+                m_visionPickupTime++;
+                if (m_visionPickupTime > 150)
+                {
+                    m_isVisionPickUp = false;
+                    m_visionPickupTime = 0;
+                    m_visionPickupCnt = 0;
+                    m_visionDropCnt = 0;
+                    m_guideWeightStart = false;
+                    Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+                }
             }
         }
 
@@ -924,7 +940,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
         {
             List<long> calcList = new List<long>();
-            long distance = 700;
+            long distance = 300;
 
             //List<string> zoneNameList = new List<string>();
             try
@@ -957,7 +973,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     // Create a list to store zoneName with x, y, naviX, naviY, and calcDistance
                                     //zoneNameList.Add($"x: {x}, y: {y}, naviX: {naviX}, naviY: {naviY}, calcDistance: {calcDistance}, zoneName: {m_cellInfoModel.data[i].targetGeofence[j].zoneName}");
 
-                                    Tools.Log($"x : " + x + " y: " + y + " calcDistance: " + calcDistance + "naviX" + naviX + "naviY" + naviY, Tools.ELogType.ActionLog);
+                                    //Tools.Log($"x : " + x + " y: " + y + " calcDistance: " + calcDistance + "naviX" + naviX + "naviY" + naviY, Tools.ELogType.ActionLog);
+                                    Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{x}, Y:{y}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
                                     if (calcDistance < distance)
                                     {
                                         if (bDrop)
@@ -1498,7 +1515,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_isVisionPickUp == false) return;
 
-                // 물류까지의 거리 값이 1000 이하일 때 픽업 프로세스 시작 알림음 제공
+                // 물류까지의 거리 값이 Threshold 이하일 때 픽업 프로세스 시작 알림음 제공
                 if (m_guideWeightStart == false)
                 {
                     m_stopwatch = new Stopwatch();
@@ -1522,6 +1539,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
                 // 중량값 안정화까지 픽업 판단 보류
+                if (m_weightModel.GrossWeight < 10) return;
+
                 if (m_weight_list.Count < m_weight_sample_size) return;
 
                 int currentWeight = m_weightModel.GrossWeight;
@@ -1657,7 +1676,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_isVisionPickUp == true) return;
 
-                //if (m_weight_list.Count == 0 || m_weight_list == null) return;
+                if (m_weight_list.Count == 0 || m_weight_list == null) return;
+
+                //if (m_weightModel.GrossWeight > 10) return;
 
                 Tools.Log($"Drop Event!!!", ELogType.ActionLog);
             }
