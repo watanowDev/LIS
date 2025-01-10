@@ -216,7 +216,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                             // 화면 좌측 중앙 부분의 Depth 값 가져오기
                             int regionSize = 200;
                             int halfRegion = regionSize / 2;
-                            int offsetX = 100; // 좌측 끝에서 100만큼 이동
+                            int offsetX = 250; // 좌측 끝에서 100만큼 이동
                             int centerX = offsetX + halfRegion;
                             int centerY = colorHeight / 2;
                             int sumDepth = 0;

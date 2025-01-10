@@ -887,7 +887,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringVisionPickupTimerEvent(object sender, EventArgs e)
         {
             // Pickup, Drop 카운트의 누적값에 의한 상태 변경
-            if (m_visionPickupCnt > 10 && m_isPickUp == false)
+            if (m_visionPickupCnt > 50 && m_isPickUp == false)
             {
                 m_isVisionPickUp = true;
                 m_visionDropCnt = 0;
@@ -1317,9 +1317,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadWeight = m_event_weight;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             //ActionObj.actionInfo.shelf = false;
-            if (m_event_epc == "")
+            if (m_event_epc.Contains("DA"))
             {
-                ActionObj.actionInfo.shelf = false;
+                ActionObj.actionInfo.shelf = true;
             }
             else
             {
@@ -1415,9 +1415,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadWeight = m_event_weight;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             //ActionObj.actionInfo.shelf = false;
-            if (m_event_epc == "")
+            if (m_event_epc.Contains("DA"))
             {
-                ActionObj.actionInfo.shelf = false;
+                ActionObj.actionInfo.shelf = true;
             }
             else
             {
@@ -1650,9 +1650,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void PickUpEvent()
         {
             // 인디케이터 통신 핸들
-            //m_Command = 1;
-            //if (m_set_load == true) m_Command = 2;
-            //if (m_set_unload == true) m_Command = 3;
+            m_Command = 1;
+            if (m_set_load == true) m_Command = 2;
+            if (m_set_unload == true) m_Command = 3;
 
             // 앱 물류 선택 X, QR 코드 X
             if (m_set_item == false && !m_event_QRcode.Contains("wata"))

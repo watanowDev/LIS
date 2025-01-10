@@ -62,7 +62,7 @@
     "PORT": 2111
   },
   "LIVOX": {
-    "LIVOX_Enable": 1
+    "LIVOX_Enable": 0
   },
   "vision": {
     "vision_enable": 1,
@@ -73,6 +73,6 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0
+    "display_enable": 1
   }
 }
