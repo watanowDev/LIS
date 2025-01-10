@@ -214,16 +214,17 @@ namespace WATA.LIS.VISION.CAM.Camera
                             Cv2.Resize(depthImage, resizedDepthImage, new OpenCvSharp.Size(colorWidth, colorHeight), 0, 0, InterpolationFlags.Nearest);
 
                             // 화면 좌측 중앙 부분의 Depth 값 가져오기
-                            int regionSize = 300;
+                            int regionSize = 200;
                             int halfRegion = regionSize / 2;
-                            int centerX = halfRegion; // 화면 좌측 끝에 맞추기
+                            int offsetX = 100; // 좌측 끝에서 100만큼 이동
+                            int centerX = offsetX + halfRegion;
                             int centerY = colorHeight / 2;
                             int sumDepth = 0;
                             int count = 0;
 
                             for (int y = centerY - halfRegion; y <= centerY + halfRegion; y++)
                             {
-                                for (int x = 0; x <= regionSize; x++) // 좌측 끝에서 시작
+                                for (int x = offsetX; x <= offsetX + regionSize; x++)
                                 {
                                     if (x >= 0 && x < colorWidth && y >= 0 && y < colorHeight)
                                     {
@@ -233,34 +234,32 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 }
                             }
 
-                            ushort averageDepth = (ushort)(sumDepth / count);
-
-                            // centerX, centerY를 중심으로 하는 네모 박스 그리기
-                            Cv2.Rectangle(colorImage, new Point(0, centerY - halfRegion), new Point(regionSize, centerY + halfRegion), new Scalar(255, 0, 255), thickness: 4);
-
-
-                            // 화면 회전 및 RGB 변환
-                            Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
-                            Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
-
-
-                            // Convert Mat to byte array
-                            byte[] frameData;
-                            using (var ms = new MemoryStream())
+                            // 영역의 50% 이상에서 depth 값을 취득했을 때만 평균 계산
+                            int totalPixels = regionSize * regionSize;
+                            if (count >= totalPixels / 2)
                             {
-                                colorImage.WriteToStream(ms);
-                                frameData = ms.ToArray();
+                                ushort averageDepth = (ushort)(sumDepth / count);
+
+                                // centerX, centerY를 중심으로 하는 네모 박스 그리기
+                                Cv2.Rectangle(colorImage, new Point(offsetX, centerY - halfRegion), new Point(offsetX + regionSize, centerY + halfRegion), new Scalar(255, 0, 255), thickness: 4);
+
+                                // Convert Mat to byte array
+                                byte[] frameData;
+                                using (var ms = new MemoryStream())
+                                {
+                                    colorImage.WriteToStream(ms);
+                                    frameData = ms.ToArray();
+                                }
+
+                                // Publish the event
+                                VisionCamModel eventModels = new VisionCamModel();
+                                eventModels.QR = detectQR == null ? "" : detectQR;
+                                eventModels.PIKCUP_DEPTH = averageDepth;
+                                eventModels.POINTS = points.ToString();
+                                eventModels.FRAME = frameData;
+                                eventModels.connected = true;
+                                _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                             }
-
-
-                            // Publish the event
-                            VisionCamModel eventModels = new VisionCamModel();
-                            eventModels.QR = detectQR == null ? "" : detectQR;
-                            eventModels.PIKCUP_DEPTH = averageDepth;
-                            eventModels.POINTS = points.ToString();
-                            eventModels.FRAME = frameData;
-                            eventModels.connected = true;
-                            _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                         }
                     }
                 }, tokenSource.Token);

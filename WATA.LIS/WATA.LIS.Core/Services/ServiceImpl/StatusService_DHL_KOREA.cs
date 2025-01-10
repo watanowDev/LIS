@@ -892,7 +892,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_isVisionPickUp = true;
                 m_visionDropCnt = 0;
             }
-            else if (m_visionDropCnt > 3 && m_isPickUp == true)
+            else if (m_visionDropCnt > 0 && m_isPickUp == true)
             {
                 m_isVisionPickUp = false;
                 m_visionPickupCnt = 0;
@@ -940,7 +940,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, long naviT, bool bDrop)
         {
             List<long> calcList = new List<long>();
-            long distance = 300;
+            long distance = 700;
 
             (naviX, naviY) = CalculateNewPosition(naviX, naviY, (int)naviT);
 
@@ -1018,11 +1018,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private (long newX, long newY) CalculateNewPosition(long x, long y, int angle)
         {
             // 각도를 라디안으로 변환
-            double radians = angle * (Math.PI / 180.0);
+            angle = (angle + 1800) % 3600;
+            double radians = (angle / 10) * (Math.PI / 180.0);
 
-            // 2500mm를 더한 새로운 좌표 계산
-            long newX = x + (long)(2500 * Math.Cos(radians));
-            long newY = y + (long)(2500 * Math.Sin(radians));
+            // 2300mm를 더한 새로운 좌표 계산
+            long newX = x + (long)(2200 * Math.Cos(radians));
+            long newY = y + (long)(2200 * Math.Sin(radians));
 
             return (newX, newY);
         }
@@ -1265,18 +1266,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     return;
                 }
 
-                (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
-
                 ProdDataModel prodDataModel = new ProdDataModel();
                 prodDataModel.mapId = m_mainConfigModel.mapId;
                 prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
                 prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
                 prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
                 prodDataModel.vehicleId = m_basicInfoModel.data[0].vehicleId;
-                prodDataModel.x = newX;
-                prodDataModel.y = newY;
-                //prodDataModel.x = m_navModel.naviX;
-                //prodDataModel.y = m_navModel.naviY;
+                prodDataModel.x = m_navModel.naviX;
+                prodDataModel.y = m_navModel.naviY;
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
                 prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
@@ -1307,6 +1304,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndPickupAction()
         {
+            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
+
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
             ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
@@ -1317,7 +1316,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
-            ActionObj.actionInfo.shelf = false;
+            //ActionObj.actionInfo.shelf = false;
+            if (m_event_epc == "")
+            {
+                ActionObj.actionInfo.shelf = false;
+            }
+            else
+            {
+                ActionObj.actionInfo.shelf = false;
+            }
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
             ActionObj.actionInfo.height = (m_event_distance).ToString();
@@ -1326,8 +1333,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.visionDepth = m_event_length;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
-            ActionObj.actionInfo.x = m_navModel.naviX;
-            ActionObj.actionInfo.y = m_navModel.naviY;
+            ActionObj.actionInfo.x = newX;
+            ActionObj.actionInfo.y = newY;
+            //ActionObj.actionInfo.x = m_navModel.naviX;
+            //ActionObj.actionInfo.y = m_navModel.naviY;
             ActionObj.actionInfo.t = (int)m_navModel.naviT;
 
             if (m_event_epc == "")
@@ -1391,6 +1400,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndDropAction()
         {
+            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
+
             m_event_distance = m_curr_distance;
 
             ActionInfoModel ActionObj = new ActionInfoModel();
@@ -1403,7 +1414,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
-            ActionObj.actionInfo.shelf = false;
+            //ActionObj.actionInfo.shelf = false;
+            if (m_event_epc == "")
+            {
+                ActionObj.actionInfo.shelf = false;
+            }
+            else
+            {
+                ActionObj.actionInfo.shelf = false;
+            }
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
             ActionObj.actionInfo.height = (m_event_distance).ToString();
@@ -1412,8 +1431,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.visionDepth = m_event_length;
             ActionObj.actionInfo.loadMatrix = [10, 10, 10];
             ActionObj.actionInfo.plMatrix = m_event_points;
-            ActionObj.actionInfo.x = m_navModel.naviX;
-            ActionObj.actionInfo.y = m_navModel.naviY;
+            ActionObj.actionInfo.x = newX;
+            ActionObj.actionInfo.y = newY;
+            //ActionObj.actionInfo.x = m_navModel.naviX;
+            //ActionObj.actionInfo.y = m_navModel.naviY;
             ActionObj.actionInfo.t = (int)m_navModel.naviT;
 
             if (m_event_epc == "")
@@ -1696,7 +1717,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_weight_list.Count == 0 || m_weight_list == null) return;
 
-                //if (m_weightModel.GrossWeight > 10) return;
+                if (m_weightModel.GrossWeight > 10) return;
 
                 Tools.Log($"Drop Event!!!", ELogType.ActionLog);
             }
@@ -1721,6 +1742,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_guideWeightStart = false;
 
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
+            SendBackEndDropAction();
 
             //// 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이하인 경우 리복스 데이터 사후 요청
             //if (m_afterCallLivox == true && m_curr_distance <= 1500)

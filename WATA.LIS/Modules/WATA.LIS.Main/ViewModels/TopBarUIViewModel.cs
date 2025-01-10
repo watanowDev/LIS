@@ -86,7 +86,7 @@ namespace WATA.LIS.Main.ViewModels
 
         private void OnNavSensorEvent(NAVSensorModel model)
         {
-            NAVEvent = $"X: {model.naviX}, Y: {model.naviY} Result: {model.result}";
+            NAVEvent = $"X: {model.naviX}, Y: {model.naviY}, T: {model.naviT}, Result: {model.result}";
         }
 
         private void OnCurrentSizeEvent(LIVOXModel obj)
