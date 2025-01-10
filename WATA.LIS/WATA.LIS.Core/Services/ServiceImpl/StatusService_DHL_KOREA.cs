@@ -937,10 +937,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_navModel = navSensorModel;
         }
 
-        private void CalcDistanceAndGetZoneID(long naviX, long naviY, bool bDrop)
+        private void CalcDistanceAndGetZoneID(long naviX, long naviY, long naviT, bool bDrop)
         {
             List<long> calcList = new List<long>();
             long distance = 300;
+
+            (naviX, naviY) = CalculateNewPosition(naviX, naviY, (int)naviT);
 
             //List<string> zoneNameList = new List<string>();
             try
@@ -1013,6 +1015,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         }
 
+        private (long newX, long newY) CalculateNewPosition(long x, long y, int angle)
+        {
+            // 각도를 라디안으로 변환
+            double radians = angle * (Math.PI / 180.0);
+
+            // 2500mm를 더한 새로운 좌표 계산
+            long newX = x + (long)(2500 * Math.Cos(radians));
+            long newY = y + (long)(2500 * Math.Sin(radians));
+
+            return (newX, newY);
+        }
+
 
         /// <summary>
         /// LiDAR 3D
@@ -1043,7 +1057,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (m_isPickUp == true)
             {
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
                 SendBackEndPickupAction();
 
                 // 인디케이터 통신 핸들
@@ -1053,7 +1067,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             else if (m_isPickUp == false)
             {
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
                 SendBackEndDropAction();
             }
 
@@ -1251,14 +1265,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     return;
                 }
 
+                (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
+
                 ProdDataModel prodDataModel = new ProdDataModel();
                 prodDataModel.mapId = m_mainConfigModel.mapId;
                 prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
                 prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
                 prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
                 prodDataModel.vehicleId = m_basicInfoModel.data[0].vehicleId;
-                prodDataModel.x = m_navModel.naviX;
-                prodDataModel.y = m_navModel.naviY;
+                prodDataModel.x = newX;
+                prodDataModel.y = newY;
+                //prodDataModel.x = m_navModel.naviX;
+                //prodDataModel.y = m_navModel.naviY;
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
                 prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
@@ -1636,12 +1654,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             }
 
-            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
             if (m_withoutLivox == true)
             {
                 m_event_points = "";
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
                 SendBackEndPickupAction();
 
                 // 모든 값 측정 완료 LED, 부저
@@ -1702,7 +1720,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_guideWeightStart = false;
 
-            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, true);
+            CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
 
             //// 높이가 1500이상인 곳에서 픽업을 하고 높이가 1500 이하인 경우 리복스 데이터 사후 요청
             //if (m_afterCallLivox == true && m_curr_distance <= 1500)
@@ -1754,7 +1772,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 정상적인 물류 드롭인 경우
             if (m_afterCallLivox == false)
             {
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, false);
+                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
                 SendBackEndDropAction();
             }
 
