@@ -163,11 +163,9 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
 
                 m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 25);
-                m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
                 Config config = new Config();
                 config.EnableStream(m_colorProfile);
-                config.EnableStream(m_depthProfile);
 
                 m_pipeline.Start(config);
 
@@ -180,9 +178,8 @@ namespace WATA.LIS.VISION.CAM.Camera
                         using (var frames = m_pipeline.WaitForFrames(100))
                         {
                             var colorFrame = frames?.GetColorFrame();
-                            var depthFrame = frames?.GetDepthFrame();
 
-                            if (colorFrame == null || depthFrame == null)
+                            if (colorFrame == null)
                             {
                                 continue;
                             }
@@ -199,67 +196,21 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                             string detectQR = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
 
-                            // Depth 프레임 중 AvgDepth 처리
-                            int depthWidth = (int)depthFrame.GetWidth();
-                            int depthHeight = (int)depthFrame.GetHeight();
-
-                            byte[] depthData = new byte[depthFrame.GetDataSize()];
-                            depthFrame.CopyData(ref depthData);
-
-                            Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_16UC1);
-                            Marshal.Copy(depthData, 0, depthImage.Data, depthData.Length);
-
-                            // Depth 이미지를 colorFrame 해상도에 맞게 조정
-                            Mat resizedDepthImage = new Mat();
-                            Cv2.Resize(depthImage, resizedDepthImage, new OpenCvSharp.Size(colorWidth, colorHeight), 0, 0, InterpolationFlags.Nearest);
-
-                            // 화면 좌측 중앙 부분의 Depth 값 가져오기
-                            int regionSize = 200;
-                            int halfRegion = regionSize / 2;
-                            int offsetX = 250; // 좌측 끝에서 100만큼 이동
-                            int centerX = offsetX + halfRegion;
-                            int centerY = colorHeight / 2;
-                            int sumDepth = 0;
-                            int count = 0;
-
-                            for (int y = centerY - halfRegion; y <= centerY + halfRegion; y++)
+                            // Convert Mat to byte array
+                            byte[] frameData;
+                            using (var ms = new MemoryStream())
                             {
-                                for (int x = offsetX; x <= offsetX + regionSize; x++)
-                                {
-                                    if (x >= 0 && x < colorWidth && y >= 0 && y < colorHeight)
-                                    {
-                                        sumDepth += resizedDepthImage.At<ushort>(y, x);
-                                        count++;
-                                    }
-                                }
+                                colorImage.WriteToStream(ms);
+                                frameData = ms.ToArray();
                             }
 
-                            // 영역의 50% 이상에서 depth 값을 취득했을 때만 평균 계산
-                            int totalPixels = regionSize * regionSize;
-                            if (count >= totalPixels / 2)
-                            {
-                                ushort averageDepth = (ushort)(sumDepth / count);
-
-                                // centerX, centerY를 중심으로 하는 네모 박스 그리기
-                                Cv2.Rectangle(colorImage, new Point(offsetX, centerY - halfRegion), new Point(offsetX + regionSize, centerY + halfRegion), new Scalar(255, 0, 255), thickness: 4);
-
-                                // Convert Mat to byte array
-                                byte[] frameData;
-                                using (var ms = new MemoryStream())
-                                {
-                                    colorImage.WriteToStream(ms);
-                                    frameData = ms.ToArray();
-                                }
-
-                                // Publish the event
-                                VisionCamModel eventModels = new VisionCamModel();
-                                eventModels.QR = detectQR == null ? "" : detectQR;
-                                eventModels.PIKCUP_DEPTH = averageDepth;
-                                eventModels.POINTS = points.ToString();
-                                eventModels.FRAME = frameData;
-                                eventModels.connected = true;
-                                _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
-                            }
+                            // Publish the event
+                            VisionCamModel eventModels = new VisionCamModel();
+                            eventModels.QR = detectQR == null ? "" : detectQR;
+                            eventModels.POINTS = points.ToString();
+                            eventModels.FRAME = frameData;
+                            eventModels.connected = true;
+                            _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
                         }
                     }
                 }, tokenSource.Token);

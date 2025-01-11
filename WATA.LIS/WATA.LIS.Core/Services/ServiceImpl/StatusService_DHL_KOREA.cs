@@ -97,9 +97,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_curr_QRcode = "";
         private string m_event_QRcode = "";
         private int m_no_QRcnt;
-        private int m_visionPickupCnt;
-        private int m_visionDropCnt;
-        private int m_visionPickupTime;
+        //private int m_visionPickupCnt;
+        //private int m_visionDropCnt;
+        //private int m_visionPickupTime;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -140,7 +140,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
-        private bool m_isVisionPickUp = false;
+        //private bool m_isVisionPickUp = false;
 
         // 타이머 클래스
         DispatcherTimer m_ErrorCheck_Timer;
@@ -205,10 +205,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
 
-            m_MonitoringQR_Timer = new DispatcherTimer();
-            m_MonitoringQR_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_MonitoringQR_Timer.Tick += new EventHandler(MonitoringVisionPickupTimerEvent);
-            m_MonitoringQR_Timer.Start();
+            //m_MonitoringPickup_Timer = new DispatcherTimer();
+            //m_MonitoringPickup_Timer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_MonitoringPickup_Timer.Tick += new EventHandler(MonitoringVisionPickupTimerEvent);
+            //m_MonitoringPickup_Timer.Start();
 
 
 
@@ -842,14 +842,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // PickupDepth 값이 Threshold 값 이하일 경우 픽업 카운트 증가. 반대일 경우 드롭 카운트 증가.
-            if (m_visionModel.PIKCUP_DEPTH <= 700)
-            {
-                m_visionPickupCnt++;
-            }
-            else if (m_visionModel.PIKCUP_DEPTH > 700 && m_visionModel.PIKCUP_DEPTH != 0)
-            {
-                m_visionDropCnt++;
-            }
+            //if (m_visionModel.PIKCUP_DEPTH <= 700)
+            //{
+            //    m_visionPickupCnt++;
+            //}
+            //else if (m_visionModel.PIKCUP_DEPTH > 700 && m_visionModel.PIKCUP_DEPTH != 0)
+            //{
+            //    m_visionDropCnt++;
+            //}
         }
 
         private void MonitoringVisonTimerEvent(object sender, EventArgs e)
@@ -886,32 +886,32 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void MonitoringVisionPickupTimerEvent(object sender, EventArgs e)
         {
-            // Pickup, Drop 카운트의 누적값에 의한 상태 변경
-            if (m_visionPickupCnt > 50 && m_isPickUp == false)
-            {
-                m_isVisionPickUp = true;
-                m_visionDropCnt = 0;
-            }
-            else if (m_visionDropCnt > 0 && m_isPickUp == true)
-            {
-                m_isVisionPickUp = false;
-                m_visionPickupCnt = 0;
-            }
+            //// Pickup, Drop 카운트의 누적값에 의한 상태 변경
+            //if (m_visionPickupCnt > 50 && m_isPickUp == false)
+            //{
+            //    m_isVisionPickUp = true;
+            //    m_visionDropCnt = 0;
+            //}
+            //else if (m_visionDropCnt > 0 && m_isPickUp == true)
+            //{
+            //    m_isVisionPickUp = false;
+            //    m_visionPickupCnt = 0;
+            //}
 
-            // 측정대기인 상태에서 15초동안 픽업이 완료되지 않을 경우 노말상태로 변경
-            if (m_isVisionPickUp == true && m_isPickUp == false)
-            {
-                m_visionPickupTime++;
-                if (m_visionPickupTime > 150)
-                {
-                    m_isVisionPickUp = false;
-                    m_visionPickupTime = 0;
-                    m_visionPickupCnt = 0;
-                    m_visionDropCnt = 0;
-                    m_guideWeightStart = false;
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
-                }
-            }
+            //// 측정대기인 상태에서 15초동안 픽업이 완료되지 않을 경우 노말상태로 변경
+            //if (m_isVisionPickUp == true && m_isPickUp == false)
+            //{
+            //    m_visionPickupTime++;
+            //    if (m_visionPickupTime > 150)
+            //    {
+            //        m_isVisionPickUp = false;
+            //        m_visionPickupTime = 0;
+            //        m_visionPickupCnt = 0;
+            //        m_visionDropCnt = 0;
+            //        m_guideWeightStart = false;
+            //        Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+            //    }
+            //}
         }
 
 
@@ -1552,7 +1552,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 픽업 판단 조건
                 if (m_isPickUp == true) return;
 
-                if (m_isVisionPickUp == false) return;
+                //if (m_isVisionPickUp == false) return;
+
+                if (m_weight_list.Count < m_weight_sample_size) return;
+
+                if (m_weightModel.GrossWeight < 10) return;
 
                 // 물류까지의 거리 값이 Threshold 이하일 때 픽업 프로세스 시작 알림음 제공
                 if (m_guideWeightStart == false)
@@ -1578,10 +1582,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
 
                 // 중량값 안정화까지 픽업 판단 보류
-                if (m_weightModel.GrossWeight < 10) return;
-
-                if (m_weight_list.Count < m_weight_sample_size) return;
-
                 int currentWeight = m_weightModel.GrossWeight;
 
                 int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
@@ -1713,7 +1713,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 if (m_isPickUp == false) return;
 
-                if (m_isVisionPickUp == true) return;
+                //if (m_isVisionPickUp == true) return;
 
                 if (m_weight_list.Count == 0 || m_weight_list == null) return;
 
