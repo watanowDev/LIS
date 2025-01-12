@@ -87,7 +87,7 @@ namespace WATA.LIS.IF.BE.REST
             catch (WebException exception)
             {
                  _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
-                 Tools.Log($"REST Post Client Response Error dev", logtype);
+                 Tools.Log($"BE Conn Error!!! REST Post Client Response Error dev", logtype);
 
                 using (WebResponse resp = exception.Response)
                 {
@@ -99,7 +99,7 @@ namespace WATA.LIS.IF.BE.REST
                     {
                         string responseText = sr.ReadToEnd();
                         _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
-                        Tools.Log($"REST Post Client Response Data : {responseText} ", logtype);
+                        Tools.Log($"BE Conn Error!!! REST Post Client Response Data : {responseText} ", logtype);
 
                         if (Model.type == eMessageType.BackEndContainer)
                         {

@@ -745,7 +745,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //DistanceSensorHardCoding(m_distanceModel.Distance_mm);
 
-            m_curr_distance = m_distanceModel.Distance_mm - 60 - m_distanceConfig.pick_up_distance_threshold;
+            m_curr_distance = m_distanceModel.Distance_mm - m_distanceConfig.pick_up_distance_threshold;
             if (m_curr_distance < 0)
             {
                 m_curr_distance = 0;
@@ -942,7 +942,78 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             List<long> calcList = new List<long>();
             long distance = 700;
 
-            (naviX, naviY) = CalculateNewPosition(naviX, naviY, (int)naviT);
+            (naviX, naviY) = CalculateNewPosition(naviX, naviY, (int)naviT, "pickdrop");
+
+            //List<string> zoneNameList = new List<string>();
+            try
+            {
+                if (m_cellInfoModel != null && m_cellInfoModel.data.Count > 0)
+                {
+                    long minDistance = long.MaxValue;
+                    string closestZoneId = "";
+                    string closestZoneName = "";
+
+                    for (int i = 0; i < m_cellInfoModel.data.Count; i++)
+                    {
+                        if (m_cellInfoModel.data[i].targetGeofence.Count > 0)
+                        {
+                            for (int j = m_cellInfoModel.data[i].targetGeofence.Count - 1; j >= 0; j--)
+                            {
+                                string pattern = @"POINT\((-?\d+\.\d+) (-?\d+\.\d+)\)";
+                                Match match = Regex.Match(m_cellInfoModel.data[i].targetGeofence[j].geom, pattern);
+                                if (match.Success && match.Groups.Count == 3)
+                                {
+                                    double x = double.Parse(match.Groups[1].Value);
+                                    double y = double.Parse(match.Groups[2].Value);
+                                    x = Math.Truncate(x * 1000);
+                                    y = Math.Truncate(y * 1000);
+
+                                    long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - x, 2) + Math.Pow(naviY - y, 2)));
+                                    Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{x}, Y:{y}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
+
+                                    if (calcDistance < minDistance)
+                                    {
+                                        minDistance = calcDistance;
+                                        closestZoneId = m_cellInfoModel.data[i].targetGeofence[j].zoneId;
+                                        closestZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (minDistance < long.MaxValue)
+                    {
+                        if (minDistance < distance)
+                        {
+                            m_ActionZoneId = closestZoneId;
+                            m_ActionZoneName = closestZoneName;
+                        }
+                    }
+                    else
+                    {
+                        m_ActionZoneId = "";
+                        m_ActionZoneName = "";
+                    }
+                }
+                else
+                {
+                    Tools.Log($"[ERROR] Can't get cellInfoModel ", ELogType.SystemLog);
+                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[ERROR] CalcDistanceAndGetZoneID : {ex.Message}", Tools.ELogType.SystemLog);
+            }
+
+        }
+
+        private void CalcDistanceAndGetZoneID_Old(long naviX, long naviY, long naviT, bool bDrop)
+        {
+            List<long> calcList = new List<long>();
+            long distance = 700;
+
+            (naviX, naviY) = CalculateNewPosition(naviX, naviY, (int)naviT, "pickdrop");
 
             //List<string> zoneNameList = new List<string>();
             try
@@ -991,7 +1062,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         }
 
                                         //Tools.Log($"x : " + x + " y: " + y + "zoneId: " + zoneId + " zoneName: " + zoneName + " calcDistance: " + calcDistance, Tools.ELogType.ActionLog);
-                                        break;
+                                        //break;
                                     }
                                     else
                                     {
@@ -1015,15 +1086,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         }
 
-        private (long newX, long newY) CalculateNewPosition(long x, long y, int angle)
+        private (long newX, long newY) CalculateNewPosition(long x, long y, int angle, string action)
         {
             // 각도를 라디안으로 변환
             angle = (angle + 1800) % 3600;
             double radians = (angle / 10) * (Math.PI / 180.0);
 
-            // 2300mm를 더한 새로운 좌표 계산
-            long newX = x + (long)(2200 * Math.Cos(radians));
-            long newY = y + (long)(2200 * Math.Sin(radians));
+            long newX = 0;
+            long newY = 0;
+
+            if (action == "pickdrop")
+            {
+                // 2300mm를 더한 새로운 좌표 계산
+                newX = x + (long)(3000 * Math.Cos(radians));
+                newY = y + (long)(3000 * Math.Sin(radians));
+            }else if (action == "positioning")
+            {
+                // 1500mm를 더한 새로운 좌표 계산
+                newX = x + (long)(1400 * Math.Cos(radians));
+                newY = y + (long)(1400 * Math.Sin(radians));
+            }
 
             return (newX, newY);
         }
@@ -1068,8 +1150,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             else if (m_isPickUp == false)
             {
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
-                SendBackEndDropAction();
+                //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
+                //SendBackEndDropAction();
             }
 
 
@@ -1266,14 +1348,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     return;
                 }
 
+                (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "positioning");
+
                 ProdDataModel prodDataModel = new ProdDataModel();
                 prodDataModel.mapId = m_mainConfigModel.mapId;
                 prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
                 prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
                 prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
                 prodDataModel.vehicleId = m_basicInfoModel.data[0].vehicleId;
-                prodDataModel.x = m_navModel.naviX;
-                prodDataModel.y = m_navModel.naviY;
+                //prodDataModel.x = m_navModel.naviX;
+                //prodDataModel.y = m_navModel.naviY;
+                prodDataModel.x = newX;
+                prodDataModel.y = newY;
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
                 prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
@@ -1304,7 +1390,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndPickupAction()
         {
-            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
+            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
+
+            m_event_distance = m_curr_distance;
+
+            if (m_event_distance < 1500)
+            {
+                m_event_distance = 1000;
+            }
+            else if (m_event_distance < 3000)
+            {
+                m_event_distance = 2500;
+            }
+            else if (m_event_distance < 20000)
+            {
+                m_event_distance = 4500;
+            }
+            else
+            {
+                m_event_distance = 7000;
+            }
 
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
@@ -1400,9 +1505,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndDropAction()
         {
-            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT);
+            (long newX, long newY) = CalculateNewPosition(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
 
             m_event_distance = m_curr_distance;
+
+            if (m_event_distance < 1500)
+            {
+                m_event_distance = 1000;
+            }
+            else if (m_event_distance < 3000)
+            {
+                m_event_distance = 2500;
+            }
+            else if (m_event_distance < 20000)
+            {
+                m_event_distance = 4500;
+            }
+            else
+            {
+                m_event_distance = 7000;
+            }
 
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
@@ -1605,7 +1727,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_stopwatch != null) m_stopwatch.Start();
 
                 // 현재 높이센서 측정값이 500 이하일 때만, 리복스 데이터 요청
-                if (m_curr_distance <= 500)
+                if (m_curr_distance <= 1500)
                 {
                     m_withoutLivox = false;
                     _eventAggregator.GetEvent<CallDataEvent>().Publish();
@@ -1792,11 +1914,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //}
 
             // 정상적인 물류 드롭인 경우
-            if (m_afterCallLivox == false)
-            {
-                CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
-                SendBackEndDropAction();
-            }
+            //if (m_afterCallLivox == false)
+            //{
+            //    CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
+            //    SendBackEndDropAction();
+            //}
 
             m_ActionZoneId = "";
             m_ActionZoneName = "";
