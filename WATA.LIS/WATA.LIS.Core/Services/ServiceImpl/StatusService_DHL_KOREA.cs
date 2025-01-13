@@ -1100,7 +1100,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 2300mm를 더한 새로운 좌표 계산
                 newX = x + (long)(3000 * Math.Cos(radians));
                 newY = y + (long)(3000 * Math.Sin(radians));
-            }else if (action == "positioning")
+            }
+            else if (action == "positioning")
             {
                 // 1500mm를 더한 새로운 좌표 계산
                 newX = x + (long)(1400 * Math.Cos(radians));
@@ -1394,6 +1395,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_event_distance = m_curr_distance;
 
+
+            //if (m_event_epc != "")
+            //{
+            //}
             if (m_event_distance < 1500)
             {
                 m_event_distance = 1000;
