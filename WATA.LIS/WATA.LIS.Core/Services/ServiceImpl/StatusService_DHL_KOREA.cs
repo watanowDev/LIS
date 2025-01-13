@@ -784,8 +784,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void MonitoringEPCTimerEvent(object sender, EventArgs e)
         {
-            // PickUp 중에 컨테이너 EPC에 DA 나 DC가 포함
-            if (m_curr_epc.Contains("DA") || m_curr_epc.Contains("DC"))
+            // 상차 하차 지시 없고 하이랙 EPC 인식 시
+            if (m_curr_epc.Contains("DA") && m_set_normal == true)
+            {
+                // 새로 인식된 EPC일 경우
+                if (m_event_epc != m_curr_epc)
+                {
+                    m_event_epc = m_curr_epc;
+                    _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
+                }
+            }
+
+            // 상차 하차 지시가 있으면서 도크 EPC 인식 시
+            if (m_curr_epc.Contains("DC") && (m_set_load == true || m_set_unload == true))
             {
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
@@ -793,10 +804,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_event_epc = m_curr_epc;
                     _eventAggregator.GetEvent<HittingEPC_Event>().Publish(m_event_epc);
 
-                    if (m_curr_epc.Contains("DC"))
-                    {
-                        SendBackEndContainerGateEvent();
-                    }
+                    SendBackEndContainerGateEvent();
                 }
 
                 if (m_event_epc.Contains("DC") && m_isPickUp == true && m_event_QRcode == "")
@@ -806,8 +814,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // EPC 인식 없는 상태에서 No EPC 카운트
-            if (m_rfidModel.EPC == "")
+            // 상차 하차 지시 없고 EPC 인식 없는 경우 No EPC 카운트
+            if (m_rfidModel.EPC == "" && m_set_normal == true)
             {
                 m_no_epcCnt++;
                 m_curr_epc = "";
@@ -1726,6 +1734,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     Tools.Log($"Pickup -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
                 }
 
+                // 상차, 하차 지시 있는 경우 리복스 데이터 요청 안함
+                if (m_set_load == true || m_set_unload == true)
+                {
+                    m_withoutLivox = true;
+                    //m_afterCallLivox = true;
+                }
+
 
                 // 부피측정 시작
                 m_stopwatch = new Stopwatch();
@@ -1737,11 +1752,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_withoutLivox = false;
                     _eventAggregator.GetEvent<CallDataEvent>().Publish();
                 }
-                // 현재 높이센서 측정값이 500 초과일 때, 리복스 데이터를 나중에 요청
+                // 현재 높이센서 측정값이 500 초과일 때 리복스 데이터 요청 안함
                 else
                 {
                     m_withoutLivox = true;
-                    m_afterCallLivox = true;
+                    //m_afterCallLivox = true;
                 }
 
                 // 앱 물류 선택 X, QR 코드 X
