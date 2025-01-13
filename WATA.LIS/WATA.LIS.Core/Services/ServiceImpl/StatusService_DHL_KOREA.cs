@@ -761,7 +761,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             if (epcData != null && epcData.Count > 0)
             {
-                m_no_epcCnt = 0;
+                //// 상차 하차 지시 없고 랙 EPC 인식 되면 No EPC 카운트 초기화
+                //if (m_curr_epc.Contains("DA") && m_set_normal == true)
+                //{
+                //    m_no_epcCnt = 0;
+                //}
+
                 m_curr_epc = epcData[0].EPC;
 
                 m_rfidModel.CONNECTED = true;
@@ -787,6 +792,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 상차 하차 지시 없고 하이랙 EPC 인식 시
             if (m_curr_epc.Contains("DA") && m_set_normal == true)
             {
+                m_no_epcCnt = 0;
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
                 {
@@ -798,6 +804,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 상차 하차 지시가 있으면서 도크 EPC 인식 시
             if (m_curr_epc.Contains("DC") && (m_set_load == true || m_set_unload == true))
             {
+                m_no_epcCnt = 0;
                 // 새로 인식된 EPC일 경우
                 if (m_event_epc != m_curr_epc)
                 {
@@ -814,8 +821,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // 상차 하차 지시 없고 EPC 인식 없는 경우 No EPC 카운트
-            if (m_rfidModel.EPC == "" && m_set_normal == true)
+            // 상차 하차 지시 없고 랙 EPC 인식 없는 경우 No EPC 카운트
+            if (!m_curr_epc.Contains("DA") && m_set_normal == true)
             {
                 m_no_epcCnt++;
                 m_curr_epc = "";
@@ -1734,26 +1741,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     Tools.Log($"Pickup -> Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
                 }
 
-                // 상차, 하차 지시 있는 경우 리복스 데이터 요청 안함
-                if (m_set_load == true || m_set_unload == true)
-                {
-                    m_withoutLivox = true;
-                    //m_afterCallLivox = true;
-                }
-
 
                 // 부피측정 시작
                 m_stopwatch = new Stopwatch();
                 if (m_stopwatch != null) m_stopwatch.Start();
 
-                // 현재 높이센서 측정값이 500 이하일 때만, 리복스 데이터 요청
-                if (m_curr_distance <= 1500)
+                // 현재 높이센서 측정값이 1900 이하일 때만, 리복스 데이터 요청
+                if (m_curr_distance <= 1900 && m_set_normal == true)
                 {
                     m_withoutLivox = false;
                     _eventAggregator.GetEvent<CallDataEvent>().Publish();
                 }
-                // 현재 높이센서 측정값이 500 초과일 때 리복스 데이터 요청 안함
-                else
+                // 현재 높이센서 측정값이 1900 초과일 때 리복스 데이터 요청 안함
+                else if (m_curr_distance > 1900 && m_set_normal == true)
+                {
+                    m_withoutLivox = true;
+                    //m_afterCallLivox = true;
+                }
+
+                // 상차, 하차 지시 있는 경우 리복스 데이터 요청 안함
+                if (m_set_normal == false)
                 {
                     m_withoutLivox = true;
                     //m_afterCallLivox = true;
@@ -1825,19 +1832,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
                 SendBackEndPickupAction();
 
-                // 모든 값 측정 완료 LED, 부저
-                if (m_set_item == true && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
-                }
-                else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
-                }
-                else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
-                {
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
-                }
+                //// 모든 값 측정 완료 LED, 부저
+                //if (m_set_item == true && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.SET_ITEM_MEASURE_OK);
+                //}
+                //else if (m_set_item == false && m_event_QRcode.Contains("wata") && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.QR_MEASURE_OK);
+                //}
+                //else if (m_set_item == false && !m_event_QRcode.Contains("wata") && m_isError != true)
+                //{
+                //    Pattlite_Buzzer_LED(ePlayBuzzerLed.NO_QR_MEASURE_OK);
+                //}
             }
 
             // 모든 값 측정 소요시간 체크
