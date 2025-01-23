@@ -8,18 +8,18 @@
     "vehicleId": "DHL_FORKLIFT_020"
   },
   "led_buzzer": {
-    "led_enable": 1,
+    "led_enable": 0,
     "volume": 1,
     "InfoLanguage": "KR" //KR, JP, EN
   },
   "distance_sensor": {
-    "distance_enable": 1,
+    "distance_enable": 0,
     "model_name": "Terrabee", //Terrabee, TF_Mini
     "comport": "COM3",
     "pick_up_distance_threshold": 650
   },
   "weight_sensor": {
-    "weight_enable": 1,
+    "weight_enable": 0,
     "comport": "COM4",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
@@ -36,7 +36,7 @@
     "onlyshelf": 0
   },
   "rfid_receiver": {
-    "rfid_enable": 1,
+    "rfid_enable": 0,
     "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
     "comport": "COM8",
     "SPP_MAC": "00:05:C4:C1:01:32",
@@ -57,12 +57,12 @@
     "PORT": 5010
   },
   "NAV": {
-    "NAV_Enable": 1,
+    "NAV_Enable": 0,
     "IP": "192.168.1.200",
     "PORT": 2111
   },
   "LIVOX": {
-    "LIVOX_Enable": 1
+    "LIVOX_Enable": 0
   },
   "vision": {
     "vision_enable": 1,
@@ -73,6 +73,6 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 1
+    "display_enable": 0
   }
 }

@@ -889,7 +889,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 VisionCamModel visionCamModel = new VisionCamModel();
                 visionCamModel.HEIGHT = m_event_height_femto;
-                visionCamModel.PIKCUP_DEPTH = m_visionModel.PIKCUP_DEPTH;
+                visionCamModel.ACTION_DEPTH = m_visionModel.ACTION_DEPTH;
                 _eventAggregator.GetEvent<HittingSize_Event>().Publish(visionCamModel);
             }
 
@@ -954,7 +954,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                     VisionCamModel visionCamModel = new VisionCamModel();
                     visionCamModel.HEIGHT = m_event_height_femto;
-                    visionCamModel.PIKCUP_DEPTH = m_visionModel.PIKCUP_DEPTH;
+                    visionCamModel.ACTION_DEPTH = m_visionModel.ACTION_DEPTH;
                     _eventAggregator.GetEvent<HittingSize_Event>().Publish(visionCamModel);
 
                     if (m_set_item == true)

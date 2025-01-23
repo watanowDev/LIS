@@ -86,13 +86,17 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-        private const string detectorPrototxtPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.prototxt";
-        private const string detectorCaffeModelPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\detect.caffemodel";
-        private const string superResolutionPrototxtPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.prototxt";
-        private const string superResolutionCaffeModelPath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\sr.caffemodel";
+        private readonly static string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        private readonly static string projectRootDirectory = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName).FullName).FullName).FullName;
+        private readonly static string modelDirectory = Path.Combine(projectRootDirectory, "Modules", "WATA.LIS.VISION.CAM", "Model");
+        private readonly static string detectorPrototxtPath = Path.Combine(modelDirectory, "detect.prototxt");
+        private readonly static string detectorCaffeModelPath = Path.Combine(modelDirectory, "detect.caffemodel");
+        private readonly static string superResolutionPrototxtPath = Path.Combine(modelDirectory, "sr.prototxt");
+        private readonly static string superResolutionCaffeModelPath = Path.Combine(modelDirectory, "sr.caffemodel");
         private WeChatQRCode weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
+
         //private BarcodeReader barcodeReader = new BarcodeReader();
-        private BarcodeReader<Bitmap> barcodeReader = new BarcodeReader<Bitmap>(null, null, null);
+        //private BarcodeReader<Bitmap> barcodeReader = new BarcodeReader<Bitmap>(null, null, null);
 
         private OpenCvSharp.Rect _detectedQRRect;
 
@@ -163,9 +167,11 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
 
                 m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 25);
+                m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
 
                 Config config = new Config();
                 config.EnableStream(m_colorProfile);
+                config.EnableStream(m_depthProfile);
 
                 m_pipeline.Start(config);
 
@@ -173,18 +179,34 @@ namespace WATA.LIS.VISION.CAM.Camera
                 JArray points = new JArray();
 
                 Task.Factory.StartNew(() => {
+                    // 거꾸로된 다이아몬드 모양의 ROI 설정 (depth 카메라 해상도 기준)
+                    List<(string, OpenCvSharp.Rect)> rois = new List<(string, OpenCvSharp.Rect)>
+                        {
+                            ("TM", new OpenCvSharp.Rect(520, 313, 50, 50)),
+                            ("MR", new OpenCvSharp.Rect(345, 463, 50, 50)),
+                            ("MM", new OpenCvSharp.Rect(345, 313, 50, 50)),
+                            ("ML", new OpenCvSharp.Rect(345, 163, 50, 50)),
+                            ("BR", new OpenCvSharp.Rect(120, 438, 50, 50)),
+                            ("BM", new OpenCvSharp.Rect(120, 313, 50, 50)),
+                            ("BL", new OpenCvSharp.Rect(120, 188, 50, 50))
+                        };
+
                     while (!tokenSource.Token.IsCancellationRequested)
                     {
                         using (var frames = m_pipeline.WaitForFrames(100))
                         {
                             var colorFrame = frames?.GetColorFrame();
+                            var depthFrame = frames?.GetDepthFrame();
 
-                            if (colorFrame == null)
+                            if (colorFrame == null || depthFrame == null)
                             {
                                 continue;
                             }
 
-                            // RGB 프레임 중 QR 처리
+                            // 이벤트 데이터 객체 생성
+                            VisionCamModel eventModels = new VisionCamModel();
+
+                            // RGB 프레임 객체 생성
                             int colorWidth = (int)colorFrame.GetWidth();
                             int colorHeight = (int)colorFrame.GetHeight();
 
@@ -193,8 +215,60 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                             Mat colorImage = new Mat(colorHeight, colorWidth, MatType.CV_8UC3);
                             Marshal.Copy(colorData, 0, colorImage.Data, colorData.Length);
+                            Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
 
+                            // Depth 프레임 객체 생성
+                            int depthWidth = (int)depthFrame.GetWidth();
+                            int depthHeight = (int)depthFrame.GetHeight();
+
+                            byte[] depthData = new byte[depthFrame.GetDataSize()];
+                            depthFrame.CopyData(ref depthData);
+
+                            Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_16UC1);
+                            Marshal.Copy(depthData, 0, depthImage.Data, depthData.Length);
+
+                            // RGB QR 처리
                             string detectQR = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
+                            eventModels.QR = detectQR == null ? "" : detectQR;
+
+                            List<(string, double)> roiResults = new List<(string, double)>();
+
+                            foreach (var (roiName, roi) in rois)
+                            {
+                                // Depth ROI에서 평균값 계산
+                                Mat roiDepthImage = new Mat(depthImage, roi);
+                                Scalar depthSumScalar = Cv2.Sum(roiDepthImage);
+                                double depthSum = depthSumScalar.Val0;
+                                double depthAverage = depthSum / (roi.Width * roi.Height);
+
+                                switch (roiName)
+                                {
+                                    case "TM":
+                                        eventModels.TM_DEPTH = depthAverage;
+                                        break;
+                                    case "MR":
+                                        eventModels.MR_DEPTH = depthAverage;
+                                        break;
+                                    case "MM":
+                                        eventModels.MM_DEPTH = depthAverage;
+                                        break;
+                                    case "ML":
+                                        eventModels.ML_DEPTH = depthAverage;
+                                        break;
+                                    case "BR":
+                                        eventModels.BR_DEPTH = depthAverage;
+                                        break;
+                                    case "BM":
+                                        eventModels.BM_DEPTH = depthAverage;
+                                        break;
+                                    case "BL":
+                                        eventModels.BL_DEPTH = depthAverage;
+                                        break;
+                                }
+                            }
+
+                            // RGB 프레임 반시계방향으로 90도 회전
+                            Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
 
                             // Convert Mat to byte array
                             byte[] frameData;
@@ -204,10 +278,6 @@ namespace WATA.LIS.VISION.CAM.Camera
                                 frameData = ms.ToArray();
                             }
 
-                            // Publish the event
-                            VisionCamModel eventModels = new VisionCamModel();
-                            eventModels.QR = detectQR == null ? "" : detectQR;
-                            eventModels.POINTS = points.ToString();
                             eventModels.FRAME = frameData;
                             eventModels.connected = true;
                             _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);

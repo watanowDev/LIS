@@ -400,7 +400,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         eventModels.QR = resultQR == null ? "" : resultQR;
                         eventModels.WIDTH = 0;
                         eventModels.HEIGHT = resultHeight;
-                        eventModels.PIKCUP_DEPTH = checkZValue;
+                        eventModels.ACTION_DEPTH = checkZValue;
                         eventModels.POINTS = points.ToString();
                         eventModels.connected = true;
                         _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);

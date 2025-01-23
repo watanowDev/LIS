@@ -1677,7 +1677,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="bDrop"></param>
         private void InitGetPickupStatus()
         {
-            if (m_visionModel.PIKCUP_DEPTH > 1000)
+            if (m_visionModel.ACTION_DEPTH > 1000)
             {
                 m_isPickUp = false;
             }

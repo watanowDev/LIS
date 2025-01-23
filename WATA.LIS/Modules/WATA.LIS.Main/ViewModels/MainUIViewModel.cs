@@ -47,24 +47,24 @@ namespace WATA.LIS.Main.ViewModels
 
 
         //Elips
-        private string _Weight_Active;
-        public string Weight_Active { get { return _Weight_Active; } set { SetProperty(ref _Weight_Active, value); } }
+        //private string _Weight_Active;
+        //public string Weight_Active { get { return _Weight_Active; } set { SetProperty(ref _Weight_Active, value); } }
 
 
-        private string _Distance_Active;
-        public string Distance_Active { get { return _Distance_Active; } set { SetProperty(ref _Distance_Active, value); } }
+        //private string _Distance_Active;
+        //public string Distance_Active { get { return _Distance_Active; } set { SetProperty(ref _Distance_Active, value); } }
 
 
-        private string _RFID_Active;
-        public string RFID_Active { get { return _RFID_Active; } set { SetProperty(ref _RFID_Active, value); } }
+        //private string _RFID_Active;
+        //public string RFID_Active { get { return _RFID_Active; } set { SetProperty(ref _RFID_Active, value); } }
 
 
-        private string _VISION_Active;
-        public string VISIONCAM_Active { get { return _VISION_Active; } set { SetProperty(ref _VISION_Active, value); } }
+        //private string _VISION_Active;
+        //public string VISIONCAM_Active { get { return _VISION_Active; } set { SetProperty(ref _VISION_Active, value); } }
 
 
-        private string _BACKEND_Active;
-        public string BACKEND_Active { get { return _BACKEND_Active; } set { SetProperty(ref _BACKEND_Active, value); } }
+        //private string _BACKEND_Active;
+        //public string BACKEND_Active { get { return _BACKEND_Active; } set { SetProperty(ref _BACKEND_Active, value); } }
 
 
         //Text
@@ -92,8 +92,29 @@ namespace WATA.LIS.Main.ViewModels
         public string BACKEND_Value { get { return _BACKEND_Value; } set { SetProperty(ref _BACKEND_Value, value); } }
 
 
-        private string _Depth_Value;
-        public string Depth_Value { get { return _Depth_Value; } set { SetProperty(ref _Depth_Value, value); } }
+        private string _DEPTH_Value;
+        public string Depth_Value { get { return _DEPTH_Value; } set { SetProperty(ref _DEPTH_Value, value); } }
+
+        private string _TM_DEPTH;
+        public string TM_DEPTH{ get { return _TM_DEPTH; } set { SetProperty(ref _TM_DEPTH, value); } }
+
+        private string _ML_DEPTH;
+        public string ML_DEPTH{ get { return _ML_DEPTH; } set { SetProperty(ref _ML_DEPTH, value); } }
+
+        private string _MM_DEPTH;
+        public string MM_DEPTH{ get { return _MM_DEPTH; } set { SetProperty(ref _MM_DEPTH, value); } }
+
+        private string _MR_DEPTH;
+        public string MR_DEPTH{ get { return _MR_DEPTH; } set { SetProperty(ref _MR_DEPTH, value); } }
+
+        private string _BL_DEPTH;
+        public string BL_DEPTH{ get { return _BL_DEPTH; } set { SetProperty(ref _BL_DEPTH, value); } }
+
+        private string _BM_DEPTH;
+        public string BM_DEPTH{ get { return _BM_DEPTH; } set { SetProperty(ref _BM_DEPTH, value); } }
+
+        private string _BR_DEPTH;
+        public string BR_DEPTH{ get { return _BR_DEPTH; } set { SetProperty(ref _BR_DEPTH, value); } }
 
 
         //Image
@@ -136,11 +157,11 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
 
 
-            Weight_Active = Disable;
-            Distance_Active = Disable;
-            RFID_Active = Disable;
-            VISIONCAM_Active = Disable;
-            BACKEND_Active = Disable;
+            //Weight_Active = Disable;
+            //Distance_Active = Disable;
+            //RFID_Active = Disable;
+            //VISIONCAM_Active = Disable;
+            //BACKEND_Active = Disable;
         }
 
         /// <summary>
@@ -151,14 +172,14 @@ namespace WATA.LIS.Main.ViewModels
         {
             if (model != null || model.LeftOnline != true || model.RightOnline != true)
             {
-                Weight_Active = Active;
+                //Weight_Active = Active;
                 LeftBattery_Value = model.LeftBattery.ToString();
                 RightBattery_Value = model.RightBattery.ToString();
                 Weight_Value = model.GrossWeight.ToString();
             }
             else
             {
-                Weight_Active = Disconnect;
+                //Weight_Active = Disconnect;
             }
         }
 
@@ -173,8 +194,15 @@ namespace WATA.LIS.Main.ViewModels
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {
                     CurrentFrame = ConvertToBitmapImage(model.FRAME);
-                    Depth_Value = model.PIKCUP_DEPTH.ToString()+"mm";
-                    VISIONCAM_Active = Active;
+                    Depth_Value = model.ACTION_DEPTH.ToString() + "mm";
+                    TM_DEPTH= model.TM_DEPTH.ToString("F0") + "mm";
+                    ML_DEPTH= model.ML_DEPTH.ToString("F0") + "mm";
+                    MM_DEPTH= model.MM_DEPTH.ToString("F0") + "mm";
+                    MR_DEPTH= model.MR_DEPTH.ToString("F0") + "mm";
+                    BL_DEPTH= model.BL_DEPTH.ToString("F0") + "mm";
+                    BM_DEPTH= model.BM_DEPTH.ToString("F0") + "mm";
+                    BR_DEPTH= model.BR_DEPTH.ToString("F0") + "mm";
+                    //VISIONCAM_Active = Active;
                 });
             }
         }
@@ -202,12 +230,12 @@ namespace WATA.LIS.Main.ViewModels
         {
             if (status == -1)
             {
-                BACKEND_Active = Disconnect;
+                //BACKEND_Active = Disconnect;
                 GlobalValue.IS_ERROR.backend = false;
             }
             else
             {
-                BACKEND_Active = Active;
+                //BACKEND_Active = Active;
                 GlobalValue.IS_ERROR.backend = true;
             }
         }
@@ -220,11 +248,11 @@ namespace WATA.LIS.Main.ViewModels
         {
             if (obj.connected == false)
             {
-                Distance_Active = Disconnect;
+                //Distance_Active = Disconnect;
             }
             else if (obj.connected == true)
             {
-                Distance_Active = Active;
+                //Distance_Active = Active;
             }
 
             Distance_Value = $"RAW:{obj.Distance_mm - 60}mm, {(obj.Distance_mm - 60 - m_distanceConfig.pick_up_distance_threshold)}mm";
@@ -234,12 +262,12 @@ namespace WATA.LIS.Main.ViewModels
         {
             if (obj.EPC == "NA")
             {
-                RFID_Active = Disable;
+                //RFID_Active = Disable;
             }
             else
             {
 
-                RFID_Active = Active;
+                //RFID_Active = Active;
             }
 
 
