@@ -1,0 +1,13 @@
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\bin\Debug\net8.0\WATA.LIS.Services.deps.json
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\bin\Debug\net8.0\WATA.LIS.Services.dll
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\bin\Debug\net8.0\WATA.LIS.Services.pdb
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.csproj.AssemblyReference.cache
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.AssemblyInfoInputs.cache
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.AssemblyInfo.cs
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.csproj.CoreCompileInputs.cache
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.sourcelink.json
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.dll
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\refint\WATA.LIS.Services.dll
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\WATA.LIS.Services.pdb
+C:\Users\wmszz\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Services\obj\Debug\net8.0\ref\WATA.LIS.Services.dll

@@ -1,5 +1,4 @@
-﻿
-using Prism.Ioc;
+﻿using Prism.Ioc;
 using Prism.Modularity;
 using System;
 using System.Windows;
@@ -22,6 +21,8 @@ using WATA.LIS.VISION.Camera;
 using WATA.LIS.VISION.CAM;
 using WATA.LIS.SENSOR.LIVOX;
 using WATA.LIS.Core.Services.ServiceImpl;
+using WATA.LIS.Heartbeat.Services;
+using Microsoft.Extensions.Logging;
 
 namespace WATA.LIS
 {
@@ -30,6 +31,18 @@ namespace WATA.LIS
     /// </summary>
     public partial class App
     {
+        private HeartbeatService _heartbeatService;
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // HeartbeatService 초기화 및 시작
+            var logger = Container.Resolve<ILogger<HeartbeatService>>();
+            _heartbeatService = new HeartbeatService(logger);
+            _heartbeatService.Start();
+        }
+
         protected override Window CreateShell()
         {
             var mainWindow = Container.Resolve<MainWindow>();
@@ -40,15 +53,13 @@ namespace WATA.LIS
             return Container.Resolve<MainWindow>();
         }
 
-
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
             var parser = new SystemJsonConfigParser();
 
-            (IWeightModel weight, IDistanceModel distance, IVisionModel vision, 
-                IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer, 
-                IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel, 
+            (IWeightModel weight, IDistanceModel distance, IVisionModel vision,
+                IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer,
+                IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel,
                 ILivoxModel livoxmodel, IDisplayModel displaymodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
@@ -96,6 +107,9 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<IDisplayModel>())
                 containerRegistry.RegisterSingleton<IDisplayModel, DisplayConfigModel>();
 
+            // ILogger 등록
+            containerRegistry.RegisterSingleton<ILoggerFactory, LoggerFactory>();
+            containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
 
             MainConfigModel mainobj = (MainConfigModel)main;
 

@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "dgSpecHash": "TelyABVJpxw=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Services\\WATA.LIS.Heartbeat.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.1\\microsoft.extensions.dependencyinjection.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.1\\microsoft.extensions.dependencyinjection.abstractions.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.logging\\9.0.1\\microsoft.extensions.logging.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.1\\microsoft.extensions.logging.abstractions.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.options\\9.0.1\\microsoft.extensions.options.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.1\\microsoft.extensions.primitives.9.0.1.nupkg.sha512",
+    "C:\\Users\\wmszz\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.1\\system.diagnostics.diagnosticsource.9.0.1.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1201",
+      "level": "Error",
+      "message": "WATA.LIS.Core 프로젝트가 net8.0(.NETCoreApp,Version=v8.0)과(와) 호환되지 않습니다. WATA.LIS.Core 프로젝트는 다음을 지원합니다. net8.0-windows10.0.18362(.NETCoreApp,Version=v8.0)",
+      "libraryId": "WATA.LIS.Core",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}
