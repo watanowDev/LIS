@@ -1104,7 +1104,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private (long newX, long newY) CalculateNewPosition(long x, long y, int angle, string action)
         {
             // 각도를 라디안으로 변환
-            angle = (angle + 1800) % 3600;
+            angle = (angle) % 3600;
             double radians = (angle / 10) * (Math.PI / 180.0);
 
             long newX = 0;
@@ -1113,14 +1113,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (action == "pickdrop")
             {
                 // 2300mm를 더한 새로운 좌표 계산
-                newX = x + (long)(3000 * Math.Cos(radians));
-                newY = y + (long)(3000 * Math.Sin(radians));
+                newX = x + (long)(2600 * Math.Cos(radians));
+                newY = y + (long)(2600 * Math.Sin(radians));
             }
             else if (action == "positioning")
             {
                 // 1500mm를 더한 새로운 좌표 계산
-                newX = x + (long)(1400 * Math.Cos(radians));
-                newY = y + (long)(1400 * Math.Sin(radians));
+                newX = x + (long)(1700 * Math.Cos(radians));
+                newY = y + (long)(1700 * Math.Sin(radians));
             }
 
             return (newX, newY);

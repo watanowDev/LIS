@@ -1,6 +1,6 @@
 {
   "main": {
-    "device_type": "Pantos_Private", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, Pantos_Private
+    "device_type": "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, Pantos_Private
     "workLocationId": "WATA_KGWANGJU_1F",
     "projectId": "afbb58611535449780cdb27a615afeb2",
     "mappingId": "b7c41f86e38f44a1847a4d1af3b1acb1",
@@ -8,12 +8,12 @@
     "vehicleId": "WTA_FORKLIFT_001"
   },
   "led_buzzer": {
-    "led_enable": 0,
+    "led_enable": 1,
     "volume": 1,
     "InfoLanguage": "KR" //KR, JP, EN
   },
   "distance_sensor": {
-    "distance_enable": 0,
+    "distance_enable": 1,
     "model_name": "Terrabee", //Terrabee, TF_Mini
     "comport": "COM3",
     "pick_up_distance_threshold": 0
@@ -36,7 +36,7 @@
     "onlyshelf": 0
   },
   "rfid_receiver": {
-    "rfid_enable": 0,
+    "rfid_enable": 1,
     "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
     "comport": "COM8",
     "SPP_MAC": "00:05:C4:C1:01:32",
@@ -57,15 +57,15 @@
     "PORT": 5010
   },
   "NAV": {
-    "NAV_Enable": 0,
+    "NAV_Enable": 1,
     "IP": "192.168.1.200",
     "PORT": 2111
   },
   "LIVOX": {
-    "LIVOX_Enable": 0
+    "LIVOX_Enable": 1
   },
   "vision": {
-    "vision_enable": 0,
+    "vision_enable": 1,
     "vision_name": "FemtoMega", //HikVision, FemtoMega
     "vision_ip": "192.168.1.10",
     "vision_port": 8000,
@@ -73,6 +73,6 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0
+    "display_enable": 1
   }
 }
