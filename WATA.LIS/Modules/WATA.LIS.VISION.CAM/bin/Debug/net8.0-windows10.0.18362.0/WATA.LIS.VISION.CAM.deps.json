@@ -8,13 +8,15 @@
     ".NETCoreApp,Version=v8.0": {
       "WATA.LIS.VISION.CAM/1.0.0": {
         "dependencies": {
-          "OpenCvSharp4": "4.10.0.20240616",
-          "OpenCvSharp4.Extensions": "4.10.0.20240616",
-          "OpenCvSharp4.runtime.win": "4.10.0.20240616",
+          "OpenCvSharp4": "4.10.0.20241108",
+          "OpenCvSharp4.Extensions": "4.10.0.20241108",
+          "OpenCvSharp4.runtime.win": "4.10.0.20241108",
           "Prism.Wpf": "8.1.97",
-          "System.Drawing.Common": "8.0.10",
+          "System.Drawing.Common": "9.0.1",
           "WATA.LIS.Core": "1.0.0",
           "ZXing.Net": "0.16.9",
+          "ZXing.Net.Bindings.Windows.Compatibility": "0.16.12",
+          "libzbar-cil-all": "1.0.7",
           "ob_csharp": "0.0.0.0",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.54"
         },
@@ -51,6 +53,39 @@
           "lib/netcoreapp3.1/ControlzEx.dll": {
             "assemblyVersion": "4.0.0.0",
             "fileVersion": "4.3.0.108"
+          }
+        }
+      },
+      "libzbar-cil-all/1.0.7": {
+        "dependencies": {
+          "System.Drawing.Common": "9.0.1"
+        },
+        "runtime": {
+          "lib/net7.0/libzbar-cil.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win-x64/native/libiconv.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "1.14.0.0"
+          },
+          "runtimes/win-x64/native/libzbar.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.10.1.0"
+          },
+          "runtimes/win-x86/native/libiconv.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "1.14.0.0"
+          },
+          "runtimes/win-x86/native/libzbar.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.10.1.0"
           }
         }
       },
@@ -125,7 +160,22 @@
         }
       },
       "Microsoft.NETCore.Platforms/5.0.0": {},
-      "Microsoft.Win32.SystemEvents/8.0.0": {},
+      "Microsoft.Win32.SystemEvents/9.0.1": {
+        "runtime": {
+          "lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        }
+      },
       "Microsoft.Xaml.Behaviors.Wpf/1.1.31": {
         "runtime": {
           "lib/net5.0-windows7.0/Microsoft.Xaml.Behaviors.dll": {
@@ -164,7 +214,7 @@
           }
         }
       },
-      "OpenCvSharp4/4.10.0.20240616": {
+      "OpenCvSharp4/4.10.0.20241108": {
         "dependencies": {
           "System.Memory": "4.5.5",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
@@ -176,10 +226,10 @@
           }
         }
       },
-      "OpenCvSharp4.Extensions/4.10.0.20240616": {
+      "OpenCvSharp4.Extensions/4.10.0.20241108": {
         "dependencies": {
-          "OpenCvSharp4": "4.10.0.20240616",
-          "System.Drawing.Common": "8.0.10"
+          "OpenCvSharp4": "4.10.0.20241108",
+          "System.Drawing.Common": "9.0.1"
         },
         "runtime": {
           "lib/net6.0/OpenCvSharp.Extensions.dll": {
@@ -188,7 +238,7 @@
           }
         }
       },
-      "OpenCvSharp4.runtime.win/4.10.0.20240616": {
+      "OpenCvSharp4.runtime.win/4.10.0.20241108": {
         "runtimeTargets": {
           "runtimes/win-x64/native/OpenCvSharpExtern.dll": {
             "rid": "win-x64",
@@ -238,14 +288,18 @@
           "System.Security.Permissions": "5.0.0"
         }
       },
-      "System.Drawing.Common/8.0.10": {
+      "System.Drawing.Common/9.0.1": {
         "dependencies": {
-          "Microsoft.Win32.SystemEvents": "8.0.0"
+          "Microsoft.Win32.SystemEvents": "9.0.1"
         },
         "runtime": {
           "lib/net8.0/System.Drawing.Common.dll": {
-            "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46803"
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61006"
+          },
+          "lib/net8.0/System.Private.Windows.Core.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61006"
           }
         }
       },
@@ -361,7 +415,7 @@
       "System.ValueTuple/4.5.0": {},
       "System.Windows.Extensions/5.0.0": {
         "dependencies": {
-          "System.Drawing.Common": "8.0.10"
+          "System.Drawing.Common": "9.0.1"
         }
       },
       "ZXing.Net/0.16.9": {
@@ -372,6 +426,18 @@
           }
         }
       },
+      "ZXing.Net.Bindings.Windows.Compatibility/0.16.12": {
+        "dependencies": {
+          "System.Drawing.Common": "9.0.1",
+          "ZXing.Net": "0.16.9"
+        },
+        "runtime": {
+          "lib/net7.0/ZXing.Windows.Compatibility.dll": {
+            "assemblyVersion": "0.16.12.0",
+            "fileVersion": "0.16.12.0"
+          }
+        }
+      },
       "WATA.LIS.Core/1.0.0": {
         "dependencies": {
           "MaterialDesignColors": "2.0.9",
@@ -379,9 +445,9 @@
           "MaterialDesignThemes.MahApps": "0.2.5",
           "NetMQ": "4.0.1.13",
           "Newtonsoft.Json": "13.0.1",
-          "OpenCvSharp4": "4.10.0.20240616",
-          "OpenCvSharp4.Extensions": "4.10.0.20240616",
-          "OpenCvSharp4.runtime.win": "4.10.0.20240616",
+          "OpenCvSharp4": "4.10.0.20241108",
+          "OpenCvSharp4.Extensions": "4.10.0.20241108",
+          "OpenCvSharp4.runtime.win": "4.10.0.20241108",
           "Prism.Wpf": "8.1.97",
           "ZXing.Net": "0.16.9",
           "log4net": "2.0.15"
@@ -427,6 +493,13 @@
       "sha512": "sha512-I7PKmQNIMO9+s4s50WXOApotnyEKL9G8vvYrZY7CLe7nufXwRSv+vWPrd4BYwZDQiWHbBwnXsC8zUPgPnEWr6g==",
       "path": "controlzex/4.3.0",
       "hashPath": "controlzex.4.3.0.nupkg.sha512"
+    },
+    "libzbar-cil-all/1.0.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MOPjCRJ3zrZgvjiTnaQAxstxnxrIx/Znc0LsnMoY973SDLH9HHuO2c+X6cMbs5LZc4nt6Sp94qgyauVA9YuNAw==",
+      "path": "libzbar-cil-all/1.0.7",
+      "hashPath": "libzbar-cil-all.1.0.7.nupkg.sha512"
     },
     "log4net/2.0.15": {
       "type": "package",
@@ -484,12 +557,12 @@
       "path": "microsoft.netcore.platforms/5.0.0",
       "hashPath": "microsoft.netcore.platforms.5.0.0.nupkg.sha512"
     },
-    "Microsoft.Win32.SystemEvents/8.0.0": {
+    "Microsoft.Win32.SystemEvents/9.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw==",
-      "path": "microsoft.win32.systemevents/8.0.0",
-      "hashPath": "microsoft.win32.systemevents.8.0.0.nupkg.sha512"
+      "sha512": "sha512-OxjcwJqBW/5A1111+vL9d+5KYTvOzeCTJY9zHZ0kpQI4wX075p6L7inHPSYuf0MGakVjUvaShvw9e9pfbInU2Q==",
+      "path": "microsoft.win32.systemevents/9.0.1",
+      "hashPath": "microsoft.win32.systemevents.9.0.1.nupkg.sha512"
     },
     "Microsoft.Xaml.Behaviors.Wpf/1.1.31": {
       "type": "package",
@@ -519,26 +592,26 @@
       "path": "newtonsoft.json/13.0.1",
       "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
-    "OpenCvSharp4/4.10.0.20240616": {
+    "OpenCvSharp4/4.10.0.20241108": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-+iaFSUq0Cp+B9s1sUqDwB3PvQ5HdWWvRE50WsAw1PL8smD3VZNbe0P786E4Yfu7LHM7jeqkulOwjk2CoihsZeg==",
-      "path": "opencvsharp4/4.10.0.20240616",
-      "hashPath": "opencvsharp4.4.10.0.20240616.nupkg.sha512"
+      "sha512": "sha512-4Lw57NQzOaR0fi9et7GMWB1rpdGzGuNgXHXy45Gltvt8SizQLOGufUonNF9Z+9mo3dcwGC/mL4w5NBgJCqZdHQ==",
+      "path": "opencvsharp4/4.10.0.20241108",
+      "hashPath": "opencvsharp4.4.10.0.20241108.nupkg.sha512"
     },
-    "OpenCvSharp4.Extensions/4.10.0.20240616": {
+    "OpenCvSharp4.Extensions/4.10.0.20241108": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bECtlodf4yuyw04sSvp2nHHWh7REKHKNIN3B4AzqNHxg62nhe24DxvVzBdfi0Innji7TAoc2QIbOPePKZA3ZQg==",
-      "path": "opencvsharp4.extensions/4.10.0.20240616",
-      "hashPath": "opencvsharp4.extensions.4.10.0.20240616.nupkg.sha512"
+      "sha512": "sha512-H7mnUi9K9CIW5D4Mj0ycxlWRWjyz6mQSdXRpN2HNVtg6vfbKEsaRflYjWDupOK47+hRDDxS2+G5Imzhb2Xk4Tw==",
+      "path": "opencvsharp4.extensions/4.10.0.20241108",
+      "hashPath": "opencvsharp4.extensions.4.10.0.20241108.nupkg.sha512"
     },
-    "OpenCvSharp4.runtime.win/4.10.0.20240616": {
+    "OpenCvSharp4.runtime.win/4.10.0.20241108": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-dpQNIR6PpeB/oZM0e0fZpt9lOS3Htjm6ZjtOgLyxN7QwjRekbNevrmO8VbgezUoetk68CRwxYZGaymCm2vt8Sg==",
-      "path": "opencvsharp4.runtime.win/4.10.0.20240616",
-      "hashPath": "opencvsharp4.runtime.win.4.10.0.20240616.nupkg.sha512"
+      "sha512": "sha512-0ae2dwel83tqKlAs45D3KYncoJHRzj1ArEESa6wz7FS3tYu37JDIb5yoMIZPzlkx3Gx2S1BjUrClfXbBHmVh5g==",
+      "path": "opencvsharp4.runtime.win/4.10.0.20241108",
+      "hashPath": "opencvsharp4.runtime.win.4.10.0.20241108.nupkg.sha512"
     },
     "Prism.Core/8.1.97": {
       "type": "package",
@@ -561,12 +634,12 @@
       "path": "system.configuration.configurationmanager/4.5.0",
       "hashPath": "system.configuration.configurationmanager.4.5.0.nupkg.sha512"
     },
-    "System.Drawing.Common/8.0.10": {
+    "System.Drawing.Common/9.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-MdajRp3P+FOlThgY6FBjAqnmLiVl5t2yWEC/2AsDMqx1zYbJG3G5TnscFBQ4obqcaGqvN5UnhQHSFaJFG2HftQ==",
-      "path": "system.drawing.common/8.0.10",
-      "hashPath": "system.drawing.common.8.0.10.nupkg.sha512"
+      "sha512": "sha512-TTPkCqSMyMaG8BXlBKYTTJFtLV0SvjjsvgUN598hYgHaX/5B7tdUc2JhQF9vwrYmlzxId+gwFnKYuxQ2XsSz2g==",
+      "path": "system.drawing.common/9.0.1",
+      "hashPath": "system.drawing.common.9.0.1.nupkg.sha512"
     },
     "System.Formats.Asn1/5.0.0": {
       "type": "package",
@@ -693,6 +766,13 @@
       "sha512": "sha512-7WaVMHklpT3Ye2ragqRIwlFRsb6kOk63BOGADV0fan3ulVfGLUYkDi5yNUsZS/7FVNkWbtHAlDLmu4WnHGfqvQ==",
       "path": "zxing.net/0.16.9",
       "hashPath": "zxing.net.0.16.9.nupkg.sha512"
+    },
+    "ZXing.Net.Bindings.Windows.Compatibility/0.16.12": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bmwWQ4mOQEJOD0IkxSNZScU+kjMT1YliZPLIQtuh1LbxolKqJLcvyIY/9xv/2g3tNO3mZlcCIUOx756Xu3kE6w==",
+      "path": "zxing.net.bindings.windows.compatibility/0.16.12",
+      "hashPath": "zxing.net.bindings.windows.compatibility.0.16.12.nupkg.sha512"
     },
     "WATA.LIS.Core/1.0.0": {
       "type": "project",

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows10.0.18362.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="IKVM" Version="8.4.4" />

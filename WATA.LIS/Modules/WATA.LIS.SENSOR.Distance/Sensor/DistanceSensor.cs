@@ -59,7 +59,6 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         private void SerialThreadInit()
         {
-
             try
             {
                 string port = _DistanceConfig.ComPort;

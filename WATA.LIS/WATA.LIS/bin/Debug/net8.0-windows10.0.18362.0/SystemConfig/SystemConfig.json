@@ -1,11 +1,11 @@
 {
   "main": {
-    "device_type": "DHL_KOREA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA
-    "workLocationId": "DHL_KR",
+    "device_type": "Pantos_Private", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, Pantos_Private
+    "workLocationId": "WATA_KGWANGJU_1F",
     "projectId": "afbb58611535449780cdb27a615afeb2",
-    "mappingId": "785ce5c29b3547979c11aef69c5d5ef0",
-    "mapId": "b5c7171da73c44088460c34d514297de",
-    "vehicleId": "DHL_FORKLIFT_020"
+    "mappingId": "b7c41f86e38f44a1847a4d1af3b1acb1",
+    "mapId": "5544cb62bf6b4f9b9504fe1aacffa3fc",
+    "vehicleId": "WTA_FORKLIFT_001"
   },
   "led_buzzer": {
     "led_enable": 0,
@@ -16,10 +16,10 @@
     "distance_enable": 0,
     "model_name": "Terrabee", //Terrabee, TF_Mini
     "comport": "COM3",
-    "pick_up_distance_threshold": 650
+    "pick_up_distance_threshold": 0
   },
   "weight_sensor": {
-    "weight_enable": 0,
+    "weight_enable": 1,
     "comport": "COM4",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP

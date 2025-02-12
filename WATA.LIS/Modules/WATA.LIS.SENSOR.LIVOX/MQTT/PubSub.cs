@@ -15,6 +15,8 @@ using System.Threading;
 using WATA.LIS.Core.Model;
 using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Events.LIVOX;
+using System.Diagnostics;
+using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.SENSOR.LIVOX.MQTT
 {
@@ -32,6 +34,8 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         public PublisherSocket _publisherSocket;
         public SubscriberSocket _subscriberSocket;
+
+        Stopwatch m_stopwatch;
 
         public PubSub(IEventAggregator eventAggregator, ILivoxModel livoxmodel)
         {
@@ -73,6 +77,9 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
         private void OnCallDataEvent()
         {
             // 부피, 형상 리복스 데이터 요청
+            m_stopwatch = new Stopwatch();
+            if (m_stopwatch != null) m_stopwatch.Start();
+
             int getLivoxctn = 0;
             while (getLivoxctn < 100)
             {
@@ -84,6 +91,12 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 }
                 getLivoxctn++;
                 Thread.Sleep(100);
+            }
+
+            if (m_stopwatch != null)
+            {
+                m_stopwatch.Stop();
+                Tools.Log($"Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
             }
         }
 

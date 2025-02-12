@@ -14,7 +14,6 @@ using WATA.LIS.Core.Model.SystemConfig;
 using System.IO;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using ZXing;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,14 +34,15 @@ using System.Diagnostics.Metrics;
 using OpenCvSharp.Flann;
 using System.Windows.Automation.Provider;
 using OpenCvSharp.Dnn;
-using ZXing.PDF417.Internal;
 using System.Net.NetworkInformation;
 using static System.Formats.Asn1.AsnWriter;
 using Point = OpenCvSharp.Point;
 using Newtonsoft.Json.Linq;
 using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation;
-//using ZXing.Presentation;
+using System.Drawing.Imaging;
+using ZXing;
+
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -285,7 +285,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                     }
                 }, tokenSource.Token);
             }
-            catch (Exception e)
+            catch
             {
                 Application.Current.Shutdown();
                 m_pipeline = null;
@@ -297,6 +297,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             string ret = string.Empty;
 
+            // WeChat QR 코드 인식
             weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
 
             Console.WriteLine("colorWidth : " + colorWidth + " bbox : " + bbox.Length);
@@ -308,7 +309,6 @@ namespace WATA.LIS.VISION.CAM.Camera
                 {
                     OpenCvSharp.Point[] detectedQRpoints = new OpenCvSharp.Point[4];
 
-                    //if (box.Total() >= 4 && weChatResult[cnt].Contains("wata"))
                     if (box.Total() >= 4)
                     {
                         for (int j = 0; j < 4; j++)
@@ -339,26 +339,44 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
             }
 
-            //var zXingResult = barcodeReader.Decode(frame.ToBitmap());
-
-            //if (zXingResult != null && zXingResult.ResultPoints.Length > 4 && zXingResult.Text.Contains("wata"))
+            //if (ret == string.Empty)
             //{
-            //    int x1 = (int)zXingResult.ResultPoints[0].X;
-            //    int y1 = (int)zXingResult.ResultPoints[0].Y;
-            //    int x2 = (int)zXingResult.ResultPoints[1].X;
-            //    int y2 = (int)zXingResult.ResultPoints[1].Y;
-            //    int x3 = (int)zXingResult.ResultPoints[2].X;
-            //    int y3 = (int)zXingResult.ResultPoints[2].Y;
-            //    int x4 = (int)zXingResult.ResultPoints[3].X;
-            //    int y4 = (int)zXingResult.ResultPoints[3].Y;
+            //    Bitmap pImg = MakeGrayscale3(frame.ToBitmap());
+            //    using (ZBar.ImageScanner scanner = new ZBar.ImageScanner())
+            //    {
+            //        //scanner.SetConfiguration(ZBar.SymbolType.None, ZBar.Config.Enable, 0);
+            //        //scanner.SetConfiguration(ZBar.SymbolType.CODE39, ZBar.Config.Enable, 1);
+            //        //scanner.SetConfiguration(ZBar.SymbolType.CODE128, ZBar.Config.Enable, 1);
+            //        //scanner.SetConfiguration(ZBar.SymbolType.QRCODE, ZBar.Config.Enable, 1);
 
-            //    int minX = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
-            //    int minY = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
-            //    int maxX = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4));
-            //    int maxY = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4));
+            //        List<ZBar.Symbol> symbols = new List<ZBar.Symbol>();
+            //        symbols = scanner.Scan(pImg);
+            //        pImg.Dispose();
+            //        ret = symbols.Count > 0 ? symbols[0].Data : "Barcode Fail";
+            //    }
+            //}
 
-            //    _detectedQRRect = new OpenCvSharp.Rect(minX, minY, maxX - minX, maxY - minY);
-            //    ret = zXingResult.Text;
+            //if (ret == string.Empty)
+            //{
+            //    ZXing.BarcodeReaderGeneric reader = new ZXing.BarcodeReaderGeneric();
+            //    reader.AutoRotate = true;
+            //    reader.Options.TryHarder = true;
+
+            //    ZXing.Result[] results = null;
+
+            //    try
+            //    {
+            //        Bitmap bitmap = MakeGrayscale3(frame.ToBitmap());
+            //        results = reader.DecodeMultiple(bitmap);
+            //        if (results != null && results.Length > 0)
+            //        {
+            //            ret = results[0].ToString();
+            //        }
+            //    }
+            //    catch (ZXing.ReaderException ex)
+            //    {
+            //        //MessageBox.Show(resultstr, "内部错误");
+            //    }
             //}
 
             return ret;
@@ -604,7 +622,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                     }
                 }, tokenSource.Token);
             }
-            catch (Exception e)
+            catch
             {
                 Application.Current.Shutdown();
                 m_pipeline = null;
@@ -620,6 +638,42 @@ namespace WATA.LIS.VISION.CAM.Camera
             var trimmedYValues = sortedYValues.Skip(removeCount).Take(count - 2 * removeCount).ToList();
 
             return (int)trimmedYValues.Average();
+        }
+
+        public Bitmap MakeGrayscale3(Bitmap original)
+        {
+            //create a blank bitmap the same size as original
+            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+
+            //get a graphics object from the new image
+            Graphics g = Graphics.FromImage(newBitmap);
+
+            //create the grayscale ColorMatrix
+            System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix(
+              new float[][]
+              {
+                 new float[] {.3f, .3f, .3f, 0, 0},
+                 new float[] {.59f, .59f, .59f, 0, 0},
+                 new float[] {.11f, .11f, .11f, 0, 0},
+                 new float[] {0, 0, 0, 1, 0},
+                 new float[] {0, 0, 0, 0, 1}
+              });
+
+            //create some image attributes
+            ImageAttributes attributes = new ImageAttributes();
+
+            //set the color matrix attribute
+            attributes.SetColorMatrix(colorMatrix);
+
+            //draw the original image on the new image
+            //using the grayscale color matrix
+            g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
+               0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
+
+            //dispose the Graphics object
+            g.Dispose();
+            original.Dispose();
+            return newBitmap;
         }
     }
 }

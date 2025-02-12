@@ -30,7 +30,8 @@ namespace WATA.LIS.IF.BE.REST
         {
             _eventAggregator.GetEvent<RestClientPostEvent>().Subscribe(OnClientPost, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Subscribe(OnClientPost_dev, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<RestClientGetEvent>().Subscribe(OnClientGet, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RestClientGetEvent>().Subscribe(OnClientGetInt, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<RestClientGetEvent>().Subscribe(OnClientGetString, ThreadOption.BackgroundThread, true);
 
         }
 
@@ -59,7 +60,7 @@ namespace WATA.LIS.IF.BE.REST
                 request.Method = "POST";
                 request.ContentType = "application/json";
                 request.Timeout = 30 * 1000;
-              
+
                 byte[] bytes = Encoding.ASCII.GetBytes(Model.body);
                 request.ContentLength = bytes.Length; // 바이트수 지정
                 using (Stream reqStream = request.GetRequestStream())
@@ -68,7 +69,7 @@ namespace WATA.LIS.IF.BE.REST
                 }
                 using (WebResponse resp = request.GetResponse())
                 {
-                   
+
                     Stream respStream = resp.GetResponseStream();
                     using (StreamReader sr = new StreamReader(respStream))
                     {
@@ -86,8 +87,8 @@ namespace WATA.LIS.IF.BE.REST
             }
             catch (WebException exception)
             {
-                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
-                 Tools.Log($"BE Conn Error!!! REST Post Client Response Error dev", logtype);
+                _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
+                Tools.Log($"BE Conn Error!!! REST Post Client Response Error dev", logtype);
 
                 using (WebResponse resp = exception.Response)
                 {
@@ -140,7 +141,7 @@ namespace WATA.LIS.IF.BE.REST
                 using (WebResponse resp = request.GetResponse())
                 {
                     //var httpWebResponse = (HttpWebResponse)resp;
-                   // string characterSet = httpWebResponse.CharacterSet;
+                    // string characterSet = httpWebResponse.CharacterSet;
                     Stream respStream = resp.GetResponseStream();
                     using (StreamReader sr = new StreamReader(respStream))
                     {
@@ -152,8 +153,8 @@ namespace WATA.LIS.IF.BE.REST
                             ParseContainterJson(responseText);
                         }
                     }
-                    
-                }    
+
+                }
             }
             catch (WebException exception)
             {/*
@@ -186,7 +187,7 @@ namespace WATA.LIS.IF.BE.REST
         }
 
 
-        private void  ParseContainterJson(string str)
+        private void ParseContainterJson(string str)
         {
             JObject json = (JObject)JToken.Parse(str);
             int code = (int)json["status"];
@@ -194,7 +195,7 @@ namespace WATA.LIS.IF.BE.REST
         }
 
 
-        public void OnClientGet(string URL)
+        public void OnClientGetInt(string URL)
         {
             Tools.Log($"Request Get URI : {URL}", Tools.ELogType.BackEndLog);
             try
@@ -221,6 +222,34 @@ namespace WATA.LIS.IF.BE.REST
             {
                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
                 Tools.Log($"REST Get Client Response Error", Tools.ELogType.BackEndLog);
+            }
+        }
+
+        public void OnClientGetString(string url)
+        {
+            Tools.Log($"Request Get URI : {url}", Tools.ELogType.BackEndLog);
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "GET";
+                request.Timeout = 3 * 1000; // 3초
+                using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
+                {
+                    HttpStatusCode status = resp.StatusCode;
+                    Stream respStream = resp.GetResponseStream();
+                    using (StreamReader sr = new StreamReader(respStream))
+                    {
+                        string responseText = sr.ReadToEnd();
+                        responseText = sr.ReadToEnd();
+                        _eventAggregator.GetEvent<RestClientGetEvent>().Publish(responseText);
+                        Tools.Log($"REST Response Data : {responseText} ", Tools.ELogType.ActionLog);
+                    }
+                }
+            }
+            catch
+            {
+                _eventAggregator.GetEvent<RestClientGetEvent>().Publish("GetRespFail");
+                Tools.Log($"REST Response Error", Tools.ELogType.ActionLog);
             }
         }
     }

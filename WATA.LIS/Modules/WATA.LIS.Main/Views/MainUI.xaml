@@ -143,7 +143,7 @@
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Label Content="Height(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"></Label>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
                 </Grid>
 
                 <Grid Grid.Row="1" Grid.Column="0" Margin="5">
@@ -152,7 +152,7 @@
                         <ColumnDefinition Width="1*"></ColumnDefinition>
                     </Grid.ColumnDefinitions>
                     <Label Content="Weight(kg)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="15"></Label>
+                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
                 </Grid>
 
                 <Grid Grid.Row="6" Grid.Column="0" Margin="5">
