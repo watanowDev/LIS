@@ -114,26 +114,6 @@ namespace WATA.LIS.Main.ViewModels
             //LivingCount++;
         }
 
-
-        private void ClearProcess()
-        {
-            Process[] processList = Process.GetProcessesByName("WATA.LIS.WPS");
-            for (int i = processList.Length - 1; i >= 0; i--)
-            {
-                // processList[i].CloseMainWindow();
-                processList[i].Kill();
-                processList[i].Close();
-            }
-
-            Process[] processList_vision = Process.GetProcessesByName("vision_forklift");
-            for (int i = processList_vision.Length - 1; i >= 0; i--)
-            {
-                // processList[i].CloseMainWindow();
-                processList_vision[i].Kill();
-                processList_vision[i].Close();
-            }
-        }
-
         private void ButtonFuncClick(string command)
         {
             try
@@ -191,6 +171,25 @@ namespace WATA.LIS.Main.ViewModels
             catch (Exception ex)
             {
 
+            }
+        }
+
+        private void ClearProcess()
+        {
+            Process[] processList = Process.GetProcessesByName("WATA.LIS.WPS");
+            for (int i = processList.Length - 1; i >= 0; i--)
+            {
+                // processList[i].CloseMainWindow();
+                processList[i].Kill();
+                processList[i].Close();
+            }
+
+            Process[] processList_vision = Process.GetProcessesByName("vision_forklift");
+            for (int i = processList_vision.Length - 1; i >= 0; i--)
+            {
+                // processList[i].CloseMainWindow();
+                processList_vision[i].Kill();
+                processList_vision[i].Close();
             }
         }
     }

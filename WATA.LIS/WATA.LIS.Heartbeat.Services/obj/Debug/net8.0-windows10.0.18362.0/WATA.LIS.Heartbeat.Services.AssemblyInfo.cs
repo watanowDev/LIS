@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.Heartbeat.Services")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+667605c22dadcaccb8b7178042673a2fc87f8ca0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6f22255cec0b9e3463f43fbbd678f936cc7ec0e7")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.Heartbeat.Services")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.Heartbeat.Services")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
