@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "ifCbYa949us=",
+  "dgSpecHash": "q5zaMfjPWI0=",
   "success": true,
   "projectFilePath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
   "expectedPackageFiles": [
@@ -44,7 +44,7 @@
     "C:\\Users\\USER\\.nuget\\packages\\system.valuetuple\\4.5.0\\system.valuetuple.4.5.0.nupkg.sha512",
     "C:\\Users\\USER\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
     "C:\\Users\\USER\\.nuget\\packages\\zxing.net\\0.16.6\\zxing.net.0.16.6.nupkg.sha512",
-    "C:\\Users\\USER\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.18362.34\\microsoft.windows.sdk.net.ref.10.0.18362.34.nupkg.sha512"
+    "C:\\Users\\USER\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.18362.57\\microsoft.windows.sdk.net.ref.10.0.18362.57.nupkg.sha512"
   ],
   "logs": []
 }
