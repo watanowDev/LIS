@@ -12,21 +12,21 @@
           "System.IO.Ports": "8.0.0",
           "WATA.LIS.Core": "1.0.0",
           "WATA.LIS.SENSOR.UHF_RFID": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.54"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
         },
         "runtime": {
           "WATA.LIS.SENSOR.Distance.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
-            "assemblyVersion": "10.0.18362.38",
-            "fileVersion": "10.0.18362.52"
+            "assemblyVersion": "10.0.18362.24",
+            "fileVersion": "10.0.18362.34"
           },
           "WinRT.Runtime.dll": {
-            "assemblyVersion": "2.1.0.0",
-            "fileVersion": "2.1.6.47881"
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.8.46841"
           }
         }
       },
@@ -955,7 +955,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

@@ -96,7 +96,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             if (m_stopwatch != null)
             {
                 m_stopwatch.Stop();
-                Tools.Log($"Weight Check Complete : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+                Tools.Log($"Size Measuring Time : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
             }
         }
 

@@ -74,7 +74,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private List<WeightSensorModel> m_weight_list;
         private readonly int m_weight_sample_size = 8;
         private int m_event_weight = 0;
-        private bool m_guideMeasuringStart;
+        private int m_get_weightCnt = 0;
 
         // 거리센서 데이터 클래스
         private DistanceSensorModel m_distanceModel;
@@ -142,6 +142,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         // 비즈니스 로직 데이터 클래스
         private bool m_isPickUp = false;
         private bool m_isVisionPickUp = false;
+        private bool m_guideMeasuringStart;
+        (int weight, float width, float height, float depth) logisData = (0, 0, 0, 0);
 
         // 타이머 클래스
         DispatcherTimer m_ErrorCheck_Timer;
@@ -751,46 +753,46 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
         }
 
-        private async Task TryGetStableWeightAsync(int timeoutMilliseconds)
+        private void TryGetStableWeight()
         {
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(timeoutMilliseconds);
-
             m_stopwatch.Reset();
             m_stopwatch.Start();
 
-            try
+            int currentWeight = m_weightModel.GrossWeight;
+            int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
+            int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
+
+            // 안정된 중량값 취득
+            if (m_weight_list.Count < m_weight_sample_size)
             {
-                await Task.Run(() => {
-                    while (true)
-                    {
-                        // 안정된 중량값 취득
-                        if (m_weight_list.Count < m_weight_sample_size) continue;
-
-                        if (m_weightModel.GrossWeight < 10) continue;
-
-                        int currentWeight = m_weightModel.GrossWeight;
-
-                        int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
-                        if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.1) continue;
-
-                        int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
-                        if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1) continue;
-
-                        m_event_weight = m_weightModel.GrossWeight;
-                        return true;
-                    }
-                }, cts.Token);
+                m_event_weight = -1;
+                m_get_weightCnt++;
+                return;
             }
-            catch (OperationCanceledException)
+            else if (m_weightModel.GrossWeight < 10)
             {
-                // 타임아웃 발생 시
-                Tools.Log($"GetStableWeightValue Timeout", ELogType.SystemLog);
+                m_event_weight = -1;
+                m_get_weightCnt++;
+                return;
             }
+            else if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.1)
+            {
+                m_event_weight = -1;
+                m_get_weightCnt++;
+                return;
+            }
+            else if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1)
+            {
+                m_event_weight = -1;
+                m_get_weightCnt++;
+                return;
+            }
+
+            m_event_weight = m_weightModel.GrossWeight;
 
             m_stopwatch.Stop();
 
-            Tools.Log($"Weight Measurement Time: {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+            Tools.Log($"Weight Measuring Time: {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
 
             IndicatorSendTimerEvent(null, null);
         }
@@ -934,7 +936,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_visionPickupCnt++;
             }
             // 하단부 ROI 3개 값이 Threshold 값 미만이고, 중량값이 인식되는 경우 픽업으로 판단 (낮은 물류)
-            else if(m_weightModel.GrossWeight >= 10 && model.BL_DEPTH < 550 && model.BM_DEPTH < 550 && model.BR_DEPTH < 550)
+            else if (m_weightModel.GrossWeight >= 10 && model.BL_DEPTH < 550 && model.BM_DEPTH < 550 && model.BR_DEPTH < 550)
             {
                 m_visionPickupCnt++;
             }
@@ -980,7 +982,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringVisionPickupTimerEvent(object sender, EventArgs e)
         {
             // Pickup, Drop 카운트의 누적값에 의한 상태 변경
-            if (m_visionPickupCnt > 50 && m_isPickUp == false)
+            if (m_visionPickupCnt > 10 && m_isPickUp == false)
             {
                 m_isVisionPickUp = true;
                 m_visionDropCnt = 0;
@@ -1001,7 +1003,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_visionPickupTime = 0;
                     m_visionPickupCnt = 0;
                     m_visionDropCnt = 0;
-                    m_guideMeasuringStart = false;
+                    //m_guideMeasuringStart = false;
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                 }
             }
@@ -1133,7 +1135,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (!m_event_epc.Contains("DA"))
             {
                 m_event_width = m_livoxModel.width;
-                m_event_height = m_livoxModel.height - m_event_distance;
+                m_event_height = m_livoxModel.height - 500;
                 m_event_length = m_livoxModel.length;
                 m_event_points = m_livoxModel.points;
             }
@@ -1583,6 +1585,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             (int, float, float, float) result = (0, 0, 0, 0);
 
+            if (productId == "") return result;
+
             try
             {
                 string query = $"?projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&productId={productId}";
@@ -1609,7 +1613,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             catch (Exception ex)
             {
-                Tools.Log($"REST Response Error : {ex.Message}", ELogType.ActionLog);
+                Tools.Log($"No Exist Logistic Data : {ex.Message}", ELogType.ActionLog);
             }
 
             return result;
@@ -1634,7 +1638,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
         }
 
-        private async void IsPickUpTimerEvent(object sender, EventArgs e)
+        private void IsPickUpTimerEvent(object sender, EventArgs e)
         {
             try
             {
@@ -1644,50 +1648,66 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_isVisionPickUp == false) return;
 
                 // 물류 정보의 유무에 따라 측정 프로세스 진행
-                var logisData = GetLogisticsLotInfo(m_event_QRcode);
+                if (m_guideMeasuringStart == false)
+                {
+                    logisData = GetLogisticsLotInfo(m_event_QRcode);
+                }
 
                 if (logisData.Item1 > 0 && logisData.Item2 > 0 && logisData.Item3 > 0 && logisData.Item4 > 0 && m_set_measure == false)
                 {
-                    // 재측정 명령이 없고, 중량, 부피 값이 모두 있을 경우 측정 건너뜀.
-                    m_event_weight = logisData.Item1;
-                    m_event_width = logisData.Item2;
-                    m_event_height = logisData.Item3;
-                    m_event_length = logisData.Item4;
+                    // 재측정 명령이 없더라도, 중량, 부피 값이 모두 있을 경우 측정 건너뜀.
+                    m_event_weight = logisData.weight;
+                    m_event_width = logisData.width;
+                    m_event_height = logisData.height;
+                    m_event_length = logisData.depth;
                 }
-                else if (m_set_normal == false && m_set_measure == false)
+                else if ((m_set_load == true || m_set_load == true) && m_set_measure == false)
                 {
-                    // 재측정 명령이 없고, 상차, 하차 지시 있는 경우 측정 건너뜀.
-                    m_event_weight = logisData.Item1;
-                    m_event_width = logisData.Item2;
-                    m_event_height = logisData.Item3;
-                    m_event_length = logisData.Item4;
+                    // 재측정 명령이 없더라도, 상차, 하차 지시 있는 경우 측정 건너뜀.
+                    m_event_weight = logisData.weight;
+                    m_event_width = logisData.width;
+                    m_event_height = logisData.height;
+                    m_event_length = logisData.depth;
                 }
                 else
                 {
-                    // 부피 측정 시작 부저. 타임아웃 안에 안정된 부피값 취득. 실패 시 다음 프로세스 진행.
-                    m_stopwatch.Reset();
-                    m_stopwatch.Start();
-                    StartMaesuringBuzzer();
-                    _eventAggregator.GetEvent<CallDataEvent>().Publish();
-                    m_guideMeasuringStart = false;
-                    m_stopwatch.Stop();
-                    Tools.Log($"Size Measurement Time : {m_stopwatch.ElapsedMilliseconds}", ELogType.ActionLog);
+                    if (m_guideMeasuringStart == false)
+                    {
+                        // 측정 시작 부저. 
+                        StartMaesuringBuzzer();
+
+                        // 타임아웃 안에 안정된 부피값 취득. 실패 시 다음 프로세스 진행.
+                        _eventAggregator.GetEvent<CallDataEvent>().Publish();
+                    }
+     
 
 
-                    // 중량 측정 시작 부저. 타임아웃 안에 안정된 중량값 취득. 실패 시 다음 프로세스 진행.
-                    StartMaesuringBuzzer();
-                    await TryGetStableWeightAsync(2000);
+                    // 타임아웃 안에 안정된 중량값 취득. 실패 시 다음 프로세스 진행.
+                    TryGetStableWeight();
 
+                    if (m_get_weightCnt > 100)
+                    {
+                        // QR 미인식 등 예외 상황 시 부저 울림
+                        CheckExceptionBuzzer();
 
-                    // QR 미인식 등 예외 상황 시 부저 울림
-                    CheckExceptionBuzzer();
+                        // 측정 완료 부저
+                        FinishMeasuringBuzzer();
+
+                        m_isPickUp = true;
+                        PickUpEvent();
+                    }
+                    else if (m_event_weight != -1)
+                    {
+                        // 중량값이 10kg 이상일 경우 픽업으로 판단
+                        CheckExceptionBuzzer();
+
+                        // 측정 완료 부저
+                        FinishMeasuringBuzzer();
+
+                        m_isPickUp = true;
+                        PickUpEvent();
+                    }
                 }
-
-                // 측정 완료 부저
-                FinishMeasuringBuzzer();
-
-                m_isPickUp = true;
-                PickUpEvent();
             }
             catch
             {
@@ -1747,6 +1767,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_ActionZoneId = "";
             m_ActionZoneName = "";
+            logisData = (0, 0, 0, 0);
+            m_get_weightCnt = 0;
 
             m_guideMeasuringStart = false;
         }

@@ -24,7 +24,7 @@ namespace WATA.LIS.Views
             // 작업표시줄 위에 창을 표시하도록 설정
             this.WindowState = WindowState.Normal;
             this.ResizeMode = ResizeMode.CanResize;
-            this.Topmost = true;
+            //this.Topmost = true;
 
             // 화면 크기로 창 크기 설정
             var screen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(this).Handle);
@@ -32,7 +32,6 @@ namespace WATA.LIS.Views
             this.Top = screen.WorkingArea.Top;
             this.Width = screen.WorkingArea.Width;
             this.Height = screen.WorkingArea.Height;
-            this.WindowState = WindowState.Maximized;
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
