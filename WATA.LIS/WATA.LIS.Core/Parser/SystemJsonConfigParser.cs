@@ -102,6 +102,8 @@ namespace WATA.LIS.Core.Parser
                         nav.NAV_Enable = (int)json["NAV"]["NAV_Enable"];
                         nav.IP = json["NAV"]["IP"].ToString();
                         nav.PORT = (int)json["NAV"]["PORT"];
+                        nav.AdjustingPickdrop = (int)json["NAV"]["AdjustingPickdrop"];
+                        nav.AdjustingPosition = (int)json["NAV"]["AdjustingPosition"];
 
                         livox.LIVOX_Enable = (int)json["LIVOX"]["LIVOX_Enable"];
 

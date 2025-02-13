@@ -973,15 +973,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (action == "pickdrop")
             {
-                // 2300mm를 더한 새로운 좌표 계산
-                newX = x + (long)(2600 * Math.Cos(radians));
-                newY = y + (long)(2600 * Math.Sin(radians));
+                // 센서에서 물류 픽드롭 위치만큼 보정한 좌표 계산
+                newX = x + (long)(m_navConfig.AdjustingPickdrop * Math.Cos(radians));
+                newY = y + (long)(m_navConfig.AdjustingPickdrop * Math.Sin(radians));
             }
             else if (action == "positioning")
             {
-                // 1500mm를 더한 새로운 좌표 계산
-                newX = x + (long)(1700 * Math.Cos(radians));
-                newY = y + (long)(1700 * Math.Sin(radians));
+                // 센서에서 지게차 중심축 위치만큼 보정한 좌표 계산
+                newX = x + (long)(m_navConfig.AdjustingPosition * Math.Cos(radians));
+                newY = y + (long)(m_navConfig.AdjustingPosition * Math.Sin(radians));
             }
 
             return (newX, newY);

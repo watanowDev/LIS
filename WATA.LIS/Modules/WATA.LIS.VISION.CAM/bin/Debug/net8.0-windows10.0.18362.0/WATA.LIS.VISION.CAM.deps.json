@@ -18,21 +18,21 @@
           "ZXing.Net.Bindings.Windows.Compatibility": "0.16.12",
           "libzbar-cil-all": "1.0.7",
           "ob_csharp": "0.0.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.54"
         },
         "runtime": {
           "WATA.LIS.VISION.CAM.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
-            "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.34"
+            "assemblyVersion": "10.0.18362.38",
+            "fileVersion": "10.0.18362.52"
           },
           "WinRT.Runtime.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.6.47881"
           }
         }
       },
@@ -475,7 +475,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.54": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

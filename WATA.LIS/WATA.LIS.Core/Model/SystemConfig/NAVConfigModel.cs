@@ -12,5 +12,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public int NAV_Enable { get; set; }
         public string IP { get; set; }
         public int PORT { get; set; }
+        public int AdjustingPickdrop { get; set; }
+        public int AdjustingPosition { get; set; }
     }
 }
