@@ -15,21 +15,21 @@
           "HidSharp": "1.5.8538.25354",
           "LibUsbDotNet": "2.2.8538.25354",
           "NeUsbController": "1.10.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.57"
         },
         "runtime": {
           "WATA.LIS.INDICATOR.LED.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.57": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
-            "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.34"
+            "assemblyVersion": "10.0.18362.38",
+            "fileVersion": "10.0.18362.55"
           },
           "WinRT.Runtime.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "assemblyVersion": "2.2.0.0",
+            "fileVersion": "2.2.0.48161"
           }
         }
       },
@@ -827,7 +827,7 @@
         },
         "runtime": {
           "WATA.LIS.Core.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -872,7 +872,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.57": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

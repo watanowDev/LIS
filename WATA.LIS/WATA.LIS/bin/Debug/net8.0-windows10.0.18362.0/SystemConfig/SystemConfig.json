@@ -49,8 +49,8 @@
     "NAV_Enable": 1,
     "IP": "192.168.1.200",
     "PORT": 2111,
-    "AdjustingPickdrop": 2600,
-    "AdjustingPosition": 1700
+    "AdjustingPickdrop": 3100, //2600
+    "AdjustingPosition": 2200 //1700
   },
   "LIVOX": {
     "LIVOX_Enable": 1

@@ -23,21 +23,21 @@
           "WATA.LIS.SENSOR.WEIGHT": "1.0.0",
           "WATA.LIS.VISION.CAM": "1.0.0",
           "WATA.LIS.VISION.Camera": "1.0.0",
-          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.34"
+          "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.57"
         },
         "runtime": {
           "WATA.LIS.dll": {}
         }
       },
-      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+      "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.57": {
         "runtime": {
           "Microsoft.Windows.SDK.NET.dll": {
-            "assemblyVersion": "10.0.18362.24",
-            "fileVersion": "10.0.18362.34"
+            "assemblyVersion": "10.0.18362.38",
+            "fileVersion": "10.0.18362.55"
           },
           "WinRT.Runtime.dll": {
-            "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.0.8.46841"
+            "assemblyVersion": "2.2.0.0",
+            "fileVersion": "2.2.0.48161"
           }
         }
       },
@@ -1094,7 +1094,7 @@
         },
         "runtime": {
           "WATA.LIS.Core.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1105,7 +1105,7 @@
         },
         "runtime": {
           "WATA.LIS.Heartbeat.Services.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1121,7 +1121,7 @@
         },
         "runtime": {
           "WATA.LIS.IF.BE.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1133,7 +1133,7 @@
         },
         "runtime": {
           "WATA.LIS.IF.DPS.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1146,7 +1146,7 @@
         },
         "runtime": {
           "WATA.LIS.INDICATOR.DISPLAY.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1159,7 +1159,7 @@
         },
         "runtime": {
           "WATA.LIS.INDICATOR.LED.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1174,7 +1174,7 @@
         },
         "runtime": {
           "WATA.LIS.Main.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "9.9.9.10",
             "fileVersion": "9.9.9.10"
           }
         }
@@ -1188,7 +1188,7 @@
         },
         "runtime": {
           "WATA.LIS.SENSOR.Distance.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1201,7 +1201,7 @@
         },
         "runtime": {
           "WATA.LIS.SENSOR.LIVOX.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1215,7 +1215,7 @@
         },
         "runtime": {
           "WATA.LIS.SENSOR.NAV.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1230,7 +1230,7 @@
         },
         "runtime": {
           "WATA.LIS.SENSOR.UHF_RFID.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1243,7 +1243,7 @@
         },
         "runtime": {
           "WATA.LIS.SENSOR.WEIGHT.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1262,7 +1262,7 @@
         },
         "runtime": {
           "WATA.LIS.VISION.CAM.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1277,7 +1277,7 @@
         },
         "runtime": {
           "WATA.LIS.VISION.Camera.dll": {
-            "assemblyVersion": "1.0.0",
+            "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
         }
@@ -1354,7 +1354,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.34": {
+    "runtimepack.Microsoft.Windows.SDK.NET.Ref/10.0.18362.57": {
       "type": "runtimepack",
       "serviceable": false,
       "sha512": ""

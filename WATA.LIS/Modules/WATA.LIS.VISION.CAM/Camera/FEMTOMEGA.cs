@@ -42,6 +42,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation;
 using System.Drawing.Imaging;
 using ZXing;
+using System.ComponentModel;
 
 
 namespace WATA.LIS.VISION.CAM.Camera
@@ -67,6 +68,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         private List<double> _listBotResultY = new List<double>();
         private Stopwatch m_Stopwatch_fps = new Stopwatch();
         private Stopwatch _stopwatch_getqr = new Stopwatch();
+        private int noImageCnt = 0;
 
         // weChatQRCode
         //private WeChatQRCode m_WeChatQRCode;
@@ -118,7 +120,15 @@ namespace WATA.LIS.VISION.CAM.Camera
             _eventAggregator = eventAggregator;
             _visioncammodel = visioncammodel;
             visioncamConfig = (VisionCamConfigModel)_visioncammodel;
-            //AllocConsole();
+
+            // 창의 Closing 이벤트에 핸들러 추가
+            this.Closing += OnWindowClosing;
+        }
+
+        private void OnWindowClosing(object sender, CancelEventArgs e)
+        {
+            // 확인 창을 생략하고 바로 종료
+            Application.Current.Shutdown();
         }
 
         public void Init()
@@ -128,15 +138,13 @@ namespace WATA.LIS.VISION.CAM.Camera
                 return;
             }
 
-            //m_CheckConnTimer = new DispatcherTimer();
-            //m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
-            //m_CheckConnTimer.Tick += new EventHandler(CheckConnectionEvent);
-            //m_CheckConnTimer.Start();
+            m_CheckConnTimer = new DispatcherTimer();
+            m_CheckConnTimer.Interval = new TimeSpan(0, 0, 0, 0, 5000);
+            m_CheckConnTimer.Tick += new EventHandler(CheckConnectionEvent);
+            m_CheckConnTimer.Start();
 
             m_GetImageTimer = new DispatcherTimer();
             m_GetImageTimer.Interval = new TimeSpan(0, 0, 0, 0, 33);
-
-            //InitializeWeChatQRCode();
 
             //펨토메가 관련 코드
             InitializeMultiStream();
@@ -200,8 +208,16 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                             if (colorFrame == null || depthFrame == null)
                             {
+                                noImageCnt++;
+                                if (noImageCnt >= 500 && noImageCnt % 5 == 0)
+                                {
+                                    m_pipeline = null;
+                                    m_colorProfile = null;
+                                    CheckConnectionEvent(null, null);
+                                }
                                 continue;
                             }
+                            noImageCnt = 0;
 
                             // 이벤트 데이터 객체 생성
                             VisionCamModel eventModels = new VisionCamModel();
@@ -284,12 +300,14 @@ namespace WATA.LIS.VISION.CAM.Camera
                         }
                     }
                 }, tokenSource.Token);
+
+                Tools.Log("VisionCam Init succeeded", Tools.ELogType.SystemLog);
             }
             catch
             {
-                Application.Current.Shutdown();
                 m_pipeline = null;
                 m_colorProfile = null;
+                Application.Current.Shutdown();
             }
         }
 
@@ -389,244 +407,6 @@ namespace WATA.LIS.VISION.CAM.Camera
                 Tools.Log("VisionCam is disconnected", Tools.ELogType.SystemLog);
                 InitializeMultiStream();
                 return;
-            }
-            else
-            {
-                //Tools.Log("VisionCam is alive", Tools.ELogType.SystemLog);
-            }
-        }
-
-        private void InitializeMultiStream_Old()
-        {
-            try
-            {
-                Context context = new Context();
-                context.CreateNetDevice(visioncamConfig.vision_ip, 8090);
-                context.EnableNetDeviceEnumeration(true);
-
-                DeviceList deviceList = context.QueryDeviceList();
-
-                m_pipeline = new Pipeline();
-
-                for (uint i = 0; i < deviceList.DeviceCount(); i++)
-                {
-                    Device device = deviceList.GetDevice(i);
-                    DeviceInfo deviceInfo = device.GetDeviceInfo();
-
-                    Console.WriteLine("deviceInfo.Name() : " + deviceInfo.Name());
-
-                    if (deviceInfo.Name().Contains("Femto Mega"))
-                    {
-                        m_pipeline = new Pipeline(device);
-                    }
-                }
-
-                m_colorProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_COLOR).GetVideoStreamProfile(1920, 1080, Format.OB_FORMAT_RGB, 30);
-                m_depthProfile = m_pipeline.GetStreamProfileList(SensorType.OB_SENSOR_DEPTH).GetVideoStreamProfile(640, 576, Format.OB_FORMAT_Y16, 25);
-
-                Config config = new Config();
-                config.EnableStream(m_colorProfile);
-                config.EnableStream(m_depthProfile);
-
-                m_pipeline.Start(config);
-
-                JObject point = new JObject();
-                JArray points = new JArray();
-
-                Task.Factory.StartNew(() => {
-                    while (!tokenSource.Token.IsCancellationRequested)
-                    {
-                        using (var frames = m_pipeline.WaitForFrames(100))
-                        {
-                            var colorFrame = frames?.GetColorFrame();
-                            var depthFrame = frames?.GetDepthFrame();
-
-
-                            // RGB 데이터
-                            if (colorFrame == null || depthFrame == null)
-                            {
-                                continue;
-                            }
-
-                            int colorWidth = (int)colorFrame.GetWidth();
-                            int colorHeight = (int)colorFrame.GetHeight();
-
-                            byte[] colorData = new byte[colorFrame.GetDataSize()];
-                            colorFrame.CopyData(ref colorData);
-
-                            Mat colorImage = new Mat(colorHeight, colorWidth, MatType.CV_8UC3);
-                            Marshal.Copy(colorData, 0, colorImage.Data, colorData.Length);
-
-                            Cv2.CvtColor(colorImage, colorImage, ColorConversionCodes.BGR2RGB);
-                            Cv2.Rotate(colorImage, colorImage, RotateFlags.Rotate90Counterclockwise);
-
-                            List<string> qr = new List<string>();
-                            string qrMiddle = GetQRcodeIDByWeChat(colorImage, colorWidth, colorHeight);
-                            qr.Add(qrMiddle);
-
-                            if (qr.Count != 0)
-                            {
-                                resultQR = qr[0];
-                                Cv2.Rectangle(colorImage, _detectedQRRect, new Scalar(0, 0, 255), thickness: 4);
-                            }
-
-
-                            //// 포인트 클라우드 데이터
-                            //PointCloudFilter pointCloud = new PointCloudFilter();
-                            //var cameraParam = m_pipeline.GetCameraParam();
-                            //pointCloud.SetCameraParam(cameraParam);
-                            //pointCloud.SetPositionDataScaled(1);
-
-                            //Orbbec.Frame pointFrame = pointCloud.Process(depthFrame);
-
-                            //byte[] pointData = new byte[pointFrame.GetDataSize()];
-                            //pointFrame.CopyData(ref pointData);
-
-
-                            //int depthWidth = (int)depthFrame.GetWidth();
-                            //int depthHeight = (int)depthFrame.GetHeight();
-
-
-                            //Mat depthImage = new Mat(depthHeight, depthWidth, MatType.CV_32FC3);
-                            //Marshal.Copy(pointData, 0, depthImage.Data, pointData.Length);
-
-                            //Cv2.Rotate(depthImage, depthImage, RotateFlags.Rotate90Counterclockwise);
-
-                            //Parallel.For(0, depthImage.Rows, i => {
-                            //    for (int j = 0; j < depthImage.Cols; j++)
-                            //    {
-                            //        Vec3f depthVec = depthImage.At<Vec3f>(i, j);
-                            //        float zValue = depthVec[2];
-
-                            //        checkDepthVal = depthVec;
-                            //        checkZValue = zValue;
-
-                            //        if (zValue < 1200.0f || zValue > 2600.0f || (j >= 0 && j < 120) || (j >= 456 && j <= 576))
-                            //        {
-                            //            depthImage.Set<Vec3f>(i, j, new Vec3f(0, 0, 0));
-                            //        }
-                            //    }
-                            //});
-
-                            //double minYValue, maxYValue;
-                            //Point minYLoc, maxYLoc;
-
-                            //Mat yChannel = new Mat();
-                            //Cv2.ExtractChannel(depthImage, yChannel, 0);
-
-                            //Mat kernel = Cv2.GetStructuringElement(MorphShapes.Rect, new OpenCvSharp.Size(3, 3));
-                            //Cv2.Erode(yChannel, yChannel, kernel);
-                            //Cv2.Dilate(yChannel, yChannel, kernel);
-
-                            //Cv2.MinMaxLoc(yChannel, out minYValue, out maxYValue, out minYLoc, out maxYLoc);
-
-                            //for (int i = 590; i < 630; i++)
-                            //{
-                            //    minYValue = yChannel.At<Vec3f>(i, 288)[1];
-                            //    if (minYValue < -500)
-                            //    {
-                            //        minYLoc = new Point(288, i);
-                            //        break;
-                            //    }
-                            //}
-
-
-                            //if (maxYValue == 0)
-                            //{
-                            //    double maxNegativeValue = double.MinValue;
-                            //    for (int i = 0; i < yChannel.Rows; i++)
-                            //    {
-                            //        for (int j = 0; j < yChannel.Cols; j++)
-                            //        {
-                            //            float yValue = yChannel.At<Vec3f>(i, j)[1];
-                            //            if (yValue < 0 && yValue > maxNegativeValue)
-                            //            {
-                            //                maxNegativeValue = yValue;
-                            //                maxYLoc = new Point(j, i);
-                            //            }
-                            //        }
-                            //    }
-                            //    maxYValue = maxNegativeValue;
-                            //}
-
-
-                            //Cv2.Circle(depthImage, maxYLoc, 5, new Scalar(150, 150, 150), -1);
-                            //Cv2.Circle(depthImage, minYLoc, 5, new Scalar(150, 150, 150), -1);
-
-                            //if (maxYValue != 0 && minYValue != 0)
-                            //{
-                            //    _listTopResultY.Add(maxYValue);
-                            //    _listBotResultY.Add(minYValue);
-                            //    Console.WriteLine($"Min = {minYValue}, Max = {maxYValue}");
-                            //}
-
-                            //if (_listTopResultY.Count == 10 && _listBotResultY.Count == 10) // 속도 빠르면 15, 20 테스트
-                            //{
-                            //    int heightOffset = 30;
-                            //    int resultTopAvg = CalculateAverage(_listTopResultY);
-                            //    int resultBotAvg = CalculateAverage(_listBotResultY);
-                            //    int result = (int)(Math.Abs(minYValue) + maxYValue - heightOffset);
-
-                            //    _listTopResultY.Clear();
-                            //    _listBotResultY.Clear();
-                            //    resultQR = "";
-                            //    resultHeight = result;
-
-                            //    Mat resizedImage = new Mat();
-                            //    Cv2.Resize(depthImage, resizedImage, new OpenCvSharp.Size(depthWidth / 12, depthHeight / 12));
-
-                            //    for (int y = 0; y < resizedImage.Rows; y++)
-                            //    {
-                            //        for (int x = 0; x < resizedImage.Cols; x++)
-                            //        {
-                            //            Vec3f pt = resizedImage.At<Vec3f>(y, x);
-                            //            if (pt.Item2 > 0 && (pt.Item0 != pt.Item2))
-                            //            {
-                            //                point["x"] = pt.Item0;
-                            //                point["y"] = pt.Item1;
-                            //                point["z"] = pt.Item2;
-                            //                points.Add(point);
-                            //                //Console.WriteLine($"{pt[0]} {pt[1]} {pt[2]}");
-                            //            }
-                            //        }
-                            //    }
-
-                            //    Console.WriteLine("---------------------------------------------");
-                            //    Console.WriteLine($"Height : {result} mm");
-                            //    Console.WriteLine("---------------------------------------------");
-                            //}
-
-                            //Cv2.NamedWindow("depthImage", WindowFlags.KeepRatio);
-                            //Cv2.ResizeWindow("depthImage", 640, 576);
-                            //Cv2.ImShow("depthImage", depthImage);
-                            //Cv2.WaitKey(1);
-
-
-
-                            // Convert Mat to byte array
-                            byte[] frameData;
-                            using (var ms = new MemoryStream())
-                            {
-                                colorImage.WriteToStream(ms);
-                                frameData = ms.ToArray();
-                            }
-
-                            // Publish the event
-                            VisionCamModel eventModels = new VisionCamModel();
-                            eventModels.QR = resultQR == null ? "" : resultQR;
-                            eventModels.POINTS = points.ToString();
-                            eventModels.FRAME = frameData;
-                            eventModels.connected = true;
-                            _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
-                        }
-                    }
-                }, tokenSource.Token);
-            }
-            catch
-            {
-                Application.Current.Shutdown();
-                m_pipeline = null;
-                m_colorProfile = null;
             }
         }
 

@@ -37,15 +37,16 @@ namespace WATA.LIS.Views
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // 닫기 버튼을 클릭했을 때 수행할 동작
-            if (MessageBox.Show("Do you want to exit the program?", "Program", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
-            {
-                Environment.Exit(0);
-            }
-            else
-            {
-                // 창 닫기를 취소합니다.
-                e.Cancel = true;
-            }
+            Environment.Exit(0);
+            //if (MessageBox.Show("Do you want to exit the program?", "Program", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
+            //{
+            //    Environment.Exit(0);
+            //}
+            //else
+            //{
+            //    // 창 닫기를 취소합니다.
+            //    e.Cancel = true;
+            //}
         }
     }
 }
