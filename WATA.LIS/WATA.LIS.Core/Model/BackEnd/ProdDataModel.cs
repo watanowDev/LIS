@@ -16,10 +16,12 @@ namespace WATA.LIS.Core.Model.BackEnd
         public long x { get; set; } //x좌표
         public long y { get; set; } //y좌표
         public int t { get; set; } //지게차 헤딩 방향 (range : 0~3600)
+        public int result { get; set; } //평치측위 상태리턴 (1:정상, 1 이외 값:비정상)
+        public bool rotate { get; set; } //true:전진, false:후진
+        public int height { get; set; } //지게차 포크 높이
         public int move { get; set; } //0:stop, 1:move
         public int load { get; set; } //0:unload, 1:load
         public string action { get; set; } //pickup, drop
-        public int result { get; set; } //평치측위 상태리턴 (1:정상, 1 이외 값:비정상)
         public string loadId { get; set; } //물류 QR 코드
         public string epc { get; set; } //EPC 코드
         public string errorCode { get; set; } //지게차 하위 edge-device의 ConnErr, Warning, Alarm
