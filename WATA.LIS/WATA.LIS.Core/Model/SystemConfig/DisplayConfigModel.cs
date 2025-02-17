@@ -10,5 +10,6 @@ namespace WATA.LIS.Core.Model.SystemConfig
     public class DisplayConfigModel : IDisplayModel
     {
         public int display_enable { get; set; }
+        public string display_type { get; set; }
     }
 }

@@ -105,6 +105,7 @@ namespace WATA.LIS.Core.Parser
 
 
                         display.display_enable = (int)json["display"]["display_enable"];
+                        display.display_type = json["display"]["display_type"].ToString();
 
                         Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
                     }
