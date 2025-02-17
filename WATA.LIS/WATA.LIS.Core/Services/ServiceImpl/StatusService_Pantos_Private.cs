@@ -103,7 +103,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
-        private List<NAVSensorModel> m_nav_list;
+        private List<NAVSensorModel> m_nav_list = new List<NAVSensorModel>();
         private readonly int m_nav_sample_size = 10;
         private string m_ActionZoneId = "";
         private string m_ActionZoneName = "";
@@ -1028,11 +1028,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (m_navModel.result == "1" && m_navModel != null)
             {
                 m_nav_list.Add(m_navModel);
-            }
 
-            if (m_nav_list.Count > m_nav_sample_size)
-            {
-                if (m_nav_list.Count != 0) m_nav_list.RemoveAt(0);
+                if (m_nav_list.Count > m_nav_sample_size)
+                {
+                    if (m_nav_list.Count != 0) m_nav_list.RemoveAt(0);
+                }
             }
         }
 
@@ -1133,17 +1133,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
         {
-            int backwardCount = 0;
+            const int requiredCount = 7;
+            int count = 0;
 
-            // 현재 헤딩 값에서 180도 반전 시키고, 그 값에 +- 45도 영역을 계산
-            double reversedHeading = (naviT + 1800) % 3600;
-            double lowerBound = (reversedHeading - 450 + 3600) % 3600;
-            double upperBound = (reversedHeading + 450) % 3600;
+            // 현재 헤딩 값에서 +- 45도 영역을 계산
+            double lowerBound = (naviT - 600 + 3600) % 3600;
+            double upperBound = (naviT + 600) % 3600;
 
             foreach (var item in list)
             {
-                // 각도를 라디안으로 변환
-                double angleToItem = Math.Atan2(item.naviY - naviY, item.naviX - naviX) * (180.0 / Math.PI) * 10;
+                double deltaX = item.naviX - naviX;
+                double deltaY = item.naviY - naviY;
+                double angleToItem = Math.Atan2(deltaY, deltaX) * (180.0 / Math.PI) * 10;
                 angleToItem = (angleToItem + 3600) % 3600; // 0 ~ 3600 범위로 변환
 
                 // 후진 중인지 확인
@@ -1151,25 +1152,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     if (angleToItem >= lowerBound && angleToItem <= upperBound)
                     {
-                        backwardCount++;
+                        count++;
                     }
                 }
                 else
                 {
                     if (angleToItem >= lowerBound || angleToItem <= upperBound)
                     {
-                        backwardCount++;
+                        count++;
                     }
                 }
 
-                // 7개 이상의 값이 후진 중인 경우
-                if (backwardCount >= 7)
+                if (count >= requiredCount)
                 {
-                    return false;
+                    //Debug.WriteLine($"{count}, Backward");
+                    return false; // 후진
                 }
             }
 
-            return true;
+            //Debug.WriteLine($"{count}, Forward");
+            return true; // 전진
         }
 
 
@@ -1188,7 +1190,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             if (!m_event_epc.Contains("DA"))
             {
                 m_event_width = m_livoxModel.width;
-                m_event_height = m_livoxModel.height - 500;
+                m_event_height = m_livoxModel.height - (m_event_distance - m_distanceConfig.pick_up_distance_threshold);
                 m_event_length = m_livoxModel.length;
                 m_event_points = m_livoxModel.points;
             }
@@ -1392,7 +1394,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.x = adjustedX;
                 prodDataModel.y = adjustedY;
                 prodDataModel.t = (int)m_navModel.naviT;
-                prodDataModel.rotate = CheckIsForward(adjustedX, adjustedY, m_navModel.naviT, m_nav_list);
+                prodDataModel.rotate = CheckIsForward(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list);
                 prodDataModel.height = m_curr_distance;
                 prodDataModel.move = 1; // Stop : 0, Move : 1
                 prodDataModel.load = m_isPickUp ? 1 : 0; // UnLoad : 0, Load : 1
@@ -1734,7 +1736,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         // 타임아웃 안에 안정된 부피값 취득. 실패 시 다음 프로세스 진행.
                         _eventAggregator.GetEvent<CallDataEvent>().Publish();
                     }
-     
+
 
 
                     // 타임아웃 안에 안정된 중량값 취득. 실패 시 다음 프로세스 진행.

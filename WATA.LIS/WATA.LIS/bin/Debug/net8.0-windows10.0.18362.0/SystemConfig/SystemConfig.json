@@ -16,7 +16,7 @@
     "distance_enable": 1,
     "model_name": "Terrabee", //Terrabee, TF_Mini
     "comport": "COM3",
-    "pick_up_distance_threshold": 0
+    "pick_up_distance_threshold": 730
   },
   "weight_sensor": {
     "weight_enable": 1,

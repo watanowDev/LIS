@@ -136,7 +136,6 @@ namespace WATA.LIS.SENSOR.NAV
                             navSensorModel.naviX = Globals.nav_x;
                             navSensorModel.naviY = Globals.nav_y;
                             navSensorModel.naviT = Globals.nav_phi;
-                            navSensorModel.isBackward = false;
                             navSensorModel.result = navMode;
                             //ZoneID Send
                             _eventAggregator.GetEvent<NAVSensorEvent>().Publish(navSensorModel);
