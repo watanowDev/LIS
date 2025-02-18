@@ -60,7 +60,7 @@ namespace WATA.LIS.IF.DPS.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WATA.LIS.IF.DPS;V1.0.0.0;component/views/dpsview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WATA.LIS.IF.DPS;component/views/dpsview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\DPSView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

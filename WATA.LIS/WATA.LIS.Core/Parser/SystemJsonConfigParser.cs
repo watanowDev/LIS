@@ -57,6 +57,7 @@ namespace WATA.LIS.Core.Parser
 
                         LedBuzzer.led_enable = (int)json["led_buzzer"]["led_enable"];
                         LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
+                        LedBuzzer.lamp_IP = json["led_buzzer"]["lamp_IP"].ToString();
                         LedBuzzer.InfoLanguage = json["led_buzzer"]["InfoLanguage"].ToString();
 
 

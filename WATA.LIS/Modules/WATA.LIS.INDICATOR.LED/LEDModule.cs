@@ -19,6 +19,9 @@ namespace WATA.LIS.INDICATOR.LED
             Patlite_LED_Buzzer Patlite = new Patlite_LED_Buzzer(eventAggregator, ledBuzzer);
             Patlite.Init();
 
+            Patlite_Docker_LAMP patlite_Docker_LAMP = new Patlite_Docker_LAMP(eventAggregator, ledBuzzer);
+            patlite_Docker_LAMP.Init();
+
             Speaker spekaer = new Speaker(eventAggregator, ledBuzzer);
 
             Led_Buzzer_ConfigModel led_Buzzer_ConfigModel = (Led_Buzzer_ConfigModel)ledBuzzer;

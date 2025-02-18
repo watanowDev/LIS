@@ -11,6 +11,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
     {
         public int led_enable { get; set; }
         public int volume { get; set; }
+        public string lamp_IP { get; set; }
         public string InfoLanguage { get; set; }
     }
 }

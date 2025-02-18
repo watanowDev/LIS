@@ -40,6 +40,62 @@ namespace WATA.LIS.Core.Common
         BLUE,
     }
 
+    public enum eLampAlert
+    {
+        LightOff = 0,
+        LightOn = 1,
+        Flashing_Slow = 2,
+        Flashing_Medium = 3,
+        Flashing_Fast = 4,
+        SingleFlash = 5,
+        DoubleFlash = 6,
+        TripleFlash = 7,
+        Pulse = 8,
+        NoChange = 9
+    }
+
+    public enum eLampBuzzer
+    {
+        Stop = 0,
+        BuzzerPattern1 = 1,
+        BuzzerPattern2 = 2,
+        BuzzerPattern3 = 3,
+        BuzzerPattern4 = 4,
+        BuzzerPattern5 = 5,
+        BuzzerPattern6 = 6,
+        BuzzerPattern7 = 7,
+        Disabled = 8,
+        NoChange = 9
+    }
+
+    public enum eLampColor
+    {
+        Off = 0,
+        Red = 1,
+        Amber = 2,
+        Lemon = 3,
+        Green = 4,
+        Cyan = 5,
+        Blue = 6,
+        Purple = 7,
+        Pink = 8,
+        White = 9
+    }
+
+    public enum eLampClear
+    {
+        Clear = 1
+    }
+
+    public enum eLampSequence
+    {
+        Clear = 0,
+        Correct_Docking = 1,
+        Correct_Placement = 2,
+        Invalid_Docking = 3,
+        Invalid_Placement = 4
+    }
+
     public enum eLEDColors
     {
         OFF = 0,
@@ -129,7 +185,7 @@ namespace WATA.LIS.Core.Common
         size_check_start, size_check_start_please_stop, size_check_complete, size_check_complete_please_pickup, size_check_error,
         weight_size_check_start, weight_size_check_complete, weight_size_check_error,
         set_item, clear_item, register_item,
-        device_error_clear, device_error_weight, device_error_distance, device_error_rfid, 
+        device_error_clear, device_error_weight, device_error_distance, device_error_rfid,
         device_error_visoncam, device_error_lidar2d, device_error_lidar3d, device_error_indicator,
         dummy,
     }
