@@ -1711,7 +1711,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     m_isVisionPickUp = true;
                     m_visionDropCnt = 0;
                 }
-                else if (m_visionDropCnt > 5 && m_pickupStatus == true)
+                else if (m_visionDropCnt > 3 && m_pickupStatus == true)
                 {
                     m_isVisionPickUp = false;
                     m_visionPickupCnt = 0;
@@ -1727,14 +1727,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         m_visionPickupTime = 0;
                         m_visionPickupCnt = 0;
                         m_visionDropCnt = 0;
-                        m_guideMeasuringStart = false;
-                        Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                     }
                 }
-
-
                 // 안정된 중량값이 10을 넘을 경우 픽업 상태로 변경
-                if (m_weight_list.Count >= m_weight_sample_size && m_weightModel.GrossWeight > 10 && m_pickupStatus == false && m_isVisionPickUp == false)
+                else if (m_weight_list.Count >= m_weight_sample_size && m_weightModel.GrossWeight > 10 && m_pickupStatus == false && m_isVisionPickUp == false)
                 {
                     int currentWeight = m_weightModel.GrossWeight;
                     int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
@@ -1754,6 +1750,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 else
                 {
                     m_isWeightPickup = false;
+                    m_guideMeasuringStart = false;
+                    //Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                 }
             }
             catch
@@ -1780,6 +1778,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 재측정 명령이 없더라도, 중량, 부피 값이 모두 있을 경우 측정 건너뜀.
                 if (logisData.Item1 > 0 && logisData.Item2 > 0 && logisData.Item3 > 0 && logisData.Item4 > 0 && m_set_measure == false)
                 {
+                    m_pickupStatus = true;
+
                     m_event_weight = logisData.weight;
                     m_event_width = logisData.width;
                     m_event_height = logisData.height;
@@ -1788,12 +1788,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     // 측정 완료 부저
                     FinishMeasuringBuzzer();
 
-                    m_pickupStatus = true;
                     PickUpEvent();
                 }
                 // 재측정 명령이 없더라도, 상차, 하차 지시 있는 경우 측정 건너뜀.
                 else if ((m_set_load == true || m_set_load == true) && m_set_measure == false)
                 {
+                    m_pickupStatus = true;
+
                     m_event_weight = logisData.weight;
                     m_event_width = logisData.width;
                     m_event_height = logisData.height;
@@ -1802,7 +1803,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     // 측정 완료 부저
                     FinishMeasuringBuzzer();
 
-                    m_pickupStatus = true;
                     PickUpEvent();
                 }
                 // 재측정 명령 있거나, 물류 정보가 없을 경우 측정 시작
@@ -1822,24 +1822,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                     if (m_get_weightCnt > 100)
                     {
+                        m_pickupStatus = true;
+
                         // QR 미인식 등 예외 상황 시 부저 울림
                         CheckExceptionBuzzer();
 
                         // 측정 완료 부저
                         FinishMeasuringBuzzer();
 
-                        m_pickupStatus = true;
                         PickUpEvent();
                     }
                     else if (m_event_weight != -1)
                     {
+                        m_pickupStatus = true;
+
                         // QR 미인식 등 예외 상황 시 부저 울림
                         CheckExceptionBuzzer();
 
                         // 측정 완료 부저
                         FinishMeasuringBuzzer();
 
-                        m_pickupStatus = true;
                         PickUpEvent();
                     }
                 }
@@ -1873,9 +1875,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (m_isVisionPickUp == true) return;
 
-                if (m_weight_list.Count == 0 || m_weight_list == null) return;
+                if (m_isWeightPickup == true) return;
 
-                if (m_weightModel.GrossWeight > 10) return;
+                //if (m_weight_list.Count == 0 || m_weight_list == null) return;
+
+                //if (m_weightModel.GrossWeight > 10) return;
 
                 Tools.Log($"Drop Event!!!", ELogType.ActionLog);
             }
