@@ -54,7 +54,7 @@
     "AdjustingPosition": 2200 //1700
   },
   "LIVOX": {
-    "LIVOX_Enable": 0
+    "LIVOX_Enable": 1
   },
   "vision": {
     "vision_enable": 1,
@@ -65,7 +65,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

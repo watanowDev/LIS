@@ -837,7 +837,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_distanceModel = model;
             m_errCnt_distance = 0;
 
-            m_curr_distance = m_distanceModel.Distance_mm - m_distanceConfig.pick_up_distance_threshold;
+            m_curr_distance = m_distanceModel.Distance_mm;
+
             if (m_curr_distance < 0)
             {
                 m_curr_distance = 0;
@@ -1181,12 +1182,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_livoxModel = model;
 
-            m_event_distance = m_curr_distance;
+            //m_event_distance = m_curr_distance;
 
             if (!m_event_epc.Contains("DA"))
             {
                 m_event_width = m_livoxModel.width;
-                m_event_height = m_livoxModel.height - (m_event_distance - m_distanceConfig.pick_up_distance_threshold);
+                //m_event_height = m_livoxModel.height - (m_event_distance - m_distanceConfig.pick_up_distance_threshold);
+                m_event_height = m_livoxModel.height;
                 m_event_length = m_livoxModel.length;
                 m_event_points = m_livoxModel.points;
             }
@@ -1431,8 +1433,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
 
-            m_event_distance = m_curr_distance;
-
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
             ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
@@ -1454,7 +1454,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.height = (m_event_distance).ToString();
+            ActionObj.actionInfo.height = (m_curr_distance).ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionHeight = m_event_height;
             ActionObj.actionInfo.visionDepth = m_event_length;
@@ -1525,8 +1525,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
 
-            m_event_distance = m_curr_distance;
-
             ActionInfoModel ActionObj = new ActionInfoModel();
             ActionObj.actionInfo.workLocationId = m_basicInfoModel.data[0].workLocationId;
             ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
@@ -1548,7 +1546,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             ActionObj.actionInfo.loadMatrixRaw = "10";
             ActionObj.actionInfo.loadMatrixColumn = "10";
-            ActionObj.actionInfo.height = (m_event_distance).ToString();
+            ActionObj.actionInfo.height = (m_curr_distance).ToString();
             ActionObj.actionInfo.visionWidth = m_event_width;
             ActionObj.actionInfo.visionHeight = m_event_height;
             ActionObj.actionInfo.visionDepth = m_event_length;
@@ -1705,49 +1703,62 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void MonitoringPickupTimerEvent(object sender, EventArgs e)
         {
-            // Vision Pickup, Drop 카운트의 누적값에 의한 상태 변경
-            if (m_visionPickupCnt > 10 && m_pickupStatus == false)
+            try
             {
-                m_isVisionPickUp = true;
-                m_visionDropCnt = 0;
-            }
-            else if (m_visionDropCnt > 5 && m_pickupStatus == true)
-            {
-                m_isVisionPickUp = false;
-                m_visionPickupCnt = 0;
-            }
-
-            // 측정대기인 상태에서 10초동안 픽업이 완료되지 않을 경우 노말상태로 변경
-            if (m_isVisionPickUp == true && m_pickupStatus == false)
-            {
-                m_visionPickupTime++;
-                if (m_visionPickupTime > 100)
+                // Vision Pickup, Drop 카운트의 누적값에 의한 상태 변경
+                if (m_visionPickupCnt > 10 && m_pickupStatus == false)
+                {
+                    m_isVisionPickUp = true;
+                    m_visionDropCnt = 0;
+                }
+                else if (m_visionDropCnt > 5 && m_pickupStatus == true)
                 {
                     m_isVisionPickUp = false;
-                    m_visionPickupTime = 0;
                     m_visionPickupCnt = 0;
-                    m_visionDropCnt = 0;
-                    m_guideMeasuringStart = false;
-                    Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                 }
-            }
 
-
-            // 안정된 중량값이 10을 넘을 경우 픽업 상태로 변경
-            if (m_weight_list.Count > m_weight_sample_size && m_weightModel.GrossWeight > 10 && m_pickupStatus == false)
-            {
-                int currentWeight = m_weightModel.GrossWeight;
-                int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
-                int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
-
-                if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.1 && Math.Abs(currentWeight - maxWeight) < currentWeight * 0.1)
+                // 측정대기인 상태에서 10초동안 픽업이 완료되지 않을 경우 노말상태로 변경
+                if (m_isVisionPickUp == true && m_pickupStatus == false)
                 {
+                    m_visionPickupTime++;
+                    if (m_visionPickupTime > 100)
+                    {
+                        m_isVisionPickUp = false;
+                        m_visionPickupTime = 0;
+                        m_visionPickupCnt = 0;
+                        m_visionDropCnt = 0;
+                        m_guideMeasuringStart = false;
+                        Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
+                    }
+                }
+
+
+                // 안정된 중량값이 10을 넘을 경우 픽업 상태로 변경
+                if (m_weight_list.Count >= m_weight_sample_size && m_weightModel.GrossWeight > 10 && m_pickupStatus == false && m_isVisionPickUp == false)
+                {
+                    int currentWeight = m_weightModel.GrossWeight;
+                    int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
+                    int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
+
+                    if (Math.Abs(currentWeight - minWeight) > currentWeight * 0.1)
+                    {
+                        return;
+                    }
+                    else if (Math.Abs(currentWeight - maxWeight) > currentWeight * 0.1)
+                    {
+                        return;
+                    }
+
                     m_isWeightPickup = true;
                 }
+                else
+                {
+                    m_isWeightPickup = false;
+                }
             }
-            else
+            catch
             {
-                m_isWeightPickup = false;
+
             }
         }
 
@@ -1905,6 +1916,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 물류 데이터 초기화
             m_ActionZoneId = "";
             m_ActionZoneName = "";
+            m_event_weight = 0;
             logisData = (0, 0, 0, 0);
             m_get_weightCnt = 0;
 
