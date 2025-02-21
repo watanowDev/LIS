@@ -81,7 +81,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             if (m_stopwatch != null) m_stopwatch.Start();
 
             int getLivoxctn = 0;
-            while (getLivoxctn < 100)
+            while (getLivoxctn < 10)
             {
                 SendToLivox(1);
                 if (GetSizeData() == true)

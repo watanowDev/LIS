@@ -50,7 +50,7 @@ using System.Net.Http;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
-    public class StatusService_Platform : IStatusService
+    public class StatusService_WATA : IStatusService
     {
         IEventAggregator _eventAggregator;
 
@@ -164,7 +164,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         Stopwatch m_stopwatch = new Stopwatch();
 
 
-        public StatusService_Platform(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
+        public StatusService_WATA(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
                                     IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel,
                                     INAVModel navModel, ILivoxModel livoxModel, IDisplayModel displayModel)
         {
@@ -1036,7 +1036,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void CalcDistanceAndGetZoneID(long naviX, long naviY, long naviT, bool bDrop)
         {
             List<long> calcList = new List<long>();
-            long distance = 700;
+            long distance = 800;
 
             (naviX, naviY) = AdjustCoordinates(naviX, naviY, (int)naviT, "pickdrop");
 
@@ -1506,18 +1506,26 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 ActionObj.actionInfo.zoneName = m_ActionZoneName;
             }
 
-            string json_body = Util.ObjectToJson(ActionObj);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.body = json_body;
-            post_obj.type = eMessageType.BackEndAction;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-            //_eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.register_item);
-            Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
+            if (m_displayConfig.display_type.Contains("Platform"))
+            {
+                string json_body = Util.ObjectToJson(ActionObj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-            //zone 초기화
-            m_ActionZoneId = "";
+                Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
+            }
+            else
+            {
+                string json_body = Util.ObjectToJson(ActionObj);
+                Tools.Log($"Fake Pickup Action {json_body}", ELogType.ActionLog);
+            }
+
+                //zone 초기화
+                m_ActionZoneId = "";
             m_ActionZoneName = "";
         }
 
@@ -1600,23 +1608,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 ActionObj.actionInfo.zoneName = m_ActionZoneName;
             }
 
-            string json_body = Util.ObjectToJson(ActionObj);
-            RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.body = json_body;
-            post_obj.type = eMessageType.BackEndAction;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
-            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
-            Tools.Log($"Drop Action {json_body}", ELogType.ActionLog);
+            if (m_displayConfig.display_type.Contains("Platform"))
+            {
+                string json_body = Util.ObjectToJson(ActionObj);
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.body = json_body;
+                post_obj.type = eMessageType.BackEndAction;
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
+                Tools.Log($"Drop Action {json_body}", ELogType.ActionLog);
+            }
+            else
+            {
+                string json_body = Util.ObjectToJson(ActionObj);
+                Tools.Log($"Fake Drop Action {json_body}", ELogType.ActionLog);
+            }
 
             // 전송 후 값 초기화
             m_weight_list = new List<WeightSensorModel>();
             m_event_weight = 0;
             m_event_epc = "";
-            //m_livoxModel.height = 0;
-
-            //zone 초기화
             m_ActionZoneId = "";
             m_ActionZoneName = "";
         }
@@ -1651,12 +1664,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             try
             {
+                // "wata"가 포함되어 있으면 제거
+                if (productId.Contains("wata"))
+                {
+                    productId = productId.Replace("wata", string.Empty);
+                }
+
                 string query = $"?projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&productId={productId}";
                 string url = $"https://dev-lms-api.watalbs.com/monitoring/app/geofence/addition-info/logistics/lot/info{query}";
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "GET";
                 request.Timeout = 3 * 1000; // 3초
+                request.Headers.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55TmFtZSI6Ilxi7JeG7J2MIiwidXNlclR5cGUiOiJPV05FUiIsInVzZXJOYW1lIjoi7J2066aEIiwidXNlcklkIjoiZXRoYW4uZGV2QHdhdGFub3cuY29tIiwiaWF0IjoxNzQwMDA3MTIyLCJleHAiOjE3NDAwOTM1MjJ9.fvsClWbTDxvqa95XYYFO9otkQSCOYZbwMVruEpD1toI");
+
                 using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
                 {
                     HttpStatusCode status = resp.StatusCode;
@@ -1666,10 +1687,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         string responseBody = sr.ReadToEnd();
                         JObject json = JObject.Parse(responseBody);
 
-                        result.Item1 = json["productWeight"]?.Value<int>() ?? 0;
-                        result.Item2 = json["productWidth"]?.Value<float>() ?? 0;
-                        result.Item3 = json["productHeight"]?.Value<float>() ?? 0;
-                        result.Item4 = json["productDepth"]?.Value<float>() ?? 0;
+                        var data = json["data"];
+                        result.Item1 = data["productWeight"]?.Value<int>() ?? 0;
+                        result.Item2 = data["productWidth"]?.Value<float>() ?? 0;
+                        result.Item3 = data["productHeight"]?.Value<float>() ?? 0;
+                        result.Item4 = data["productDepth"]?.Value<float>() ?? 0;
                     }
                 }
                 Tools.Log($"Get Logistic Data Weight : {result.Item1}, Width : {result.Item2}, Height : {result.Item3}, Depth : {result.Item4}", ELogType.ActionLog);
@@ -1706,22 +1728,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             try
             {
                 // Vision Pickup, Drop 카운트의 누적값에 의한 상태 변경
-                if (m_visionPickupCnt > 10 && m_pickupStatus == false)
+                if (m_visionPickupCnt > 10 && m_pickupStatus == false && m_isWeightPickup == false)
                 {
                     m_isVisionPickUp = true;
+                    m_visionPickupCnt = 0;
                     m_visionDropCnt = 0;
                 }
                 else if (m_visionDropCnt > 3 && m_pickupStatus == true)
                 {
                     m_isVisionPickUp = false;
                     m_visionPickupCnt = 0;
+                    m_visionDropCnt = 0;
                 }
 
-                // 측정대기인 상태에서 10초동안 픽업이 완료되지 않을 경우 노말상태로 변경
+                // 측정대기인 상태에서 15초동안 픽업이 완료되지 않을 경우 노말상태로 변경
                 if (m_isVisionPickUp == true && m_pickupStatus == false)
                 {
                     m_visionPickupTime++;
-                    if (m_visionPickupTime > 100)
+                    if (m_visionPickupTime > 150)
                     {
                         m_isVisionPickUp = false;
                         m_visionPickupTime = 0;
@@ -1750,7 +1774,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 else
                 {
                     m_isWeightPickup = false;
-                    m_guideMeasuringStart = false;
+                    //m_guideMeasuringStart = false;
                     //Pattlite_Buzzer_LED(ePlayBuzzerLed.DROP);
                 }
             }
