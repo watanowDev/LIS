@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.VISION.CAM")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5f988f4a826c3183e68aae03dd55004d1e3b811")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db3b693765aef11744277b463d4f220af91ba967")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.VISION.CAM")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.VISION.CAM")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

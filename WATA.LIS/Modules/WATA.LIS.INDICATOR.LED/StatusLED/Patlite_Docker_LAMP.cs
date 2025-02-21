@@ -130,7 +130,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
                     responseBodies.RemoveAt(0);
                 }
 
-                // Unit_Status가 [0, 0, 0, 0, 0]이 아닌 경우에만 동일한 상태가 20개 이상 쌓였는지 확인
+                // Unit_Status가 [0, 0, 0, 0, 0]이 아닌 경우에만 동일한 상태가 20개 이상 쌓였는지 확인. 20초간 20개 쌓였으면 경광등 해제
                 if (!responseBody.Contains("\"Unit_Status\" : [0, 0, 0, 0, 0],") &&
                     responseBodies.Count == maxResponses && responseBodies.All(rb => rb == responseBodies[0]))
                 {
