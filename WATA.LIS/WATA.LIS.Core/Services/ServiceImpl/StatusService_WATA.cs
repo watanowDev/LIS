@@ -150,7 +150,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool m_pickupStatus = false;
         private bool m_isVisionPickUp = false;
         private bool m_guideMeasuringStart;
-        (int weight, float width, float height, float depth) logisData = (0, 0, 0, 0);
+        bool m_logisData = false;
 
         // 타이머 클래스
         DispatcherTimer m_ErrorCheck_Timer;
@@ -1194,9 +1194,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
             else if (m_event_epc.Contains("DA"))
             {
-                m_event_width = 0;
-                m_event_height = 0;
-                m_event_length = 0;
+                m_event_width = 0; m_event_height = 0; m_event_length = 0;
                 m_event_points = "";
             }
 
@@ -1656,9 +1654,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
 
-        private (int, float, float, float) GetLogisticsLotInfo(string productId)
+        private bool GetLogisticsLotInfo(string productId)
         {
-            (int, float, float, float) result = (0, 0, 0, 0);
+            bool result = false;
 
             if (productId == "") return result;
 
@@ -1671,12 +1669,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 string query = $"?projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&productId={productId}";
-                string url = $"https://dev-lms-api.watalbs.com/monitoring/app/geofence/addition-info/logistics/lot/info{query}";
+                string url = $"https://dev-lms-api.watalbs.com/monitoring/app/geofence/addition-info/logistics/lot/inventory-info{query}";
 
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
                 request.Method = "GET";
                 request.Timeout = 3 * 1000; // 3초
-                request.Headers.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJjb21wYW55TmFtZSI6Ilxi7JeG7J2MIiwidXNlclR5cGUiOiJPV05FUiIsInVzZXJOYW1lIjoi7J2066aEIiwidXNlcklkIjoiZXRoYW4uZGV2QHdhdGFub3cuY29tIiwiaWF0IjoxNzQwMDA3MTIyLCJleHAiOjE3NDAwOTM1MjJ9.fvsClWbTDxvqa95XYYFO9otkQSCOYZbwMVruEpD1toI");
 
                 using (HttpWebResponse resp = (HttpWebResponse)request.GetResponse())
                 {
@@ -1687,14 +1684,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         string responseBody = sr.ReadToEnd();
                         JObject json = JObject.Parse(responseBody);
 
-                        var data = json["data"];
-                        result.Item1 = data["productWeight"]?.Value<int>() ?? 0;
-                        result.Item2 = data["productWidth"]?.Value<float>() ?? 0;
-                        result.Item3 = data["productHeight"]?.Value<float>() ?? 0;
-                        result.Item4 = data["productDepth"]?.Value<float>() ?? 0;
+                        // "data" 값을 result에 담음
+                        result = json["data"]?.Value<bool>() ?? false;
                     }
                 }
-                Tools.Log($"Get Logistic Data Weight : {result.Item1}, Width : {result.Item2}, Height : {result.Item3}, Depth : {result.Item4}", ELogType.ActionLog);
+                Tools.Log($"Is Logistic Data : {result}", ELogType.ActionLog);
             }
             catch (Exception ex)
             {
@@ -1796,21 +1790,20 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 물류 데이터 유무 확인
                 if (m_guideMeasuringStart == false)
                 {
-                    logisData = GetLogisticsLotInfo(m_event_QRcode);
+                    m_logisData = GetLogisticsLotInfo(m_event_QRcode);
                 }
 
                 // 재측정 명령이 없더라도, 중량, 부피 값이 모두 있을 경우 측정 건너뜀.
-                if (logisData.Item1 > 0 && logisData.Item2 > 0 && logisData.Item3 > 0 && logisData.Item4 > 0 && m_set_measure == false)
+                if (m_logisData == true && m_set_measure == false)
                 {
                     m_pickupStatus = true;
 
-                    m_event_weight = logisData.weight;
-                    m_event_width = logisData.width;
-                    m_event_height = logisData.height;
-                    m_event_length = logisData.depth;
-
                     // 측정 완료 부저
                     FinishMeasuringBuzzer();
+
+                    m_event_weight = -1;
+                    m_event_width = -1; m_event_height = -1; m_event_length = -1;
+                    m_event_points = "";
 
                     PickUpEvent();
                 }
@@ -1819,13 +1812,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     m_pickupStatus = true;
 
-                    m_event_weight = logisData.weight;
-                    m_event_width = logisData.width;
-                    m_event_height = logisData.height;
-                    m_event_length = logisData.depth;
-
                     // 측정 완료 부저
                     FinishMeasuringBuzzer();
+
+                    m_event_weight = -1;
+                    m_event_width = -1; m_event_height = -1; m_event_length = -1;
+                    m_event_points = "";
 
                     PickUpEvent();
                 }
@@ -1945,7 +1937,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_ActionZoneId = "";
             m_ActionZoneName = "";
             m_event_weight = 0;
-            logisData = (0, 0, 0, 0);
+            m_logisData = false;
             m_get_weightCnt = 0;
 
             m_guideMeasuringStart = false;
