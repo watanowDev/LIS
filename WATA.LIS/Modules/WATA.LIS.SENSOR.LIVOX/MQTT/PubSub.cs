@@ -66,7 +66,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 _subscriberSocket.Connect("tcp://127.0.0.1:5001");
 
                 // 타임아웃 설정 (예: 30초)
-                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(30);
+                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
             }
             catch (Exception ex)
             {
@@ -80,6 +80,8 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             m_stopwatch = new Stopwatch();
             if (m_stopwatch != null) m_stopwatch.Start();
 
+            bool isSendZero = false;
+
             int getLivoxctn = 0;
             while (getLivoxctn < 10)
             {
@@ -87,10 +89,16 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 if (GetSizeData() == true)
                 {
                     SendToLivox(0);
+                    isSendZero = true;
                     break;
                 }
                 getLivoxctn++;
                 Thread.Sleep(100);
+            }
+
+            if(isSendZero == false)
+            {
+                SendToLivox(0);
             }
 
             if (m_stopwatch != null)

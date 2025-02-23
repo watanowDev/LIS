@@ -51,7 +51,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             //mCheckConnectionTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
-            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
+            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
 
             RfidReaderInit();
@@ -128,7 +128,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             try
             {
                 //Start reading
-                TagReadData[] tagsRead = await Task.Run(() => reader.Read(800));
+                TagReadData[] tagsRead = await Task.Run(() => reader.Read(400));
 
                 // If no tags are read, return
                 if (tagsRead.Length == 0)
