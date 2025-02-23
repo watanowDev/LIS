@@ -993,7 +993,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_curr_QRcode = "";
             }
 
-            // 50 프레임간 QR 인식 안될 시 QR 초기화
+            // 150 프레임간 QR 인식 안될 시 QR 초기화
             if (!m_visionModel.QR.Contains("wata") && m_no_QRcnt > 150 && m_pickupStatus == false)
             {
                 m_Command = 0;
@@ -1776,7 +1776,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                     m_isWeightPickup = true;
                 }
-                else
+                else if (m_weight_list.Count >= m_weight_sample_size && m_weightModel.GrossWeight <= 10 && m_pickupStatus == true)
                 {
                     m_isWeightPickup = false;
                     //m_guideMeasuringStart = false;
@@ -1860,6 +1860,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                     if (m_get_weightCnt > 100)
                     {
+                        m_isWeightPickup = true;
                         m_pickupStatus = true;
 
                         // QR 미인식 등 예외 상황 시 부저 울림
@@ -1871,8 +1872,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                         PickUpEvent();
                     }
-                    else if (m_event_weight != -1)
+                    // 중량값이 -1이 아닌 값이 읽혔을 경우
+                    else if (m_event_weight != -1 && m_pickupStatus == false)
                     {
+                        m_isWeightPickup = true;
                         m_pickupStatus = true;
 
                         // QR 미인식 등 예외 상황 시 부저 울림

@@ -126,7 +126,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             }
         }
 
-        public bool GetSizeData()
+        private bool GetSizeData()
         {
             bool ret = false;
             try
@@ -139,50 +139,45 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
                 // 메시지를 수신합니다.
                 string RcvStr = _subscriberSocket.ReceiveFrameString();
-                if (!"".Equals(RcvStr))
+
+                // RcvStr이 null이거나 빈 문자열일 경우 ret을 false로 설정
+                if (string.IsNullOrEmpty(RcvStr))
                 {
-                    if (!RcvStr.Contains("MID360>LIS"))
-                    {
-                        return ret;
-                    }
+                    Tools.Log("Received message is null or empty", Tools.ELogType.SystemLog);
+                    return ret;
+                }
 
-                    if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
-                    {
-                        // JSON 문자열에서 데이터를 추출합니다.
-                        var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
-                        var jsonObject = JObject.Parse(jsonString);
+                if (!RcvStr.Contains("MID360>LIS"))
+                {
+                    return ret;
+                }
 
-                        eventModel.topic = "MID360>LIS";
-                        eventModel.responseCode = 0;
-                        eventModel.width = (int)jsonObject["width"];
-                        eventModel.height = (int)jsonObject["height"];
-                        eventModel.length = (int)jsonObject["length"];
-                        eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
-                        eventModel.points = jsonObject["points"].ToString();
+                if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
+                {
+                    // JSON 문자열에서 데이터를 추출합니다.
+                    var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
+                    var jsonObject = JObject.Parse(jsonString);
 
-                        _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
-                        Tools.Log($"height:{eventModel.height}, width:{eventModel.width}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
+                    eventModel.topic = "MID360>LIS";
+                    eventModel.responseCode = 0;
+                    eventModel.width = (int)jsonObject["width"];
+                    eventModel.height = (int)jsonObject["height"];
+                    eventModel.length = (int)jsonObject["length"];
+                    eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
+                    eventModel.points = jsonObject["points"].ToString();
 
-                        return ret = true;
-                    }
-                    else
-                    {
-                        // 부피사이즈를 읽어오지 못했을 때 처리
-                        eventModel.width = -1;
-                        eventModel.height = -1;
-                        eventModel.length = -1;
-                        eventModel.points = "";
-                    }
+                    _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
+                    Tools.Log($"height:{eventModel.height}, width:{eventModel.width}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
+
+                    return ret = true;
                 }
                 else
                 {
-                    // 타임아웃 발생 시 처리
+                    // 부피사이즈를 읽어오지 못했을 때 처리
                     eventModel.width = -1;
                     eventModel.height = -1;
                     eventModel.length = -1;
                     eventModel.points = "";
-
-                    Tools.Log("Timeout occurred while receiving message", Tools.ELogType.SystemLog);
                 }
             }
             catch (Exception ex)
