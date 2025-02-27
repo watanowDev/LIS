@@ -4,7 +4,7 @@
 library
 C#
 .cs
-C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net8.0-windows10.0.18362.0\
+C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.IF.DPS\obj\Debug\net8.0-windows10.0.18362.0\
 WATA.LIS.IF.DPS
 none
 false
@@ -13,7 +13,7 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 1-554625226
 
 5-1486537364
-222899406249
+222699088476
 Views\DPSView.xaml;
 
 False

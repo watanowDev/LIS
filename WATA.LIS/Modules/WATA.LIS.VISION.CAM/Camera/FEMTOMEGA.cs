@@ -209,7 +209,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                             if (colorFrame == null || depthFrame == null)
                             {
                                 noImageCnt++;
-                                if (noImageCnt >= 500 && noImageCnt % 5 == 0)
+                                if (noImageCnt >= 250 && noImageCnt % 5 == 0)
                                 {
                                     m_pipeline = null;
                                     m_colorProfile = null;

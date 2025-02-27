@@ -1,6 +1,6 @@
 {
   "main": {
-    "device_type": "Platform_WATA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, Platform_WATA, StandAlone_WATA
+    "device_type": "Platform_WATA", //Singapore, Clark, Japan, DHL_KOREA, Platform_WATA, StandAlone_WATA
     "workLocationId": "WATA_KGWANGJU_1F",
     "projectId": "afbb58611535449780cdb27a615afeb2",
     "mappingId": "b7c41f86e38f44a1847a4d1af3b1acb1",
@@ -10,8 +10,8 @@
   "led_buzzer": {
     "led_enable": 1,
     "volume": 1,
-    "lamp_IP" : "172.30.1.151",
-    "InfoLanguage": "EN" //KR, JP, EN
+    "lamp_IP": "172.30.1.151",
+    "InfoLanguage": "KR" //KR, JP, EN
   },
   "distance_sensor": {
     "distance_enable": 1,

@@ -960,7 +960,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             int count = depthValues.Count(value => value < 550);
 
             // 충분한 수의 ROI에서 Threshold 값 미만일 경우 픽업으로 판단
-            if (count >= 5)
+            if (count >= 6)
             {
                 m_visionPickupCnt++;
             }
@@ -1369,6 +1369,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
+                //if(m_curr_distance >= 1000 && m_curr_distance < 2000)
+                //{
+                //    m_curr_distance = m_curr_distance + 400;
+                //}
+                //else if (m_curr_distance >= 2000 && m_curr_distance < 4000)
+                //{
+                //    m_curr_distance = m_curr_distance + 800;
+                //}
+
                 if (m_getBasicInfo == false)
                 {
                     Tools.Log($"Failed Get BasicInfo", ELogType.BackEndLog);
@@ -1464,7 +1473,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    ActionObj.actionInfo.cepc = "CB202412011622";
+                    ActionObj.actionInfo.cepc = "";
                 }
                 else
                 {
@@ -1475,7 +1484,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             else if (m_event_epc.Contains("DC"))
             {
                 ActionObj.actionInfo.epc = m_event_epc;
-                ActionObj.actionInfo.cepc = "CB202412011622";
+                ActionObj.actionInfo.cepc = "";
             }
             else if (m_event_epc.Contains("DA"))
             {
@@ -1572,7 +1581,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_ActionZoneName != "")
                 {
                     ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
-                    ActionObj.actionInfo.cepc = "CB202412011622";
+                    ActionObj.actionInfo.cepc = "";
                 }
                 else
                 {
@@ -1583,7 +1592,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             else if (m_event_epc.Contains("DC"))
             {
                 ActionObj.actionInfo.epc = m_event_epc;
-                ActionObj.actionInfo.cepc = "CB202412011622";
+                ActionObj.actionInfo.cepc = "";
             }
             else if (m_event_epc.Contains("DA"))
             {
@@ -1652,7 +1661,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             model.containerInfo.projectId = m_mainConfigModel.projectId;
             model.containerInfo.mappingId = m_mainConfigModel.mappingId;
             model.containerInfo.mapId = m_mainConfigModel.mapId;
-            model.containerInfo.cepc = "CB202412011622";
+            model.containerInfo.cepc = "";
             model.containerInfo.depc = m_event_epc;
             if (m_event_QRcode.Contains("wata")) model.containerInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
 
@@ -1732,7 +1741,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             try
             {
                 // Vision Pickup 카운트의 누적값에 의한 상태 변경
-                if (m_visionPickupCnt > 10 && m_pickupStatus == false && m_isWeightPickup == false)
+                if (m_visionPickupCnt > 15 && m_pickupStatus == false && m_isWeightPickup == false)
                 {
                     m_isVisionPickUp = true;
                     m_visionPickupCnt = 0;
