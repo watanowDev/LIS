@@ -21,11 +21,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.ViewModels
         private readonly IEventAggregator _eventAggregator;
         public WeightViewModel(IEventAggregator eventAggregator)
         {
-           _eventAggregator = eventAggregator;
-           ListWeightLog = Tools.logInfo.ListWeightLog;
-           Tools.Log($"Init Weight View  Model", Tools.ELogType.WeightLog);
-           ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
-
+            _eventAggregator = eventAggregator;
+            ListWeightLog = Tools.logInfo.ListWeightLog;
+            Tools.Log($"Init Weight View  Model", Tools.ELogType.WeightLog);
+            ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
         }
 
         private void ButtonFuncClick(string command)
@@ -37,7 +36,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.ViewModels
                 {
                     case "ReadWeight":
                         Tools.Log($"Weight Request", Tools.ELogType.WeightLog);
-                        byte[] ReadRueqst = { 0x55, 0xAB,0x01 ,0x00 };
+                        byte[] ReadRueqst = { 0x55, 0xAB, 0x01, 0x00 };
                         _eventAggregator.GetEvent<WeightSensorSendEvent>().Publish(ReadRueqst);
                         break;
 

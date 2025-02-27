@@ -42,17 +42,17 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void SerialInit()
         {
-            m_receiveTimer = new DispatcherTimer();
-            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            //m_receiveTimer = new DispatcherTimer();
+            //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            SerialThreadInit();
+            //SerialThreadInit();
 
-            //m_newVerReceiveTimer = new DispatcherTimer();
-            //m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            //m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
+            m_newVerReceiveTimer = new DispatcherTimer();
+            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
 
-            //SerialThreadInit_NewVersion();
+            SerialThreadInit_NewVersion();
 
             //m_checkConnectionTimer = new DispatcherTimer();
             //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -75,17 +75,21 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                     m_newVerReceiveTimer.Start();
                     Tools.Log($"Weight Sensor Init Success", Tools.ELogType.SystemLog);
+                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
 
                 if (_port == null || !_port.IsOpen)
                 {
-                    Tools.Log($"Port is not open", Tools.ELogType.WeightLog);
+                    Tools.Log($"Weight Port is not open", Tools.ELogType.SystemLog);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                Tools.Log($"Exception in SendDataTest: {ex.Message}", Tools.ELogType.WeightLog);
+                _port = null;
+                m_receiveTimer.Stop();
+                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -120,15 +124,21 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Open();
                     _port.Handshake = Handshake.None;
                     m_receiveTimer.Start();
-                    Tools.Log($"Init Success", Tools.ELogType.WeightLog);
+                    Tools.Log($"Weight Sensor Init Success", Tools.ELogType.SystemLog);
                     SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                }
+
+                if (_port == null || !_port.IsOpen)
+                {
+                    Tools.Log($"Weight Port is not open", Tools.ELogType.SystemLog);
+                    return;
                 }
             }
             catch
             {
                 _port = null;
                 m_receiveTimer.Stop();
-                Tools.Log($"Serial Port Exception !!!", Tools.ELogType.WeightLog);
+                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.WeightLog);
                 SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -172,7 +182,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port = null;
                 }
 
-                SerialThreadInit();
+                //SerialThreadInit();
             }
         }
 
@@ -291,7 +301,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             Thread.Sleep(300);
         }
 
-        // 1.The data transmission order is to send high bytes first																	
+        //1.The data transmission order is to send high bytes first																	
         //2.Length field: The number of bytes of data following this length field																	
         //3.The battery is a percentage of 0-100;																	
         //4.Charging state：0:Uncharged  1:Charging																	
