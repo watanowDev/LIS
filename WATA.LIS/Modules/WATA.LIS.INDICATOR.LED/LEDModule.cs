@@ -13,6 +13,13 @@ namespace WATA.LIS.INDICATOR.LED
     {
         public LEDModule(IRegionManager regionManager, IEventAggregator eventAggregator, ILedBuzzertModel ledBuzzer)
         {
+            Led_Buzzer_ConfigModel led_Buzzer_ConfigModel = (Led_Buzzer_ConfigModel)ledBuzzer;
+
+            if (led_Buzzer_ConfigModel.led_enable == 0)
+            {
+                return;
+            }
+
             BlinkStickSquare LED = new BlinkStickSquare(eventAggregator);
             LED.Init();
 
@@ -23,13 +30,6 @@ namespace WATA.LIS.INDICATOR.LED
             patlite_Docker_LAMP.Init();
 
             Speaker spekaer = new Speaker(eventAggregator, ledBuzzer);
-
-            Led_Buzzer_ConfigModel led_Buzzer_ConfigModel = (Led_Buzzer_ConfigModel)ledBuzzer;
-
-            if (led_Buzzer_ConfigModel.led_enable == 0)
-            {
-                return;
-            }
 
             spekaer.Init();
         }

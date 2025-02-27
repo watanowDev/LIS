@@ -32,7 +32,7 @@ namespace WATA.LIS.SENSOR.WEIGHT
             {
                 Tools.Log($"TJ", Tools.ELogType.WeightLog);
                 LatchLoadCell china = new LatchLoadCell(_eventAggregator, _weightmodel);
-                china.SerialInit();
+                china.Init();
             }
             else if (_weightConfig.sensor_value == "SE")
             {

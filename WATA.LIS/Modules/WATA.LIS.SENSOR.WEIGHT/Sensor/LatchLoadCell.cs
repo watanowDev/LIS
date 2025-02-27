@@ -40,7 +40,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             _weightConfig = (WeightConfigModel)_weightmodel;
         }
 
-        public void SerialInit()
+        public void Init()
         {
             //m_receiveTimer = new DispatcherTimer();
             //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
@@ -59,7 +59,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             //m_checkConnectionTimer.Tick += new EventHandler(CheckConnectionEvent);
             //m_checkConnectionTimer.Start();
 
-            //_eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<WeightSensorSendEvent>().Subscribe(onSendData, ThreadOption.BackgroundThread, true);
         }
 
         private void SerialThreadInit_NewVersion()
@@ -102,7 +102,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             // 응답 데이터 수신
             Thread.Sleep(100); // 잠시 대기하여 데이터 수신
             int bytesToRead = _port.BytesToRead;
-            if (bytesToRead == 25)
+            if (bytesToRead >= 25)
             {
                 byte[] receivedData = new byte[bytesToRead];
                 _port.Read(receivedData, 0, bytesToRead);
@@ -138,7 +138,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 m_receiveTimer.Stop();
-                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.WeightLog);
+                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
                 SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -186,77 +186,82 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
         }
 
-        private void onSendData(byte[] buffer)
-        {
-            string bytelog = Util.DebugBytestoString(buffer);
-            Tools.Log($"Send packet {bytelog}", Tools.ELogType.WeightLog);
-
-            if (_port == null || _port.IsOpen == false)
-            {
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
-                return;
-            }
-            _port.Write(buffer, 0, buffer.Length);
-            SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
-        }
-
         public void ParseData(byte[] RecvBytes, int nSize)
         {
-            if (RecvBytes[0] == 0x55 && RecvBytes[1] == 0xAB && RecvBytes[2] == 0x01)
+            try
             {
+                if (RecvBytes[0] == 0x55 && RecvBytes[1] == 0xAB && RecvBytes[2] == 0x01)
+                {
 
-                byte[] GrossWeight = new byte[4];
-                System.Buffer.BlockCopy(RecvBytes, 4, GrossWeight, 0, 4);
-                Array.Reverse(GrossWeight);
-
-
-                byte[] RightWeight = new byte[4];
-                System.Buffer.BlockCopy(RecvBytes, 8, RightWeight, 0, 4);
-                Array.Reverse(RightWeight);
+                    byte[] GrossWeight = new byte[4];
+                    System.Buffer.BlockCopy(RecvBytes, 4, GrossWeight, 0, 4);
+                    Array.Reverse(GrossWeight);
 
 
-                byte[] LeftWeight = new byte[4];
-                System.Buffer.BlockCopy(RecvBytes, 12, LeftWeight, 0, 4);
-                Array.Reverse(LeftWeight);
+                    byte[] RightWeight = new byte[4];
+                    System.Buffer.BlockCopy(RecvBytes, 8, RightWeight, 0, 4);
+                    Array.Reverse(RightWeight);
 
 
-                int nGrossWeight = BitConverter.ToInt16(GrossWeight, 0);
-                int nRightWeight = BitConverter.ToInt16(RightWeight, 0);
-                int nLeftWeight = BitConverter.ToInt16(LeftWeight, 0);
+                    byte[] LeftWeight = new byte[4];
+                    System.Buffer.BlockCopy(RecvBytes, 12, LeftWeight, 0, 4);
+                    Array.Reverse(LeftWeight);
 
 
-                int right_battery = RecvBytes[16];
-                int right_charge_status = RecvBytes[17];
-                int right_online_status = RecvBytes[18];
+                    int nGrossWeight = BitConverter.ToInt16(GrossWeight, 0);
+                    int nRightWeight = BitConverter.ToInt16(RightWeight, 0);
+                    int nLeftWeight = BitConverter.ToInt16(LeftWeight, 0);
 
 
-                int left_battery = RecvBytes[19];
-                int left_charge_status = RecvBytes[20];
-                int left_online_status = RecvBytes[21];
-
-                int gross_net = RecvBytes[22];
-                int overload = RecvBytes[23];
-                int out_of_tolerance = RecvBytes[24];
+                    int right_battery = RecvBytes[16];
+                    int right_charge_status = RecvBytes[17];
+                    int right_online_status = RecvBytes[18];
 
 
-                WeightSensorModel model = new WeightSensorModel();
-                model.GrossWeight = nGrossWeight;
-                model.RightWeight = nRightWeight;
-                model.LeftWeight = nLeftWeight;
-                model.RightBattery = right_battery;
-                model.LeftBattery = left_battery;
-                model.RightIsCharging = right_charge_status == 1 ? true : false;
-                model.leftIsCharging = left_charge_status == 1 ? true : false;
-                model.RightOnline = right_online_status == 0 ? true : false;
-                model.LeftOnline = left_online_status == 0 ? true : false;
-                model.GrossNet = gross_net == 1 ? true : false;
-                model.OverLoad = overload == 1 ? true : false;
-                model.OutOfTolerance = out_of_tolerance == 0 ? false : true;
+                    int left_battery = RecvBytes[19];
+                    int left_charge_status = RecvBytes[20];
+                    int left_online_status = RecvBytes[21];
+
+                    int gross_net = RecvBytes[22];
+                    int overload = RecvBytes[23];
+                    int out_of_tolerance = RecvBytes[24];
 
 
-                _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
+                    WeightSensorModel model = new WeightSensorModel();
+                    model.GrossWeight = nGrossWeight;
+                    model.RightWeight = nRightWeight;
+                    model.LeftWeight = nLeftWeight;
+                    model.RightBattery = right_battery;
+                    model.LeftBattery = left_battery;
+                    model.RightIsCharging = right_charge_status == 1 ? true : false;
+                    model.leftIsCharging = left_charge_status == 1 ? true : false;
+                    model.RightOnline = right_online_status == 0 ? true : false;
+                    model.LeftOnline = left_online_status == 0 ? true : false;
+                    model.GrossNet = gross_net == 1 ? true : false;
+                    model.OverLoad = overload == 1 ? true : false;
+                    model.OutOfTolerance = out_of_tolerance == 0 ? false : true;
+
+
+                    _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
+                }
             }
-            return;
+            catch
+            {
+                Tools.Log($"Weight ParseData Exception !!!", Tools.ELogType.SystemLog);
+            }
+        }
+
+        private void onSendData(byte[] buffer)
+        {
+            try
+            {
+                // 수신된 데이터를 로그에 기록
+                LogRawData(buffer);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[onSendData] Exception: {ex.Message}", Tools.ELogType.WeightLog);
+            }
         }
 
         private void LogRawData(byte[] HexData)
@@ -272,33 +277,6 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 strData += String.Format("0x{0:x2} ", HexData[i]);
             }
             Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
-        }
-
-        private void DataRecive(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                SerialPort sp = (SerialPort)sender;
-
-
-                int bytesize = sp.BytesToRead;
-
-                if (bytesize > 0)
-                {
-                    byte[] RecvBytes = new byte[bytesize];
-                    sp.Read(RecvBytes, 0, bytesize);
-
-
-
-                    //LogRawData(RecvBytes);
-
-                }
-            }
-            catch
-            {
-                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
-            }
-            Thread.Sleep(300);
         }
 
         //1.The data transmission order is to send high bytes first																	
