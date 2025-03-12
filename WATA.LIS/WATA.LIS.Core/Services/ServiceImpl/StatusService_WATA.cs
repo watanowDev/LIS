@@ -1369,7 +1369,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
-                //if(m_curr_distance >= 1000 && m_curr_distance < 2000)
+                //if (m_curr_distance >= 1000 && m_curr_distance < 2000)
                 //{
                 //    m_curr_distance = m_curr_distance + 400;
                 //}
@@ -1433,7 +1433,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndPickupAction()
         {
-            m_event_distance = m_curr_distance;
+            if (m_curr_distance < 1000)
+            {
+                m_event_distance = m_curr_distance;
+            }
+            else if (m_curr_distance >= 1000 && m_curr_distance < 2000)
+            {
+                m_event_distance = m_curr_distance + 400;
+            }
+            else if (m_curr_distance >= 2000 && m_curr_distance < 4000)
+            {
+                m_event_distance = m_curr_distance + 800;
+            }
+            //m_event_distance = m_curr_distance;
 
             (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
 
@@ -1541,7 +1553,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void SendBackEndDropAction()
         {
-            m_event_distance = m_curr_distance;
+            if (m_curr_distance < 1000)
+            {
+                m_event_distance = m_curr_distance;
+            }
+            else if (m_curr_distance >= 1000 && m_curr_distance < 2000)
+            {
+                m_event_distance = m_curr_distance + 400;
+            }
+            else if (m_curr_distance >= 2000 && m_curr_distance < 4000)
+            {
+                m_event_distance = m_curr_distance + 800;
+            }
+            //m_event_distance = m_curr_distance;
 
             (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
 

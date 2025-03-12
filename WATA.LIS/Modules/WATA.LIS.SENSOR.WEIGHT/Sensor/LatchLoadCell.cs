@@ -42,17 +42,17 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         public void Init()
         {
-            //m_receiveTimer = new DispatcherTimer();
-            //m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            //m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
+            m_receiveTimer = new DispatcherTimer();
+            m_receiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            m_receiveTimer.Tick += new EventHandler(ReceiveTimerEvent);
 
-            //SerialThreadInit();
+            SerialThreadInit();
 
-            m_newVerReceiveTimer = new DispatcherTimer();
-            m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
-            m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
+            //m_newVerReceiveTimer = new DispatcherTimer();
+            //m_newVerReceiveTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            //m_newVerReceiveTimer.Tick += new EventHandler(NewVerReceiveTimerEvent);
 
-            SerialThreadInit_NewVersion();
+            //SerialThreadInit_NewVersion();
 
             //m_checkConnectionTimer = new DispatcherTimer();
             //m_checkConnectionTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
