@@ -1178,7 +1178,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
         {
             const int requiredCount = 7;
-            const double thresholdDistance = 200; // 20cm를 mm로 변환
+            const double thresholdDistance = 100; // 20cm를 mm로 변환
             int count = 0;
 
             // 현재 헤딩 값에서 +- 60도 영역을 계산
