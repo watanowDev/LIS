@@ -161,7 +161,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_MonitoringEPC_Timer;
         DispatcherTimer m_MonitoringPickup_Timer;
         DispatcherTimer m_IsValidPlace_Timer;
-        Stopwatch m_stopwatch = new Stopwatch();
+        Stopwatch m_stopwatchWeight = new Stopwatch();
+        Stopwatch m_stopwatchPickDrop = new Stopwatch();
+        const int m_timeoutPickDrop = 5000;
 
 
         public StatusService_WATA(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
@@ -279,6 +281,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //InitGetPickupStatus();
             IndicatorSendTimerEvent(null, null);
+
+            m_stopwatchPickDrop.Start();
         }
 
         private async Task<CellInfoModel> GetCellListFromPlatformAsync()
@@ -783,8 +787,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void TryGetStableWeight()
         {
-            m_stopwatch.Reset();
-            m_stopwatch.Start();
+            m_stopwatchWeight.Reset();
+            m_stopwatchWeight.Start();
 
             int currentWeight = m_weightModel.GrossWeight;
             int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
@@ -818,9 +822,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_event_weight = m_weightModel.GrossWeight;
 
-            m_stopwatch.Stop();
+            m_stopwatchWeight.Stop();
 
-            Tools.Log($"Weight Measuring Time: {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+            Tools.Log($"Weight Measuring Time: {m_stopwatchWeight.ElapsedMilliseconds}ms", ELogType.ActionLog);
 
             IndicatorSendTimerEvent(null, null);
         }
@@ -1128,12 +1132,56 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return (newX, newY);
         }
 
+        //private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
+        //{
+        //    const int requiredCount = 7;
+        //    int count = 0;
+
+        //    // 현재 헤딩 값에서 +- 60도 영역을 계산
+        //    double lowerBound = (naviT - 600 + 3600) % 3600;
+        //    double upperBound = (naviT + 600) % 3600;
+
+        //    foreach (var item in list)
+        //    {
+        //        double deltaX = item.naviX - naviX;
+        //        double deltaY = item.naviY - naviY;
+        //        double angleToItem = Math.Atan2(deltaY, deltaX) * (180.0 / Math.PI) * 10;
+        //        angleToItem = (angleToItem + 3600) % 3600; // 0 ~ 3600 범위로 변환
+
+        //        // 후진 중인지 확인
+        //        if (lowerBound < upperBound)
+        //        {
+        //            if (angleToItem >= lowerBound && angleToItem <= upperBound)
+        //            {
+        //                count++;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (angleToItem >= lowerBound || angleToItem <= upperBound)
+        //            {
+        //                count++;
+        //            }
+        //        }
+
+        //        if (count >= requiredCount)
+        //        {
+        //            //Debug.WriteLine($"{count}, Backward");
+        //            return false; // 후진
+        //        }
+        //    }
+
+        //    //Debug.WriteLine($"{count}, Forward");
+        //    return true; // 전진
+        //}
+
         private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
         {
             const int requiredCount = 7;
+            const double thresholdDistance = 200; // 20cm를 mm로 변환
             int count = 0;
 
-            // 현재 헤딩 값에서 +- 45도 영역을 계산
+            // 현재 헤딩 값에서 +- 60도 영역을 계산
             double lowerBound = (naviT - 600 + 3600) % 3600;
             double upperBound = (naviT + 600) % 3600;
 
@@ -1160,14 +1208,22 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     }
                 }
 
+                // 가장 최근 naviX, naviY 값과의 거리 계산
+                double distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (distance < thresholdDistance)
+                {
+                    Debug.WriteLine($"{count}, Forward");
+                    return true; // 20cm 미만일 경우 전진으로 반환
+                }
+
                 if (count >= requiredCount)
                 {
-                    //Debug.WriteLine($"{count}, Backward");
+                    Debug.WriteLine($"{count}, Backward");
                     return false; // 후진
                 }
             }
 
-            //Debug.WriteLine($"{count}, Forward");
+            Debug.WriteLine($"{count}, Forward");
             return true; // 전진
         }
 
@@ -1826,6 +1882,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
+                if (m_stopwatchPickDrop.ElapsedMilliseconds < m_timeoutPickDrop) return;
+
                 // 픽업 판단 조건
                 if (m_pickupStatus == true) return;
 
@@ -1937,12 +1995,17 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
             SendBackEndPickupAction();
+
+            m_stopwatchPickDrop.Reset();
+            m_stopwatchPickDrop.Start();
         }
 
         private void IsDropTimerEvent(object sender, EventArgs e)
         {
             try
             {
+                if (m_stopwatchPickDrop.ElapsedMilliseconds < m_timeoutPickDrop) return;
+
                 if (m_pickupStatus == false) return;
 
                 if (m_isVisionPickUp == true) return;
@@ -1988,6 +2051,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 백엔드 통신
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
             SendBackEndDropAction();
+
+            m_stopwatchPickDrop.Reset();
+            m_stopwatchPickDrop.Start();
 
             // 물류 데이터 초기화
             m_ActionZoneId = "";
