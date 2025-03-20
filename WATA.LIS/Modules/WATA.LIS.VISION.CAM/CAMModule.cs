@@ -42,6 +42,11 @@ namespace WATA.LIS.VISION.CAM
                 FEMTOMEGA_PCD visioncam = new FEMTOMEGA_PCD(_eventAggregator, _visioncammodel);
                 visioncam.Init();
             }
+            else if (visioncam_config.vision_name == "Luxonis")
+            {
+                Luxonis visioncam = new Luxonis(_eventAggregator, _visioncammodel);
+                visioncam.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
