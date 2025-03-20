@@ -405,7 +405,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                         eventModels.ACTION_DEPTH = checkZValue;
                         eventModels.POINTS = points.ToString();
                         eventModels.connected = true;
-                        _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                        _eventAggregator.GetEvent<VisionCamEvent>().Publish(eventModels);
                     }
                 }, tokenSource.Token);
             }
@@ -699,7 +699,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 eventModels.FRAME = currentFrameBytes;
                 eventModels.connected = true;
 
-                _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                _eventAggregator.GetEvent<VisionCamEvent>().Publish(eventModels);
             }
             catch (Exception ex)
             {

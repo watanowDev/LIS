@@ -296,7 +296,7 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                             eventModels.FRAME = frameData;
                             eventModels.connected = true;
-                            _eventAggregator.GetEvent<HikVisionEvent>().Publish(eventModels);
+                            _eventAggregator.GetEvent<VisionCamEvent>().Publish(eventModels);
                         }
                     }
                 }, tokenSource.Token);

@@ -151,7 +151,7 @@ namespace WATA.LIS.IF.BE.ViewModels
 
             // VisonCam
             //_eventAggregator.GetEvent<>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
 
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(onWeightEvent, ThreadOption.BackgroundThread, true);
 

@@ -34,7 +34,7 @@ namespace WATA.LIS.VISION.CAM.ViewModels
             Tools.Log($"Init CamViewModel", Tools.ELogType.VisionCamLog);
 
             //_eventAggregator = eventAggregator;
-            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
         }
 
         private void OnVisionCamStreaming(VisionCamModel model)

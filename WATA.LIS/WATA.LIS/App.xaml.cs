@@ -161,9 +161,9 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();//DHL KOREA 시연 버전
             }
-            else if (mainobj.device_type == "Platform_WATA" || mainobj.device_type == "StandAlone_WATA")//내부 시연(플랫폼, 스탠드얼론)
+            else if (mainobj.device_type == "WATA")//내부 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();//내부시연 플랫폼용 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();//내부시연 버전
             }
         }
 

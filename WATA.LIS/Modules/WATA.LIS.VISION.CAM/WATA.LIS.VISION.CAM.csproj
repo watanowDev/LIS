@@ -6,6 +6,12 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="MQTT\.cache\depthai\crashdumps\0e5311cb00e30166fb783ae3f605a8125a069c59\crash_dump.json" />
+    <Content Include="MQTT\.cache\depthai\crashdumps\8334dd5f601fa8a1d998db6ed2fcca5c7e8b404c\crash_dump.json" />
+    <Content Include="MQTT\.cache\depthai\crashdumps\c6a558a58b652ec8e26618cd10d60b1e6d87f257\crash_dump.json" />
+    <Content Include="MQTT\.cache\depthai\crashdumps\fb80ffa228263683ff0239281e5cbbad20a3508f\crash_dump.json" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Emgu.CV" Version="4.10.0.5680" />
     <PackageReference Include="Emgu.CV.runtime.windows" Version="4.10.0.5680" />
     <PackageReference Include="libzbar-cil-all" Version="1.0.7" />

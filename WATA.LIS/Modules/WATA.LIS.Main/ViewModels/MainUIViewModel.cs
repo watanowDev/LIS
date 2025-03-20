@@ -153,7 +153,7 @@ namespace WATA.LIS.Main.ViewModels
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
 
 

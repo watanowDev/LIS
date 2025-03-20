@@ -105,6 +105,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_visionPickupCnt;
         private int m_visionDropCnt;
         private int m_visionPickupTime;
+        private uint m_noDetectPersonCnt;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -174,7 +175,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<Keonn2chEvent>().Subscribe(OnRfidSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<VisionDetectionEvent>().Subscribe(OnVisionDetectionEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
@@ -284,6 +286,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_stopwatchPickDrop.Start();
         }
+
 
         private async Task<CellInfoModel> GetCellListFromPlatformAsync()
         {
@@ -934,6 +937,29 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// VisonCam 센서
         /// </summary>
         /// <param name="obj"></param>
+        private void OnVisionDetectionEvent(VisionDetectionModel model)
+        {
+            if (model?.Detections != null)
+            {
+                foreach (var detection in model.Detections)
+                {
+                    if (detection.Label == "person" && detection.Distance <= 5000)
+                    {
+                        m_noDetectPersonCnt = 0;
+                        Tools.Log($"Person Detected!!!", ELogType.SystemLog);
+                    }
+                    else
+                    {
+                        // m_noDetectPersonCnt 오버플로우 방지
+                        if (m_noDetectPersonCnt < uint.MaxValue)
+                        {
+                            m_noDetectPersonCnt++;
+                        }
+                    }
+                }
+            }
+        }
+
         private void OnVisionEvent(VisionCamModel model)
         {
             if (model.connected == true) m_errCnt_visioncam = 0;
@@ -961,7 +987,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 };
 
             // Threshold 값 미만인 값의 개수
-            int count = depthValues.Count(value => value < 550);
+            int count = depthValues.Count(value => value < 550 && value >= 0);
 
             // 충분한 수의 ROI에서 Threshold 값 미만일 경우 픽업으로 판단
             if (count >= 6)
@@ -1882,9 +1908,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
+                // 픽업 판단 조건
                 if (m_stopwatchPickDrop.ElapsedMilliseconds < m_timeoutPickDrop) return;
 
-                // 픽업 판단 조건
+                if (m_noDetectPersonCnt >= 30) return;
+
                 if (m_pickupStatus == true) return;
 
                 if (m_isVisionPickUp == false && m_isWeightPickup == false) return;

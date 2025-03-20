@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "k6YIZ0JYGpc=",
+  "dgSpecHash": "E8/dy5TLe3Y=",
   "success": true,
-  "projectFilePath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
+  "projectFilePath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.WEIGHT\\WATA.LIS.SENSOR.WEIGHT.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\wmszz\\.nuget\\packages\\asyncio\\0.1.69\\asyncio.0.1.69.nupkg.sha512",
     "C:\\Users\\wmszz\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",

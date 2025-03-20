@@ -67,7 +67,7 @@ namespace WATA.LIS.Main.ViewModels
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
-            //_eventAggregator.GetEvent<HikVisionEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
