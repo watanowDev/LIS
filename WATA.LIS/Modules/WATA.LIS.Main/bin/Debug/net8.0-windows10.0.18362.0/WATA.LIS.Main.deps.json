@@ -11,8 +11,6 @@
           "Microsoft.Extensions.Logging": "9.0.1",
           "Prism.Wpf": "8.1.97",
           "WATA.LIS.Core": "1.0.0",
-          "WATA.LIS.Heartbeat.Services": "1.0.0",
-          "WATA.LIS.IF.DPS": "1.0.0",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.57"
         },
         "runtime": {
@@ -459,29 +457,6 @@
             "fileVersion": "1.0.0.0"
           }
         }
-      },
-      "WATA.LIS.Heartbeat.Services/1.0.0": {
-        "dependencies": {
-          "Microsoft.Extensions.Logging": "9.0.1"
-        },
-        "runtime": {
-          "WATA.LIS.Heartbeat.Services.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "WATA.LIS.IF.DPS/1.0.0": {
-        "dependencies": {
-          "Prism.Wpf": "8.1.97",
-          "WATA.LIS.Core": "1.0.0"
-        },
-        "runtime": {
-          "WATA.LIS.IF.DPS.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
       }
     }
   },
@@ -826,16 +801,6 @@
       "hashPath": "zxing.net.0.16.6.nupkg.sha512"
     },
     "WATA.LIS.Core/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "WATA.LIS.Heartbeat.Services/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "WATA.LIS.IF.DPS/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

@@ -45,18 +45,6 @@ namespace WATA.LIS.VISION.CAM.Camera
 
         private Dictionary<string, double> depthValues = new Dictionary<string, double>();
 
-        // Define ROIs
-        private readonly Dictionary<string, (int X, int Y, int Width, int Height)> rois = new Dictionary<string, (int, int, int, int)>
-        {
-            { "TM", (640, 185, 25, 25) },  // Top Middle
-            { "MR", (840, 385, 25, 25) },  // Middle Right
-            { "MM", (640, 385, 25, 25) },  // Middle Middle
-            { "ML", (440, 385, 25, 25) },  // Middle Left
-            { "BR", (740, 585, 25, 25) },  // Bottom Right
-            { "BM", (640, 585, 25, 25) },  // Bottom Middle
-            { "BL", (540, 585, 25, 25) }   // Bottom Left
-        };
-
         public Luxonis(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
             _eventAggregator = eventAggregator;

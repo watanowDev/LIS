@@ -148,13 +148,13 @@ distance = 0
 
 # Define ROIs
 rois = {
-    "TM": (615 + 25, 160 + 25, 25, 25),  # Top Middle
+    "TM": (615 + 25, 160 + 325, 25, 25),  # Top Middle
     "MR": (815 + 25, 360 + 25, 25, 25),  # Middle Right
     "MM": (615 + 25, 360 + 25, 25, 25),  # Middle Middle
     "ML": (415 + 25, 360 + 25, 25, 25),  # Middle Left
-    "BR": (715 + 25, 560 + 25, 25, 25),  # Bottom Right
+    "BR": (915 + 25, 560 + 25, 25, 25),  # Bottom Right
     "BM": (615 + 25, 560 + 25, 25, 25),  # Bottom Middle
-    "BL": (515 + 25, 560 + 25, 25, 25)   # Bottom Left
+    "BL": (315 + 25, 560 + 25, 25, 25)   # Bottom Left
 }
 
 # Function to calculate ROI depths
@@ -205,6 +205,11 @@ with dai.Device(pipeline) as device:
                 x_center = int((bbox[0] + bbox[2]) / 2)
                 y_center = int((bbox[1] + bbox[3]) / 2)
                 distance_m = distance / 1000  # mm를 m로 변환
+            
+                # Skip drawing if distance is 0 or negative
+                if distance_m <= 0:
+                    continue
+                
                 if distance_m < 5:
                     color = (0, 0, 255)  # Red color for dangerous
                     label = "person"

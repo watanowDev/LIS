@@ -13,6 +13,7 @@
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Modules\WATA.LIS.Heartbeat.Services\WATA.LIS.Heartbeat.Services.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.IF.BE\WATA.LIS.IF.BE.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.DISPLAY\WATA.LIS.INDICATOR.DISPLAY.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.INDICATOR.LED\WATA.LIS.INDICATOR.LED.csproj" />
@@ -22,10 +23,8 @@
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.NAV\WATA.LIS.SENSOR.NAV.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.SENSOR.WEIGHT\WATA.LIS.SENSOR.WEIGHT.csproj" />
-    <ProjectReference Include="..\Modules\WATA.LIS.VISION.Camera\WATA.LIS.VISION.Camera.csproj" />
     <ProjectReference Include="..\Modules\WATA.LIS.VISION.CAM\WATA.LIS.VISION.CAM.csproj" />
     <ProjectReference Include="..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
-    <ProjectReference Include="..\WATA.LIS.IF.DPS\WATA.LIS.IF.DPS.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resource\" />

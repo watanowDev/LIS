@@ -11,7 +11,6 @@ using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.SystemConfig;
-using static sun.security.jca.GetInstance;
 
 namespace WATA.LIS.SENSOR.Distance.Sensor
 {

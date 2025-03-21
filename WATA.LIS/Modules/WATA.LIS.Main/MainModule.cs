@@ -4,7 +4,6 @@ using Prism.Regions;
 using System;
 using System.Diagnostics;
 using WATA.LIS.Core;
-using WATA.LIS.IF.DPS.Views;
 using WATA.LIS.Main.Views;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -34,10 +33,6 @@ namespace WATA.LIS.Main
             containerRegistry.RegisterForNavigation<MainUI>();
             _regionManager.RequestNavigate(RegionNames.Content_Main, "MainUI");
             containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_Main);
-
-            containerRegistry.RegisterForNavigation<DPSView>();
-            _regionManager.RequestNavigate(RegionNames.Content_DPS, "DPSView");
-            containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_DPS);
 
 
             containerRegistry.RegisterForNavigation<BottomBarUI>();

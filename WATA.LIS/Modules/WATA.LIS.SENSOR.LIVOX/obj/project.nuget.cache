@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "+fDS8AI1UII=",
+  "dgSpecHash": "7YdoZUZpxHo=",
   "success": true,
-  "projectFilePath": "C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.LIVOX\\WATA.LIS.SENSOR.LIVOX.csproj",
+  "projectFilePath": "C:\\Users\\USER\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.SENSOR.LIVOX\\WATA.LIS.SENSOR.LIVOX.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\USER\\.nuget\\packages\\asyncio\\0.1.69\\asyncio.0.1.69.nupkg.sha512",
     "C:\\Users\\USER\\.nuget\\packages\\controlzex\\4.3.0\\controlzex.4.3.0.nupkg.sha512",

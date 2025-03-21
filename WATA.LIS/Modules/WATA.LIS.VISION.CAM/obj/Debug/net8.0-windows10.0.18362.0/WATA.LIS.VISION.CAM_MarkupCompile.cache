@@ -4,7 +4,7 @@
 library
 C#
 .cs
-C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\obj\Debug\net8.0-windows10.0.18362.0\
+C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\obj\Debug\net8.0-windows10.0.18362.0\
 WATA.LIS.VISION.CAM
 none
 false
@@ -13,7 +13,7 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP
 1-273183446
 4-26322514
 8-1643953132
-2401156147435
+240722898254
 Views\CamView.xaml;
 
 False

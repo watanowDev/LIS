@@ -16,8 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
-    <ProjectReference Include="..\..\WATA.LIS.Heartbeat.Services\WATA.LIS.Heartbeat.Services.csproj" />
-    <ProjectReference Include="..\..\WATA.LIS.IF.DPS\WATA.LIS.IF.DPS.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Views\wata_logo.png" />

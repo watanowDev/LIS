@@ -11,6 +11,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
-    <ProjectReference Include="..\WATA.LIS.SENSOR.UHF_RFID\WATA.LIS.SENSOR.UHF_RFID.csproj" />
   </ItemGroup>
 </Project>

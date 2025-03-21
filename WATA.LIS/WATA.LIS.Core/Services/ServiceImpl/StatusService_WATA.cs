@@ -105,7 +105,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_visionPickupCnt;
         private int m_visionDropCnt;
         private int m_visionPickupTime;
-        private uint m_noDetectPersonCnt;
+        private uint m_detectPersonCnt;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -945,18 +945,21 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     if (detection.Label == "person" && detection.Distance <= 5000)
                     {
-                        m_noDetectPersonCnt = 0;
-                        Tools.Log($"Person Detected!!!", ELogType.SystemLog);
+                        // m_noDetectPersonCnt 오버플로우 방지
+                        if (m_detectPersonCnt < uint.MaxValue)
+                        {
+                            m_detectPersonCnt++;
+                        }
                     }
                     else
                     {
-                        // m_noDetectPersonCnt 오버플로우 방지
-                        if (m_noDetectPersonCnt < uint.MaxValue)
-                        {
-                            m_noDetectPersonCnt++;
-                        }
+                        m_detectPersonCnt = 0;
                     }
                 }
+            }
+            else
+            {
+                m_detectPersonCnt = 0;
             }
         }
 
@@ -994,8 +997,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 m_visionPickupCnt++;
             }
-            // 하단부 ROI 3개 값이 Threshold 값 미만이고, 중량값이 인식되는 경우 픽업으로 판단 (낮은 물류)
-            else if (m_weightModel.GrossWeight >= 10 && model.BL_DEPTH < 550 && model.BM_DEPTH < 550 && model.BR_DEPTH < 550)
+            // 하단부 ROI 3개 값이 Threshold 값 미만인 경우 픽업으로 판단 (낮은 물류)
+            else if ((model.BL_DEPTH < 1300 && model.BL_DEPTH >= 0) &&
+                (model.BM_DEPTH < 1300 && model.BL_DEPTH >= 0) &&
+                (model.BR_DEPTH < 1300 && model.BL_DEPTH >= 0))
             {
                 m_visionPickupCnt++;
             }
@@ -1238,18 +1243,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 double distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
                 if (distance < thresholdDistance)
                 {
-                    Debug.WriteLine($"{count}, Forward");
+                    //Debug.WriteLine($"{count}, Forward");
                     return true; // 20cm 미만일 경우 전진으로 반환
                 }
 
                 if (count >= requiredCount)
                 {
-                    Debug.WriteLine($"{count}, Backward");
+                    //Debug.WriteLine($"{count}, Backward");
                     return false; // 후진
                 }
             }
 
-            Debug.WriteLine($"{count}, Forward");
+            //Debug.WriteLine($"{count}, Forward");
             return true; // 전진
         }
 
@@ -1911,7 +1916,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 픽업 판단 조건
                 if (m_stopwatchPickDrop.ElapsedMilliseconds < m_timeoutPickDrop) return;
 
-                if (m_noDetectPersonCnt >= 30) return;
+                if (m_detectPersonCnt >= 1)
+                {
+                    Tools.Log($"Detect Person", ELogType.SystemLog);
+                    return;
+                }
 
                 if (m_pickupStatus == true) return;
 

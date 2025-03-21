@@ -94,3 +94,7 @@ C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.C
 C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime.dll
 C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime_providers_shared.dll
 C:\Users\wmszz\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime_providers_tensorrt.dll
+C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime.dll
+C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime_providers_shared.dll
+C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime_providers_tensorrt.dll
+C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\bin\Debug\net8.0-windows10.0.18362.0\onnxruntime_providers_cuda.dll

@@ -11,8 +11,8 @@
           "Microsoft.Extensions.Logging": "9.0.1",
           "Prism.DryIoc": "8.1.97",
           "WATA.LIS.Core": "1.0.0",
+          "WATA.LIS.Heartbeat.Services": "1.0.0",
           "WATA.LIS.IF.BE": "1.0.0",
-          "WATA.LIS.IF.DPS": "1.0.0",
           "WATA.LIS.INDICATOR.DISPLAY": "1.0.0",
           "WATA.LIS.INDICATOR.LED": "1.0.0",
           "WATA.LIS.Main": "1.0.0",
@@ -22,7 +22,6 @@
           "WATA.LIS.SENSOR.UHF_RFID": "1.0.0",
           "WATA.LIS.SENSOR.WEIGHT": "1.0.0",
           "WATA.LIS.VISION.CAM": "1.0.0",
-          "WATA.LIS.VISION.Camera": "1.0.0",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.18362.57"
         },
         "runtime": {
@@ -1495,18 +1494,6 @@
           }
         }
       },
-      "WATA.LIS.IF.DPS/1.0.0": {
-        "dependencies": {
-          "Prism.Wpf": "8.1.97",
-          "WATA.LIS.Core": "1.0.0"
-        },
-        "runtime": {
-          "WATA.LIS.IF.DPS.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
       "WATA.LIS.INDICATOR.DISPLAY/1.0.0": {
         "dependencies": {
           "NetMQ": "4.0.1.13",
@@ -1537,9 +1524,7 @@
         "dependencies": {
           "Microsoft.Extensions.Logging": "9.0.1",
           "Prism.Wpf": "8.1.97",
-          "WATA.LIS.Core": "1.0.0",
-          "WATA.LIS.Heartbeat.Services": "1.0.0",
-          "WATA.LIS.IF.DPS": "1.0.0"
+          "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
           "WATA.LIS.Main.dll": {
@@ -1552,8 +1537,7 @@
         "dependencies": {
           "Prism.Wpf": "8.1.97",
           "System.IO.Ports": "8.0.0",
-          "WATA.LIS.Core": "1.0.0",
-          "WATA.LIS.SENSOR.UHF_RFID": "1.0.0"
+          "WATA.LIS.Core": "1.0.0"
         },
         "runtime": {
           "WATA.LIS.SENSOR.Distance.dll": {
@@ -1634,21 +1618,6 @@
         },
         "runtime": {
           "WATA.LIS.VISION.CAM.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          }
-        }
-      },
-      "WATA.LIS.VISION.Camera/1.0.0": {
-        "dependencies": {
-          "NetMQ": "4.0.1.13",
-          "Newtonsoft.Json": "13.0.1",
-          "Prism.Wpf": "8.1.97",
-          "WATA.LIS.Core": "1.0.0",
-          "WATA.LIS.SENSOR.WEIGHT": "1.0.0"
-        },
-        "runtime": {
-          "WATA.LIS.VISION.Camera.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -2551,11 +2520,6 @@
       "serviceable": false,
       "sha512": ""
     },
-    "WATA.LIS.IF.DPS/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
     "WATA.LIS.INDICATOR.DISPLAY/1.0.0": {
       "type": "project",
       "serviceable": false,
@@ -2597,11 +2561,6 @@
       "sha512": ""
     },
     "WATA.LIS.VISION.CAM/1.0.0": {
-      "type": "project",
-      "serviceable": false,
-      "sha512": ""
-    },
-    "WATA.LIS.VISION.Camera/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
