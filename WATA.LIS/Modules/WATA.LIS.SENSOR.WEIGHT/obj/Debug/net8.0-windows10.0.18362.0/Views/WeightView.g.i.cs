@@ -60,7 +60,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WATA.LIS.SENSOR.WEIGHT;component/views/weightview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WATA.LIS.SENSOR.WEIGHT;V1.0.0.0;component/views/weightview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\WeightView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

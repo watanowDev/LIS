@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj": {}
+    "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+    "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
+        "projectUniqueName": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
         "projectName": "WATA.LIS.Core",
-        "projectPath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
+        "projectPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj",
         "packagesPath": "C:\\Users\\wmszz\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
+        "outputPath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -128,14 +128,14 @@
         }
       }
     },
-    "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj": {
+    "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
+        "projectUniqueName": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
         "projectName": "WATA.LIS.IF.DPS",
-        "projectPath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
+        "projectPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\WATA.LIS.IF.DPS.csproj",
         "packagesPath": "C:\\Users\\wmszz\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\obj\\",
+        "outputPath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.IF.DPS\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -157,8 +157,8 @@
           "net8.0-windows10.0.18362": {
             "targetAlias": "net8.0-windows10.0.18362.0",
             "projectReferences": {
-              "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-                "projectPath": "C:\\Users\\wmszz\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+              "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+                "projectPath": "C:\\Users\\wmszz\\Source\\Repos\\LIS-ForkLift_mswon\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
               }
             }
           }
