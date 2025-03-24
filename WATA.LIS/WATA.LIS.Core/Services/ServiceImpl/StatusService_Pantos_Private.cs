@@ -920,12 +920,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
                 {
-                    model.TM_DEPTH,
-                    model.ML_DEPTH,
-                    model.MM_DEPTH,
-                    model.MR_DEPTH,
                     model.BL_DEPTH,
-                    model.BM_DEPTH,
                     model.BR_DEPTH
                 };
 
@@ -938,7 +933,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_visionPickupCnt++;
             }
             // 하단부 ROI 3개 값이 Threshold 값 미만이고, 중량값이 인식되는 경우 픽업으로 판단 (낮은 물류)
-            else if (m_weightModel.GrossWeight >= 10 && model.BL_DEPTH < 550 && model.BM_DEPTH < 550 && model.BR_DEPTH < 550)
+            else if (m_weightModel.GrossWeight >= 10 && model.BL_DEPTH < 550 && model.BR_DEPTH < 550)
             {
                 m_visionPickupCnt++;
             }

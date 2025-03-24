@@ -259,23 +259,23 @@ namespace WATA.LIS.VISION.CAM.Camera
 
                                 switch (roiName)
                                 {
-                                    case "TM":
-                                        eventModels.TM_DEPTH = depthAverage;
-                                        break;
-                                    case "MR":
-                                        eventModels.MR_DEPTH = depthAverage;
-                                        break;
-                                    case "MM":
-                                        eventModels.MM_DEPTH = depthAverage;
-                                        break;
-                                    case "ML":
-                                        eventModels.ML_DEPTH = depthAverage;
-                                        break;
+                                    //case "TM":
+                                    //    eventModels.TM_DEPTH = depthAverage;
+                                    //    break;
+                                    //case "MR":
+                                    //    eventModels.MR_DEPTH = depthAverage;
+                                    //    break;
+                                    //case "MM":
+                                    //    eventModels.MM_DEPTH = depthAverage;
+                                    //    break;
+                                    //case "ML":
+                                    //    eventModels.ML_DEPTH = depthAverage;
+                                        //break;
                                     case "BR":
                                         eventModels.BR_DEPTH = depthAverage;
                                         break;
                                     case "BM":
-                                        eventModels.BM_DEPTH = depthAverage;
+                                        //eventModels.BM_DEPTH = depthAverage;
                                         break;
                                     case "BL":
                                         eventModels.BL_DEPTH = depthAverage;

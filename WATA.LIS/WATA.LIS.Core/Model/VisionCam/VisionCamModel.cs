@@ -17,13 +17,8 @@ namespace WATA.LIS.Core.Model.VisionCam
         public int WIDTH { get; set; }
         public int HEIGHT { get; set; }
         public float ACTION_DEPTH { get; set; }
-        public double TM_DEPTH { get; set; }
-        public double ML_DEPTH { get; set; }
-        public double MM_DEPTH { get; set; }
-        public double MR_DEPTH { get; set; }
-        public double BL_DEPTH { get; set; }
-        public double BM_DEPTH { get; set; }
         public double BR_DEPTH { get; set; }
+        public double BL_DEPTH { get; set; }
         public double FPS { get; set; }
 
         public string POINTS = string.Empty; // 형상측정값

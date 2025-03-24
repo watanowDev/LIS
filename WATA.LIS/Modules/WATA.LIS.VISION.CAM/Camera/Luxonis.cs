@@ -14,21 +14,21 @@ using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Model.VisionCam;
 using System.Diagnostics;
 using System.Collections.Generic;
+using WATA.LIS.Core.Common;
+using static WATA.LIS.Core.Common.Tools;
+using System.Security.Policy;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
     public class Luxonis
     {
+        // Config 관련
         private readonly IEventAggregator _eventAggregator;
         private readonly IVisionCamModel _visioncammodel;
-
         VisionCamConfigModel visioncamConfig;
 
-        private WeChatQRCode _weChatQRCode;
-
-        private CancellationTokenSource tokenSource = new CancellationTokenSource();
-
         // WeChatQRCode 모델 경로
+        private WeChatQRCode _weChatQRCode;
         private readonly static string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
         private readonly static string projectRootDirectory = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName).FullName).FullName).FullName;
         private readonly static string modelDirectory = Path.Combine(projectRootDirectory, "Modules", "WATA.LIS.VISION.CAM", "Model");
@@ -37,13 +37,30 @@ namespace WATA.LIS.VISION.CAM.Camera
         private readonly static string superResolutionPrototxtPath = Path.Combine(modelDirectory, "sr.prototxt");
         private readonly static string superResolutionCaffeModelPath = Path.Combine(modelDirectory, "sr.caffemodel");
 
-        private SubscriberSocket _leftFrameSocket;
-        private SubscriberSocket _rightFrameSocket;
-        private SubscriberSocket _depthFrameSocket;
-        private SubscriberSocket _detectionDataSocket;
-        private SubscriberSocket _videoFrameSocket;
+
+        // 소켓 관련
+        private SubscriberSocket fork_leftFrameSocket;
+        private SubscriberSocket fork_rightFrameSocket;
+        private SubscriberSocket fork_depthFrameSocket;
+        private SubscriberSocket fork_detectionDataSocket;
+        private SubscriberSocket fork_videoFrameSocket;
+
+        private SubscriberSocket front_leftFrameSocket;
+        private SubscriberSocket front_rightFrameSocket;
+        private SubscriberSocket front_depthFrameSocket;
+        private SubscriberSocket front_detectionDataSocket;
+        private SubscriberSocket front_videoFrameSocket;
+
+        private SubscriberSocket rear_leftFrameSocket;
+        private SubscriberSocket rear_rightFrameSocket;
+        private SubscriberSocket rear_depthFrameSocket;
+        private SubscriberSocket rear_detectionDataSocket;
+        private SubscriberSocket rear_videoFrameSocket;
+
+        private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         private Dictionary<string, double> depthValues = new Dictionary<string, double>();
+
 
         public Luxonis(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
@@ -55,11 +72,23 @@ namespace WATA.LIS.VISION.CAM.Camera
             _weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
 
             // 소켓 초기화 및 연결
-            _leftFrameSocket = InitializeSocket("tcp://localhost:5561");
-            _rightFrameSocket = InitializeSocket("tcp://localhost:5562");
-            _depthFrameSocket = InitializeSocket("tcp://localhost:5563");
-            _detectionDataSocket = InitializeSocket("tcp://localhost:5564");
-            _videoFrameSocket = InitializeSocket("tcp://localhost:5565");
+            fork_leftFrameSocket = InitializeSocket("tcp://localhost:5561");
+            fork_rightFrameSocket = InitializeSocket("tcp://localhost:5562");
+            fork_depthFrameSocket = InitializeSocket("tcp://localhost:5563");
+            fork_detectionDataSocket = InitializeSocket("tcp://localhost:5564");
+            fork_videoFrameSocket = InitializeSocket("tcp://localhost:5565");
+
+            //front_leftFrameSocket = InitializeSocket("tcp://localhost:5571");
+            //front_rightFrameSocket = InitializeSocket("tcp://localhost:5572");
+            //front_depthFrameSocket = InitializeSocket("tcp://localhost:5573");
+            //front_detectionDataSocket = InitializeSocket("tcp://localhost:5574");
+            //front_videoFrameSocket = InitializeSocket("tcp://localhost:5575");
+
+            //rear_leftFrameSocket = InitializeSocket("tcp://localhost:5581");
+            //rear_rightFrameSocket = InitializeSocket("tcp://localhost:5582");
+            //rear_depthFrameSocket = InitializeSocket("tcp://localhost:5583");
+            rear_detectionDataSocket = InitializeSocket("tcp://localhost:5584");
+            //rear_videoFrameSocket = InitializeSocket("tcp://localhost:5585");
         }
 
         private SubscriberSocket InitializeSocket(string address)
@@ -77,6 +106,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 return;
             }
 
+            //LoadModel(1); // GPU 인덱스 뭘로 해야하는지??
             InitializeMultiStream();
         }
 
@@ -86,9 +116,17 @@ namespace WATA.LIS.VISION.CAM.Camera
             {
                 //Task.Factory.StartNew(() => ReceiveData(_leftFrameSocket, ProcessLeftFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 //Task.Factory.StartNew(() => ReceiveData(_rightFrameSocket, ProcessRightFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-                Task.Factory.StartNew(() => ReceiveData(_depthFrameSocket, ProcessDepthFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-                Task.Factory.StartNew(() => ReceiveData(_detectionDataSocket, ProcessDetectionData), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-                Task.Factory.StartNew(() => ReceiveData(_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                Task.Factory.StartNew(() => ReceiveData(fork_depthFrameSocket, ProcessDepthFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                Task.Factory.StartNew(() => ReceiveData(fork_detectionDataSocket, ProcessDetectionData), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                Task.Factory.StartNew(() => ReceiveData(fork_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+                //Task.Factory.StartNew(() => ReceiveData(front_depthFrameSocket, ProcessDepthFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                //Task.Factory.StartNew(() => ReceiveData(front_detectionDataSocket, ProcessDetectionData), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                //Task.Factory.StartNew(() => ReceiveData(front_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+                //Task.Factory.StartNew(() => ReceiveData(rear_depthFrameSocket, ProcessDepthFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                Task.Factory.StartNew(() => ReceiveData(rear_detectionDataSocket, ProcessDetectionData), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                //Task.Factory.StartNew(() => ReceiveData(rear_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             }
             catch
             {
@@ -103,7 +141,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 while (!tokenSource.Token.IsCancellationRequested)
                 {
                     var message = subscriber.ReceiveMultipartMessage();
-                    if (subscriber == _detectionDataSocket)
+                    if (subscriber == fork_detectionDataSocket)
                     {
                         var metadata = message[0].ConvertToString();
                         processData(null, metadata);
@@ -122,6 +160,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
         }
 
+        // 이벤트 데이터 객체 생성
         private void ProcessLeftFrame(byte[] frameData, string metadata)
         {
             var frame = Mat.FromImageData(frameData, ImreadModes.Grayscale);
@@ -175,17 +214,13 @@ namespace WATA.LIS.VISION.CAM.Camera
             eventModels.QR = qr;
             eventModels.FRAME = processedFrameData;
             eventModels.connected = true;
-            if (depthValues.TryGetValue("TM", out double tmDepth)) eventModels.TM_DEPTH = tmDepth;
-            if (depthValues.TryGetValue("MR", out double mrDepth)) eventModels.MR_DEPTH = mrDepth;
-            if (depthValues.TryGetValue("MM", out double mmDepth)) eventModels.MM_DEPTH = mmDepth;
-            if (depthValues.TryGetValue("ML", out double mlDepth)) eventModels.ML_DEPTH = mlDepth;
             if (depthValues.TryGetValue("BR", out double brDepth)) eventModels.BR_DEPTH = brDepth;
-            if (depthValues.TryGetValue("BM", out double bmDepth)) eventModels.BM_DEPTH = bmDepth;
             if (depthValues.TryGetValue("BL", out double blDepth)) eventModels.BL_DEPTH = blDepth;
 
             _eventAggregator.GetEvent<VisionCamEvent>().Publish(eventModels);
         }
 
+        // QR 코드 검출
         private string DetectQRCode(Mat frame)
         {
             string result = string.Empty;

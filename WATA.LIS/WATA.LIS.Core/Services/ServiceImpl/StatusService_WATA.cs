@@ -105,7 +105,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_visionPickupCnt;
         private int m_visionDropCnt;
         private int m_visionPickupTime;
-        private uint m_detectPersonCnt;
+        private uint m_noDetectPersonCnt = 50;
+        private DateTime lastAlertTime = DateTime.MinValue;
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -629,6 +630,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
         }
 
+        private void AlertDetectPerson()
+        {
+            // 보행자 인식 경고 LED, 부저
+            Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
+        }
+
         private void IsCorrectDockingTimerEvent(object sender, EventArgs e)
         {
 
@@ -793,6 +800,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_stopwatchWeight.Reset();
             m_stopwatchWeight.Start();
 
+            if (m_weight_list.Count == 0)
+            {
+                // Handle empty list case
+                return;
+            }
+
             int currentWeight = m_weightModel.GrossWeight;
             int minWeight = m_weight_list.Select(w => w.GrossWeight).Min();
             int maxWeight = m_weight_list.Select(w => w.GrossWeight).Max();
@@ -939,27 +952,38 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="obj"></param>
         private void OnVisionDetectionEvent(VisionDetectionModel model)
         {
-            if (model?.Detections != null)
+            if (model?.Detections.Count() >= 1)
             {
                 foreach (var detection in model.Detections)
                 {
-                    if (detection.Label == "person" && detection.Distance <= 5000)
+                    if (detection.Label == "person" && detection.Distance <= 5000 && detection.Distance > 1000)
                     {
-                        // m_noDetectPersonCnt 오버플로우 방지
-                        if (m_detectPersonCnt < uint.MaxValue)
+                        m_noDetectPersonCnt = 0;
+
+                        // 10초가 지나지 않았으면 경고를 울리지 않음
+                        if ((DateTime.Now - lastAlertTime).TotalSeconds >= 10)
                         {
-                            m_detectPersonCnt++;
+                            AlertDetectPerson();
+                            lastAlertTime = DateTime.Now;
                         }
                     }
                     else
                     {
-                        m_detectPersonCnt = 0;
+                        // m_noDetectPersonCnt 오버플로우 방지
+                        if (m_noDetectPersonCnt < uint.MaxValue)
+                        {
+                            m_noDetectPersonCnt++;
+                        }
                     }
                 }
             }
             else
             {
-                m_detectPersonCnt = 0;
+                // m_noDetectPersonCnt 오버플로우 방지
+                if (m_noDetectPersonCnt < uint.MaxValue)
+                {
+                    m_noDetectPersonCnt++;
+                }
             }
         }
 
@@ -980,34 +1004,32 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
                 {
-                    model.TM_DEPTH,
-                    model.ML_DEPTH,
-                    model.MM_DEPTH,
-                    model.MR_DEPTH,
                     model.BL_DEPTH,
-                    model.BM_DEPTH,
                     model.BR_DEPTH
                 };
 
-            // Threshold 값 미만인 값의 개수
-            int count = depthValues.Count(value => value < 550 && value >= 0);
+            //// Threshold 값 미만인 값의 개수
+            //int closeCnt = depthValues.Count(value => value < 450 && value >= 0);
 
-            // 충분한 수의 ROI에서 Threshold 값 미만일 경우 픽업으로 판단
-            if (count >= 6)
-            {
-                m_visionPickupCnt++;
-            }
-            // 하단부 ROI 3개 값이 Threshold 값 미만인 경우 픽업으로 판단 (낮은 물류)
-            else if ((model.BL_DEPTH < 1300 && model.BL_DEPTH >= 0) &&
-                (model.BM_DEPTH < 1300 && model.BL_DEPTH >= 0) &&
-                (model.BR_DEPTH < 1300 && model.BL_DEPTH >= 0))
-            {
-                m_visionPickupCnt++;
-            }
-            // 충분하지 못한 수의 ROI에서 Threshold 값 미만이고, 중량값이 인식되지 않는 경우 드롭으로 판단
-            else if (count <= 2 && m_weightModel.GrossWeight < 10)
+            //if ((model.BL_DEPTH < 450 && model.BL_DEPTH >= 0) &&
+            //    (model.BR_DEPTH < 450 && model.BL_DEPTH >= 0))
+            //{
+            //    m_visionPickupCnt++;
+            //}
+            //// 충분하지 못한 수의 ROI에서 Threshold 값 미만이고, 중량값이 인식되지 않는 경우 드롭으로 판단
+            //else if (closeCnt == 0 && m_weightModel.GrossWeight < 10)
+            //{
+            //    m_visionDropCnt++;
+            //}
+
+
+            if(model.BL_DEPTH ==0 && model.BR_DEPTH == 0)
             {
                 m_visionDropCnt++;
+            }
+            else
+            {
+                m_visionPickupCnt++;
             }
         }
 
@@ -1852,14 +1874,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             try
             {
                 // Vision Pickup 카운트의 누적값에 의한 상태 변경
-                if (m_visionPickupCnt > 15 && m_pickupStatus == false && m_isWeightPickup == false)
+                if (m_visionPickupCnt > 2 && m_pickupStatus == false && m_isWeightPickup == false)
                 {
                     m_isVisionPickUp = true;
                     m_visionPickupCnt = 0;
                     m_visionDropCnt = 0;
                 }
                 // Vision Drop 카운트의 누적값에 의한 상태 변경
-                else if (m_visionDropCnt > 2 && m_pickupStatus == true)
+                else if (m_visionDropCnt > 0 && m_pickupStatus == true)
                 {
                     m_isVisionPickUp = false;
                     m_visionPickupCnt = 0;
@@ -1916,9 +1938,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 // 픽업 판단 조건
                 if (m_stopwatchPickDrop.ElapsedMilliseconds < m_timeoutPickDrop) return;
 
-                if (m_detectPersonCnt >= 1)
+                if (m_noDetectPersonCnt < 25)
                 {
-                    Tools.Log($"Detect Person", ELogType.SystemLog);
+                    m_isWeightPickup = false;
+                    Tools.Log($"Detected Person", ELogType.SystemLog);
                     return;
                 }
 
@@ -2017,8 +2040,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                //Tools.Log($"IsPickUpTimerEvent Error : {ex.Message}", ELogType.SystemLog);
                 Tools.Log($"IsPickUpTimerEvent Error", ELogType.SystemLog);
             }
         }
@@ -2029,6 +2053,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_Command = 1;
             if (m_set_load == true) m_Command = 2;
             if (m_set_unload == true) m_Command = 3;
+            m_isWeightPickup = false;
 
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
             SendBackEndPickupAction();

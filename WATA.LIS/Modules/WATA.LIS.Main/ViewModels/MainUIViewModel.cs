@@ -195,12 +195,12 @@ namespace WATA.LIS.Main.ViewModels
                 Application.Current.Dispatcher.Invoke(() => {
                     CurrentFrame = ConvertToBitmapImage(model.FRAME);
                     Depth_Value = model.ACTION_DEPTH.ToString() + "mm";
-                    TM_DEPTH= model.TM_DEPTH.ToString("F0") + "mm";
-                    ML_DEPTH= model.ML_DEPTH.ToString("F0") + "mm";
-                    MM_DEPTH= model.MM_DEPTH.ToString("F0") + "mm";
-                    MR_DEPTH= model.MR_DEPTH.ToString("F0") + "mm";
+                    //TM_DEPTH= model.TM_DEPTH.ToString("F0") + "mm";
+                    //ML_DEPTH= model.ML_DEPTH.ToString("F0") + "mm";
+                    //MM_DEPTH= model.MM_DEPTH.ToString("F0") + "mm";
+                    //MR_DEPTH= model.MR_DEPTH.ToString("F0") + "mm";
                     BL_DEPTH= model.BL_DEPTH.ToString("F0") + "mm";
-                    BM_DEPTH= model.BM_DEPTH.ToString("F0") + "mm";
+                    //BM_DEPTH= model.BM_DEPTH.ToString("F0") + "mm";
                     BR_DEPTH= model.BR_DEPTH.ToString("F0") + "mm";
                     //VISIONCAM_Active = Active;
                 });

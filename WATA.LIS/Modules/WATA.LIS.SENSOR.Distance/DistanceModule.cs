@@ -37,6 +37,11 @@ namespace WATA.LIS.SENSOR.Distance
                 TF_Mini TF_Mini = new TF_Mini(_eventAggregator, _distancemodel);
                 TF_Mini.SerialInit();
             }
+            else if (_DistanceConfig.model_name == "SICK_LONG")
+            {
+                SICK_LONG Sensor = new SICK_LONG(_eventAggregator, _distancemodel);
+                Sensor.SerialInit();
+            }
             else
             {
                 DistanceSensor TeraBeeSensor = new DistanceSensor(_eventAggregator, _distancemodel);
