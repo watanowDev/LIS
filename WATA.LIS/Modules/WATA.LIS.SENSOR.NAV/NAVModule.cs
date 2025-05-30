@@ -17,6 +17,7 @@ using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.NAV;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.SENSOR.NAV.Views;
+using WATA.LIS.SENSOR.NAV.VisionPosMQTT;
 
 namespace WATA.LIS.SENSOR.NAV
 {
@@ -34,18 +35,26 @@ namespace WATA.LIS.SENSOR.NAV
 
             NAVConfigModel _navConfig = (NAVConfigModel)_navModel;
 
-            if(_navConfig.NAV_Enable == 0)
+            if (_navConfig.NAV_Enable == 0)
             {
                 return;
             }
 
-            NAVSensor navSensor = new NAVSensor(_eventAggregator, _navModel);
-            navSensor.Init();
+            if (_navConfig.Type == "NAV")
+            {
+                NAVSensor navSensor = new NAVSensor(_eventAggregator, _navModel);
+                navSensor.Init();
+            }
+            else if (_navConfig.Type == "VisionPos")
+            {
+                VisionPos visionPos = new VisionPos(_eventAggregator, _navModel);
+                visionPos.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
         {
-        
+
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)

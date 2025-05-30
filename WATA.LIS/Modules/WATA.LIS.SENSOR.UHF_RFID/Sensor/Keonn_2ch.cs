@@ -51,7 +51,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             //mCheckConnectionTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
-            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
 
             RfidReaderInit();
@@ -84,14 +84,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 string model = (string)reader.ParamGet("/reader/version/model");
 
                 mConnected = true;
-                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
+                //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
 
                 mGetInventoryTimer.Start();
             }
             catch (Exception ex)
             {
                 mConnected = false;
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
                 mGetInventoryTimer.Stop();
                 reader.Destroy();
                 Tools.Log($"[RfidReaderInit] Exception !!! : {ex.Message}", Tools.ELogType.SystemLog);
@@ -105,13 +105,13 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 string model = (string)reader.ParamGet("/reader/version/model");
                 mConnected = true;
                 RfidReaderInit();
-                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
+                //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
                 Tools.Log($"[RfidReaderConnCheck] Connected !!! : {model}", Tools.ELogType.RFIDLog);
             }
             catch (Exception ex)
             {
                 mConnected = false;
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
                 Tools.Log($"[RfidReaderConnCheck] Exception !!! : {ex.Message}", Tools.ELogType.RFIDLog);
             }
         }
@@ -123,12 +123,10 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                 return;
             }
 
-            
-
             try
             {
                 //Start reading
-                TagReadData[] tagsRead = await Task.Run(() => reader.Read(400));
+                TagReadData[] tagsRead = await Task.Run(() => reader.Read(200));
 
                 // If no tags are read, return
                 if (tagsRead.Length == 0)
@@ -141,7 +139,8 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
 
                 foreach (TagReadData tag in tagsRead)
                 {
-                    if (tag.EpcString.Contains("CB") || tag.EpcString.Contains("DC") || tag.EpcString.Contains("DA")) //CB:컨테이너, DC:도크, DA:랙
+                    if ((tag.Antenna == 1 && tag.EpcString.StartsWith("DA")) ||
+                        (tag.Antenna == 2 && tag.EpcString.StartsWith("DC")))
                     {
                         filteredTags.Add(tag);
                     }
@@ -162,12 +161,12 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                                            .ToList();
 
                 PubTagData(filteredTags);
-                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
+                //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
             }
         }
 

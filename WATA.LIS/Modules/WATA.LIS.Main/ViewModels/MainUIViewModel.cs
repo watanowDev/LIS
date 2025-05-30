@@ -22,6 +22,7 @@ using System.Windows.Media.Imaging;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
+using System.Diagnostics;
 
 namespace WATA.LIS.Main.ViewModels
 {
@@ -97,6 +98,12 @@ namespace WATA.LIS.Main.ViewModels
 
         private string _TM_DEPTH;
         public string TM_DEPTH{ get { return _TM_DEPTH; } set { SetProperty(ref _TM_DEPTH, value); } }
+
+        private string _TL_DEPTH;
+        public string TL_DEPTH { get { return _TL_DEPTH; } set { SetProperty(ref _TL_DEPTH, value); } }
+
+        private string _TR_DEPTH;
+        public string TR_DEPTH { get { return _TR_DEPTH; } set { SetProperty(ref _TR_DEPTH, value); } }
 
         private string _ML_DEPTH;
         public string ML_DEPTH{ get { return _ML_DEPTH; } set { SetProperty(ref _ML_DEPTH, value); } }
@@ -193,16 +200,22 @@ namespace WATA.LIS.Main.ViewModels
             {
                 // UI 스레드에서 CurrentFrame 속성을 업데이트
                 Application.Current.Dispatcher.Invoke(() => {
-                    CurrentFrame = ConvertToBitmapImage(model.FRAME);
-                    Depth_Value = model.ACTION_DEPTH.ToString() + "mm";
-                    //TM_DEPTH= model.TM_DEPTH.ToString("F0") + "mm";
-                    //ML_DEPTH= model.ML_DEPTH.ToString("F0") + "mm";
-                    //MM_DEPTH= model.MM_DEPTH.ToString("F0") + "mm";
-                    //MR_DEPTH= model.MR_DEPTH.ToString("F0") + "mm";
-                    BL_DEPTH= model.BL_DEPTH.ToString("F0") + "mm";
-                    //BM_DEPTH= model.BM_DEPTH.ToString("F0") + "mm";
-                    BR_DEPTH= model.BR_DEPTH.ToString("F0") + "mm";
-                    //VISIONCAM_Active = Active;
+                    try
+                    {
+                        CurrentFrame = ConvertToBitmapImage(model.FRAME);
+                        Depth_Value = model.ACTION_DEPTH.ToString() + "mm";
+                        BL_DEPTH = model.BL_DEPTH.ToString("F0") + "mm";
+                        BR_DEPTH = model.BR_DEPTH.ToString("F0") + "mm";
+                        ML_DEPTH = model.ML_DEPTH.ToString("F0") + "mm";
+                        MR_DEPTH = model.MR_DEPTH.ToString("F0") + "mm";
+                        TL_DEPTH = model.TL_DEPTH.ToString("F0") + "mm";
+                        TR_DEPTH = model.TR_DEPTH.ToString("F0") + "mm";
+                    }
+                    catch (Exception ex)
+                    {
+                        // 예외 로깅
+                        Debug.WriteLine($"Error updating UI: {ex.Message}");
+                    }
                 });
             }
         }

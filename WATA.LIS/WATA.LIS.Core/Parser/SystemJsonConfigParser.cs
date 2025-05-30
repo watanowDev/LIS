@@ -56,6 +56,7 @@ namespace WATA.LIS.Core.Parser
 
 
                         LedBuzzer.led_enable = (int)json["led_buzzer"]["led_enable"];
+                        LedBuzzer.OnlySpeark = (int)json["led_buzzer"]["OnlySpeark"];
                         LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
                         LedBuzzer.lamp_IP = json["led_buzzer"]["lamp_IP"].ToString();
                         LedBuzzer.InfoLanguage = json["led_buzzer"]["InfoLanguage"].ToString();
@@ -89,6 +90,7 @@ namespace WATA.LIS.Core.Parser
 
 
                         nav.NAV_Enable = (int)json["NAV"]["NAV_Enable"];
+                        nav.Type = json["NAV"]["Type"].ToString();
                         nav.IP = json["NAV"]["IP"].ToString();
                         nav.PORT = (int)json["NAV"]["PORT"];
                         nav.AdjustingPickdrop = (int)json["NAV"]["AdjustingPickdrop"];

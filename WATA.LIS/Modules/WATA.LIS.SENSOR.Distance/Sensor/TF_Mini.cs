@@ -62,14 +62,14 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                     _port.Handshake = Handshake.None;
                     m_receiveTimer.Start();
                     Tools.Log($"Distance Init Success", Tools.ELogType.SystemLog);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
                 }
             }
             catch
             {
                 _port = null;
                 Tools.Log($"Distance Init failed!!!", Tools.ELogType.SystemLog);
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
             }
         }
 
@@ -92,7 +92,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         {
             if (_port == null || !_port.IsOpen)
             {
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
                 return;
             }
 
@@ -133,7 +133,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             catch (Exception ex)
             {
                 Tools.Log($"Distance Read Error: {ex.Message}", Tools.ELogType.SystemLog);
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
             }
         }
     }

@@ -10,6 +10,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
     public class NAVConfigModel : INAVModel
     {
         public int NAV_Enable { get; set; }
+        public string Type { get; set; }
         public string IP { get; set; }
         public int PORT { get; set; }
         public int AdjustingPickdrop { get; set; }

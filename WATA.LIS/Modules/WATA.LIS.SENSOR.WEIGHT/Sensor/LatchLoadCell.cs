@@ -75,7 +75,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                     m_newVerReceiveTimer.Start();
                     Tools.Log($"Weight Sensor Init Success", Tools.ELogType.SystemLog);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
 
                 if (_port == null || !_port.IsOpen)
@@ -89,26 +89,35 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 _port = null;
                 m_receiveTimer.Stop();
                 Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
         private void NewVerReceiveTimerEvent(object sender, EventArgs e)
         {
-            // 전송할 데이터
-            byte[] dataToSend = new byte[] { 0x55, 0xAB, 0x01, 0x00 };
-            _port.Write(dataToSend, 0, dataToSend.Length);
-
-            // 응답 데이터 수신
-            Thread.Sleep(100); // 잠시 대기하여 데이터 수신
-            int bytesToRead = _port.BytesToRead;
-            if (bytesToRead >= 25)
+            try
             {
-                byte[] receivedData = new byte[bytesToRead];
-                _port.Read(receivedData, 0, bytesToRead);
+                // 전송할 데이터
+                byte[] dataToSend = new byte[] { 0x55, 0xAB, 0x01, 0x00 };
+                _port.Write(dataToSend, 0, dataToSend.Length);
 
-                // 응답 데이터를 publish
-                ParseData(receivedData, receivedData.Length);
+                // 응답 데이터 수신
+                Thread.Sleep(100); // 잠시 대기하여 데이터 수신
+                int bytesToRead = _port.BytesToRead;
+                if (bytesToRead >= 25)
+                {
+                    byte[] receivedData = new byte[bytesToRead];
+                    _port.Read(receivedData, 0, bytesToRead);
+
+                    // 응답 데이터를 publish
+                    ParseData(receivedData, receivedData.Length);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                }
+            }
+            catch
+            {
+                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
+                //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -125,7 +134,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     _port.Handshake = Handshake.None;
                     m_receiveTimer.Start();
                     Tools.Log($"Weight Sensor Init Success", Tools.ELogType.SystemLog);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
 
                 if (_port == null || !_port.IsOpen)
@@ -139,7 +148,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                 _port = null;
                 m_receiveTimer.Stop();
                 Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -147,7 +156,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         {
             if (_port == null || _port.IsOpen == false)
             {
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
                 return;
             }
 
@@ -161,13 +170,13 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
                     //LogRawData(buffer);
                     ParseData(buffer, m_nDataSize);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.WeightConnErr);
                 }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
 
@@ -226,6 +235,23 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
                     int overload = RecvBytes[23];
                     int out_of_tolerance = RecvBytes[24];
 
+                    if (left_battery < 5 || right_battery < 5)
+                    {
+                        SysAlarm.AddErrorCodes(SysAlarm.WeightLowBattery);
+                    }
+                    else
+                    {
+                        SysAlarm.RemoveErrorCodes(SysAlarm.WeightLowBattery);
+                    }
+
+                    if (overload == 1)
+                    {
+                        SysAlarm.AddErrorCodes(SysAlarm.WeightOverload);
+                    }
+                    else
+                    {
+                        SysAlarm.RemoveErrorCodes(SysAlarm.WeightOverload);
+                    }
 
                     WeightSensorModel model = new WeightSensorModel();
                     model.GrossWeight = nGrossWeight;
@@ -255,8 +281,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
         {
             try
             {
-                // 수신된 데이터를 로그에 기록
-                LogRawData(buffer);
+                _port.Write(buffer, 0, buffer.Length);
             }
             catch (Exception ex)
             {

@@ -139,6 +139,7 @@ namespace WATA.LIS.Core.Common
         CONTAINER_OK,
         SIZE_CHECK_START,
         SIZE_MEASURE_OK,
+        NO_QR_SIZE_MEASURE_OK,
         CHECK_COMPLETE,
         QR_PIKCUP,
         QR_MEASURE_OK,

@@ -17,6 +17,9 @@ using System.Collections.Generic;
 using WATA.LIS.Core.Common;
 using static WATA.LIS.Core.Common.Tools;
 using System.Security.Policy;
+using System.Collections.Concurrent;
+using System.Windows.Threading;
+//using Emgu.CV;
 
 namespace WATA.LIS.VISION.CAM.Camera
 {
@@ -57,10 +60,20 @@ namespace WATA.LIS.VISION.CAM.Camera
         private SubscriberSocket rear_detectionDataSocket;
         private SubscriberSocket rear_videoFrameSocket;
 
+        private Mat _mat = new Mat();
+
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         private Dictionary<string, double> depthValues = new Dictionary<string, double>();
 
+        // 국가라벨 검출 관련
+        //V2Detector _v2Detector = new V2Detector();
+        List<V2DetectionModel> detectionDataList = new List<V2DetectionModel>();
+        private DispatcherTimer m_receiveObjectsTimer;
+
+        private ConcurrentQueue<(byte[] FrameData, string Metadata)> rgbFrameQueue = new ConcurrentQueue<(byte[], string)>();
+        private ConcurrentQueue<(byte[] FrameData, string Metadata)> depthFrameQueue = new ConcurrentQueue<(byte[], string)>();
+        private ConcurrentQueue<(byte[] FrameData, string Metadata)> detectionDataQueue = new ConcurrentQueue<(byte[], string)>();
 
         public Luxonis(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
@@ -87,8 +100,15 @@ namespace WATA.LIS.VISION.CAM.Camera
             //rear_leftFrameSocket = InitializeSocket("tcp://localhost:5581");
             //rear_rightFrameSocket = InitializeSocket("tcp://localhost:5582");
             //rear_depthFrameSocket = InitializeSocket("tcp://localhost:5583");
-            rear_detectionDataSocket = InitializeSocket("tcp://localhost:5584");
+            //rear_detectionDataSocket = InitializeSocket("tcp://localhost:5584");
             //rear_videoFrameSocket = InitializeSocket("tcp://localhost:5585");
+
+            //_v2Detector = new V2Detector();
+
+            //// 국가코드 검출 타이머 설정
+            //m_receiveObjectsTimer = new DispatcherTimer();
+            //m_receiveObjectsTimer.Interval = new TimeSpan(0, 0, 0, 0, 333);
+            //m_receiveObjectsTimer.Tick += new EventHandler(ReceiveObjectsTimerEvent);
         }
 
         private SubscriberSocket InitializeSocket(string address)
@@ -125,11 +145,18 @@ namespace WATA.LIS.VISION.CAM.Camera
                 //Task.Factory.StartNew(() => ReceiveData(front_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
                 //Task.Factory.StartNew(() => ReceiveData(rear_depthFrameSocket, ProcessDepthFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-                Task.Factory.StartNew(() => ReceiveData(rear_detectionDataSocket, ProcessDetectionData), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                //Task.Factory.StartNew(() => ReceiveData(rear_detectionDataSocket, ProcessDetectionData_Rear), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                 //Task.Factory.StartNew(() => ReceiveData(rear_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+
+                // 프레임 처리 작업 시작
+                ProcessRgbFrames();
+                ProcessDepthFrames();
+                //ProcessDetectionDataFrames();
+                //m_receiveObjectsTimer.Start();
             }
             catch
             {
+                m_receiveObjectsTimer.Stop();
                 System.Windows.Application.Current.Shutdown();
             }
         }
@@ -141,16 +168,21 @@ namespace WATA.LIS.VISION.CAM.Camera
                 while (!tokenSource.Token.IsCancellationRequested)
                 {
                     var message = subscriber.ReceiveMultipartMessage();
-                    if (subscriber == fork_detectionDataSocket)
+                    var frameData = message[0].Buffer;
+                    var metadata = message[1].ConvertToString();
+
+                    // 큐에 프레임 추가 및 최대 프레임 수 제한
+                    if (subscriber == fork_depthFrameSocket && depthFrameQueue.Count < 5)
                     {
-                        var metadata = message[0].ConvertToString();
-                        processData(null, metadata);
+                        depthFrameQueue.Enqueue((frameData, metadata));
                     }
-                    else
+                    else if (subscriber == fork_detectionDataSocket && detectionDataQueue.Count < 5)
                     {
-                        var frameData = message[0].Buffer;
-                        var metadata = message[1].ConvertToString();
-                        processData(frameData, metadata);
+                        detectionDataQueue.Enqueue((frameData, metadata));
+                    }
+                    else if (subscriber == fork_videoFrameSocket && rgbFrameQueue.Count < 5)
+                    {
+                        rgbFrameQueue.Enqueue((frameData, metadata));
                     }
                 }
             }
@@ -198,26 +230,74 @@ namespace WATA.LIS.VISION.CAM.Camera
         private void ProcessVideoFrame(byte[] frameData, string metadata)
         {
             // QR 코드 검출 및 사각형 그리기
-            Mat mat = Mat.FromImageData(frameData, ImreadModes.Color);
-            string qr = DetectQRCode(mat);
+            _mat = Mat.FromImageData(frameData, ImreadModes.Color);
+            string qr = DetectQRCode(_mat);
 
             // Mat 객체를 byte 배열로 변환
             byte[] processedFrameData;
             using (var ms = new MemoryStream())
             {
-                mat.WriteToStream(ms, ".jpg");
+                _mat.WriteToStream(ms, ".jpg");
                 processedFrameData = ms.ToArray();
             }
 
             // 이벤트 데이터 객체 생성
             VisionCamModel eventModels = new VisionCamModel();
             eventModels.QR = qr;
-            eventModels.FRAME = processedFrameData;
+            eventModels.Objects = detectionDataList;
+            eventModels.FRAME = frameData;
             eventModels.connected = true;
             if (depthValues.TryGetValue("BR", out double brDepth)) eventModels.BR_DEPTH = brDepth;
             if (depthValues.TryGetValue("BL", out double blDepth)) eventModels.BL_DEPTH = blDepth;
+            if (depthValues.TryGetValue("MR", out double mrDepth)) eventModels.MR_DEPTH = mrDepth;
+            if (depthValues.TryGetValue("ML", out double mlDepth)) eventModels.ML_DEPTH = mlDepth;
+            if (depthValues.TryGetValue("TR", out double trDepth)) eventModels.TR_DEPTH = trDepth;
+            if (depthValues.TryGetValue("TL", out double tlDepth)) eventModels.TL_DEPTH = tlDepth;
 
             _eventAggregator.GetEvent<VisionCamEvent>().Publish(eventModels);
+
+            //SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+        }
+
+        private void ProcessDepthFrames()
+        {
+            Task.Run(() =>
+            {
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    if (depthFrameQueue.TryDequeue(out var frame))
+                    {
+                        ProcessDepthFrame(frame.FrameData, frame.Metadata);
+                    }
+                }
+            });
+        }
+
+        private void ProcessDetectionDataFrames()
+        {
+            Task.Run(() =>
+            {
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    if (detectionDataQueue.TryDequeue(out var frame))
+                    {
+                        ProcessDetectionData(frame.FrameData, frame.Metadata);
+                    }
+                }
+            });
+        }
+
+        private void ProcessRgbFrames()
+        {
+            Task.Run(() => {
+                while (!tokenSource.Token.IsCancellationRequested)
+                {
+                    if (rgbFrameQueue.TryDequeue(out var frame))
+                    {
+                        ProcessVideoFrame(frame.FrameData, frame.Metadata);
+                    }
+                }
+            });
         }
 
         // QR 코드 검출
@@ -263,6 +343,25 @@ namespace WATA.LIS.VISION.CAM.Camera
                 }
             }
             return result;
+        }
+
+        // 국가코드 검출 쓰레드
+        private void ReceiveObjectsTimerEvent(object sender, EventArgs e)
+        {
+            //// 테스트를 위해 이미지 파일을 로드
+            //string testImagePath = @"C:\Users\USER\Source\Repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\NationTest.jpg";
+            //if (File.Exists(testImagePath))
+            //{
+            //    _mat = Cv2.ImRead(testImagePath, ImreadModes.Color); // 이미지 파일을 Mat 객체로 로드
+            //}
+            //else
+            //{
+            //    Debug.WriteLine($"테스트 이미지 파일이 존재하지 않습니다: {testImagePath}");
+            //    return;
+            //}
+
+            //// V2Detector를 사용하여 Inference 실행
+            //detectionDataList = _v2Detector.Inference(_mat);
         }
     }
 }

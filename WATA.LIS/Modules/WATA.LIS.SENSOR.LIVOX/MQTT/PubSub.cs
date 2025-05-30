@@ -123,6 +123,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             catch (Exception ex)
             {
                 Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
+                System.Windows.Application.Current.Shutdown();
             }
         }
 
@@ -184,6 +185,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             {
                 // 예외 처리
                 Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.SystemLog);
+                System.Windows.Application.Current.Shutdown();
             }
 
             return ret;

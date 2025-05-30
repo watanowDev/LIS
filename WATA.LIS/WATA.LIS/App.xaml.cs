@@ -133,35 +133,39 @@ namespace WATA.LIS
             }
             else if (mainobj.device_type == "NXDPOC")//NXD POC 
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();// 니뽄 익스프레스 POC용도
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();
             }
-            else if (mainobj.device_type == "WIS_KINTEX")//
+            else if (mainobj.device_type == "WIS_KINTEX")//국내전시회 3x3 선반용
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();// 국내전시회 3x3 선반용
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();
             }
             else if (mainobj.device_type == "CTR")//CTR POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();//현재 지게차용  Apulse RF수신기
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();
             }
             else if (mainobj.device_type == "Singapore")//Singapore POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();//싱가포르 DHL 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();
             }
             else if (mainobj.device_type == "Clark")//Clark POC
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();//Clark 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();
             }
             else if (mainobj.device_type == "Japan")//일본 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();//일본 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();
             }
             else if (mainobj.device_type == "DHL_KOREA")//DHL KOREA 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();//DHL KOREA 시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();
             }
             else if (mainobj.device_type == "WATA")//내부 시연
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();//내부시연 버전
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();
+            }
+            else if (mainobj.device_type == "Pantos_MTV")//LX판토스 시화 MTV 서비스 코드
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_PantosMTV>();
             }
         }
 

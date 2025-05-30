@@ -24,6 +24,8 @@ namespace WATA.LIS.Core.Model.Indicator
         public float visionDepth { get; set; }
         public string points { get; set; } // pcd, point cloud data
         public string epc { get; set; }
+        public int dock { get; set; } // 16진수 -> 10진수 parsing
+        public string nation { get; set; }
 
         public bool networkStatus { get; set; } // 외부망 연결 상태
         public bool weightSensorStatus { get; set; }
@@ -32,6 +34,9 @@ namespace WATA.LIS.Core.Model.Indicator
         public bool lidar3dStatus { get; set; }
         public bool heightSensorStatus { get; set; }
         public bool rfidStatus { get; set; }
+        public bool setAllReady { get; set; } // 모든 센서 준비 완료 상태
+
+        public string errorCode { get; set; } // Error Code
 
 
 

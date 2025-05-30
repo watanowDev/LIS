@@ -263,7 +263,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             try
             {
                 string param = "mapId=" + m_mapId + "&mappingId=" + m_mappingId + "&projectId=" + m_projectId;
-                string url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?" + param;
+                string url = "https://192.168.0.20/monitoring/plane/plane-poc/plane-groups?" + param;
                 Tools.Log($"REST Get Client url: {url}", ELogType.BackEndLog);
 
                 HttpWebRequest request = WebRequest.CreateHttp(url);
@@ -314,7 +314,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             try
             {
                 string param = $"projectId={m_projectId}&mappingId={m_mappingId}&mapId={m_mapId}&vehicleId={m_vehicle}";
-                string url = $"https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?{param}";
+                string url = $"https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/init?{param}";
                 Tools.Log($"REST Get BasicInfo url: {url}", ELogType.BackEndLog);
 
                 HttpWebRequest request = WebRequest.CreateHttp(url);
@@ -1201,7 +1201,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             Thread.Sleep(10);
 
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
 
@@ -1232,7 +1232,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+                post_obj.url = "https://192.168.0.20/monitoring/plane/plane-poc/heavy-equipment/location";
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
 
@@ -1291,7 +1291,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndAction;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
 
@@ -1342,7 +1342,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndAction;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
 
@@ -1363,7 +1363,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             RestClientPostModel post_obj = new RestClientPostModel();
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndContainer;
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/container-gate-event";
             _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
         }
 

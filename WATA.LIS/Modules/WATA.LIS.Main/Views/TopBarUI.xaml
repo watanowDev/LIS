@@ -162,10 +162,18 @@
                 <Label Grid.Row="1" Content="{Binding Time}" Foreground="#FFDADADA" FontSize="10" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold"></Label>
             </Grid>
 
-            
+
             <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                    <RowDefinition Height="1.*"></RowDefinition>
+                </Grid.RowDefinitions>
                 <Label  Grid.Row="0" Grid.Column="0" Content="Ver :" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="8" Margin="0,0,0,0"/>
                 <Label  Grid.Row="0" Grid.Column="0" Content="{Binding VersionContext}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="96,0,0,0" Width="180" Height="24" FontWeight="Bold" FontSize="8"/>
+                <Label  Grid.Row="1" Grid.Column="1" Content="Nation :" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Width="96" Height="26" FontWeight="Bold" FontSize="8" Margin="0,0,0,0"/>
+                <Label  Grid.Row="1" Grid.Column="1" Content="{Binding VisionCamNationEvent}" VerticalAlignment="Top" HorizontalAlignment="Left" Foreground="#FFDADADA" Margin="96,0,0,0" Width="180" Height="24" FontWeight="Bold" FontSize="8"/>
             </Grid>
 
 

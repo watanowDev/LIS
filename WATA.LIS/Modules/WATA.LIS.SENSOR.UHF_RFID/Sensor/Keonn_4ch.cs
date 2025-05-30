@@ -116,7 +116,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                                 mDeviceID = nodeList[0].InnerText;
                                 result = true;
                                 Tools.Log($"Device ID : {mDeviceID}", Tools.ELogType.RFIDLog);
-                                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
+                                //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDRcvErr);
                             }
                         }
                     }
@@ -125,7 +125,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             catch
             {
                 Tools.Log($"Exception Connect!!!", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
             }
             return result;
         }
@@ -149,14 +149,14 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     {
                         result = true;
                         Tools.Log("RF is On", Tools.ELogType.RFIDLog);
-                        SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
+                        //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDStartErr);
                     }
                 }
             }
             catch
             {
                 Tools.Log($"Failed starting RF", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDStartErr);
             }
             return result;
         }
@@ -191,7 +191,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                             if (nodeList.Count > 0)
                             {
                                 result = nodeList[0].InnerText;
-                                SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
+                                //SysAlarm.RemoveErrorCodes(SysAlarm.RFIDConnErr);
                             }
                         }
                     }
@@ -200,7 +200,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             catch
             {
                 Tools.Log($"Exception Connect!!!", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
             }
             return result;
         }
@@ -254,7 +254,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             catch
             {
                 Tools.Log($"Failed getting RandomData", Tools.ELogType.RFIDLog);
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.RFIDRcvErr);
             }
             return result;
         }

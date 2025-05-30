@@ -316,7 +316,7 @@ namespace WATA.LIS.Core.Services
 
             string json_body = Util.ObjectToJson(ActionObj);
             RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/gate-event";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/gate-event";
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndAction;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);

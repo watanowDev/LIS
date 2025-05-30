@@ -44,6 +44,10 @@ namespace WATA.LIS.Main.ViewModels
         public string LivingTime { get { return _LivingTime; } set { SetProperty(ref _LivingTime, value); } }
 
 
+        private string _VisionCamNationEvent;
+        public string VisionCamNationEvent { get { return _VisionCamNationEvent; } set { SetProperty(ref _VisionCamNationEvent, value); } }
+
+
         private string _VisionCamQREvent;
         public string VisionCamQREvent { get { return _VisionCamQREvent; } set { SetProperty(ref _VisionCamQREvent, value); } }
 
@@ -68,6 +72,7 @@ namespace WATA.LIS.Main.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
             //_eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingNationEvent>().Subscribe(OnCurrentNationEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
@@ -82,6 +87,11 @@ namespace WATA.LIS.Main.ViewModels
             VisionCamQREvent = "None";
             VisionCamSizeEvent = "None";
             RFIDEvent = "None";
+        }
+
+        private void OnCurrentNationEvent(string obj)
+        {
+            VisionCamNationEvent = obj;
         }
 
         private void OnNavSensorEvent(NAVSensorModel model)

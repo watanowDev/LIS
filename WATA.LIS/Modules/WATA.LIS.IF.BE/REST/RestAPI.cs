@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -35,12 +36,11 @@ namespace WATA.LIS.IF.BE.REST
 
         }
 
-        public void OnClientPost_dev(RestClientPostModel Model)
+        public async void OnClientPost_dev(RestClientPostModel Model)
         {
             Tools.ELogType logtype;
             if (Model.type == eMessageType.BackEndAction)
             {
-
                 logtype = Tools.ELogType.BackEndLog;
             }
             else if (Model.type == eMessageType.BackEndCurrent)
@@ -56,58 +56,30 @@ namespace WATA.LIS.IF.BE.REST
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Model.url);
-                request.Method = "POST";
-                request.ContentType = "application/json";
-                request.Timeout = 30 * 1000;
+                HttpClientHandler handler = new HttpClientHandler();
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true;
 
-                byte[] bytes = Encoding.ASCII.GetBytes(Model.body);
-                request.ContentLength = bytes.Length; // 바이트수 지정
-                using (Stream reqStream = request.GetRequestStream())
+                using (HttpClient client = new HttpClient(handler))
                 {
-                    reqStream.Write(bytes, 0, bytes.Length);
-                }
-                using (WebResponse resp = request.GetResponse())
-                {
+                    client.Timeout = TimeSpan.FromSeconds(30);
+                    var content = new StringContent(Model.body, Encoding.ASCII, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(Model.url, content);
+                    response.EnsureSuccessStatusCode();
+                    string responseText = await response.Content.ReadAsStringAsync();
+                    _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
+                    Tools.Log($"REST Post Client Response Data : {responseText} ", logtype);
 
-                    Stream respStream = resp.GetResponseStream();
-                    using (StreamReader sr = new StreamReader(respStream))
+                    if (Model.type == eMessageType.BackEndContainer)
                     {
-                        string responseText = sr.ReadToEnd();
-                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
-                        Tools.Log($"REST Post Client Response Data : {responseText} ", logtype);
-
-                        if (Model.type == eMessageType.BackEndContainer)
-                        {
-                            ParseContainterJson(responseText);
-                        }
+                        ParseContainterJson(responseText);
                     }
-
                 }
             }
-            catch (WebException exception)
+            catch (HttpRequestException exception)
             {
                 _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(-1);
                 Tools.Log($"BE Conn Error!!! REST Post Client Response Error dev", logtype);
-
-                using (WebResponse resp = exception.Response)
-                {
-                    //var httpWebResponse = (HttpWebResponse)resp;
-                    //string characterSet = httpWebResponse.CharacterSet;
-
-                    Stream respStream = resp.GetResponseStream();
-                    using (StreamReader sr = new StreamReader(respStream))
-                    {
-                        string responseText = sr.ReadToEnd();
-                        _eventAggregator.GetEvent<BackEndStatusEvent>().Publish(1);
-                        Tools.Log($"BE Conn Error!!! REST Post Client Response Data : {responseText} ", logtype);
-
-                        if (Model.type == eMessageType.BackEndContainer)
-                        {
-                            ParseContainterJson(responseText);
-                        }
-                    }
-                }
+                Tools.Log($"Exception: {exception.Message}", logtype);
             }
         }
 

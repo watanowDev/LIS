@@ -593,7 +593,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                     if (m_Capture.IsOpened())
                     {
                         Tools.Log("VisionCam Open Success", Tools.ELogType.SystemLog);
-                        SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+                        //SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
 
                         //m_CheckConnTimer.Start();
                         m_GetImageTimer.Start();
@@ -602,7 +602,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                     else if (!m_Capture.IsOpened())
                     {
                         Tools.Log("VisionCam is not opened", Tools.ELogType.SystemLog);
-                        SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                        //SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
                         return;
                     }
                 });
@@ -610,7 +610,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             catch (Exception ex)
             {
                 Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.SystemLog);
-                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
             }
         }
 
@@ -618,7 +618,7 @@ namespace WATA.LIS.VISION.CAM.Camera
         {
             if (!m_Capture.IsOpened())
             {
-                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
                 Tools.Log("VisionCam is disconnected", Tools.ELogType.SystemLog);
 
                 try
@@ -634,18 +634,18 @@ namespace WATA.LIS.VISION.CAM.Camera
                     }
 
                     Tools.Log("VisionCam Open again", Tools.ELogType.SystemLog);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
                 }
                 catch (Exception ex)
                 {
                     Tools.Log($"VisionCam Open Error : {ex.Message}", Tools.ELogType.SystemLog);
-                    SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                    //SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
                 }
             }
             else
             {
                 Tools.Log("VisionCam is alive", Tools.ELogType.SystemLog);
-                SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
+                //SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
             }
         }
 

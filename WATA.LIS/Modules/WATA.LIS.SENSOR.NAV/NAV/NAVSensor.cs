@@ -87,6 +87,13 @@ namespace WATA.LIS.SENSOR.NAV
 
         public void Main()
         {
+            // [NAV FREEZE CHECK] 이전 NAV 값과 변화 없는 횟수 저장 변수 추가
+            long prevNavX = Globals.nav_x;
+            long prevNavY = Globals.nav_y;
+            long prevNavT = Globals.nav_phi;
+            int navFreezeCount = 0;
+            const int navFreezeThreshold = 30; // 100ms * 30 = 3초
+
             while (true)
             {
                 if (nav350_socket_open == true)
@@ -130,15 +137,44 @@ namespace WATA.LIS.SENSOR.NAV
                             nav350RcvThread.Start();
                         }
 
-                        if(nav350TransThread.IsAlive && nav350RcvThread.IsAlive)
+                        if (nav350TransThread.IsAlive && nav350RcvThread.IsAlive)
                         {
                             NAVSensorModel navSensorModel = new NAVSensorModel();
                             navSensorModel.naviX = Globals.nav_x;
                             navSensorModel.naviY = Globals.nav_y;
                             navSensorModel.naviT = Globals.nav_phi;
+
+                            //navSensorModel.naviX = Globals.nav_y;
+                            //navSensorModel.naviY = Globals.nav_x * -1;
+                            //long adjustedT = Globals.nav_phi - 1800;
+                            //adjustedT = -adjustedT;
+                            //long normalizedT = (adjustedT + 3600) % 3600;
+                            //navSensorModel.naviT = normalizedT;
+
                             navSensorModel.result = navMode;
                             //ZoneID Send
                             _eventAggregator.GetEvent<NAVSensorEvent>().Publish(navSensorModel);
+                        }
+
+                        // [NAV FREEZE CHECK] NAV 값이 변하지 않으면 카운트 증가, 변하면 리셋
+                        if (Globals.nav_x == prevNavX && Globals.nav_y == prevNavY && Globals.nav_phi == prevNavT)
+                        {
+                            navFreezeCount++;
+                        }
+                        else
+                        {
+                            navFreezeCount = 0;
+                            prevNavX = Globals.nav_x;
+                            prevNavY = Globals.nav_y;
+                            prevNavT = Globals.nav_phi;
+                        }
+
+                        // [NAV FREEZE CHECK] 일정 횟수 이상 변화 없으면 프로그램 셧다운
+                        if (navFreezeCount >= navFreezeThreshold)
+                        {
+                            Tools.Log("NAV SENSOR FREEZE DETECTED. PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
+                            System.Windows.Application.Current.Shutdown();
+                            return;
                         }
                     }
                 }
@@ -151,12 +187,10 @@ namespace WATA.LIS.SENSOR.NAV
                         nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
                         nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
                     }
-
                 }
                 Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.NAVLog);
                 Thread.Sleep(100);
             }
-
         }
 
         public static bool NAV_SockConn(string IP, string PORT)

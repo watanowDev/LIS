@@ -28,8 +28,8 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
         private DispatcherTimer _receiveTimer;
         private HttpClient _httpClient;
-        private readonly string _apiUrlStatus = "http://192.168.0.1/iolink/v1/openapi";
-        private readonly string _apiUrlData = "http://192.168.0.1/iolink/v1/devices/master1port1/processdata/value";
+        private readonly string _apiUrlStatus = "http://192.168.10.1/iolink/v1/openapi";
+        private readonly string _apiUrlData = "http://192.168.10.1/iolink/v1/devices/master1port1/processdata/value";
 
         public SICK_LONG(IEventAggregator eventAggregator, IDistanceModel distancemodel)
         {
@@ -81,8 +81,8 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                 var jsonData = JsonConvert.DeserializeObject<dynamic>(data);
                 byte[] valueArray = jsonData.getData.iolink.value.ToObject<byte[]>();
 
-                // 뒤의 2자리 값이 252, 0일 때만 처리
-                if (valueArray.Length >= 6 && valueArray[4] == 252 && valueArray[5] == 0)
+                // 뒤의 2번째 자리 값이 252때만 처리
+                if (valueArray.Length >= 6 && valueArray[4] == 252)
                 {
                     // 앞 4자리 값을 16진수로 변환하여 붙인 후 10진수로 변환
                     string hexValue = string.Join("", valueArray.Take(4).Select(v => v.ToString("X2")));

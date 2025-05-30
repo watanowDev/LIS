@@ -69,14 +69,14 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
                     _port.Open();
                     _port.Handshake = Handshake.None;
                     Tools.Log($"Init Success", Tools.ELogType.DistanceLog);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
                 }
             }
             catch
             {
                 _port = null;
                 Tools.Log($"Serial Port Exception !!!", Tools.ELogType.DistanceLog);
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
             }
         }
 
@@ -95,7 +95,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         {
             if (_port == null || _port.IsOpen == false)
             {
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
                 return;
             }
 
@@ -109,13 +109,13 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
 
                     LogRawData(buffer);
                     AverageData(buffer, bytesize);
-                    SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
+                    //SysAlarm.RemoveErrorCodes(SysAlarm.DistanceConnErr);
                 }
             }
             catch
             {
                 Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.DistanceLog);
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                //SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
             }
         }
 

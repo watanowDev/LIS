@@ -124,7 +124,7 @@ namespace WATA.LIS.Core.Services
 
                 string json_body = Util.ObjectToJson(location_obj);
                 RestClientPostModel post_obj = new RestClientPostModel();
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
+                post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndCurrent;
                 _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
@@ -144,7 +144,7 @@ namespace WATA.LIS.Core.Services
             alive_obj.alive.errorCode = m_errorcode;
             string json_body = Util.ObjectToJson(alive_obj);
             RestClientPostModel post_obj = new RestClientPostModel();
-            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
+            post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/alive";
             post_obj.body = json_body;
             post_obj.type = eMessageType.BackEndCurrent;
             _eventAggregator.GetEvent<RestClientPostEvent>().Publish(post_obj);
@@ -646,7 +646,7 @@ namespace WATA.LIS.Core.Services
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
 
@@ -747,7 +747,7 @@ namespace WATA.LIS.Core.Services
 
                 string json_body = Util.ObjectToJson(ActionObj);
                 RestClientPostModel post_obj = new RestClientPostModel();
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
+                post_obj.url = "https://192.168.0.20/monitoring/geofence/addition-info/logistics/heavy-equipment/action";
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
                 Tools.Log($"##rftag epc  : {epc_data}", Tools.ELogType.BackEndLog);

@@ -7,6 +7,9 @@ using WATA.LIS.VISION.CAM.Views;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.VISION.CAM.Camera;
+using OpenCvSharp;
+using System.IO;
+using System;
 
 namespace WATA.LIS.VISION.CAM
 {
@@ -14,6 +17,8 @@ namespace WATA.LIS.VISION.CAM
     {
         private readonly IEventAggregator _eventAggregator;
         private readonly IVisionCamModel _visioncammodel;
+
+        //V2Detector v2detector;
 
         public CAMModule(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
@@ -24,6 +29,8 @@ namespace WATA.LIS.VISION.CAM
 
             if (visioncam_config.vision_enable == 0)
             {
+                //v2detector = new V2Detector();
+                //DoV2Detector();
                 return;
             }
 
@@ -47,6 +54,9 @@ namespace WATA.LIS.VISION.CAM
                 Luxonis visioncam = new Luxonis(_eventAggregator, _visioncammodel);
                 visioncam.Init();
             }
+
+            //v2detector = new V2Detector();
+            //DoV2Detector();
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
@@ -57,6 +67,31 @@ namespace WATA.LIS.VISION.CAM
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<CamView>(RegionNames.Content_VisionCam);
+        }
+
+        private void DoV2Detector()
+        {
+            //// NationTest.jpg 파일 절대 경로
+            //string imagePath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\NationTest.jpg";
+
+            //// 파일 존재 여부 확인
+            //if (!File.Exists(imagePath))
+            //{
+            //    throw new FileNotFoundException($"파일을 찾을 수 없습니다: {imagePath}");
+            //}
+
+            //// OpenCvSharp Mat 형식으로 이미지 로드
+            //Mat image = Cv2.ImRead(imagePath, ImreadModes.Color);
+
+            //// 이미지가 성공적으로 로드되었는지 확인
+            //if (image.Empty())
+            //{
+            //    throw new Exception("이미지를 로드하는 데 실패했습니다.");
+            //}
+
+            //// 이후 image 객체를 사용하여 추가 작업 수행 가능
+
+            //v2detector.Inference(image);
         }
     }
 }

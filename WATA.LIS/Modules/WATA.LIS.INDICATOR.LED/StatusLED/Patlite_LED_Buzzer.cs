@@ -49,7 +49,7 @@ namespace WATA.LIS.INDICATOR.LED.StatusLED
             }
           
             NeUsbController.NeUsbController.NE_SetLight(NeUsbController.LEDColors.Green, NeUsbController.LEDPatterns.Continuous);
-            NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern6, m_volume, 1);
+            //NeUsbController.NeUsbController.NE_SetBuz(NeUsbController.BuzzerPatterns.Pattern6, m_volume, 1);
         }
 
 
