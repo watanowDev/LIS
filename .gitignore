@@ -132,3 +132,4 @@
 /WATA.LIS/Modules/WATA.LIS.INDICATOR.LED/bin/Debug/net6.0-windows10.0.18362.0
 /WATA.LIS/Modules/WATA.LIS.INDICATOR.LED/obj
 /WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0/LOG/OrbbecSDK.log.txt
+*.onnx
