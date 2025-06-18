@@ -1817,7 +1817,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (status.Contains("invalid_place"))
             {
-                if (m_errCnt_invalid_place % 3 == 0 && (m_set_load == true || m_set_unload == true))
+                //if (m_errCnt_invalid_place % 3 == 0 && (m_set_load == true || m_set_unload == true))
+                if (m_errCnt_invalid_place % 3 == 0)
                 {
                     Pattlite_Buzzer_LED(ePlayBuzzerLed.INVALID_PLACE);
 
