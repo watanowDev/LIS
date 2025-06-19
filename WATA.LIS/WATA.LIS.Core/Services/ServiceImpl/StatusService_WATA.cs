@@ -2365,7 +2365,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 string query = $"?projectId={m_mainConfigModel.projectId}&mappingId={m_mainConfigModel.mappingId}&mapId={m_mainConfigModel.mapId}&productId={productId}";
-                string url = $"https://dev-lms-api.watalbs.com/monitoring/app/geofence/addition-info/logistics/lot/inventory-info{query}";
+                string url = $"https://dev-lms-api.watalbs.com/monitoring/app/geofence/addition-info/logistics/lot/get-inventory-info{query}";
 
                 // SSL 인증서 검증을 무시하도록 설정
                 ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
@@ -2383,8 +2383,23 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         string responseBody = sr.ReadToEnd();
                         JObject json = JObject.Parse(responseBody);
 
-                        // "data" 값을 result에 담음
-                        result = json["data"]?.Value<bool>() ?? false;
+                        var data = json["data"];
+                        float weight = 0, width = 0, height = 0, depth = 0;
+
+                        bool hasWeight = float.TryParse(data?["productWeight"]?.ToString(), out weight);
+                        bool hasWidth = float.TryParse(data?["productWidth"]?.ToString(), out width);
+                        bool hasHeight = float.TryParse(data?["productHeight"]?.ToString(), out height);
+                        bool hasDepth = float.TryParse(data?["productDepth"]?.ToString(), out depth);
+
+                        // 값이 하나라도 있으면 true
+                        if (hasWeight || hasWidth || hasHeight || hasDepth)
+                        {
+                            result = true;
+                            m_event_weight = (int)weight;
+                            m_event_width = width;
+                            m_event_height = height;
+                            m_event_length = depth;
+                        }
                     }
                 }
                 Tools.Log($"Is Logistic Data : {result}", ELogType.ActionLog);
@@ -2512,28 +2527,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     FinishMeasuringBuzzer();
                     CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
-                    m_event_weight = -1;
-                    m_event_width = -1; m_event_height = -1; m_event_length = -1;
+                    //m_event_weight = -1;
+                    //m_event_width = -1; m_event_height = -1; m_event_length = -1;
                     m_event_points = "";
 
                     PickUpEvent();
                 }
                 // 재측정 명령이 없더라도, 상차, 하차 지시 있는 경우 측정 건너뜀.
                 //else if ((m_set_load == true || m_set_load == true) && m_set_measure == false)
-                else if (m_set_measure == false)
-                {
-                    m_pickupStatus = true;
+                //else if (m_set_measure == false)
+                //{
+                //    m_pickupStatus = true;
 
-                    // 측정 완료 부저
-                    FinishMeasuringBuzzer();
-                    CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
+                //    // 측정 완료 부저
+                //    FinishMeasuringBuzzer();
+                //    CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
-                    m_event_weight = -1;
-                    m_event_width = -1; m_event_height = -1; m_event_length = -1;
-                    m_event_points = "";
+                //    //m_event_weight = -1;
+                //    //m_event_width = -1; m_event_height = -1; m_event_length = -1;
+                //    m_event_points = "";
 
-                    PickUpEvent();
-                }
+                //    PickUpEvent();
+                //}
                 // 재측정 명령 있거나, 물류 정보가 없을 경우 측정 시작
                 else
                 {
