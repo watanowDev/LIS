@@ -2395,6 +2395,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                         if (hasWeight || hasWidth || hasHeight || hasDepth)
                         {
                             result = true;
+                            m_event_QRcode = productId;
                             m_event_weight = (int)weight;
                             m_event_width = width;
                             m_event_height = height;
