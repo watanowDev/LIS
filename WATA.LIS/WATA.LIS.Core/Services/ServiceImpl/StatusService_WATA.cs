@@ -1231,7 +1231,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private void MonitoringVisonQRTimerEvent(object sender, EventArgs e)
         {
             // 픽업 전 wata 헤더 포함된 QR 인식한 상태
-            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_pickupStatus == false && m_event_weight < 10)
+            //if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_pickupStatus == false && m_event_weight < 10)
+            if (m_curr_QRcode.Contains("wata") && m_Command != 1 && m_event_weight < 10)
             {
                 m_Command = -1;
                 m_event_QRcode = m_curr_QRcode;
@@ -1711,6 +1712,28 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return bf;
         }
 
+        private bool CheckIsMoving(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
+        {
+            if (list == null || list.Count < 3)
+                return false; // 데이터 부족 시 정지로 간주
+
+            // 마지막 3개 NAVSensorModel 추출
+            var recentList = list.Skip(Math.Max(0, list.Count - 3)).ToList();
+
+            double sum = 0;
+            foreach (var nav in recentList)
+            {
+                double dx = nav.naviX - naviX;
+                double dy = nav.naviY - naviY;
+                double dist = Math.Sqrt(dx * dx + dy * dy);
+                sum += dist;
+            }
+            double avg = sum / recentList.Count;
+
+            // 평균 거리 10 미만이면 정지(0), 아니면 기동(1)
+            return avg >= 10;
+        }
+
 
         /// <summary>
         /// LiDAR 3D
@@ -2004,7 +2027,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.t = (int)m_navModel.naviT;
                 prodDataModel.rotate = CheckIsForward(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list);
                 prodDataModel.height = m_curr_distance;
-                prodDataModel.move = 1; // Stop : 0, Move : 1
+                prodDataModel.move = CheckIsMoving(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list) ? 1 : 0; // 0:Stop, 1:Moving 
                 prodDataModel.load = m_pickupStatus ? 1 : 0; // UnLoad : 0, Load : 1
                 prodDataModel.action = m_pickupStatus ? "pickup" : "drop";
                 prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
@@ -2689,6 +2712,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_ActionZoneId = "";
             m_ActionZoneName = "";
             m_event_weight = 0;
+            m_event_width = 0;
+            m_event_height = 0;
+            m_event_length = 0;
             m_logisData = false;
             m_get_weightCnt = 0;
 
