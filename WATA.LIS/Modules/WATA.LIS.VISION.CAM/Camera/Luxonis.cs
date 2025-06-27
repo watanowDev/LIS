@@ -1,24 +1,25 @@
-﻿using OpenCvSharp;
-using Prism.Events;
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using WATA.LIS.Core.Interfaces;
-using WATA.LIS.Core.Model.SystemConfig;
-using NetMQ;
+﻿using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
-using WATA.LIS.Core.Events.VisionCam;
-using WATA.LIS.Core.Model.VisionCam;
-using System.Diagnostics;
-using System.Collections.Generic;
-using WATA.LIS.Core.Common;
-using static WATA.LIS.Core.Common.Tools;
-using System.Security.Policy;
+using OpenCvSharp;
+using Prism.Events;
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Policy;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Threading;
+using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.VisionCam;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Model.VisionCam;
+using WATA.LIS.VISION.CAM.MQTT;
+using static WATA.LIS.Core.Common.Tools;
 //using Emgu.CV;
 
 namespace WATA.LIS.VISION.CAM.Camera
@@ -67,9 +68,9 @@ namespace WATA.LIS.VISION.CAM.Camera
         private Dictionary<string, double> depthValues = new Dictionary<string, double>();
 
         // 국가라벨 검출 관련
-        //V2Detector _v2Detector = new V2Detector();
-        List<V2DetectionModel> detectionDataList = new List<V2DetectionModel>();
-        private DispatcherTimer m_receiveObjectsTimer;
+        //V2Detector _v2Detector;
+        //List<V2DetectionModel> detectionDataList = new List<V2DetectionModel>();
+        //private DispatcherTimer m_receiveObjectsTimer;
 
         private ConcurrentQueue<(byte[] FrameData, string Metadata)> rgbFrameQueue = new ConcurrentQueue<(byte[], string)>();
         private ConcurrentQueue<(byte[] FrameData, string Metadata)> depthFrameQueue = new ConcurrentQueue<(byte[], string)>();
@@ -156,7 +157,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             }
             catch
             {
-                m_receiveObjectsTimer.Stop();
+                //m_receiveObjectsTimer.Stop();
                 System.Windows.Application.Current.Shutdown();
             }
         }
@@ -244,7 +245,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             // 이벤트 데이터 객체 생성
             VisionCamModel eventModels = new VisionCamModel();
             eventModels.QR = qr;
-            eventModels.Objects = detectionDataList;
+            //eventModels.Objects = detectionDataList;
             eventModels.FRAME = frameData;
             eventModels.connected = true;
             if (depthValues.TryGetValue("BR", out double brDepth)) eventModels.BR_DEPTH = brDepth;

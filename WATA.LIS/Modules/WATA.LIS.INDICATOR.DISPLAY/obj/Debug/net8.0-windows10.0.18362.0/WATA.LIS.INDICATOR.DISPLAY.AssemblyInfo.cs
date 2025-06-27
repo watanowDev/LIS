@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.INDICATOR.DISPLAY")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5c90922f647511c46fa6f9b1c92007f91f27c3c3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f8b67ecf89cf2d9d63e20ec60261c8444b45193b")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.INDICATOR.DISPLAY")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.INDICATOR.DISPLAY")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

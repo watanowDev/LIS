@@ -21,7 +21,7 @@
     "pick_up_distance_threshold": 450
   },
   "weight_sensor": {
-    "weight_enable": 1,
+    "weight_enable": 0,
     "comport": "COM3",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
@@ -52,7 +52,7 @@
     "Type": "NAV", //NAV, VisionPos
     "IP": "192.168.10.200",
     "PORT": 2111,
-    "AdjustingPickdrop": 3300, //3100
+    "AdjustingPickdrop": 3100, //3100
     "AdjustingPosition": 2200 //1800
   },
   "LIVOX": {
@@ -67,7 +67,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 1,
+    "display_enable": 0,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

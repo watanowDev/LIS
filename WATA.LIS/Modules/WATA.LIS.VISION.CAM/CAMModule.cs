@@ -10,6 +10,7 @@ using WATA.LIS.VISION.CAM.Camera;
 using OpenCvSharp;
 using System.IO;
 using System;
+using WATA.LIS.VISION.CAM.MQTT;
 
 namespace WATA.LIS.VISION.CAM
 {
@@ -53,6 +54,8 @@ namespace WATA.LIS.VISION.CAM
             {
                 Luxonis visioncam = new Luxonis(_eventAggregator, _visioncammodel);
                 visioncam.Init();
+
+                DetectionRcv detectionRcv = new DetectionRcv(_eventAggregator);
             }
 
             //v2detector = new V2Detector();

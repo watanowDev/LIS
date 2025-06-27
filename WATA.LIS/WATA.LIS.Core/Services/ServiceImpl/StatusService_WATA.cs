@@ -1118,51 +1118,51 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            //// 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
-            //if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
-            //{
-            //    // ClassId 매핑
-            //    var classIdMapping = new Dictionary<int, string>
-            //        {
-            //            { 3, "3" }, // 검은색, 중국 청도
-            //            { 4, "4" }, // 흰색, 중국 무석
-            //            { 5, "5" }, // 초록색, 멕시코
-            //            { 6, "6" }  // 노란색, 인도
-            //        };
+            // 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
+            if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
+            {
+                // ClassId 매핑
+                var classIdMapping = new Dictionary<int, string>
+                    {
+                        { 3, "3" }, // 검은색, 중국 청도
+                        { 4, "4" }, // 흰색, 중국 무석
+                        { 5, "5" }, // 초록색, 멕시코
+                        { 6, "6" }  // 노란색, 인도
+                    };
 
-            //    // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
-            //    float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
-            //    float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
+                // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
+                float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
+                float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
 
-            //    // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
-            //    var filteredObjects = m_visionModel.Objects
-            //        .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
-            //        .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
-            //        .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
-            //        .ToList();
+                // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
+                var filteredObjects = m_visionModel.Objects
+                    .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
+                    .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
+                    .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
+                    .ToList();
 
-            //    // ClassId 4 우선 처리
-            //    var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
-            //    if (class4Object != null)
-            //    {
-            //        m_curr_NationCode = classIdMapping[class4Object.ClassId];
-            //    }
-            //    else
-            //    {
-            //        // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
-            //        var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
-            //        if (class3Object != null)
-            //        {
-            //            m_curr_NationCode = classIdMapping[class3Object.ClassId];
-            //        }
-            //        else
-            //        {
-            //            // 다른 ClassId 처리
-            //            var highestConfidenceObject = filteredObjects.FirstOrDefault();
-            //            m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
-            //        }
-            //    }
-            //}
+                // ClassId 4 우선 처리
+                var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
+                if (class4Object != null)
+                {
+                    m_curr_NationCode = classIdMapping[class4Object.ClassId];
+                }
+                else
+                {
+                    // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
+                    var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
+                    if (class3Object != null)
+                    {
+                        m_curr_NationCode = classIdMapping[class3Object.ClassId];
+                    }
+                    else
+                    {
+                        // 다른 ClassId 처리
+                        var highestConfidenceObject = filteredObjects.FirstOrDefault();
+                        m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
+                    }
+                }
+            }
 
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
@@ -1184,7 +1184,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_visionPickupCnt++;
             }
             // 충분하지 못한 수의 ROI에서 Threshold 값 미만이고, 중량값이 인식되지 않는 경우 드롭으로 판단
-            //else if (closeCnt <= 1 && m_weightModel.GrossWeight < 10)
             else
             {
                 m_visionDropCnt++;
@@ -2219,7 +2218,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             // 픽업 때 QR코드 미인식 시 드롭 때 한번 더 인식 시도 후 전송
             if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
-            else if (m_curr_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_curr_QRcode.Replace("wata", string.Empty);
+            //else if (m_curr_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_curr_QRcode.Replace("wata", string.Empty);
             //ActionObj.actionInfo.shelf = false;
             //if (m_event_epc.Contains("DA"))
             //{
