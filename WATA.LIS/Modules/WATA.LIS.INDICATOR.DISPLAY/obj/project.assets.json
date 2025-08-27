@@ -2042,7 +2042,7 @@
       "projectName": "WATA.LIS.INDICATOR.DISPLAY",
       "projectPath": "C:\\Users\\USER\\Source\\Repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.INDICATOR.DISPLAY\\WATA.LIS.INDICATOR.DISPLAY.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\USER\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.INDICATOR.DISPLAY\\obj\\",
+      "outputPath": "C:\\Users\\USER\\Source\\Repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.INDICATOR.DISPLAY\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2123,7 +2123,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

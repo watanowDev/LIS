@@ -344,11 +344,11 @@ rear_distance = 0
 
 # Define ROIs
 fork_rois = {
-    "TR": (735, 550+50, 10, 10),  # Top Right
-    "TL": (540+15, 550+50, 10, 10),  # Top Left
-    "MR": (750-10, 620+20, 10, 10),  # Middle Right
-    "ML": (520+20, 620+20, 10, 10),  # Middle Left
-    "BR": (765-15, 700-10, 10, 10),  # Bottom Right
+    "TR": (735-10, 550+10, 10, 10),  # Top Right
+    "TL": (540+15, 550+10, 10, 10),  # Top Left
+    "MR": (750-20, 620, 10, 10),  # Middle Right
+    "ML": (520+20, 620, 10, 10),  # Middle Left
+    "BR": (765-25, 700-10, 10, 10),  # Bottom Right
     "BL": (500+25, 700-10, 10, 10)   # Bottom Left
 }
 front_rois = {

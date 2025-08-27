@@ -146,18 +146,42 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
                     }
                 }
 
-                // Amplify the ant1 ReadCount value
-                foreach (TagReadData tag in filteredTags)
+                //// Amplify the ant1 ReadCount value
+                //foreach (TagReadData tag in filteredTags)
+                //{
+                //    if (tag.Antenna == 1)
+                //    {
+                //        tag.ReadCount *= 2;
+                //    }
+                //}
+
+                // 필터링된 태그가 2개 이상일 때만 동점 처리 로직 실행
+                if (filteredTags.Count > 1)
                 {
-                    if (tag.Antenna == 1)
+                    // 1. RSSI 기준으로 내림차순 정렬
+                    var sortedByRssi = filteredTags.OrderByDescending(t => t.Rssi).ToList();
+                    var maxRssi = sortedByRssi.First().Rssi;
+
+                    // 2. 가장 높은 RSSI 값을 가진 태그들만 추출
+                    var topRssiTags = sortedByRssi.TakeWhile(t => t.Rssi == maxRssi).ToList();
+
+                    // 3. 최상위 RSSI 그룹 내에서 ReadCount가 동점인지 확인
+                    if (topRssiTags.Count > 1)
                     {
-                        tag.ReadCount *= 2;
+                        var maxReadCount = topRssiTags.Max(t => t.ReadCount);
+                        var countOfTies = topRssiTags.Count(t => t.ReadCount == maxReadCount);
+
+                        if (countOfTies > 1)
+                        {
+                            Tools.Log($"[DataRecive] Tie detected for highest RSSI and ReadCount. Skipping.", Tools.ELogType.SystemLog);
+                            return; // RSSI와 ReadCount 모두 동점이면 발행 중단
+                        }
                     }
                 }
 
-                // Sort filteredTags by ReadCount in descending order, then by RSSI in descending order
-                filteredTags = filteredTags.OrderByDescending(tag => tag.ReadCount)
-                                           .ThenByDescending(tag => tag.Rssi)
+                // Sort by RSSI (desc), then by ReadCount (desc)
+                filteredTags = filteredTags.OrderByDescending(tag => tag.Rssi)
+                                           .ThenByDescending(tag => tag.ReadCount)
                                            .ToList();
 
                 PubTagData(filteredTags);

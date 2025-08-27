@@ -10,7 +10,7 @@
   "led_buzzer": {
     "led_enable": 1,
     "OnlySpeark": 1,
-    "volume": 1,
+    "volume": 10,
     "lamp_IP": "172.30.1.151",
     "InfoLanguage": "KR" //KR, JP, EN
   },
@@ -18,10 +18,10 @@
     "distance_enable": 1,
     "model_name": "SICK_SHORT", //Terrabee, TF_Mini, SICK_LONG, SICK_SHORT
     "comport": "COM3",
-    "pick_up_distance_threshold": 450
+    "pick_up_distance_threshold": 240
   },
   "weight_sensor": {
-    "weight_enable": 0,
+    "weight_enable": 1,
     "comport": "COM3",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
@@ -53,7 +53,7 @@
     "IP": "192.168.10.200",
     "PORT": 2111,
     "AdjustingPickdrop": 3100, //3100
-    "AdjustingPosition": 2200 //1800
+    "AdjustingPosition": 1900 //1800
   },
   "LIVOX": {
     "LIVOX_Enable": 1
@@ -67,7 +67,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

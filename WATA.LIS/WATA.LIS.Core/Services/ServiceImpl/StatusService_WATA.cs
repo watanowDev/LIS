@@ -166,6 +166,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         DispatcherTimer m_MonitoringQR_Timer;
         DispatcherTimer m_MonitoringEPC_Timer;
         DispatcherTimer m_MonitoringPickup_Timer;
+        DispatcherTimer m_pickupConfirmTimer; // 10초 픽업 확인 타이머
         Stopwatch m_stopwatchWeight = new Stopwatch();
         //Stopwatch m_stopwatchPickDrop = new Stopwatch();
         const int m_timeoutPickDrop = 5000;
@@ -1076,7 +1077,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             // Clear EPC Code
-            if (m_no_epcCnt > 30)
+            if (m_no_epcCnt > 40)
             {
                 m_event_epc = "";
                 m_errCnt_invalid_place_noQR = 0;
@@ -1930,6 +1931,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_indicatorModel.forklift_status.visionWidth = m_event_width;
             m_indicatorModel.forklift_status.visionHeight = m_event_height;
             m_indicatorModel.forklift_status.visionDepth = m_event_length;
+            m_indicatorModel.forklift_status.height = m_curr_distance;
             m_indicatorModel.forklift_status.points = "";
             m_indicatorModel.forklift_status.dock = m_event_dock;
             m_indicatorModel.forklift_status.nation = m_event_NationCode;
@@ -2074,7 +2076,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.action = "pickup";
             ActionObj.actionInfo.loadRate = m_event_weight.ToString();
             ActionObj.actionInfo.loadWeight = m_event_weight;
-            if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
+            //if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
+            ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             //if (m_event_epc.Contains("DA"))
             //{
             //    ActionObj.actionInfo.shelf = true;
@@ -2217,7 +2220,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             ActionObj.actionInfo.loadWeight = m_event_weight;
             //if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             // 픽업 때 QR코드 미인식 시 드롭 때 한번 더 인식 시도 후 전송
-            if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
+            //if (m_event_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
+            ActionObj.actionInfo.loadId = m_event_QRcode.Replace("wata", string.Empty);
             //else if (m_curr_QRcode.Contains("wata")) ActionObj.actionInfo.loadId = m_curr_QRcode.Replace("wata", string.Empty);
             //ActionObj.actionInfo.shelf = false;
             //if (m_event_epc.Contains("DA"))
@@ -2335,7 +2339,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // 전송 후 값 초기화
             m_weight_list = new List<WeightSensorModel>();
             m_event_weight = 0;
-            m_event_epc = "";
+            //m_event_epc = "";
             m_ActionZoneId = "";
             m_ActionZoneName = "";
         }
@@ -2458,8 +2462,14 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
-                // Vision Pickup 카운트의 누적값에 의한 상태 변경
-                if (m_visionPickupCnt > 3 && m_pickupStatus == false && m_isWeightPickup == false)
+                // Vision Pickup 카운트의 누적값에 의한 상태 변경(하이랙은 EPC 데이터 취득 안정성을 위해 30회 이상, 일반 6회 이상)
+                if (m_visionPickupCnt > 30 && m_pickupStatus == false && m_isWeightPickup == false)
+                {
+                    m_isVisionPickUp = true;
+                    m_visionPickupCnt = 0;
+                    m_visionDropCnt = 0;
+                }
+                else if (m_visionPickupCnt > 15 && m_pickupStatus == false && m_isWeightPickup == false && m_curr_distance < 1200)
                 {
                     m_isVisionPickUp = true;
                     m_visionPickupCnt = 0;
@@ -2477,7 +2487,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 if (m_isVisionPickUp == true && m_pickupStatus == false)
                 {
                     m_visionPickupTime++;
-                    if (m_visionPickupTime > 300)
+                    if (m_visionPickupTime > 100)
                     {
                         m_isVisionPickUp = false;
                         m_visionPickupTime = 0;
@@ -2577,21 +2587,22 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 {
                     if (m_guideMeasuringStart == false)
                     {
-                        // 측정 시작 부저. 
-                        StartMaesuringBuzzer();
                         CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
                         // 타임아웃 안에 안정된 부피값 취득. 실패 시 다음 프로세스 진행.
                         if (m_event_epc.Contains("DA"))
                         {
                             // 부피측정 제외하지만 완료 부저 강제로 울림
-                            Thread.Sleep(500);
+                            //Thread.Sleep(500);
                             FinishMeasuringSize();
                             m_event_width = -1; m_event_height = -1; m_event_length = -1;
                             m_event_points = "";
+                            m_guideMeasuringStart = true;
                         }
                         else
                         {
+                            // 측정 시작 부저. 
+                            StartMaesuringBuzzer();
                             _eventAggregator.GetEvent<CallDataEvent>().Publish();
                         }
                     }
@@ -2668,7 +2679,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 //if (m_weightModel.GrossWeight > 10) return;
 
-                Tools.Log($"Drop Event!!!", ELogType.ActionLog);
+                //Tools.Log($"Drop Event!!!", ELogType.ActionLog);
             }
             catch (Exception ex)
             {
@@ -2716,6 +2727,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_event_length = 0;
             m_logisData = false;
             m_get_weightCnt = 0;
+            m_visionPickupTime = 0;
 
             m_guideMeasuringStart = false;
         }

@@ -22,6 +22,7 @@ namespace WATA.LIS.Core.Model.Indicator
         public float visionHeight { get; set; }
         public float visionWidth { get; set; }
         public float visionDepth { get; set; }
+        public int height { get; set; }
         public string points { get; set; } // pcd, point cloud data
         public string epc { get; set; }
         public int dock { get; set; } // 16진수 -> 10진수 parsing
