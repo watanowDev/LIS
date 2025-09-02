@@ -1289,7 +1289,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // Threshold 값 미만인 값의 개수
             int closeCnt = depthValues.Count(value => value < 700 && value >= 0);
 
-            // Threshold 값 미만인 값의 개수가 4개 이상이면 픽업으로 판단
+            // Threshold 값 미만인 개수가 4개 이상이면 픽업으로 판단
             if (closeCnt >= 4)
             {
                 m_visionPickupCnt++;
@@ -2213,7 +2213,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.body = json_body;
-                post_obj.type = eMessageType.BackEndAction;
+                // 이 포스트는 주기적 위치/상태 보고이므로 DB action_event에 기록하지 않도록 타입을 BackEndCurrent로 설정
+                post_obj.type = eMessageType.BackEndCurrent;
                 post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
@@ -2713,6 +2714,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     //Tools.Log($"Detected Person", ELogType.SystemLog);
                     //return;
                 }
+
+                if (m_navModel == null) return;
+
+                if (m_navModel.naviX == 0 && m_navModel.naviY == 0) return;
 
                 if (m_pickupStatus == true) return;
 

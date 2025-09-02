@@ -36,89 +36,142 @@ namespace WATA.LIS.Core.Parser
             {
                 string path = System.IO.Directory.GetCurrentDirectory() + "\\SystemConfig\\SystemConfig.json";
                 using (StreamReader file = File.OpenText(path))
+                using (JsonTextReader reader = new JsonTextReader(file))
                 {
-                    using (JsonTextReader reader = new JsonTextReader(file))
+                    // Allow comments and be lenient
+                    var loadSettings = new JsonLoadSettings
                     {
-                        JObject json = (JObject)JToken.ReadFrom(reader);
+                        CommentHandling = CommentHandling.Ignore,
+                        LineInfoHandling = LineInfoHandling.Load
+                    };
+                    JObject json = (JObject)JToken.ReadFrom(reader, loadSettings);
 
-
-                        main.device_type = json["main"]["device_type"].ToString();
-                        main.projectId = json["main"]["projectId"].ToString();
-                        main.mappingId = json["main"]["mappingId"].ToString();
-                        main.mapId = json["main"]["mapId"].ToString();
-                        main.vehicleId = json["main"]["vehicleId"].ToString();
-
-
-                        distance.distance_enable = (int)json["distance_sensor"]["distance_enable"];
-                        distance.model_name = json["distance_sensor"]["model_name"].ToString();
-                        distance.ComPort = json["distance_sensor"]["comport"].ToString();
-                        distance.pick_up_distance_threshold = (int)json["distance_sensor"]["pick_up_distance_threshold"];
-
-
-                        LedBuzzer.led_enable = (int)json["led_buzzer"]["led_enable"];
-                        LedBuzzer.OnlySpeark = (int)json["led_buzzer"]["OnlySpeark"];
-                        LedBuzzer.volume = (int)json["led_buzzer"]["volume"];
-                        LedBuzzer.lamp_IP = json["led_buzzer"]["lamp_IP"].ToString();
-                        LedBuzzer.InfoLanguage = json["led_buzzer"]["InfoLanguage"].ToString();
-
-
-                        weight.weight_enable = (int)json["weight_sensor"]["weight_enable"];
-                        weight.ComPort = json["weight_sensor"]["comport"].ToString();
-                        weight.loadweight_timeout = (int)json["weight_sensor"]["loadweight_timeout"];
-                        weight.sensor_value = json["weight_sensor"]["sensor_value"].ToString();
-
-
-                        rfid.rfid_enable = (int)json["rfid_receiver"]["rfid_enable"];
-                        rfid.rfid_name = json["rfid_receiver"]["rfid_name"].ToString();
-                        rfid.comport = json["rfid_receiver"]["comport"].ToString();
-                        rfid.SPP_MAC = json["rfid_receiver"]["SPP_MAC"].ToString();
-                        rfid.nRadioPower = (int)json["rfid_receiver"]["radio_power"];
-                        rfid.nTxOnTime = (int)json["rfid_receiver"]["tx_on_time"];
-                        rfid.nTxOffTime = (int)json["rfid_receiver"]["tx_off_time"];
-                        rfid.nToggle = (int)json["rfid_receiver"]["toggle"];
-                        rfid.nSpeakerlevel = (int)json["rfid_receiver"]["speaker_level"];
-                        rfid.nRssi_pickup_timeout = (int)json["rfid_receiver"]["rssi_pickup_timeout"];
-                        rfid.nRssi_pickup_threshold = (int)json["rfid_receiver"]["rssi_pickup_threshold"];
-                        rfid.nRssi_drop_timeout = (int)json["rfid_receiver"]["rssi_drop_timeout"];
-                        rfid.nRssi_drop_threshold = (int)json["rfid_receiver"]["rssi_drop_threshold"];
-                        rfid.front_ant_port = json["rfid_receiver"]["front_ant_port"].ToString();
-                        rfid.ip = json["rfid_receiver"]["ip"].ToString();
-
-
-                        dps.IP = json["DPS"]["IP"].ToString();
-                        dps.PORT = (int)json["DPS"]["PORT"];
-
-
-                        nav.NAV_Enable = (int)json["NAV"]["NAV_Enable"];
-                        nav.Type = json["NAV"]["Type"].ToString();
-                        nav.IP = json["NAV"]["IP"].ToString();
-                        nav.PORT = (int)json["NAV"]["PORT"];
-                        nav.AdjustingPickdrop = (int)json["NAV"]["AdjustingPickdrop"];
-                        nav.AdjustingPosition = (int)json["NAV"]["AdjustingPosition"];
-
-                        livox.LIVOX_Enable = (int)json["LIVOX"]["LIVOX_Enable"];
-
-
-                        visioncam.vision_enable = (int)json["vision"]["vision_enable"];
-                        visioncam.vision_name = json["vision"]["vision_name"].ToString();
-                        visioncam.vision_ip = json["vision"]["vision_ip"].ToString();
-                        visioncam.vision_port = Convert.ToInt16(json["vision"]["vision_port"]);
-                        visioncam.vision_id = json["vision"]["vision_id"].ToString();
-                        visioncam.vision_pw = json["vision"]["vision_pw"].ToString();
-
-
-                        display.display_enable = (int)json["display"]["display_enable"];
-                        display.display_type = json["display"]["display_type"].ToString();
-
-                        Tools.Log($"Load SystemConfig {json.ToString()}", Tools.ELogType.SystemLog);
+                    // helpers
+                    static string S(JToken tok, string def = "")
+                    {
+                        if (tok == null || tok.Type == JTokenType.Null) return def;
+                        return tok.Type == JTokenType.String ? (string)tok : tok.ToString();
                     }
+                    static int I(JToken tok, int def = 0)
+                    {
+                        try
+                        {
+                            if (tok == null || tok.Type == JTokenType.Null) return def;
+                            if (tok.Type == JTokenType.Integer) return (int)tok;
+                            if (tok.Type == JTokenType.Float) return (int)Math.Round((double)tok);
+                            if (int.TryParse(tok.ToString(), out var v)) return v;
+                            return def;
+                        }
+                        catch { return def; }
+                    }
+
+                    var mainJ = json["main"] as JObject ?? new JObject();
+                    main.device_type = S(mainJ["device_type"], main.device_type);
+                    main.projectId = S(mainJ["projectId"], main.projectId);
+                    main.mappingId = S(mainJ["mappingId"], main.mappingId);
+                    main.mapId = S(mainJ["mapId"], main.mapId);
+                    main.vehicleId = S(mainJ["vehicleId"], main.vehicleId);
+                    // optional tuning: action dedup window in ms
+                    try
+                    {
+                        var adedup = mainJ["action_dedup_ms"];
+                        if (adedup != null && adedup.Type != JTokenType.Null)
+                            main.action_dedup_ms = I(adedup, 300);
+                    }
+                    catch { }
+
+                    // database optional settings (host/port/db/user/pw/search_path)
+                    try
+                    {
+                        var dbJ = mainJ["db"] as JObject ?? new JObject();
+                        main.db_host = S(dbJ["host"], main.db_host);
+                        var portTok = dbJ["port"]; if (portTok != null && portTok.Type != JTokenType.Null) main.db_port = I(portTok, main.db_port ?? 5432);
+                        main.db_database = S(dbJ["database"], main.db_database);
+                        main.db_username = S(dbJ["username"], main.db_username);
+                        main.db_password = S(dbJ["password"], main.db_password);
+                        main.db_search_path = S(dbJ["search_path"], main.db_search_path);
+                    }
+                    catch { }
+
+                    // distance
+                    var distJ = (json["distance_sensor"] ?? json["distancesensor"] ?? json["distanceSensor"]) as JObject ?? new JObject();
+                    distance.distance_enable = I(distJ["distance_enable"], distance.distance_enable);
+                    distance.model_name = S(distJ["model_name"], distance.model_name);
+                    distance.ComPort = S(distJ["comport"], distance.ComPort);
+                    distance.pick_up_distance_threshold = I(distJ["pick_up_distance_threshold"], distance.pick_up_distance_threshold);
+
+                    // led/buzzer
+                    var ledJ = (json["led_buzzer"] ?? json["ledBuzzer"] ?? json["led"]) as JObject ?? new JObject();
+                    LedBuzzer.led_enable = I(ledJ["led_enable"], LedBuzzer.led_enable);
+                    LedBuzzer.OnlySpeark = I(ledJ["OnlySpeark"], LedBuzzer.OnlySpeark);
+                    LedBuzzer.volume = I(ledJ["volume"], LedBuzzer.volume);
+                    LedBuzzer.lamp_IP = S(ledJ["lamp_IP"], LedBuzzer.lamp_IP);
+                    LedBuzzer.InfoLanguage = S(ledJ["InfoLanguage"], LedBuzzer.InfoLanguage);
+
+                    // weight
+                    var weightJ = (json["weight_sensor"] ?? json["weightsensor"] ?? json["weightSensor"]) as JObject ?? new JObject();
+                    weight.weight_enable = I(weightJ["weight_enable"], weight.weight_enable);
+                    weight.ComPort = S(weightJ["comport"], weight.ComPort);
+                    weight.loadweight_timeout = I(weightJ["loadweight_timeout"], weight.loadweight_timeout);
+                    weight.sensor_value = S(weightJ["sensor_value"], weight.sensor_value);
+
+                    // rfid
+                    var rfidJ = json["rfid_receiver"] as JObject ?? new JObject();
+                    rfid.rfid_enable = I(rfidJ["rfid_enable"], rfid.rfid_enable);
+                    rfid.rfid_name = S(rfidJ["rfid_name"], rfid.rfid_name);
+                    rfid.comport = S(rfidJ["comport"], rfid.comport);
+                    rfid.SPP_MAC = S(rfidJ["SPP_MAC"], rfid.SPP_MAC);
+                    rfid.nRadioPower = I(rfidJ["radio_power"], rfid.nRadioPower);
+                    rfid.nTxOnTime = I(rfidJ["tx_on_time"], rfid.nTxOnTime);
+                    rfid.nTxOffTime = I(rfidJ["tx_off_time"], rfid.nTxOffTime);
+                    rfid.nToggle = I(rfidJ["toggle"], rfid.nToggle);
+                    rfid.nSpeakerlevel = I(rfidJ["speaker_level"], rfid.nSpeakerlevel);
+                    rfid.nRssi_pickup_timeout = I(rfidJ["rssi_pickup_timeout"], rfid.nRssi_pickup_timeout);
+                    rfid.nRssi_pickup_threshold = I(rfidJ["rssi_pickup_threshold"], rfid.nRssi_pickup_threshold);
+                    rfid.nRssi_drop_timeout = I(rfidJ["rssi_drop_timeout"], rfid.nRssi_drop_timeout);
+                    rfid.nRssi_drop_threshold = I(rfidJ["rssi_drop_threshold"], rfid.nRssi_drop_threshold);
+                    rfid.front_ant_port = S(rfidJ["front_ant_port"], rfid.front_ant_port);
+                    rfid.ip = S(rfidJ["ip"], rfid.ip);
+
+                    // DPS
+                    var dpsJ = json["DPS"] as JObject ?? new JObject();
+                    dps.IP = S(dpsJ["IP"], dps.IP);
+                    dps.PORT = I(dpsJ["PORT"], dps.PORT);
+
+                    // NAV
+                    var navJ = json["NAV"] as JObject ?? new JObject();
+                    nav.NAV_Enable = I(navJ["NAV_Enable"], nav.NAV_Enable);
+                    nav.Type = S(navJ["Type"], nav.Type);
+                    nav.IP = S(navJ["IP"], nav.IP);
+                    nav.PORT = I(navJ["PORT"], nav.PORT);
+                    nav.AdjustingPickdrop = I(navJ["AdjustingPickdrop"], nav.AdjustingPickdrop);
+                    nav.AdjustingPosition = I(navJ["AdjustingPosition"], nav.AdjustingPosition);
+
+                    // LIVOX
+                    var livoxJ = json["LIVOX"] as JObject ?? new JObject();
+                    livox.LIVOX_Enable = I(livoxJ["LIVOX_Enable"], livox.LIVOX_Enable);
+
+                    // vision (support both 'vision', 'visioncamera', 'QR')
+                    var visionJ = (json["vision"] ?? json["visioncamera"] ?? json["QR"]) as JObject ?? new JObject();
+                    visioncam.vision_enable = I(visionJ["vision_enable"], visioncam.vision_enable);
+                    visioncam.vision_name = S(visionJ["vision_name"], visioncam.vision_name);
+                    visioncam.vision_ip = S(visionJ["vision_ip"], visioncam.vision_ip);
+                    visioncam.vision_port = (short)I(visionJ["vision_port"], visioncam.vision_port);
+                    visioncam.vision_id = S(visionJ["vision_id"], visioncam.vision_id);
+                    visioncam.vision_pw = S(visionJ["vision_pw"], visioncam.vision_pw);
+
+                    // display (optional)
+                    var displayJ = json["display"] as JObject ?? new JObject();
+                    display.display_enable = I(displayJ["display_enable"], display.display_enable);
+                    display.display_type = S(displayJ["display_type"], display.display_type);
+
+                    Tools.Log($"Load SystemConfig OK", Tools.ELogType.SystemLog);
                 }
             }
             catch (Exception Ex)
             {
-                Tools.Log($"Exception !!!", Tools.ELogType.DistanceLog);
+                Tools.Log($"Config parse error: {Ex.Message}", Tools.ELogType.SystemLog);
                 MessageBox.Show("Config File Failed");
-                Console.WriteLine(Ex.Message);
             }
 
             return (weight, distance, rfid, main, LedBuzzer, dps, nav, visioncam, livox, display);

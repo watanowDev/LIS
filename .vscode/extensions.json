@@ -1,0 +1,8 @@
+{
+  // Recommended extensions for .NET/WPF debugging in this workspace
+  "recommendations": [
+    "ms-dotnettools.csharp",
+    "ms-dotnettools.csdevkit"
+  ],
+  "unwantedRecommendations": []
+}

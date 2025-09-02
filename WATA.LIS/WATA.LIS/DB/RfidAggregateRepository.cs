@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_rfid_epc ON rfid_read_agg(epc);";
         }
 
         public async Task Insert2chAsync(
+            System.DateTimeOffset time,
             string sessionId,
             string epc,
             int rssi,
@@ -40,10 +41,11 @@ CREATE INDEX IF NOT EXISTS idx_rfid_epc ON rfid_read_agg(epc);";
         {
             const string sql = @"INSERT INTO rfid_read_agg(
   time, session_id, source, antenna, header, rssi, read_count, epc)
-VALUES (now(), $1, 'Keonn2ch', NULL, NULL, $2, $3, $4);";
+VALUES ($1, $2, 'Keonn2ch', NULL, NULL, $3, $4, $5);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue(time);
             cmd.Parameters.AddWithValue(sessionId);
             cmd.Parameters.AddWithValue(rssi);
             cmd.Parameters.AddWithValue(readCount);
@@ -52,6 +54,7 @@ VALUES (now(), $1, 'Keonn2ch', NULL, NULL, $2, $3, $4);";
         }
 
         public async Task Insert4chAsync(
+            System.DateTimeOffset time,
             string sessionId,
             string epc,
             int port,
@@ -63,10 +66,11 @@ VALUES (now(), $1, 'Keonn2ch', NULL, NULL, $2, $3, $4);";
         {
             const string sql = @"INSERT INTO rfid_read_agg(
   time, session_id, source, antenna, header, rssi, read_count, epc)
-VALUES (now(), $1, 'Keonn4ch', $2, $3, $4, $5, $6);";
+VALUES ($1, $2, 'Keonn4ch', $3, $4, $5, $6, $7);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue(time);
             cmd.Parameters.AddWithValue(sessionId);
             cmd.Parameters.AddWithValue(port);
             // header: mux1*10 + mux2 (simple packing)

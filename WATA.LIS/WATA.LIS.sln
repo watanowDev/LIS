@@ -34,6 +34,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WATA.LIS.SENSOR.LIVOX", "Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WATA.LIS.Heartbeat.Services", "Modules\WATA.LIS.Heartbeat.Services\WATA.LIS.Heartbeat.Services.csproj", "{6FAF2951-04AE-22AC-A73C-CCA99D029C05}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WATA.LIS.SmokeTests", "WATA.LIS.SmokeTests\WATA.LIS.SmokeTests.csproj", "{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -281,6 +283,24 @@ Global
 		{6FAF2951-04AE-22AC-A73C-CCA99D029C05}.Remote|x64.Build.0 = Debug|Any CPU
 		{6FAF2951-04AE-22AC-A73C-CCA99D029C05}.Remote|x86.ActiveCfg = Debug|Any CPU
 		{6FAF2951-04AE-22AC-A73C-CCA99D029C05}.Remote|x86.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|x64.Build.0 = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Release|x86.Build.0 = Release|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|Any CPU.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|x64.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|x64.Build.0 = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|x86.ActiveCfg = Debug|Any CPU
+		{A3B16BCB-C1CC-462E-AE42-D7B70F93989C}.Remote|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

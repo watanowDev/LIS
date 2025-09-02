@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WATA.LIS.SENSOR.NAV")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f79e0fd3b8b9cf6501b6bb8dcc5adb329122ee40")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+583098aa7223921306de8f077f3b7ead25b99b95")]
 [assembly: System.Reflection.AssemblyProductAttribute("WATA.LIS.SENSOR.NAV")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WATA.LIS.SENSOR.NAV")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.18362.0</TargetFramework>
@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.1" />
     <PackageReference Include="Prism.DryIoc" Version="8.1.97" />
-  <PackageReference Include="Npgsql" Version="8.0.3" />
+    <PackageReference Include="Npgsql" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Modules\WATA.LIS.Heartbeat.Services\WATA.LIS.Heartbeat.Services.csproj" />
@@ -29,5 +29,21 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resource\" />
+  </ItemGroup>
+  <Target Name="PostBuildCopyConfigs" AfterTargets="PostBuildEvent">
+    <PropertyGroup>
+      <OutDir>$(TargetDir)</OutDir>
+      <ConfigSrc>$(MSBuildProjectDirectory)\..\WATA.LIS.Core</ConfigSrc>
+    </PropertyGroup>
+    <!-- Ensure SystemConfig folder exists in output and copy contents if present in project root -->
+    <MakeDir Directories="$(OutDir)SystemConfig" Condition="!Exists('$(OutDir)SystemConfig')" />
+    <Copy SourceFiles="$(ConfigSrc)\Log4Net_WATA.xml" DestinationFolder="$(OutDir)" Condition="Exists('$(ConfigSrc)\Log4Net_WATA.xml')" />
+    <!-- If a SystemConfig folder exists next to the exe or in repository root, prefer repo root -->
+    <Copy SourceFiles="@(SystemConfigFiles)" DestinationFolder="$(OutDir)SystemConfig" SkipUnchangedFiles="true" Condition="'%(SystemConfigFiles.Identity)' != ''" />
+  </Target>
+
+  <!-- Collect SystemConfig files from repository root if present -->
+  <ItemGroup>
+    <SystemConfigFiles Include="$(MSBuildProjectDirectory)\SystemConfig\**\*.*" Condition="Exists('$(MSBuildProjectDirectory)\SystemConfig')" />
   </ItemGroup>
 </Project>

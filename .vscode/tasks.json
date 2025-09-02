@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build solution (Debug)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "build",
+        ".\\WATA.LIS\\WATA.LIS.sln",
+        "-c",
+        "Debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": ["$msCompile"]
+    },
+    {
+      "label": "Build solution (Release)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "build",
+        ".\\WATA.LIS\\WATA.LIS.sln",
+        "-c",
+        "Release"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": ["$msCompile"]
+    },
+    {
+      "label": "Run SmokeTests (config)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "-c",
+        "Debug",
+        "--project",
+        ".\\WATA.LIS\\WATA.LIS.SmokeTests",
+        "--",
+        "config"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run SmokeTests (db)",
+      "type": "shell",
+      "command": "dotnet",
+      "args": [
+        "run",
+        "-c",
+        "Debug",
+        "--project",
+        ".\\WATA.LIS\\WATA.LIS.SmokeTests",
+        "--",
+        "db"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "WATA_LIS_WD": "${workspaceFolder}\\WATA.LIS\\WATA.LIS\\bin\\Debug\\net8.0-windows10.0.18362.0"
+        }
+      },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -8,6 +8,7 @@ namespace WATA.LIS.DB
     public sealed class MigrationService
     {
         private readonly string _cs;
+        private const string SchemaName = "lis_core"; // dedicated schema for LIS Core engine
         public MigrationService(string connectionString)
         {
             _cs = connectionString;
@@ -18,7 +19,16 @@ namespace WATA.LIS.DB
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
 
+            // Ensure timeouts and create schema if missing, then set search_path
             await using (var cmd = new NpgsqlCommand("SET lock_timeout = '5s'; SET statement_timeout = '30s';", conn))
+                await cmd.ExecuteNonQueryAsync(ct);
+
+            // Create dedicated schema if not exists
+            await using (var cmd = new NpgsqlCommand($"CREATE SCHEMA IF NOT EXISTS \"{SchemaName}\";", conn))
+                await cmd.ExecuteNonQueryAsync(ct);
+
+            // Route unqualified table names to dedicated schema first
+            await using (var cmd = new NpgsqlCommand($"SET search_path TO \"{SchemaName}\", public;", conn))
                 await cmd.ExecuteNonQueryAsync(ct);
 
             var sql = @"

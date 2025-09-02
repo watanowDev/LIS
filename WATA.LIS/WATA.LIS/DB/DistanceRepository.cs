@@ -26,21 +26,23 @@ CREATE INDEX IF NOT EXISTS idx_distance_time ON distance_reading(time DESC);";
             await cmd.ExecuteNonQueryAsync(ct);
         }
 
-        public async Task InsertAsync(
-            string sessionId,
-            int distanceMm,
-            bool connected,
-            CancellationToken ct = default)
+                public async Task InsertAsync(
+                        System.DateTimeOffset time,
+                        string sessionId,
+                        int distanceMm,
+                        bool connected,
+                        CancellationToken ct = default)
         {
-            const string sql = @"INSERT INTO distance_reading(
-  time, session_id, distance_mm, connected)
-VALUES (now(), $1, $2, $3);";
+                        const string sql = @"INSERT INTO distance_reading(
+    time, session_id, distance_mm, connected)
+VALUES ($1, $2, $3, $4);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue(sessionId);
-            cmd.Parameters.AddWithValue(distanceMm);
-            cmd.Parameters.AddWithValue(connected);
+                        cmd.Parameters.AddWithValue(time);
+                        cmd.Parameters.AddWithValue(sessionId);
+                        cmd.Parameters.AddWithValue(distanceMm);
+                        cmd.Parameters.AddWithValue(connected);
             await cmd.ExecuteNonQueryAsync(ct);
         }
     }

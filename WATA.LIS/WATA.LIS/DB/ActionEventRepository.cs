@@ -34,6 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_action_event_time ON action_event(time DESC);";
         }
 
         public async Task InsertAsync(
+            System.DateTimeOffset time,
             string sessionId,
             string action,
             string workLocationId,
@@ -47,10 +48,12 @@ CREATE INDEX IF NOT EXISTS idx_action_event_time ON action_event(time DESC);";
         {
             const string sql = @"INSERT INTO action_event (
   time, session_id, action, work_location_id, load_id, epc, cepc, request_url, request_body, source)
-VALUES (now(), $1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9);";
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10)
+ON CONFLICT (time, session_id) DO NOTHING;";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue(time);
             cmd.Parameters.AddWithValue(sessionId);
             cmd.Parameters.AddWithValue((object?)action ?? System.DBNull.Value);
             cmd.Parameters.AddWithValue((object?)workLocationId ?? System.DBNull.Value);

@@ -33,80 +33,135 @@ using System.Threading.Tasks;
 using WATA.LIS.Core.Model.BackEnd;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using Npgsql;
 
 namespace WATA.LIS
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App
     {
         private HeartbeatService _heartbeatService;
-    private SessionRepository _sessionRepo;
-    private SystemStatusRepository _statusRepo;
-    private System.Windows.Threading.DispatcherTimer _statusTimer;
-    private WeightRepository _weightRepo;
-    private DistanceRepository _distanceRepo;
-    private RfidAggregateRepository _rfidAggRepo;
-    private NavRepository _navRepo;
-    private ActionEventRepository _actionEventRepo;
-    private ActionPoseRepository _actionPoseRepo;
-    private ActionSensorBundleRepository _actionBundleRepo;
-    private IEventAggregator _eventAggregator;
-    private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
+        private SessionRepository _sessionRepo;
+        private SystemStatusRepository _statusRepo;
+        private System.Windows.Threading.DispatcherTimer _statusTimer;
+        private WeightRepository _weightRepo;
+        private DistanceRepository _distanceRepo;
+        private RfidAggregateRepository _rfidAggRepo;
+        private NavRepository _navRepo;
+        private ActionEventRepository _actionEventRepo;
+        private ActionPoseRepository _actionPoseRepo;
+        private ActionSensorBundleRepository _actionBundleRepo;
+        private IEventAggregator _eventAggregator;
+        private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
-    // latest sensor snapshot cache (thread-safe via _snapshotLock)
-    private readonly object _snapshotLock = new object();
-    private long? _lastNavX, _lastNavY, _lastNavT;
-    private string _lastZoneId, _lastZoneName, _lastProjectId, _lastMappingId, _lastMapId, _lastVehicleId;
-    private int? _lastGross, _lastRight, _lastLeft;
-    private int? _lastDistanceMm;
-    private int? _lastRfidCount, _lastRfidAvgRssi;
+        // latest sensor snapshot cache (thread-safe via _snapshotLock)
+        private readonly object _snapshotLock = new object();
+        private long? _lastNavX, _lastNavY, _lastNavT;
+        private string _lastZoneId, _lastZoneName, _lastProjectId, _lastMappingId, _lastMapId, _lastVehicleId;
+        private int? _lastGross, _lastRight, _lastLeft;
+        private int? _lastDistanceMm;
+        private bool _lastDistanceConnected;
+        private int? _lastRfidCount, _lastRfidAvgRssi;
+        // latest extra weight fields
+        private int _lastRightBattery, _lastLeftBattery;
+        private bool _lastRightIsCharging, _lastLeftIsCharging, _lastRightOnline, _lastLeftOnline, _lastGrossNet, _lastOverLoad, _lastOutOfTolerance;
+        private bool _weightSnapshotInitialized, _distanceSnapshotInitialized, _navSnapshotInitialized;
 
-    // smoothing windows (short rolling average)
-    private const int WeightWindowSize = 5;
-    private const int RfidWindowSize = 5;
-    private readonly Queue<int> _grossQueue = new Queue<int>();
-    private readonly Queue<int> _rightQueue = new Queue<int>();
-    private readonly Queue<int> _leftQueue = new Queue<int>();
-    private int _grossSum = 0, _rightSum = 0, _leftSum = 0;
-    private readonly Queue<int> _rfidCountQueue = new Queue<int>();
-    private readonly Queue<int> _rfidRssiQueue = new Queue<int>();
-    private int _rfidCountSum = 0, _rfidRssiSum = 0;
+        // RFID aggregation state: first-seen set and 1Hz aggregator map
+        private readonly HashSet<string> _rfidFirstSeen = new HashSet<string>();
+        private readonly Dictionary<string, (int CountSum, long RssiSum)> _rfidAggMap = new Dictionary<string, (int, long)>();
+        private string _rfidDominantEpc;
+        private double _rfidDominantScore;
+        private DateTimeOffset _rfidDominantTs;
+
+        // SysAlarm tracking
+        private readonly Dictionary<string, DateTimeOffset> _errorStart = new Dictionary<string, DateTimeOffset>();
+        private string _lastErrorCodesSnapshot = "0000";
+
+        // smoothing windows (short rolling average)
+        private const int WeightWindowSize = 5;
+        private const int RfidWindowSize = 5;
+        private readonly Queue<int> _grossQueue = new Queue<int>();
+        private readonly Queue<int> _rightQueue = new Queue<int>();
+        private readonly Queue<int> _leftQueue = new Queue<int>();
+        private int _grossSum = 0, _rightSum = 0, _leftSum = 0;
+        private readonly Queue<int> _rfidCountQueue = new Queue<int>();
+        private readonly Queue<int> _rfidRssiQueue = new Queue<int>();
+        private int _rfidCountSum = 0, _rfidRssiSum = 0;
+        // action post deduplication (avoid rapid duplicates from multiple events)
+        private readonly ConcurrentDictionary<string, DateTimeOffset> _actionDedup = new ConcurrentDictionary<string, DateTimeOffset>();
+        private TimeSpan _actionDedupWindow = TimeSpan.FromMilliseconds(300);
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            // DB 마이그레이션 및 세션 시작 기록 (비차단)
-            var connectionString = "Host=localhost;Username=postgres;Password=wata2019;Database=forkliftDB"; // TODO: SystemConfig에서 이동 가능
+            var connectionString = BuildConnectionStringFromConfigOrEnv();
             _ = InitializeDatabaseAsync(connectionString);
-
-            // HeartbeatService 초기화 및 시작
-            var logger = Container.Resolve<ILogger<HeartbeatService>>();
+            var logger = Container.Resolve<Microsoft.Extensions.Logging.ILogger<HeartbeatService>>();
             _heartbeatService = new HeartbeatService(logger);
             _heartbeatService.Start();
-
-            // EventAggregator 구독 준비
+            try
+            {
+                var mainCfg = Container.Resolve<IMainModel>() as MainConfigModel;
+                int ms = 300;
+                if (mainCfg != null && mainCfg.GetType() == typeof(MainConfigModel))
+                {
+                    var cfgMs = (mainCfg as MainConfigModel)?.action_dedup_ms ?? 300;
+                    if (cfgMs > 0) ms = cfgMs;
+                }
+                ms = Math.Min(500, Math.Max(200, ms));
+                _actionDedupWindow = TimeSpan.FromMilliseconds(ms);
+                Tools.Log($"Action dedup window set to {ms} ms (using UTC timestamps)", Tools.ELogType.SystemLog);
+            }
+            catch { }
             _eventAggregator = Container.Resolve<IEventAggregator>();
-            // Backend 상태 이벤트를 수신하여 네트워크/백엔드 상태를 추정
             _eventAggregator
                 .GetEvent<BackEndStatusEvent>()
                 .Subscribe(status =>
                 {
-                    // status: 1(OK), -1(NG)
                     _networkOkFromBackend = status != -1;
-                    // GlobalValue.IS_ERROR.backend 는 다른 곳에서도 갱신되지만, 보수적으로 동기화
                     GlobalValue.IS_ERROR.backend = _networkOkFromBackend;
                 }, ThreadOption.BackgroundThread, true);
         }
 
+        private static string SanitizeSearchPath(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value)) return "lis_core,public";
+            var v = value.Trim().Replace("\"", string.Empty).Replace("'", string.Empty);
+            v = v.Replace(";", ",").Replace("=", string.Empty);
+            v = string.Join(",", v.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            return string.IsNullOrWhiteSpace(v) ? "lis_core,public" : v;
+        }
+
+        private static string BuildConnectionStringFromConfigOrEnv()
+        {
+            var env = Environment.GetEnvironmentVariable("WATA_LIS_CONN");
+            if (!string.IsNullOrWhiteSpace(env)) return env;
+            try
+            {
+                var app = (App)Current;
+                var main = app?.Container?.Resolve<IMainModel>() as MainConfigModel;
+                string host = main?.db_host ?? "localhost";
+                int port = main?.db_port ?? 5432;
+                string database = !string.IsNullOrWhiteSpace(main?.db_database) ? main.db_database : "forkliftDB";
+                string username = !string.IsNullOrWhiteSpace(main?.db_username) ? main.db_username : "postgres";
+                string password = !string.IsNullOrWhiteSpace(main?.db_password) ? main.db_password : "wata2019";
+                string searchPathRaw = !string.IsNullOrWhiteSpace(main?.db_search_path) ? main.db_search_path : "lis_core,public";
+                string searchPath = SanitizeSearchPath(searchPathRaw);
+                var cs = $"Host={host};Port={port};Database={database};Username={username};Password={password};SearchPath={searchPath};Pooling=true;Include Error Detail=true";
+                return cs;
+            }
+            catch
+            {
+                return "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata2019;SearchPath=lis_core,public;Pooling=true;Include Error Detail=true";
+            }
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
-            // 세션 종료 마킹 (fire-and-forget)
             _ = Task.Run(async () =>
             {
-                try { if (_sessionRepo != null) await _sessionRepo.MarkEndAsync(GlobalValue.SessionId); }
+                try { if (_sessionRepo != null) await _sessionRepo.MarkEndAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId); }
                 catch { }
             });
             base.OnExit(e);
@@ -116,6 +171,39 @@ namespace WATA.LIS
         {
             try
             {
+                try
+                {
+                    var b = new NpgsqlConnectionStringBuilder(cs);
+                    string host = b.Host;
+                    int port = b.Port;
+                    string db = b.Database;
+                    string user = b.Username;
+                    string sp = b.SearchPath;
+                    Tools.Log($"DB connect attempt: {host}:{port}/{db} as {user}, SearchPath={sp}", Tools.ELogType.SystemLog);
+                    await using (var c = new NpgsqlConnection(cs))
+                    {
+                        await c.OpenAsync();
+                        await using var cmd = new NpgsqlCommand("select version(), current_setting('search_path', true)", c);
+                        await using var r = await cmd.ExecuteReaderAsync();
+                        if (await r.ReadAsync())
+                        {
+                            string ver = r.GetString(0);
+                            string path = r.IsDBNull(1) ? null : r.GetString(1);
+                            Tools.Log($"DB connected. Server={ver.Split(' ')[0]}, search_path={path}", Tools.ELogType.SystemLog);
+                        }
+                    }
+                }
+                catch (PostgresException pex)
+                {
+                    Tools.Log($"DB pre-check failed (PG): {pex.SqlState} {pex.MessageText}", Tools.ELogType.SystemLog);
+                    throw;
+                }
+                catch (Exception dex)
+                {
+                    Tools.Log($"DB pre-check failed: {dex.Message}", Tools.ELogType.SystemLog);
+                    throw;
+                }
+
                 var migrator = new MigrationService(cs);
                 await migrator.EnsureSchemaAsync();
 
@@ -123,28 +211,20 @@ namespace WATA.LIS
                 _statusRepo = new SystemStatusRepository(cs);
                 await _statusRepo.EnsureTableAsync();
                 var machine = Environment.MachineName;
-                await _sessionRepo.UpsertStartAsync(GlobalValue.SessionId, GlobalValue.SystemVersion, machine);
+                await _sessionRepo.UpsertStartAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, GlobalValue.SystemVersion, machine);
 
-                // 주기적 상태 기록 (1초 간격)
                 _statusTimer = new System.Windows.Threading.DispatcherTimer();
                 _statusTimer.Interval = TimeSpan.FromSeconds(1);
                 _statusTimer.Tick += async (_, __) =>
                 {
                     try
                     {
-                        // 기존 Tools.Log는 유지. 여기서는 상태 스냅샷만 기록.
-                        // backend_ok: IS_ERROR.backend 가 true일 때 OK
                         bool backendOk = GlobalValue.IS_ERROR.backend;
-                        // network_ok: 백엔드 통신 이벤트 기반 추정 (없으면 backendOk로 대체)
                         bool networkOk = _networkOkFromBackend || backendOk;
-
-                        // setAllReady: 주요 센서/백엔드 OK의 합성
                         bool setAllReady = GlobalValue.IS_ERROR.camera &&
                                            GlobalValue.IS_ERROR.distance &&
                                            GlobalValue.IS_ERROR.rfid &&
                                            GlobalValue.IS_ERROR.backend;
-
-                        // 오류 코드/메시지 구성 (미정의면 null)
                         string errorCode = null;
                         string message = null;
                         if (!setAllReady)
@@ -157,72 +237,184 @@ namespace WATA.LIS
                             errorCode = string.Join(",", notReady);
                             message = notReady.Count > 0 ? ($"not ready: {string.Join(", ", notReady)}") : null;
                         }
+                        await _statusRepo.InsertAsync(DateTimeOffset.UtcNow, backendOk, networkOk, setAllReady, errorCode, message, GlobalValue.SessionId);
 
-                        await _statusRepo.InsertAsync(backendOk, networkOk, setAllReady, errorCode, message, GlobalValue.SessionId);
+                        // Throttled 1 Hz inserts
+                        try
+                        {
+                            if (_weightRepo != null && _weightSnapshotInitialized)
+                            {
+                                int gross = _lastGross ?? 0;
+                                int right = _lastRight ?? 0;
+                                int left = _lastLeft ?? 0;
+                                await _weightRepo.InsertAsync(
+                                    DateTimeOffset.UtcNow,
+                                    GlobalValue.SessionId,
+                                    gross,
+                                    right,
+                                    left,
+                                    _lastRightBattery,
+                                    _lastLeftBattery,
+                                    _lastRightIsCharging,
+                                    _lastLeftIsCharging,
+                                    _lastRightOnline,
+                                    _lastLeftOnline,
+                                    _lastGrossNet,
+                                    _lastOverLoad,
+                                    _lastOutOfTolerance
+                                );
+                            }
+                        }
+                        catch { }
+
+                        try
+                        {
+                            if (_distanceRepo != null && _distanceSnapshotInitialized)
+                            {
+                                int dist = _lastDistanceMm ?? 0;
+                                await _distanceRepo.InsertAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, dist, _lastDistanceConnected);
+                            }
+                        }
+                        catch { }
+
+                        try
+                        {
+                            if (_navRepo != null && _navSnapshotInitialized && _lastNavX.HasValue && _lastNavY.HasValue && _lastNavT.HasValue)
+                            {
+                                await _navRepo.InsertAsync(
+                                    DateTimeOffset.UtcNow,
+                                    GlobalValue.SessionId,
+                                    _lastNavX.Value,
+                                    _lastNavY.Value,
+                                    _lastNavT.Value,
+                                    _lastZoneId,
+                                    _lastZoneName,
+                                    _lastProjectId,
+                                    _lastMappingId,
+                                    _lastMapId,
+                                    null,
+                                    _lastVehicleId
+                                );
+                            }
+                        }
+                        catch { }
+
+                        // Flush RFID aggregated readings (1 Hz)
+                        try
+                        {
+                            if (_rfidAggRepo != null)
+                            {
+                                List<(string epc, int rssi, int count)> batch;
+                                lock (_snapshotLock)
+                                {
+                                    batch = new List<(string, int, int)>(_rfidAggMap.Count);
+                                    foreach (var kv in _rfidAggMap)
+                                    {
+                                        var epc = kv.Key;
+                                        var (cnt, rssiSum) = kv.Value;
+                                        if (cnt > 0)
+                                        {
+                                            int avgRssi = (int)Math.Round(rssiSum / (double)cnt);
+                                            batch.Add((epc, avgRssi, cnt));
+                                        }
+                                    }
+                                    _rfidAggMap.Clear();
+                                }
+                                foreach (var rec in batch)
+                                {
+                                    await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, rec.epc, rec.rssi, rec.count);
+                                }
+                            }
+                        }
+                        catch { }
+
+                        // Detect SysAlarm changes and log as action events
+                        try
+                        {
+                            var now = DateTimeOffset.UtcNow;
+                            var curr = WATA.LIS.Core.Common.SysAlarm.CurrentErr ?? "0000";
+                            var currCodes = new HashSet<string>(curr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries));
+                            currCodes.Remove("0000");
+                            // raised codes
+                            foreach (var code in currCodes)
+                            {
+                                if (!_errorStart.ContainsKey(code))
+                                {
+                                    _errorStart[code] = now;
+                                    await LogAlarmActionAsync(now, code, state: "raise", durationMs: null);
+                                }
+                            }
+                            // cleared codes
+                            var toClear = new List<string>();
+                            foreach (var kv in _errorStart)
+                            {
+                                if (!currCodes.Contains(kv.Key))
+                                {
+                                    var duration = (long)Math.Max(0, (now - kv.Value).TotalMilliseconds);
+                                    await LogAlarmActionAsync(now, kv.Key, state: "clear", durationMs: duration);
+                                    toClear.Add(kv.Key);
+                                }
+                            }
+                            foreach (var code in toClear) _errorStart.Remove(code);
+                            _lastErrorCodesSnapshot = curr;
+                        }
+                        catch { }
                     }
                     catch { }
                 };
                 _statusTimer.Start();
 
-                // weight_reading 테이블 준비 및 구독 연결
                 _weightRepo = new WeightRepository(cs);
                 await _weightRepo.EnsureTableAsync();
                 if (_eventAggregator != null)
                 {
                     _eventAggregator
                         .GetEvent<WeightSensorEvent>()
-                        .Subscribe(async model =>
+                        .Subscribe(model =>
                         {
                             try
                             {
-                                await _weightRepo.InsertAsync(
-                                    GlobalValue.SessionId,
-                                    model.GrossWeight,
-                                    model.RightWeight,
-                                    model.LeftWeight,
-                                    model.RightBattery,
-                                    model.LeftBattery,
-                                    model.RightIsCharging,
-                                    model.leftIsCharging,
-                                    model.RightOnline,
-                                    model.LeftOnline,
-                                    model.GrossNet,
-                                    model.OverLoad,
-                                    model.OutOfTolerance
-                                );
                                 lock (_snapshotLock)
                                 {
-                                    // push to smoothing queues
                                     PushAndAverage(_grossQueue, ref _grossSum, model.GrossWeight, WeightWindowSize, out int grossAvg);
                                     PushAndAverage(_rightQueue, ref _rightSum, model.RightWeight, WeightWindowSize, out int rightAvg);
                                     PushAndAverage(_leftQueue, ref _leftSum, model.LeftWeight, WeightWindowSize, out int leftAvg);
                                     _lastGross = grossAvg;
                                     _lastRight = rightAvg;
                                     _lastLeft = leftAvg;
+                                    _lastRightBattery = model.RightBattery;
+                                    _lastLeftBattery = model.LeftBattery;
+                                    _lastRightIsCharging = model.RightIsCharging;
+                                    _lastLeftIsCharging = model.leftIsCharging;
+                                    _lastRightOnline = model.RightOnline;
+                                    _lastLeftOnline = model.LeftOnline;
+                                    _lastGrossNet = model.GrossNet;
+                                    _lastOverLoad = model.OverLoad;
+                                    _lastOutOfTolerance = model.OutOfTolerance;
+                                    _weightSnapshotInitialized = true;
                                 }
                             }
                             catch { }
                         }, ThreadOption.BackgroundThread, true);
                 }
 
-                // distance_reading 테이블 준비 및 구독 연결
                 _distanceRepo = new DistanceRepository(cs);
                 await _distanceRepo.EnsureTableAsync();
                 _eventAggregator?.GetEvent<DistanceSensorEvent>()
-                    .Subscribe(async model =>
+                    .Subscribe(model =>
                     {
                         try
                         {
-                            await _distanceRepo.InsertAsync(GlobalValue.SessionId, model.Distance_mm, model.connected);
                             lock (_snapshotLock)
                             {
                                 _lastDistanceMm = model.Distance_mm;
+                                _lastDistanceConnected = model.connected;
+                                _distanceSnapshotInitialized = true;
                             }
                         }
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
 
-                // rfid_read_agg 테이블 준비 및 구독 연결 (Keonn2ch 우선)
                 _rfidAggRepo = new RfidAggregateRepository(cs);
                 await _rfidAggRepo.EnsureTableAsync();
                 _eventAggregator?.GetEvent<Keonn2chEvent>()
@@ -230,32 +422,95 @@ namespace WATA.LIS
                     {
                         try
                         {
-                            if (list == null) return;
+                            if (list == null || list.Count == 0) return;
+
+                            // Compute dominant by score = RSSI*1000 + ReadCount (simple heuristic)
+                            Keonn2ch_Model top = null;
+                            double topScore = double.MinValue;
                             foreach (var item in list)
                             {
-                                await _rfidAggRepo.Insert2chAsync(GlobalValue.SessionId, item.EPC, item.RSSI, item.READCNT);
-                            }
-                // update simple RFID snapshot (count and avg rssi) with short-window smoothing
-                            try
-                            {
-                                int count = 0;
-                                int avg = 0;
-                                var valid = list;
-                                if (valid != null && valid.Count > 0)
+                                if (item == null) continue;
+                                double score = (item.RSSI * 1000.0) + Math.Max(1, item.READCNT);
+                                if (score > topScore)
                                 {
-                                    count = valid.Count;
-                                    long sum = 0;
-                                    foreach (var it in valid) sum += it.RSSI;
-                                    avg = count > 0 ? (int)Math.Round(sum / (double)count) : 0;
+                                    topScore = score;
+                                    top = item;
                                 }
+                            }
+
+                            // If dominant changed, immediately log all EPCs from this batch once
+                            bool loggedImmediateForBatch = false;
+                            if (top != null)
+                            {
+                                bool isNewDominant = false;
                                 lock (_snapshotLock)
                                 {
-                    // smooth over last few batches
-                    PushAndAverage(_rfidCountQueue, ref _rfidCountSum, count, RfidWindowSize, out int rfidCntAvg);
-                    // when there is no tag in a batch, treat rssi as 0 but keep null if all zeros
-                    PushAndAverage(_rfidRssiQueue, ref _rfidRssiSum, count > 0 ? avg : 0, RfidWindowSize, out int rssiAvg);
-                    _lastRfidCount = rfidCntAvg;
-                    _lastRfidAvgRssi = (rfidCntAvg > 0 && rssiAvg != 0) ? rssiAvg : (int?)null;
+                                    if (string.IsNullOrEmpty(_rfidDominantEpc) || !string.Equals(_rfidDominantEpc, top.EPC, StringComparison.Ordinal))
+                                    {
+                                        isNewDominant = true;
+                                        _rfidDominantEpc = top.EPC;
+                                        _rfidDominantScore = topScore;
+                                        _rfidDominantTs = DateTimeOffset.UtcNow;
+                                    }
+                                }
+                                if (isNewDominant)
+                                {
+                                    // Immediately log current batch (dominant + co-read EPCs)
+                                    foreach (var item in list)
+                                    {
+                                        try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, item.EPC, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
+                                    }
+                                    loggedImmediateForBatch = true;
+                                }
+                            }
+
+                            int count = 0;
+                            long sumRssi = 0;
+                            foreach (var item in list)
+                            {
+                                if (item == null) continue;
+                                var epc = item.EPC;
+                                if (string.IsNullOrWhiteSpace(epc)) continue;
+
+                                // First-seen immediate logging for header-matching EPCs
+                                bool headerMatch = epc.StartsWith("DA", StringComparison.OrdinalIgnoreCase) || epc.StartsWith("DC", StringComparison.OrdinalIgnoreCase);
+                                if (headerMatch && !loggedImmediateForBatch)
+                                {
+                                    bool firstSeen;
+                                    lock (_snapshotLock)
+                                    {
+                                        firstSeen = _rfidFirstSeen.Add(epc);
+                                    }
+                                    if (firstSeen)
+                                    {
+                                        try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, epc, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
+                                    }
+                                }
+
+                                // Aggregate for 1 Hz flush
+                                lock (_snapshotLock)
+                                {
+                                    if (_rfidAggMap.TryGetValue(epc, out var agg))
+                                        _rfidAggMap[epc] = (agg.CountSum + Math.Max(1, item.READCNT), agg.RssiSum + item.RSSI);
+                                    else
+                                        _rfidAggMap[epc] = (Math.Max(1, item.READCNT), item.RSSI);
+                                }
+
+                                count++;
+                                sumRssi += item.RSSI;
+                            }
+
+                            // update indicator snapshot averages
+                            try
+                            {
+                                int rfidCnt = count;
+                                int avg = rfidCnt > 0 ? (int)Math.Round(sumRssi / (double)rfidCnt) : 0;
+                                lock (_snapshotLock)
+                                {
+                                    PushAndAverage(_rfidCountQueue, ref _rfidCountSum, rfidCnt, RfidWindowSize, out int rfidCntAvg);
+                                    PushAndAverage(_rfidRssiQueue, ref _rfidRssiSum, rfidCnt > 0 ? avg : 0, RfidWindowSize, out int rssiAvg);
+                                    _lastRfidCount = rfidCntAvg;
+                                    _lastRfidAvgRssi = (rfidCntAvg > 0 && rssiAvg != 0) ? rssiAvg : (int?)null;
                                 }
                             }
                             catch { }
@@ -263,7 +518,6 @@ namespace WATA.LIS
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
 
-                // NAV pose 기록
                 _navRepo = new NavRepository(cs);
                 await _navRepo.EnsureTableAsync();
                 _actionPoseRepo = new ActionPoseRepository(cs);
@@ -271,23 +525,10 @@ namespace WATA.LIS
                 _actionBundleRepo = new ActionSensorBundleRepository(cs);
                 await _actionBundleRepo.EnsureTableAsync();
                 _eventAggregator?.GetEvent<NAVSensorEvent>()
-                    .Subscribe(async nav =>
+                    .Subscribe(nav =>
                     {
                         try
                         {
-                            await _navRepo.InsertAsync(
-                                GlobalValue.SessionId,
-                                nav.naviX,
-                                nav.naviY,
-                                nav.naviT,
-                                nav.zoneId,
-                                nav.zoneName,
-                                nav.projectId,
-                                nav.mappingId,
-                                nav.mapId,
-                                nav.result,
-                                nav.vehicleId
-                            );
                             lock (_snapshotLock)
                             {
                                 _lastNavX = nav.naviX;
@@ -299,12 +540,12 @@ namespace WATA.LIS
                                 _lastMappingId = nav.mappingId;
                                 _lastMapId = nav.mapId;
                                 _lastVehicleId = nav.vehicleId;
+                                _navSnapshotInitialized = true;
                             }
                         }
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
 
-                // 액션 이벤트 캡처: 백엔드로 전송되는 액션 요청을 저장
                 _actionEventRepo = new ActionEventRepository(cs);
                 await _actionEventRepo.EnsureTableAsync();
                 void HandleActionPost(RestClientPostModel post)
@@ -312,7 +553,15 @@ namespace WATA.LIS
                     try
                     {
                         if (post == null) return;
-                        if (post.type != WATA.LIS.Core.Common.eMessageType.BackEndAction) return;
+                        if (post.type != WATA.LIS.Core.Common.eMessageType.BackEndAction && post.type != WATA.LIS.Core.Common.eMessageType.BackEndContainer) return;
+                        var now = DateTimeOffset.UtcNow;
+                        var dedupKey = $"{post.url}|{post.body}";
+                        if (_actionDedup.TryGetValue(dedupKey, out var last) && (now - last) < _actionDedupWindow)
+                        {
+                            return;
+                        }
+                        _actionDedup[dedupKey] = now;
+                        var eventTime = now;
                         string action = null;
                         string workLocationId = null;
                         string loadId = null;
@@ -328,10 +577,13 @@ namespace WATA.LIS
                                 loadId = (string)j["loadId"] ?? (string)j["load_id"];
                                 epc = (string)j["epc"];
                                 cepc = (string)j["cepc"];
+                                if (string.IsNullOrEmpty(action) && post.type == WATA.LIS.Core.Common.eMessageType.BackEndContainer)
+                                    action = "container_gate";
                             }
                         }
                         catch { }
                         _ = _actionEventRepo.InsertAsync(
+                            eventTime,
                             GlobalValue.SessionId,
                             action,
                             workLocationId,
@@ -342,7 +594,6 @@ namespace WATA.LIS
                             post.body,
                             "RestClientPost"
                         );
-                        // 동시에 포즈/센서 스냅샷 한 건 저장 (최근 캐시 사용)
                         long x = 0, y = 0, t = 0;
                         string zoneId = null, zoneName = null, projectId = null, mappingId = null, mapId = null, vehicleId = null;
                         int? gross = null, right = null, left = null, dist = null, rfidCnt = null, rfidAvg = null;
@@ -365,12 +616,14 @@ namespace WATA.LIS
                             rfidAvg = _lastRfidAvgRssi;
                         }
                         _ = _actionPoseRepo.InsertAsync(
+                            eventTime,
                             GlobalValue.SessionId,
                             x, y, t,
                             zoneId, zoneName, projectId, mappingId, mapId, vehicleId,
                             action
                         );
                         _ = _actionBundleRepo.InsertAsync(
+                            eventTime,
                             GlobalValue.SessionId,
                             gross, right, left, dist, rfidCnt, rfidAvg
                         );
@@ -380,10 +633,65 @@ namespace WATA.LIS
                 _eventAggregator?.GetEvent<RestClientPostEvent>().Subscribe(HandleActionPost, ThreadOption.BackgroundThread, true);
                 _eventAggregator?.GetEvent<RestClientPostEvent_dev>().Subscribe(HandleActionPost, ThreadOption.BackgroundThread, true);
             }
-            catch
+            catch (PostgresException ex)
             {
-                // DB가 없어도 앱은 계속 동작 (로그만 사용)
+                try { Tools.Log($"DB init failed (PG): {ex.SqlState} {ex.MessageText}", Tools.ELogType.SystemLog); } catch { }
             }
+            catch (Exception ex)
+            {
+                try { Tools.Log($"DB init failed: {ex.Message}", Tools.ELogType.SystemLog); } catch { }
+            }
+        }
+
+        private async Task LogAlarmActionAsync(DateTimeOffset eventTime, string code, string state, long? durationMs)
+        {
+            try
+            {
+                var payload = new JObject
+                {
+                    ["code"] = code,
+                    ["state"] = state,
+                    ["durationMs"] = durationMs != null ? new JValue(durationMs.Value) : null,
+                    ["errors"] = WATA.LIS.Core.Common.SysAlarm.CurrentErr
+                };
+                string body = payload.ToString();
+                await _actionEventRepo.InsertAsync(
+                    eventTime,
+                    GlobalValue.SessionId,
+                    action: state == "raise" ? "alarm_raise" : "alarm_clear",
+                    workLocationId: null,
+                    loadId: null,
+                    epc: null,
+                    cepc: null,
+                    requestUrl: "SysAlarm",
+                    requestBodyJson: body,
+                    source: "SysAlarm"
+                );
+                long x = 0, y = 0, t = 0;
+                string zoneId = null, zoneName = null, projectId = null, mappingId = null, mapId = null, vehicleId = null;
+                int? gross = null, right = null, left = null, dist = null, rfidCnt = null, rfidAvg = null;
+                lock (_snapshotLock)
+                {
+                    if (_lastNavX.HasValue) x = _lastNavX.Value;
+                    if (_lastNavY.HasValue) y = _lastNavY.Value;
+                    if (_lastNavT.HasValue) t = _lastNavT.Value;
+                    zoneId = _lastZoneId;
+                    zoneName = _lastZoneName;
+                    projectId = _lastProjectId;
+                    mappingId = _lastMappingId;
+                    mapId = _lastMapId;
+                    vehicleId = _lastVehicleId;
+                    gross = _lastGross;
+                    right = _lastRight;
+                    left = _lastLeft;
+                    dist = _lastDistanceMm;
+                    rfidCnt = _lastRfidCount;
+                    rfidAvg = _lastRfidAvgRssi;
+                }
+                await _actionPoseRepo.InsertAsync(eventTime, GlobalValue.SessionId, x, y, t, zoneId, zoneName, projectId, mappingId, mapId, vehicleId, state);
+                await _actionBundleRepo.InsertAsync(eventTime, GlobalValue.SessionId, gross, right, left, dist, rfidCnt, rfidAvg);
+            }
+            catch { }
         }
 
         protected override Window CreateShell()
@@ -391,7 +699,7 @@ namespace WATA.LIS
             var mainWindow = Container.Resolve<MainWindow>();
             mainWindow.WindowState = WindowState.Maximized;
             mainWindow.ResizeMode = ResizeMode.CanMinimize;
-            mainWindow.ResizeMode = ResizeMode.CanResize;
+            mainWindow.ResizeMode = WindowStyle.None == WindowStyle.None ? System.Windows.ResizeMode.CanResize : System.Windows.ResizeMode.CanResize; // keep same
             mainWindow.WindowStyle = WindowStyle.None;
             return Container.Resolve<MainWindow>();
         }
@@ -449,7 +757,6 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<IDisplayModel>())
                 containerRegistry.RegisterSingleton<IDisplayModel, DisplayConfigModel>();
 
-            // ILogger 등록
             containerRegistry.RegisterSingleton<ILoggerFactory, LoggerFactory>();
             containerRegistry.Register(typeof(ILogger<>), typeof(Logger<>));
 
@@ -457,58 +764,58 @@ namespace WATA.LIS
 
             if (mainobj.device_type == "fork_lift_v1")
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();//현재 안씀 FH-920 RF수신기 2023.09.27 현재는 쓰지 않음
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();
             }
-            else if (mainobj.device_type == "pantos")// 판토스향
+            else if (mainobj.device_type == "pantos")
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();//현재 지게차용  Apulse RF수신기
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();
             }
-            else if (mainobj.device_type == "calt")//칼트향
+            else if (mainobj.device_type == "calt")
             {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();//현재 지게차용  Apulse RF수신기
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();
 
             }
-            else if (mainobj.device_type == "gate_checker")//창고방 Gate Sender 현재는 안씀
+            else if (mainobj.device_type == "gate_checker")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_GateChecker>();
             }
-            else if (mainobj.device_type == "DPS")//DPS DPS 컨트롤 테스트때 사용
+            else if (mainobj.device_type == "DPS")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_DPS>();
             }
-            else if (mainobj.device_type == "NXDPOC")//NXD POC 
+            else if (mainobj.device_type == "NXDPOC")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();
             }
-            else if (mainobj.device_type == "WIS_KINTEX")//국내전시회 3x3 선반용
+            else if (mainobj.device_type == "WIS_KINTEX")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();
             }
-            else if (mainobj.device_type == "CTR")//CTR POC
+            else if (mainobj.device_type == "CTR")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();
             }
-            else if (mainobj.device_type == "Singapore")//Singapore POC
+            else if (mainobj.device_type == "Singapore")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();
             }
-            else if (mainobj.device_type == "Clark")//Clark POC
+            else if (mainobj.device_type == "Clark")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();
             }
-            else if (mainobj.device_type == "Japan")//일본 시연
+            else if (mainobj.device_type == "Japan")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();
             }
-            else if (mainobj.device_type == "DHL_KOREA")//DHL KOREA 시연
+            else if (mainobj.device_type == "DHL_KOREA")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();
             }
-            else if (mainobj.device_type == "WATA")//내부 시연
+            else if (mainobj.device_type == "WATA")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();
             }
-            else if (mainobj.device_type == "Pantos_MTV")//LX판토스 시화 MTV 서비스 코드
+            else if (mainobj.device_type == "Pantos_MTV")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_PantosMTV>();
             }
@@ -528,7 +835,6 @@ namespace WATA.LIS
             moduleCatalog.AddModule<LIVOXModule>();
         }
 
-        // helpers: rolling average maintenance (FIFO queue bounded to windowSize)
         private static void PushAndAverage(Queue<int> q, ref int sum, int value, int windowSize, out int avg)
         {
             sum += value;

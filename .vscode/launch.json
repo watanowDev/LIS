@@ -1,0 +1,46 @@
+{
+  // VS Code launch configurations for WPF app and console smoke tests
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Launch WPF (Debug)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build solution (Debug)",
+      "program": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0/WATA.LIS.exe",
+      "cwd": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0",
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "justMyCode": true
+    },
+    {
+      "name": ".NET Launch SmokeTests: config",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build solution (Debug)",
+      "program": "${workspaceFolder}/WATA.LIS/WATA.LIS.SmokeTests/bin/Debug/net8.0-windows10.0.18362.0/WATA.LIS.SmokeTests.exe",
+      "args": ["config"],
+      "cwd": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0",
+      "env": {
+        "WATA_LIS_WD": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0"
+      },
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": ".NET Launch SmokeTests: db",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build solution (Debug)",
+      "program": "${workspaceFolder}/WATA.LIS/WATA.LIS.SmokeTests/bin/Debug/net8.0-windows10.0.18362.0/WATA.LIS.SmokeTests.exe",
+      "args": ["db"],
+      "cwd": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0",
+      "env": {
+        "WATA_LIS_WD": "${workspaceFolder}/WATA.LIS/WATA.LIS/bin/Debug/net8.0-windows10.0.18362.0"
+        // Set WATA_LIS_CONN in your system env or .env file (not committed)
+      },
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "/hpAEPapvJs=",
+  "dgSpecHash": "3iVFZYDQ5is=",
   "success": true,
-  "projectFilePath": "c:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.Heartbeat.Services\\WATA.LIS.Heartbeat.Services.csproj",
+  "projectFilePath": "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.Heartbeat.Services\\WATA.LIS.Heartbeat.Services.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.1\\microsoft.extensions.dependencyinjection.9.0.1.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.1\\microsoft.extensions.dependencyinjection.abstractions.9.0.1.nupkg.sha512",

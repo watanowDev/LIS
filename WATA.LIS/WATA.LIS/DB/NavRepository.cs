@@ -35,6 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_nav_time ON nav_reading(time DESC);";
         }
 
         public async Task InsertAsync(
+            System.DateTimeOffset time,
             string sessionId,
             long x,
             long y,
@@ -48,23 +49,24 @@ CREATE INDEX IF NOT EXISTS idx_nav_time ON nav_reading(time DESC);";
             string vehicleId,
             CancellationToken ct = default)
         {
-            const string sql = @"INSERT INTO nav_reading(
-  time, session_id, navi_x, navi_y, navi_t, zone_id, zone_name, project_id, mapping_id, map_id, result, vehicle_id)
-VALUES (now(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);";
+                        const string sql = @"INSERT INTO nav_reading(
+    time, session_id, navi_x, navi_y, navi_t, zone_id, zone_name, project_id, mapping_id, map_id, result, vehicle_id)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue(sessionId);
-            cmd.Parameters.AddWithValue(x);
-            cmd.Parameters.AddWithValue(y);
-            cmd.Parameters.AddWithValue(t);
-            cmd.Parameters.AddWithValue(zoneId ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(zoneName ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(projectId ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(mappingId ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(mapId ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(result ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue(vehicleId ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(time);
+                        cmd.Parameters.AddWithValue(sessionId);
+                        cmd.Parameters.AddWithValue(x);
+                        cmd.Parameters.AddWithValue(y);
+                        cmd.Parameters.AddWithValue(t);
+                        cmd.Parameters.AddWithValue(zoneId ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(zoneName ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(projectId ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(mappingId ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(mapId ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(result ?? (object)System.DBNull.Value);
+                        cmd.Parameters.AddWithValue(vehicleId ?? (object)System.DBNull.Value);
             await cmd.ExecuteNonQueryAsync(ct);
         }
     }

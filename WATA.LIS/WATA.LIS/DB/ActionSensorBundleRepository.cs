@@ -32,6 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_action_sensor_bundle_time ON action_sensor_bundle
         }
 
         public async Task InsertAsync(
+            System.DateTimeOffset time,
             string sessionId,
             int? gross,
             int? right,
@@ -43,10 +44,12 @@ CREATE INDEX IF NOT EXISTS idx_action_sensor_bundle_time ON action_sensor_bundle
         {
             const string sql = @"INSERT INTO action_sensor_bundle (
   time, session_id, gross_weight, right_weight, left_weight, distance_mm, rfid_count, rfid_avg_rssi)
-VALUES (now(), $1, $2, $3, $4, $5, $6, $7);";
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+ON CONFLICT (time, session_id) DO NOTHING;";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue(time);
             cmd.Parameters.AddWithValue(sessionId);
             cmd.Parameters.AddWithValue((object?)gross ?? System.DBNull.Value);
             cmd.Parameters.AddWithValue((object?)right ?? System.DBNull.Value);

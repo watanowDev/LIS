@@ -37,6 +37,7 @@ CREATE INDEX IF NOT EXISTS idx_weight_time ON weight_reading(time DESC);";
         }
 
         public async Task InsertAsync(
+            System.DateTimeOffset time,
             string sessionId,
             int grossWeight,
             int rightWeight,
@@ -52,26 +53,27 @@ CREATE INDEX IF NOT EXISTS idx_weight_time ON weight_reading(time DESC);";
             bool outOfTolerance,
             CancellationToken ct = default)
         {
-            const string sql = @"INSERT INTO weight_reading(
-  time, session_id, gross_weight, right_weight, left_weight, right_battery, left_battery,
-  right_is_charging, left_is_charging, right_online, left_online, gross_net, over_load, out_of_tolerance)
-VALUES (now(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);";
+                        const string sql = @"INSERT INTO weight_reading(
+    time, session_id, gross_weight, right_weight, left_weight, right_battery, left_battery,
+    right_is_charging, left_is_charging, right_online, left_online, gross_net, over_load, out_of_tolerance)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue(sessionId);
-            cmd.Parameters.AddWithValue(grossWeight);
-            cmd.Parameters.AddWithValue(rightWeight);
-            cmd.Parameters.AddWithValue(leftWeight);
-            cmd.Parameters.AddWithValue(rightBattery);
-            cmd.Parameters.AddWithValue(leftBattery);
-            cmd.Parameters.AddWithValue(rightIsCharging);
-            cmd.Parameters.AddWithValue(leftIsCharging);
-            cmd.Parameters.AddWithValue(rightOnline);
-            cmd.Parameters.AddWithValue(leftOnline);
-            cmd.Parameters.AddWithValue(grossNet);
-            cmd.Parameters.AddWithValue(overLoad);
-            cmd.Parameters.AddWithValue(outOfTolerance);
+                        cmd.Parameters.AddWithValue(time);
+                        cmd.Parameters.AddWithValue(sessionId);
+                        cmd.Parameters.AddWithValue(grossWeight);
+                        cmd.Parameters.AddWithValue(rightWeight);
+                        cmd.Parameters.AddWithValue(leftWeight);
+                        cmd.Parameters.AddWithValue(rightBattery);
+                        cmd.Parameters.AddWithValue(leftBattery);
+                        cmd.Parameters.AddWithValue(rightIsCharging);
+                        cmd.Parameters.AddWithValue(leftIsCharging);
+                        cmd.Parameters.AddWithValue(rightOnline);
+                        cmd.Parameters.AddWithValue(leftOnline);
+                        cmd.Parameters.AddWithValue(grossNet);
+                        cmd.Parameters.AddWithValue(overLoad);
+                        cmd.Parameters.AddWithValue(outOfTolerance);
             await cmd.ExecuteNonQueryAsync(ct);
         }
     }

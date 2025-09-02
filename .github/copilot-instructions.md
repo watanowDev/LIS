@@ -30,6 +30,11 @@
 - 실행 시 설정 경로: `<WorkingDir>\\SystemConfig\\SystemConfig.json` (참조: `Core/Parser/SystemJsonConfigParser.cs`)
 - Log4Net 설정: `<WorkingDir>\\Log4Net_WATA.xml` (참조: `Core/Common/Tools.cs`), 실행 파일과 같은 위치 필요
 - 로깅 사용: `Tools.Log(message, Tools.ELogType.XXX)` 카테고리 기반 + UI 로그 버퍼 동기화
+  - log4net 동작
+    - 설정 파일: 실행 폴더의 `Log4Net_WATA.xml`을 사용하여 appender/패턴/레벨을 제어(코드 수정 없이 변경 가능)
+    - 즉시 플러시: 파일 appender에 `<ImmediateFlush value="true"/>` 설정 권장(부트 로그 유실 방지)
+    - 초기 레벨 상향: 트러블슈팅 시 `<root><level value="DEBUG"/></root>`로 일시 상향, 정상화 후 INFO로 복귀
+    - 출력 위치: 기본 `LOG/` 폴더에 롤링 파일 생성. `Tools.Log(...)` 호출은 UI 출력뿐 아니라 파일에도 기록됨
 
 ## 컴포넌트 간 통신
 - Prism EventAggregator를 메시지 버스로 사용(pub/sub)
@@ -59,6 +64,17 @@
   - 출력 경로에 실행 파일과 필수 파일 존재 확인:
     - `WATA.LIS/WATA.LIS/bin/<Config>/net8.0-windows10.0.18362.0/WATA.LIS.exe`
     - 같은 폴더에 `SystemConfig/SystemConfig.json`, `Log4Net_WATA.xml`
+  - 콘솔 스모크 테스트(옵션 B)
+    - 프로젝트: `WATA.LIS/WATA.LIS.SmokeTests` (Console, TFM: `net8.0-windows10.0.18362.0`)
+    - 목적: UI 없이 핵심만 빠르게 검증
+      - `config`: `SystemJsonConfigParser`가 `SystemConfig/SystemConfig.json`을 정상 로드하는지 확인
+      - `db`: PostgreSQL 스키마/테이블 기본 마이그레이션 수행(`MigrationService.EnsureSchemaAsync`)
+    - 실행 예시(기본 작업 디렉터리는 자동으로 UI Debug 출력 폴더로 설정 시도; 필요 시 환경변수로 강제)
+      - 모든 테스트: `dotnet run -c Release --project .\\WATA.LIS\\WATA.LIS.SmokeTests -- all`
+      - Config만: `dotnet run -c Release --project .\\WATA.LIS\\WATA.LIS.SmokeTests -- config`
+      - DB만: `dotnet run -c Release --project .\\WATA.LIS\\WATA.LIS.SmokeTests -- db`
+      - 강제 작업 디렉터리: 환경변수 `WATA_LIS_WD`에 UI 출력 폴더 경로 지정
+      - DB 연결문자열: 환경변수 `WATA_LIS_CONN`로 지정 없으면 기본값 사용(`Search Path="lis_core",public` 포함 권장)
 - 실패 시 확인 포인트
   - .NET 8 SDK + WindowsDesktop(WPF) 설치 여부
   - NuGet 복원 경로 및 사내 패키지 저장소(필요 시) 접근성
@@ -82,3 +98,6 @@
 비고
 - 테스트 프로젝트는 없음. 앱 실행과 모듈별 로그로 동작 검증
 - 주석/문자열에 한국어 다수. `device_type` 확장 시 기존 명칭 유지 권장
+
+## 주의사항
+- **수정 권한:** 핵심 로직, 알고리즘, 시퀀스는 Copilot이 임의로 수정이 불가합니다. Copilot은 보조 도구로 사용하며, 신규 기능 및 중요한 변경 사항은 반드시 개발자에게 제안 후 개발자의 검토 및 승인이 있을 시에 만 적용됩니다.

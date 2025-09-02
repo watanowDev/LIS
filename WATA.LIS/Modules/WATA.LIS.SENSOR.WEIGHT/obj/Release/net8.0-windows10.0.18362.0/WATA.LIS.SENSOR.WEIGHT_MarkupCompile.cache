@@ -4,7 +4,7 @@
 library
 C#
 .cs
-c:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.WEIGHT\obj\Release\net8.0-windows10.0.18362.0\
+C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.WEIGHT\obj\Release\net8.0-windows10.0.18362.0\
 WATA.LIS.SENSOR.WEIGHT
 none
 false
@@ -13,7 +13,7 @@ TRACE;RELEASE;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS10_0_18362_0;NET5_0_OR_GREATE
 11115245823
 
 7-1922686964
-2238617717
+223-1259390564
 Views\WeightView.xaml;
 
 False

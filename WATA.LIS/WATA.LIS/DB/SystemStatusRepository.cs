@@ -1,3 +1,4 @@
+﻿#nullable enable
 using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
@@ -29,19 +30,20 @@ CREATE INDEX IF NOT EXISTS idx_system_status_time ON system_status_tick(time DES
             await cmd.ExecuteNonQueryAsync(ct);
         }
 
-        public async Task InsertAsync(bool backendOk, bool networkOk, bool setAllReady, string errorCode, string message, string sessionId, CancellationToken ct = default)
+    public async Task InsertAsync(System.DateTimeOffset time, bool backendOk, bool networkOk, bool setAllReady, string errorCode, string message, string sessionId, CancellationToken ct = default)
         {
             const string sql = @"INSERT INTO system_status_tick(time, session_id, backend_ok, network_ok, set_all_ready, error_code, message)
-VALUES (now(), $1, $2, $3, $4, $5, $6);";
+VALUES ($1, $2, $3, $4, $5, $6, $7);";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue(sessionId);
-            cmd.Parameters.AddWithValue(backendOk);
-            cmd.Parameters.AddWithValue(networkOk);
-            cmd.Parameters.AddWithValue(setAllReady);
-            cmd.Parameters.AddWithValue((object?)errorCode ?? (object)System.DBNull.Value);
-            cmd.Parameters.AddWithValue((object?)message ?? (object)System.DBNull.Value);
+        cmd.Parameters.AddWithValue(time);
+        cmd.Parameters.AddWithValue(sessionId);
+        cmd.Parameters.AddWithValue(backendOk);
+        cmd.Parameters.AddWithValue(networkOk);
+        cmd.Parameters.AddWithValue(setAllReady);
+        cmd.Parameters.AddWithValue((object?)errorCode ?? (object)System.DBNull.Value);
+        cmd.Parameters.AddWithValue((object?)message ?? (object)System.DBNull.Value);
             await cmd.ExecuteNonQueryAsync(ct);
         }
     }
