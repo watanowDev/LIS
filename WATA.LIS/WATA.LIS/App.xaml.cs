@@ -21,6 +21,12 @@ using WATA.LIS.SENSOR.LIVOX;
 using WATA.LIS.Core.Services.ServiceImpl;
 using WATA.LIS.Heartbeat.Services;
 using Microsoft.Extensions.Logging;
+using WATA.LIS.DB;
+using WATA.LIS.Core.Common;
+using Prism.Events;
+using WATA.LIS.Core.Events.WeightSensor;
+using WATA.LIS.Core.Events.BackEnd;
+using System.Threading.Tasks;
 
 namespace WATA.LIS
 {
@@ -30,15 +36,138 @@ namespace WATA.LIS
     public partial class App
     {
         private HeartbeatService _heartbeatService;
+    private SessionRepository _sessionRepo;
+    private SystemStatusRepository _statusRepo;
+    private System.Windows.Threading.DispatcherTimer _statusTimer;
+    private WeightRepository _weightRepo;
+    private IEventAggregator _eventAggregator;
+    private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
+            // DB 마이그레이션 및 세션 시작 기록 (비차단)
+            var connectionString = "Host=localhost;Username=postgres;Password=wata2019;Database=forkliftDB"; // TODO: SystemConfig에서 이동 가능
+            _ = InitializeDatabaseAsync(connectionString);
+
             // HeartbeatService 초기화 및 시작
             var logger = Container.Resolve<ILogger<HeartbeatService>>();
             _heartbeatService = new HeartbeatService(logger);
             _heartbeatService.Start();
+
+            // EventAggregator 구독 준비
+            _eventAggregator = Container.Resolve<IEventAggregator>();
+            // Backend 상태 이벤트를 수신하여 네트워크/백엔드 상태를 추정
+            _eventAggregator
+                .GetEvent<BackEndStatusEvent>()
+                .Subscribe(status =>
+                {
+                    // status: 1(OK), -1(NG)
+                    _networkOkFromBackend = status != -1;
+                    // GlobalValue.IS_ERROR.backend 는 다른 곳에서도 갱신되지만, 보수적으로 동기화
+                    GlobalValue.IS_ERROR.backend = _networkOkFromBackend;
+                }, ThreadOption.BackgroundThread, true);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            // 세션 종료 마킹 (fire-and-forget)
+            _ = Task.Run(async () =>
+            {
+                try { if (_sessionRepo != null) await _sessionRepo.MarkEndAsync(GlobalValue.SessionId); }
+                catch { }
+            });
+            base.OnExit(e);
+        }
+
+        private async Task InitializeDatabaseAsync(string cs)
+        {
+            try
+            {
+                var migrator = new MigrationService(cs);
+                await migrator.EnsureSchemaAsync();
+
+                _sessionRepo = new SessionRepository(cs);
+                _statusRepo = new SystemStatusRepository(cs);
+                await _statusRepo.EnsureTableAsync();
+                var machine = Environment.MachineName;
+                await _sessionRepo.UpsertStartAsync(GlobalValue.SessionId, GlobalValue.SystemVersion, machine);
+
+                // 주기적 상태 기록 (1초 간격)
+                _statusTimer = new System.Windows.Threading.DispatcherTimer();
+                _statusTimer.Interval = TimeSpan.FromSeconds(1);
+                _statusTimer.Tick += async (_, __) =>
+                {
+                    try
+                    {
+                        // 기존 Tools.Log는 유지. 여기서는 상태 스냅샷만 기록.
+                        // backend_ok: IS_ERROR.backend 가 true일 때 OK
+                        bool backendOk = GlobalValue.IS_ERROR.backend;
+                        // network_ok: 백엔드 통신 이벤트 기반 추정 (없으면 backendOk로 대체)
+                        bool networkOk = _networkOkFromBackend || backendOk;
+
+                        // setAllReady: 주요 센서/백엔드 OK의 합성
+                        bool setAllReady = GlobalValue.IS_ERROR.camera &&
+                                           GlobalValue.IS_ERROR.distance &&
+                                           GlobalValue.IS_ERROR.rfid &&
+                                           GlobalValue.IS_ERROR.backend;
+
+                        // 오류 코드/메시지 구성 (미정의면 null)
+                        string errorCode = null;
+                        string message = null;
+                        if (!setAllReady)
+                        {
+                            var notReady = new System.Collections.Generic.List<string>();
+                            if (!GlobalValue.IS_ERROR.camera) notReady.Add("camera");
+                            if (!GlobalValue.IS_ERROR.distance) notReady.Add("distance");
+                            if (!GlobalValue.IS_ERROR.rfid) notReady.Add("rfid");
+                            if (!GlobalValue.IS_ERROR.backend) notReady.Add("backend");
+                            errorCode = string.Join(",", notReady);
+                            message = notReady.Count > 0 ? ($"not ready: {string.Join(", ", notReady)}") : null;
+                        }
+
+                        await _statusRepo.InsertAsync(backendOk, networkOk, setAllReady, errorCode, message, GlobalValue.SessionId);
+                    }
+                    catch { }
+                };
+                _statusTimer.Start();
+
+                // weight_reading 테이블 준비 및 구독 연결
+                _weightRepo = new WeightRepository(cs);
+                await _weightRepo.EnsureTableAsync();
+                if (_eventAggregator != null)
+                {
+                    _eventAggregator
+                        .GetEvent<WeightSensorEvent>()
+                        .Subscribe(async model =>
+                        {
+                            try
+                            {
+                                await _weightRepo.InsertAsync(
+                                    GlobalValue.SessionId,
+                                    model.GrossWeight,
+                                    model.RightWeight,
+                                    model.LeftWeight,
+                                    model.RightBattery,
+                                    model.LeftBattery,
+                                    model.RightIsCharging,
+                                    model.leftIsCharging,
+                                    model.RightOnline,
+                                    model.LeftOnline,
+                                    model.GrossNet,
+                                    model.OverLoad,
+                                    model.OutOfTolerance
+                                );
+                            }
+                            catch { }
+                        }, ThreadOption.BackgroundThread, true);
+                }
+            }
+            catch
+            {
+                // DB가 없어도 앱은 계속 동작 (로그만 사용)
+            }
         }
 
         protected override Window CreateShell()
