@@ -13,4 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\WATA.LIS.Core\WATA.LIS.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MetaData\" />
+  </ItemGroup>
 </Project>

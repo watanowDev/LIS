@@ -4,7 +4,7 @@
 library
 C#
 .cs
-C:\Users\USER\Source\Repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Debug\net8.0-windows10.0.18362.0\
+C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\obj\Debug\net8.0-windows10.0.18362.0\
 WATA.LIS.SENSOR.NAV
 none
 false
@@ -13,8 +13,8 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS10_0_18362_0;NET5_0_OR_GREATER;
 1799831344
 
 101505466777
-222-530228156
+2221351635087
 Views\NAV_View.xaml;
 
-False
+True
 

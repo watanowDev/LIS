@@ -51,7 +51,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             //mCheckConnectionTimer.Start();
 
             mGetInventoryTimer = new DispatcherTimer();
-            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 250);
+            mGetInventoryTimer.Interval = new TimeSpan(0, 0, 0, 0, 750);
             mGetInventoryTimer.Tick += new EventHandler(TagReadTimer);
 
             RfidReaderInit();
@@ -126,7 +126,7 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             try
             {
                 //Start reading
-                TagReadData[] tagsRead = await Task.Run(() => reader.Read(200));
+                TagReadData[] tagsRead = await Task.Run(() => reader.Read(650));
 
                 // If no tags are read, return
                 if (tagsRead.Length == 0)
@@ -202,10 +202,10 @@ namespace WATA.LIS.SENSOR.UHF_RFID.Sensor
             {
                 Keonn2ch_Model keonn2chEventModel = new Keonn2ch_Model();
                 keonn2chEventModel.CONNECTED = true;
-                keonn2chEventModel.EPC = tag.EpcString;
-                keonn2chEventModel.TS = tag.Time;
-                keonn2chEventModel.RSSI = tag.Rssi;
-                keonn2chEventModel.READCNT = tag.ReadCount;
+                keonn2chEventModel.EPC = tagsRead.FirstOrDefault().EpcString;
+                keonn2chEventModel.TS = tagsRead.FirstOrDefault().Time;
+                keonn2chEventModel.RSSI = tagsRead.FirstOrDefault().Rssi;
+                keonn2chEventModel.READCNT = tagsRead.FirstOrDefault().ReadCount;
 
                 eventModels.Add(keonn2chEventModel);
             }

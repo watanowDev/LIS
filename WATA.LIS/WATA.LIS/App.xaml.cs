@@ -26,6 +26,9 @@ using WATA.LIS.Core.Common;
 using Prism.Events;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Events.BackEnd;
+using WATA.LIS.Core.Events.DistanceSensor;
+using WATA.LIS.Core.Events.RFID;
+using WATA.LIS.Core.Events.NAVSensor;
 using System.Threading.Tasks;
 
 namespace WATA.LIS
@@ -40,6 +43,9 @@ namespace WATA.LIS
     private SystemStatusRepository _statusRepo;
     private System.Windows.Threading.DispatcherTimer _statusTimer;
     private WeightRepository _weightRepo;
+    private DistanceRepository _distanceRepo;
+    private RfidAggregateRepository _rfidAggRepo;
+    private NavRepository _navRepo;
     private IEventAggregator _eventAggregator;
     private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
@@ -163,6 +169,61 @@ namespace WATA.LIS
                             catch { }
                         }, ThreadOption.BackgroundThread, true);
                 }
+
+                // distance_reading 테이블 준비 및 구독 연결
+                _distanceRepo = new DistanceRepository(cs);
+                await _distanceRepo.EnsureTableAsync();
+                _eventAggregator?.GetEvent<DistanceSensorEvent>()
+                    .Subscribe(async model =>
+                    {
+                        try
+                        {
+                            await _distanceRepo.InsertAsync(GlobalValue.SessionId, model.Distance_mm, model.connected);
+                        }
+                        catch { }
+                    }, ThreadOption.BackgroundThread, true);
+
+                // rfid_read_agg 테이블 준비 및 구독 연결 (Keonn2ch 우선)
+                _rfidAggRepo = new RfidAggregateRepository(cs);
+                await _rfidAggRepo.EnsureTableAsync();
+                _eventAggregator?.GetEvent<Keonn2chEvent>()
+                    .Subscribe(async list =>
+                    {
+                        try
+                        {
+                            if (list == null) return;
+                            foreach (var item in list)
+                            {
+                                await _rfidAggRepo.Insert2chAsync(GlobalValue.SessionId, item.EPC, item.RSSI, item.READCNT);
+                            }
+                        }
+                        catch { }
+                    }, ThreadOption.BackgroundThread, true);
+
+                // NAV pose 기록
+                _navRepo = new NavRepository(cs);
+                await _navRepo.EnsureTableAsync();
+                _eventAggregator?.GetEvent<NAVSensorEvent>()
+                    .Subscribe(async nav =>
+                    {
+                        try
+                        {
+                            await _navRepo.InsertAsync(
+                                GlobalValue.SessionId,
+                                nav.naviX,
+                                nav.naviY,
+                                nav.naviT,
+                                nav.zoneId,
+                                nav.zoneName,
+                                nav.projectId,
+                                nav.mappingId,
+                                nav.mapId,
+                                nav.result,
+                                nav.vehicleId
+                            );
+                        }
+                        catch { }
+                    }, ThreadOption.BackgroundThread, true);
             }
             catch
             {

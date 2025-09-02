@@ -56,6 +56,7 @@ namespace WATA.LIS.VISION.CAM
                 visioncam.Init();
 
                 DetectionRcv detectionRcv = new DetectionRcv(_eventAggregator);
+                DeepImgAnalysis deepImgAnalysis = new DeepImgAnalysis(_eventAggregator);
             }
 
             //v2detector = new V2Detector();
@@ -75,7 +76,7 @@ namespace WATA.LIS.VISION.CAM
         private void DoV2Detector()
         {
             //// NationTest.jpg 파일 절대 경로
-            //string imagePath = @"C:\Users\USER\source\repos\LIS-ForkLift_mswon\WATA.LIS\Modules\WATA.LIS.VISION.CAM\Model\NationTest.jpg";
+            //string imagePath = @"C:\\Users\\USER\\source\\repos\\LIS-ForkLift_mswon\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\Model\\NationTest.jpg";
 
             //// 파일 존재 여부 확인
             //if (!File.Exists(imagePath))

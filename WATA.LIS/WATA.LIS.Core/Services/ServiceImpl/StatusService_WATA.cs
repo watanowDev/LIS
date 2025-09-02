@@ -103,7 +103,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_event_QRcode = "";
         private int m_no_QRcnt;
         private int m_visionPickupCnt;
+        private int m_detectionPickupCnt;
         private int m_visionDropCnt;
+        private int m_detectionDropCnt;
         private int m_visionPickupTime;
         private uint m_noDetectPersonCnt = 50;
         private DateTime lastAlertTime = DateTime.MinValue;
@@ -112,6 +114,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private string m_event_NationCode = "";
         private int m_no_NationCodeCnt = 0;
         private bool m_visionCamReady = false;
+        private int _deepCaptureCooldown = 0; // 이미지 캡처 쿨다운
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -119,6 +122,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private readonly int m_nav_sample_size = 10;
         private string m_ActionZoneId = "";
         private string m_ActionZoneName = "";
+        private string m_DetectionZoneId = "";
+        private string m_DetectionZoneName = "";
         private bool m_lastRotate = true;
 
         // LiDAR_3D 데이터 클래스
@@ -171,6 +176,19 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         //Stopwatch m_stopwatchPickDrop = new Stopwatch();
         const int m_timeoutPickDrop = 5000;
 
+        // Zone 캐시
+        private static List<ZoneEntry> s_zoneListCache;
+        private sealed class ZoneEntry
+        {
+            public string geofence_sub_type { get; set; }
+            public string zone_name { get; set; }
+            public string zone_id { get; set; }
+            public double x_abs_uncorrected { get; set; }
+            public double y_abs_uncorrected { get; set; }
+            public double x_correction { get; set; }
+            public double y_correction { get; set; }
+        }
+
 
         public StatusService_WATA(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
                                     IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel,
@@ -186,6 +204,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<DetectionRcvEvent>().Subscribe(OnDetectionRcvEvent, ThreadOption.BackgroundThread, true);
 
 
             m_weightConfig = (WeightConfigModel)weightmodel;
@@ -300,6 +319,32 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             IndicatorSendTimerEvent(null, null);
 
             //m_stopwatchPickDrop.Start();
+
+            if (s_zoneListCache == null)
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                // 솔루션 루트: ...\WATA.LIS\WATA.LIS\bin\Debug\net8.0-... 에서 4단계 상위로
+                string solutionRoot = System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, @"..\..\..\.."));
+
+                // 최종 목표 경로: C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.NAV\MetaData\zoneList.json
+                string zonePath = System.IO.Path.Combine(solutionRoot, @"Modules\WATA.LIS.SENSOR.NAV\MetaData\zoneList.json");
+
+                // 폴백 후보들(개발/배포 환경 대비)
+                if (!System.IO.File.Exists(zonePath))
+                {
+                    string candidate1 = System.IO.Path.Combine(baseDir, @"Modules\WATA.LIS.SENSOR.NAV\MetaData\zoneList.json");
+                    string candidate2 = @"Modules\WATA.LIS.SENSOR.NAV\MetaData\zoneList.json";
+
+                    if (System.IO.File.Exists(candidate1)) zonePath = candidate1;
+                    else if (System.IO.File.Exists(candidate2)) zonePath = candidate2;
+                }
+
+                Tools.Log($"[ZONE] zoneList.json path: {zonePath}", Tools.ELogType.SystemLog);
+
+                string json = System.IO.File.ReadAllText(zonePath);
+                s_zoneListCache = JsonConvert.DeserializeObject<List<ZoneEntry>>(json);
+            }
         }
 
         private void SensorReadyTimerEvent(object sender, EventArgs e)
@@ -867,6 +912,71 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
             }
 
+
+
+            if (m_weightConfig.weight_enable != 0 && m_errCnt_weight >= 10 && m_errCnt_weight % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_weight);
+                Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_distanceConfig.distance_enable != 0 && m_errCnt_distance >= 10 && m_errCnt_distance % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_distance);
+                Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_rfidConfig.rfid_enable != 0 && m_errCnt_rfid >= 10 && m_errCnt_rfid % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_rfid);
+                Tools.Log($"RFID disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_visionCamConfig.vision_enable != 0 && m_errCnt_visioncam >= 10 && m_errCnt_visioncam % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_visoncam);
+                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_navConfig.NAV_Enable != 0 && m_errCnt_lidar2d >= 10 && m_errCnt_lidar2d % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar2d);
+                Tools.Log($"2D LiDAR disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_errCnt_lidar3d >= 10 && m_errCnt_lidar3d % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.LiDar3DConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar3d);
+                Tools.Log($"3D LiDAR disconnected!!!", ELogType.SystemLog);
+            }
+
+            if (m_errCnt_indicator >= 10 && m_errCnt_indicator % 10 == 0)
+            {
+                m_isError = true;
+                SysAlarm.AddErrorCodes(SysAlarm.IndicatorConnErr);
+                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
+                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_indicator);
+                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
+            }
+
             if (m_errCnt_weight < 10 &&
                 m_errCnt_distance < 10 &&
                 m_errCnt_rfid < 10 &&
@@ -1261,6 +1371,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
         }
 
+        private void OnDetectionRcvEvent(DectectionRcvModel model)
+        {
+            if (model == null)
+            {
+                return;
+            }
+
+            // DetectionModel Pickup State
+            if (model.PickState == true && model.Detections.Count > 0)
+            {
+                m_detectionPickupCnt++;
+                m_detectionDropCnt = 0;
+            }
+            else
+            {
+                m_detectionPickupCnt = 0;
+                m_detectionDropCnt++;
+            }
+        }
 
         /// <summary>
         /// LiDAR 2D
@@ -1360,6 +1489,50 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 else
                 {
                     Tools.Log($"[ERROR] Can't get cellInfoModel ", ELogType.SystemLog);
+                }
+
+                // zoneList.json 과 비교하여 가장 가까운 zoneId를 m_DetectionZoneId에 할당
+                try
+                {
+                    if (s_zoneListCache != null && s_zoneListCache.Count > 0)
+                    {
+                        long minDistZone = long.MaxValue;
+                        string nearestZoneId = "";
+                        string nearestZoneName = "";
+
+                        foreach (var z in s_zoneListCache)
+                        {
+                            // 보정 적용 후(mm 변환)
+                            double zx_mm = Math.Truncate(z.x_correction * 1000.0);
+                            double zy_mm = Math.Truncate(z.y_correction * 1000.0);
+
+                            long d = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - zx_mm, 2) + Math.Pow(naviY - zy_mm, 2)));
+                            if (d < minDistZone)
+                            {
+                                minDistZone = d;
+                                nearestZoneId = z.zone_id;
+                                nearestZoneName = z.zone_name;
+                            }
+                        }
+
+                        if (minDistZone < distance)
+                        {
+                            m_DetectionZoneId = nearestZoneId;
+                            m_DetectionZoneName = nearestZoneName;
+                        }
+                        else
+                        {
+                            m_DetectionZoneId = "";
+                            m_DetectionZoneName = "";
+                        }
+
+                        Tools.Log($"[ZONE] Detection nearest zoneName={nearestZoneName}, zoneId={m_DetectionZoneId}, dist={minDistZone}mm", Tools.ELogType.ActionLog);
+                    }
+                }
+                catch (Exception zex)
+                {
+                    Tools.Log($"[ERROR] zoneList compare failed: {zex.Message}", ELogType.SystemLog);
+                    m_DetectionZoneId = "";
                 }
             }
             catch (Exception ex)
@@ -1640,7 +1813,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 //if (lowerBound < upperBound)
-                //{
+                // {
                 //    if (angleToItem >= lowerBound && angleToItem <= upperBound)
                 //    {
                 //        backwardCnt++;
@@ -1649,10 +1822,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //    {
                 //        forwardCnt++;
                 //    }
-                //}
-                //else
-                //{
-                //    if (angleToItem >= lowerBound && angleToItem <= upperBound)
+                // }
+                // else
+                // {
+                //    if (angleToItem >= lowerBound && angleToItem <= upperbound)
                 //    {
                 //        backwardCnt++;
                 //    }
@@ -1660,7 +1833,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //    {
                 //        forwardCnt++;
                 //    }
-                //}
+                // }
 
                 //// 가장 최근 naviX, naviY 값과의 거리 계산
                 totaldistance += Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -1670,13 +1843,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 //    Debug.WriteLine($"Backward, count:{backwardCnt}, angle:{angleToItem}");
                 //    m_lastRotate = false;
                 //    return false; // 후진
-                //}
+                //} 
 
                 //if (forwardCnt >= requiredCount)
                 //{
                 //    Debug.WriteLine($"Forward, count:{forwardCnt}, angle:{angleToItem}");
                 //    m_lastRotate = true;
-                //    return true; // 후진
+                //    return true; // 전진
                 //}
 
 
@@ -1699,7 +1872,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             else if (forwardCnt >= requiredCount)
             {
                 Debug.WriteLine($"Forward, count:{forwardCnt}");
-                bf = true; // 후진
+                bf = true; // 전진
                 //bf = false; // 후진
             }
             else
@@ -2659,7 +2832,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
             SendBackEndPickupAction();
 
-            //m_stopwatchPickDrop.Reset();
+            // m_stopwatchPickDrop.Reset();
             //m_stopwatchPickDrop.Start();
         }
 
@@ -2715,7 +2888,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
             SendBackEndDropAction();
 
-            //m_stopwatchPickDrop.Reset();
+            // m_stopwatchPickDrop.Reset();
             //m_stopwatchPickDrop.Start();
 
             // 물류 데이터 초기화

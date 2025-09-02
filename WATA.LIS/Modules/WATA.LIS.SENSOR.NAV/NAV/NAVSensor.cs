@@ -28,13 +28,6 @@ namespace WATA.LIS.SENSOR.NAV
 
         const int ERROR_NAV_RESET_COUNT = 100;
 
-        // [추가] 워치독 완화 및 로깅 강화를 위한 상태 변수
-        private static readonly int NAV_WATCHDOG_MISS_THRESHOLD = 5; // 워치독 타임아웃 누적 허용 횟수(환경에 맞게 조정)
-        private static int s_watchdogMissCount = 0;
-        private static DateTime s_lastReceiveAtUtc = DateTime.MinValue;
-        private static int s_lastReceiveSize = 0;
-        private static string s_lastReceiveSample = string.Empty;
-
         static byte gNAVCommand = 0;
 
         static byte gNAVTransTimeOutCount;
@@ -99,7 +92,7 @@ namespace WATA.LIS.SENSOR.NAV
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            const int navFreezeThreshold = 1200; // 100ms * 1200 = 120초
+            const int navFreezeThreshold = 30; // 100ms * 30 = 3초
 
             while (true)
             {
@@ -113,27 +106,8 @@ namespace WATA.LIS.SENSOR.NAV
                         nav350_socket_open_once = true;
                     }
 
-                    // [변경] 워치독 완화: 바로 끊지 말고 누적 미스 카운트 사용
                     if (Globals.getTimerCounter(Globals.nav_rcv) == 0) // NAV350 통신 연결 상태 확인
                     {
-                        s_watchdogMissCount++;
-
-                        if (s_watchdogMissCount < NAV_WATCHDOG_MISS_THRESHOLD)
-                        {
-                            Tools.Log($"[NAV] Watchdog miss {s_watchdogMissCount}/{NAV_WATCHDOG_MISS_THRESHOLD}. " +
-                                      $"LastRxAt={s_lastReceiveAtUtc:O}, Age={(DateTime.UtcNow - s_lastReceiveAtUtc).TotalSeconds:F1}s, " +
-                                      $"Size={s_lastReceiveSize}, Sample='{s_lastReceiveSample}'", Tools.ELogType.NAVLog);
-                            Thread.Sleep(100);
-                            continue;
-                        }
-
-                        // 임계 초과 시 소켓 종료 및 리셋, 상세 로그
-                        Tools.Log($"[NAV] Watchdog timeout. Closing socket. " +
-                                  $"LastRxAt={s_lastReceiveAtUtc:O}, Age={(DateTime.UtcNow - s_lastReceiveAtUtc).TotalSeconds:F1}s, " +
-                                  $"Size={s_lastReceiveSize}, Sample='{s_lastReceiveSample}'", Tools.ELogType.NAVLog);
-
-                        s_watchdogMissCount = 0;
-
                         if (nav350_socket_open_once == true)
                         {
                             //nav350TransThread.Abort();
@@ -141,8 +115,8 @@ namespace WATA.LIS.SENSOR.NAV
                             nav350_socket_open_once = false;
                         }
 
-                        try { NAVSensor.socketSend?.Close(); } catch { }
-                        try { NAVSensor.socketSend?.Dispose(); } catch { }
+                        NAVSensor.socketSend.Close();
+                        NAVSensor.socketSend.Dispose();
                         NAVSensor.NAV_SoftWareReset();
 
                         Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
@@ -151,9 +125,6 @@ namespace WATA.LIS.SENSOR.NAV
                     }
                     else
                     {
-                        // 정상 수신 중이면 누적 미스 카운터 리셋
-                        if (s_watchdogMissCount != 0) s_watchdogMissCount = 0;
-
                         if (!nav350TransThread.IsAlive)
                         {
                             nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
@@ -324,7 +295,6 @@ namespace WATA.LIS.SENSOR.NAV
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
         }
-
         public static void NAV_TransCheckThread()
         {
             while (true)
@@ -619,88 +589,66 @@ namespace WATA.LIS.SENSOR.NAV
         {
             while (true)
             {
-                try
-                {
-                    int ReceiveDataSize = 0;
-                    string ReceiveData = string.Empty;
-                    string[] cmd = { };
-                    gNavRcvErrorCheck = false;
+                int ReceiveDataSize = 0;
+                string ReceiveData = string.Empty;
+                string[] cmd = { };
+                gNavRcvErrorCheck = false;
 
-                    ReceiveDataSize = socketSend.Available;
-                    if (ReceiveDataSize > 0)
+
+                ReceiveDataSize = socketSend.Available;
+                byte[] buffer = new byte[ReceiveDataSize];
+                if (ReceiveDataSize > 0)
+                {
+                    socketSend.Receive(buffer);
+                    ReceiveData = Encoding.UTF8.GetString(buffer, 0, ReceiveDataSize);
+                    bool CopyError = NAV_CopyRcvBuffer(out cmd, ReceiveData, ReceiveDataSize);
+                    if (!CopyError)
                     {
-                        byte[] buffer = new byte[ReceiveDataSize];
-                        socketSend.Receive(buffer);
-                        ReceiveData = Encoding.UTF8.GetString(buffer, 0, ReceiveDataSize);
-
-                        // [추가] 마지막 수신 메타데이터 업데이트(워치독 로깅용)
-                        s_lastReceiveAtUtc = DateTime.UtcNow;
-                        s_lastReceiveSize = ReceiveDataSize;
-                        s_lastReceiveSample = ReceiveData.Length > 64 ? ReceiveData.Substring(0, 64) : ReceiveData;
-
-                        bool CopyError = NAV_CopyRcvBuffer(out cmd, ReceiveData, ReceiveDataSize);
-                        if (!CopyError)
-                        {
-                            gNavRcvErrorCheck = true;
-                        }
-                        int cmd_length = cmd.Length;
-
-                        if (cmd_length > 0 && cmd[0].Equals("sFA"))
-                        {
-                            Globals.system_error = Alarms.ALARM_NAV350_COMM_CMD_ERROR;
-                            NAV_ClearRcvBuffer(ref cmd, ref ReceiveData, ref ReceiveDataSize);
-                            gNavRcvErrorCheck = true;
-                        }
-                        if (cmd_length < 2)
-                        {
-                            Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
-                            gNavRcvErrorCheck = true;
-                        }
-
-                        //gTranscheck = 0;
-                        if (gNavRcvErrorCheck == false)
-                        {
-                            if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("SetAccessMode"))
-                            {
-                                NAV_RcvCMD_LogIn(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNEVAChangeState"))
-                            {
-                                NAV_RcvCMD_Mode(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NPOSPoseDataFormat"))
-                            {
-                                NAV_RcvCMD_Data_Format(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NEVACurrLayer"))
-                            {
-                                NAV_RcvCMD_Layer(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNPOSGetPose"))
-                            {
-                                Tools.Log("buffer: " + ReceiveData, Tools.ELogType.NAVLog);
-                                NAV_RcvCMD_Position(cmd, cmd_length);
-                            }
-                        }
-                        Globals.setTimerCounter(Globals.nav_rcv);
+                        gNavRcvErrorCheck = true;
                     }
-                }
-                catch (SocketException ex)
-                {
-                    Tools.Log($"[NAV] SocketException in RcvThread: {ex.SocketErrorCode} {ex.Message}", Tools.ELogType.NAVLog);
-                    // 소켓은 여기서 닫지 않음. 워치독 로직으로 재연결 유도
-                    Thread.Sleep(50);
-                }
-                catch (ObjectDisposedException ex)
-                {
-                    Tools.Log($"[NAV] ObjectDisposedException in RcvThread: {ex.Message}", Tools.ELogType.NAVLog);
-                    Thread.Sleep(50);
-                }
-                catch (Exception ex)
-                {
-                    Tools.Log($"[NAV] Unexpected exception in RcvThread: {ex}", Tools.ELogType.NAVLog);
-                    Thread.Sleep(50);
-                }
+                    int cmd_length = cmd.Length;
+
+
+                    if (cmd[0].Equals("sFA"))
+                    {
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_CMD_ERROR;
+                        NAV_ClearRcvBuffer(ref cmd, ref ReceiveData, ref ReceiveDataSize);
+                        gNavRcvErrorCheck = true;
+                    }
+                    if (cmd_length < 2)
+                    {
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
+                        gNavRcvErrorCheck = true;
+                    }
+
+                    //gTranscheck = 0;
+                    if (gNavRcvErrorCheck == false)
+                    {
+                        if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("SetAccessMode"))
+                        {
+                            NAV_RcvCMD_LogIn(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNEVAChangeState"))
+                        {
+                            NAV_RcvCMD_Mode(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NPOSPoseDataFormat"))
+                        {
+                            NAV_RcvCMD_Data_Format(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NEVACurrLayer"))
+                        {
+                            NAV_RcvCMD_Layer(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNPOSGetPose"))
+                        {
+                            Tools.Log("buffer: " + ReceiveData, Tools.ELogType.NAVLog);
+                            NAV_RcvCMD_Position(cmd, cmd_length);
+                        }
+                    }
+                    Globals.setTimerCounter(Globals.nav_rcv);
+                }// end ReceiveData Not NULL
+
             }
         }
 
@@ -725,6 +673,7 @@ namespace WATA.LIS.SENSOR.NAV
             positionNavCount = 0;
             Globals.system_error = Alarms.ALARM_NAV350_RESET;
         }
+
 
         static int NAV_StringToInt(string sbuff)
         {

@@ -1,0 +1,1766 @@
+﻿[
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C1-1",
+        "zone_id":  "441956d01ed51c16bf960a8f4306b69d",
+        "x_abs_uncorrected":  14160207.67,
+        "y_abs_uncorrected":  4491958.576,
+        "x_correction":  18.454394,
+        "y_correction":  4.100335693
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C1-2",
+        "zone_id":  "473fe0f4edf67d9b9a38e71bf06aef78",
+        "x_abs_uncorrected":  14160206.27,
+        "y_abs_uncorrected":  4491958.576,
+        "x_correction":  17.05439438,
+        "y_correction":  4.100335693
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C1-3",
+        "zone_id":  "4990a3e1a9e5150b8d0b3fbcbecc20b1",
+        "x_abs_uncorrected":  14160204.87,
+        "y_abs_uncorrected":  4491958.576,
+        "x_correction":  15.65439381,
+        "y_correction":  4.100336171
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C1-4",
+        "zone_id":  "48cd13f2138d72c4912c213d0b97870e",
+        "x_abs_uncorrected":  14160203.47,
+        "y_abs_uncorrected":  4491958.576,
+        "x_correction":  14.25439419,
+        "y_correction":  4.100336171
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C1-5",
+        "zone_id":  "48bb9d256826a702a20bff2258819d36",
+        "x_abs_uncorrected":  14160202.07,
+        "y_abs_uncorrected":  4491958.576,
+        "x_correction":  12.85439434,
+        "y_correction":  4.10033617
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C2-1",
+        "zone_id":  "4cc74a06eaacac779390954b0676e1c7",
+        "x_abs_uncorrected":  14160207.66,
+        "y_abs_uncorrected":  4491957.181,
+        "x_correction":  18.45185439,
+        "y_correction":  2.705424408
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C2-2",
+        "zone_id":  "47e5599d8d43b7deb331ce25c3020857",
+        "x_abs_uncorrected":  14160206.26,
+        "y_abs_uncorrected":  4491957.181,
+        "x_correction":  17.05185478,
+        "y_correction":  2.705424408
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C2-3",
+        "zone_id":  "48f1c794c0317332bdd52fe9cbaa7e92",
+        "x_abs_uncorrected":  14160204.86,
+        "y_abs_uncorrected":  4491957.181,
+        "x_correction":  15.6518542,
+        "y_correction":  2.705424408
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C2-4",
+        "zone_id":  "425f07bd8a89280a98a994193fd10c94",
+        "x_abs_uncorrected":  14160203.46,
+        "y_abs_uncorrected":  4491957.181,
+        "x_correction":  14.25185458,
+        "y_correction":  2.705424408
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PAL-C2-5",
+        "zone_id":  "472f3b9c0161636bbc750bd061e72e75",
+        "x_abs_uncorrected":  14160202.06,
+        "y_abs_uncorrected":  4491957.181,
+        "x_correction":  12.85185472,
+        "y_correction":  2.705424407
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-A-1",
+        "zone_id":  "4e5c25d2462762359926448f77669996",
+        "x_abs_uncorrected":  14160182.04,
+        "y_abs_uncorrected":  4491958.827,
+        "x_correction":  -7.173824584,
+        "y_correction":  4.351454715
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-A-2",
+        "zone_id":  "4ce846846acd30d695c6f9b111329006",
+        "x_abs_uncorrected":  14160182.04,
+        "y_abs_uncorrected":  4491957.427,
+        "x_correction":  -7.173824666,
+        "y_correction":  2.95145462
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-A-3",
+        "zone_id":  "4f061e9f51dc7e2c853c6fec2cdb33af",
+        "x_abs_uncorrected":  14160182.04,
+        "y_abs_uncorrected":  4491956.027,
+        "x_correction":  -7.173825577,
+        "y_correction":  1.551455001
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-B-1",
+        "zone_id":  "4407705d897f86a9b554068fe9592cd3",
+        "x_abs_uncorrected":  14160180.64,
+        "y_abs_uncorrected":  4491958.823,
+        "x_correction":  -8.569843646,
+        "y_correction":  4.348021011
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-B-2",
+        "zone_id":  "4c4dbf8526ef14069a9dcb0698c58f17",
+        "x_abs_uncorrected":  14160180.64,
+        "y_abs_uncorrected":  4491957.423,
+        "x_correction":  -8.569843646,
+        "y_correction":  2.948021391
+    },
+    {
+        "geofence_sub_type":  "PLANE",
+        "zone_name":  "PLL-B-3",
+        "zone_id":  "42a6c4064e06bde4b47adf9fe98decb7",
+        "x_abs_uncorrected":  14160180.64,
+        "y_abs_uncorrected":  4491956.023,
+        "x_correction":  -8.569844559,
+        "y_correction":  1.548021297
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-A-A",
+        "zone_id":  "441b802e33e3d848a113f49912b74ed1",
+        "x_abs_uncorrected":  14160206.32,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  17.11051097,
+        "y_correction":  -7.927963877
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-A-B",
+        "zone_id":  "4bf1d448f14d6778afc51668e7ac11a8",
+        "x_abs_uncorrected":  14160204.87,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  15.66051116,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-B-A",
+        "zone_id":  "47dfc3edf7834721ad8bd20a98bebe5f",
+        "x_abs_uncorrected":  14160203.42,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  14.2105123,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-B-B",
+        "zone_id":  "493c11737490e578b7c7b34dc024ff19",
+        "x_abs_uncorrected":  14160201.97,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  12.76051225,
+        "y_correction":  -7.927967691
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-C-A",
+        "zone_id":  "440ad3a184e0df4eb0613fca773cf227",
+        "x_abs_uncorrected":  14160200.52,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  11.31051316,
+        "y_correction":  -7.927970076
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-C-B",
+        "zone_id":  "4907ec52b789c747bb9aca063dbd5acc",
+        "x_abs_uncorrected":  14160199.07,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  9.860513827,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-D-A",
+        "zone_id":  "40f4aa9b2505802ebd054f1908dbaf9a",
+        "x_abs_uncorrected":  14160197.62,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  8.410514494,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-1-D-B",
+        "zone_id":  "4099d65f040ba2cbb32a48752642835b",
+        "x_abs_uncorrected":  14160196.17,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  6.960515175,
+        "y_correction":  -7.927973895
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-A-A",
+        "zone_id":  "46e2e7f89f86b8fab7586ea4e00e13ff",
+        "x_abs_uncorrected":  14160206.32,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  17.11051097,
+        "y_correction":  -7.927963877
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-A-B",
+        "zone_id":  "43ebf787c32a72468557e0c7cbf5e281",
+        "x_abs_uncorrected":  14160204.87,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  15.66051116,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-B-A",
+        "zone_id":  "48b6631a73cbb95ab4a9c1f3110027c3",
+        "x_abs_uncorrected":  14160203.42,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  14.2105123,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-B-B",
+        "zone_id":  "40185a5cbf92f230a2dd24b5de3d81a0",
+        "x_abs_uncorrected":  14160201.97,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  12.76051225,
+        "y_correction":  -7.927967691
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-C-A",
+        "zone_id":  "472f7fb43d03fc73863d3c8fb196b0ff",
+        "x_abs_uncorrected":  14160200.52,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  11.31051316,
+        "y_correction":  -7.927970076
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-C-B",
+        "zone_id":  "4f251104baecaec0b2879a381ee2000e",
+        "x_abs_uncorrected":  14160199.07,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  9.860513827,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-D-A",
+        "zone_id":  "4fb7c1aac7d8dedd89be484054088ab4",
+        "x_abs_uncorrected":  14160197.62,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  8.410514494,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-2-D-B",
+        "zone_id":  "4d2fa4238efbc0eab972d92424e3140d",
+        "x_abs_uncorrected":  14160196.17,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  6.960515175,
+        "y_correction":  -7.927973895
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-A-A",
+        "zone_id":  "43efc5963db5ec639ebd26d0272319df",
+        "x_abs_uncorrected":  14160206.32,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  17.11051097,
+        "y_correction":  -7.927963877
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-A-B",
+        "zone_id":  "434b943c16559263990a7b46887d8524",
+        "x_abs_uncorrected":  14160204.87,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  15.66051116,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-B-A",
+        "zone_id":  "446dc087cc57873da3cc2198077ca034",
+        "x_abs_uncorrected":  14160203.42,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  14.2105123,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-B-B",
+        "zone_id":  "4ee7428b509f59909c0067cb74d505ae",
+        "x_abs_uncorrected":  14160201.97,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  12.76051225,
+        "y_correction":  -7.927967691
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-C-A",
+        "zone_id":  "40779de094cec619a3a4b0205f97cfce",
+        "x_abs_uncorrected":  14160200.52,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  11.31051316,
+        "y_correction":  -7.927970076
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-C-B",
+        "zone_id":  "4bdd664acc80a98a9423079d5373642d",
+        "x_abs_uncorrected":  14160199.07,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  9.860513827,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-D-A",
+        "zone_id":  "41dd8146c2b80dfe98496c40346512f6",
+        "x_abs_uncorrected":  14160197.62,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  8.410514494,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-3-D-B",
+        "zone_id":  "4bb3cf5bd2c5971ab5d5b58840ab9447",
+        "x_abs_uncorrected":  14160196.17,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  6.960515175,
+        "y_correction":  -7.927973895
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-A-A",
+        "zone_id":  "4087c44abd22f9b2a99575b70c87b8de",
+        "x_abs_uncorrected":  14160206.32,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  17.11051097,
+        "y_correction":  -7.927963877
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-A-B",
+        "zone_id":  "4ae0411d772c2eba9464f7ebced2f319",
+        "x_abs_uncorrected":  14160204.87,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  15.66051116,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-B-A",
+        "zone_id":  "47132f25dc71049b9c19227a1a2822e8",
+        "x_abs_uncorrected":  14160203.42,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  14.2105123,
+        "y_correction":  -7.927966738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-B-B",
+        "zone_id":  "4b384665eca71dfe87bb7b3e0eff923b",
+        "x_abs_uncorrected":  14160201.97,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  12.76051225,
+        "y_correction":  -7.927967691
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-C-A",
+        "zone_id":  "4a79e25c72d112e58a9f0350ad58cf8a",
+        "x_abs_uncorrected":  14160200.52,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  11.31051316,
+        "y_correction":  -7.927970076
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-C-B",
+        "zone_id":  "4031f1e1f761f608aed5df7c6ba6a3a2",
+        "x_abs_uncorrected":  14160199.07,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  9.860513827,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-D-A",
+        "zone_id":  "43033f1b95a9559a85427b97fae98fb4",
+        "x_abs_uncorrected":  14160197.62,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  8.410514494,
+        "y_correction":  -7.92797103
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A1-4-D-B",
+        "zone_id":  "45bbc822149c8f3dad97d514ec2f27d4",
+        "x_abs_uncorrected":  14160196.17,
+        "y_abs_uncorrected":  4491946.547,
+        "x_correction":  6.960515175,
+        "y_correction":  -7.927973895
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-A-A",
+        "zone_id":  "4e04dae076ff40868d03f47c9e4f6aef",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  2.255416412,
+        "y_correction":  -7.929420853
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-A-B",
+        "zone_id":  "4d22f58e35eebf119d507d283dab11a7",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  0.8054167219,
+        "y_correction":  -7.92942133
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-B-A",
+        "zone_id":  "4657ee73eaa09053b0947c9cbafddc9d",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -0.6445828509,
+        "y_correction":  -7.92942276
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-B-B",
+        "zone_id":  "4cb63d01f99172178de8ed6ea036c738",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -2.094582777,
+        "y_correction":  -7.929422799
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-C-A",
+        "zone_id":  "43ff999643bc60538a72044141719d5a",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -3.544583183,
+        "y_correction":  -7.929423236
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-C-B",
+        "zone_id":  "46cda8962d9a58c9884f196871f41289",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -4.994582515,
+        "y_correction":  -7.929424668
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-1-D-A",
+        "zone_id":  "4ef047b5f776d071a7d0436108d1daf2",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -6.444583278,
+        "y_correction":  -7.929425621
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-A-A",
+        "zone_id":  "450f9374d4f61e789a520c92c87c3b91",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  2.255416412,
+        "y_correction":  -7.929420853
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-A-B",
+        "zone_id":  "40e237045d0e03cabee1e3faa2b60ec7",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  0.8054167219,
+        "y_correction":  -7.92942133
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-B-A",
+        "zone_id":  "476bf72ecf87ca32bbf7d07f8b36b1e6",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -0.6445828509,
+        "y_correction":  -7.92942276
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-B-B",
+        "zone_id":  "4ea221a645661845b075bbe627760972",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -2.094582777,
+        "y_correction":  -7.929422799
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-C-A",
+        "zone_id":  "44abf3065cd3b4afa111867665a65e8c",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -3.544583183,
+        "y_correction":  -7.929423236
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-C-B",
+        "zone_id":  "43889d289d15f769b4a751499f6ca86f",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -4.994582515,
+        "y_correction":  -7.929424668
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-2-D-A",
+        "zone_id":  "4541933b2f04089facca0cdd1e3ed4a5",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -6.444583278,
+        "y_correction":  -7.929425621
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-A-A",
+        "zone_id":  "4ad85a631ef4452abc729da7a70441bd",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  2.255416412,
+        "y_correction":  -7.929420853
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-A-B",
+        "zone_id":  "40136c2800d2bb738a9e613d4900b8d5",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  0.8054167219,
+        "y_correction":  -7.92942133
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-B-A",
+        "zone_id":  "4de33fc2e7ece2b68d6747f3b085d311",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -0.6445828509,
+        "y_correction":  -7.92942276
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-B-B",
+        "zone_id":  "4093c822d238b61abc79bb7b90157e33",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -2.094582777,
+        "y_correction":  -7.929422799
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-C-A",
+        "zone_id":  "41c13bdd94fe0474b01c2063d679286a",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -3.544583183,
+        "y_correction":  -7.929423236
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-C-B",
+        "zone_id":  "4803925d170f0f608c0f0770c64b0ac5",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -4.994582515,
+        "y_correction":  -7.929424668
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-3-D-A",
+        "zone_id":  "4e0cc18c7d6c17519291a02aca905330",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -6.444583278,
+        "y_correction":  -7.929425621
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-A-A",
+        "zone_id":  "4f0ee791c440b899964c820e7f067e0a",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  2.255416412,
+        "y_correction":  -7.929420853
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-A-B",
+        "zone_id":  "4948f054933c25b38b564080982f8a85",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  0.8054167219,
+        "y_correction":  -7.92942133
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-B-A",
+        "zone_id":  "471dcc7d88ec16c1b2e7dc4c4e468f44",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -0.6445828509,
+        "y_correction":  -7.92942276
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-B-B",
+        "zone_id":  "4931e8f6b9648213842cecc2b8cf0d22",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -2.094582777,
+        "y_correction":  -7.929422799
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-C-A",
+        "zone_id":  "410f585718b2ebfd992b2a8c59ae8ec8",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -3.544583183,
+        "y_correction":  -7.929423236
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-C-B",
+        "zone_id":  "44a837b380e1e00abf4d82d510b96936",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -4.994582515,
+        "y_correction":  -7.929424668
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-A2-4-D-A",
+        "zone_id":  "45e26c61cc9a75b7bc37532e4d81e1f6",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491946.546,
+        "x_correction":  -6.444583278,
+        "y_correction":  -7.929425621
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-A-A",
+        "zone_id":  "46e467c9ef475b009db34837235d7ec7",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491951.012,
+        "x_correction":  17.09197535,
+        "y_correction":  -3.462954544
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-A-B",
+        "zone_id":  "48754a97e8a93a0489363b0669be540c",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491951.006,
+        "x_correction":  15.6419908,
+        "y_correction":  -3.469636703
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-B-A",
+        "zone_id":  "4c8792d52b6dc6088a166a05560487fb",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491950.999,
+        "x_correction":  14.19200625,
+        "y_correction":  -3.476318026
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-B-B",
+        "zone_id":  "4d666b98414ac2e3aaf0e5816257bf27",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491950.992,
+        "x_correction":  12.74202265,
+        "y_correction":  -3.483000462
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-C-A",
+        "zone_id":  "45228d781af6a5fd86f3597d879192f6",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491950.986,
+        "x_correction":  11.29203691,
+        "y_correction":  -3.489682699
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-C-B",
+        "zone_id":  "4a79f9eda48f5cb7a2151c0a6e77c48a",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491950.979,
+        "x_correction":  9.842051882,
+        "y_correction":  -3.496365214
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-D-A",
+        "zone_id":  "4e02f9be08d8e5b6acd87d0bccf41f94",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491950.972,
+        "x_correction":  8.39206793,
+        "y_correction":  -3.503047609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-1-D-B",
+        "zone_id":  "44bf0b7a826aeb78ae27aa4758ab620c",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491950.965,
+        "x_correction":  6.942083018,
+        "y_correction":  -3.509729628
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-A-A",
+        "zone_id":  "4c6806193cf0b474a2ae8aafc9dbe8ea",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491951.012,
+        "x_correction":  17.09197535,
+        "y_correction":  -3.462954544
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-A-B",
+        "zone_id":  "45e10806f4afa5a6a74dac4b3aee4c17",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491951.006,
+        "x_correction":  15.6419908,
+        "y_correction":  -3.469636703
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-B-A",
+        "zone_id":  "498e8d346c12ed809cafa24b51b8d7b8",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491950.999,
+        "x_correction":  14.19200625,
+        "y_correction":  -3.476318026
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-B-B",
+        "zone_id":  "448b4cd942549744bd6e848b6f4b4b1e",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491950.992,
+        "x_correction":  12.74202265,
+        "y_correction":  -3.483000462
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-C-A",
+        "zone_id":  "4bdf3ce6fcc84f1283acc719de2daff9",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491950.986,
+        "x_correction":  11.29203691,
+        "y_correction":  -3.489682699
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-C-B",
+        "zone_id":  "4940aff374d9518ebb95cf7a3e4bdced",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491950.979,
+        "x_correction":  9.842051882,
+        "y_correction":  -3.496365214
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-D-A",
+        "zone_id":  "482ce5e992044aa590d52152a79e5558",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491950.972,
+        "x_correction":  8.39206793,
+        "y_correction":  -3.503047609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-2-D-B",
+        "zone_id":  "4f15a5ea4056289787f874ef85576bc4",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491950.965,
+        "x_correction":  6.942083018,
+        "y_correction":  -3.509729628
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-A-A",
+        "zone_id":  "4813c9143abce8bdbf18181b6c210ca2",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491951.012,
+        "x_correction":  17.09197535,
+        "y_correction":  -3.462954544
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-A-B",
+        "zone_id":  "43a03ca39b5349fb97f6a1b18cff4353",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491951.006,
+        "x_correction":  15.6419908,
+        "y_correction":  -3.469636703
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-B-A",
+        "zone_id":  "4f183033e797a14596e13047e2df9edd",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491950.999,
+        "x_correction":  14.19200625,
+        "y_correction":  -3.476318026
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-B-B",
+        "zone_id":  "4c7bb9ca4f3a47ae834f7db3aeb3f935",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491950.992,
+        "x_correction":  12.74202265,
+        "y_correction":  -3.483000462
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-C-A",
+        "zone_id":  "405917e20a96d03aa47187700edc8e03",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491950.986,
+        "x_correction":  11.29203691,
+        "y_correction":  -3.489682699
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-C-B",
+        "zone_id":  "45ac975bc6940f50805baba6fb6e0a20",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491950.979,
+        "x_correction":  9.842051882,
+        "y_correction":  -3.496365214
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-D-A",
+        "zone_id":  "4362c050dc253b1fa32ba48c04985330",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491950.972,
+        "x_correction":  8.39206793,
+        "y_correction":  -3.503047609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-3-D-B",
+        "zone_id":  "441f568f5decdc8da809402a06698739",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491950.965,
+        "x_correction":  6.942083018,
+        "y_correction":  -3.509729628
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-A-A",
+        "zone_id":  "49161647308fd380aed92ff794816763",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491951.012,
+        "x_correction":  17.09197535,
+        "y_correction":  -3.462954544
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-A-B",
+        "zone_id":  "46cc9fe4d3d555aaacc305a12e163c5d",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491951.006,
+        "x_correction":  15.6419908,
+        "y_correction":  -3.469636703
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-B-A",
+        "zone_id":  "4abc4ee41a247f4786af815974c4d852",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491950.999,
+        "x_correction":  14.19200625,
+        "y_correction":  -3.476318026
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-B-B",
+        "zone_id":  "4757187b38c82b39a7709bab33e2c10a",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491950.992,
+        "x_correction":  12.74202265,
+        "y_correction":  -3.483000462
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-C-A",
+        "zone_id":  "4f6f3c23764fa1e49b45b97d96529378",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491950.986,
+        "x_correction":  11.29203691,
+        "y_correction":  -3.489682699
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-C-B",
+        "zone_id":  "42cfee288e644e13907cab10e29417d2",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491950.979,
+        "x_correction":  9.842051882,
+        "y_correction":  -3.496365214
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-D-A",
+        "zone_id":  "48faf4f369ff60c09fe5e4b17cd530c3",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491950.972,
+        "x_correction":  8.39206793,
+        "y_correction":  -3.503047609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B1-4-D-B",
+        "zone_id":  "43c6889d4db88fa89bcbf3b177bef0fc",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491950.965,
+        "x_correction":  6.942083018,
+        "y_correction":  -3.509729628
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-A-A",
+        "zone_id":  "4a94a13776802495bade65974a547e38",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  2.255920095,
+        "y_correction":  -3.499601861
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-A-B",
+        "zone_id":  "4912a99367a4b9c99f6ad42b0a620d8b",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  0.8059202861,
+        "y_correction":  -3.4996021
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-B-A",
+        "zone_id":  "4c24d43ff4a7714e9110d1ed6aa0ec71",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -0.6440795232,
+        "y_correction":  -3.499601981
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-B-B",
+        "zone_id":  "4664ad2d6bcef8faa0c536809d23662f",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -2.094078615,
+        "y_correction":  -3.499602814
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-C-A",
+        "zone_id":  "410762d7109e3c3999c519de650ebd97",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -3.544079142,
+        "y_correction":  -3.499602577
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-C-B",
+        "zone_id":  "44f459d812236ca89cb484bb29dcee8b",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -4.994077997,
+        "y_correction":  -3.499602934
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-1-D-A",
+        "zone_id":  "46905a320bba42c0974129bf0e8b0f6f",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -6.44407876,
+        "y_correction":  -3.499603292
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-A-A",
+        "zone_id":  "42a46927b817c0559ea53d5a993e3b48",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  2.255920095,
+        "y_correction":  -3.499601861
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-A-B",
+        "zone_id":  "4172f4d366f275948de0a32373247db8",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  0.8059202861,
+        "y_correction":  -3.4996021
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-B-A",
+        "zone_id":  "43c6034aaff3cca080d0ce8884642816",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -0.6440795232,
+        "y_correction":  -3.499601981
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-B-B",
+        "zone_id":  "445a4f719c0c47bb85e00a497c4c2fa2",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -2.094078615,
+        "y_correction":  -3.499602814
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-C-A",
+        "zone_id":  "4a8099f609ba77e59b25f41f405e80f9",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -3.544079142,
+        "y_correction":  -3.499602577
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-C-B",
+        "zone_id":  "4414f07f74f77fb884d6113077e93dd4",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -4.994077997,
+        "y_correction":  -3.499602934
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-2-D-A",
+        "zone_id":  "4cae95fa6eaa4b1582ff94cddddff02b",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -6.44407876,
+        "y_correction":  -3.499603292
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-A-A",
+        "zone_id":  "43021178f734cdb991d578fecc6c4d18",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  2.255920095,
+        "y_correction":  -3.499601861
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-A-B",
+        "zone_id":  "400209277e9b4191a7f655eb21327939",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  0.8059202861,
+        "y_correction":  -3.4996021
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-B-A",
+        "zone_id":  "43b0a7e84325cf7c9692f9f47e8bf522",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -0.6440795232,
+        "y_correction":  -3.499601981
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-B-B",
+        "zone_id":  "42652706a95f2d3e93395779b305037d",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -2.094078615,
+        "y_correction":  -3.499602814
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-C-A",
+        "zone_id":  "4165d00eb2425e34a3462cb73d1a1004",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -3.544079142,
+        "y_correction":  -3.499602577
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-C-B",
+        "zone_id":  "4a72499f1797b1779fc1bb6712325f20",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -4.994077997,
+        "y_correction":  -3.499602934
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-3-D-A",
+        "zone_id":  "442dc4b920d6aaf790ef93d91fb24023",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -6.44407876,
+        "y_correction":  -3.499603292
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-A-A",
+        "zone_id":  "4d292c7dca81afc0ae2ea3e7150b53bb",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  2.255920095,
+        "y_correction":  -3.499601861
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-A-B",
+        "zone_id":  "4e1a62e0988f637085d227a8ac5b5d01",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  0.8059202861,
+        "y_correction":  -3.4996021
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-B-A",
+        "zone_id":  "44b758c77bc94ea9ba74d996c4bdb5e1",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -0.6440795232,
+        "y_correction":  -3.499601981
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-B-B",
+        "zone_id":  "4f3d6c08b2cc108da23b7d0ec6084b8e",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -2.094078615,
+        "y_correction":  -3.499602814
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-C-A",
+        "zone_id":  "49e2af44b5adf0ec840b507b3b21096b",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -3.544079142,
+        "y_correction":  -3.499602577
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-C-B",
+        "zone_id":  "4bf1b29d644718488cad503597d76c60",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -4.994077997,
+        "y_correction":  -3.499602934
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-B2-4-D-A",
+        "zone_id":  "48cdc9fb3114a1a882ec0390afc2ecc7",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491950.976,
+        "x_correction":  -6.44407876,
+        "y_correction":  -3.499603292
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-A-A",
+        "zone_id":  "4fc02da42e2293189ae2e488dc4eb64a",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  17.09134354,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-A-B",
+        "zone_id":  "4b529ed5e90a4d5a8a3cac8a387b2d29",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  15.64134183,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-B-A",
+        "zone_id":  "4efa20633e5db304924ce9ae4ac11974",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  14.19134393,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-B-B",
+        "zone_id":  "49176f78f0d5abe2bedc50a5ea93dcb2",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  12.7413434,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-C-A",
+        "zone_id":  "4c1d7a67456fc04a9f452eb338edd8cb",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  11.29134431,
+        "y_correction":  -1.985627324
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-C-B",
+        "zone_id":  "4abe895bb5a2be8aa820b9bb8588b98c",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  9.841344498,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-D-A",
+        "zone_id":  "49dd339493cbdf33a3545d0e664a47e9",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  8.391344689,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-1-D-B",
+        "zone_id":  "42d3ece19c27c18c8cee2ebf05fb952b",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  6.941344371,
+        "y_correction":  -1.98562803
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-A-A",
+        "zone_id":  "4d42f0f2e824b2eeb427c5873df6c1a8",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  17.09134354,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-A-B",
+        "zone_id":  "49a14fe135b31529bea751d81fb8c07d",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  15.64134183,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-B-A",
+        "zone_id":  "41a7914e3f90c17e8eaebd675c49f73b",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  14.19134393,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-B-B",
+        "zone_id":  "4830b0027c7ae8c3a47f728c415ea643",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  12.7413434,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-C-A",
+        "zone_id":  "4abf901d99ec1087b51c0ed628a87c4d",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  11.29134431,
+        "y_correction":  -1.985627324
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-C-B",
+        "zone_id":  "4eaa7902e5d44f2cb2a98c39f6f1bbe5",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  9.841344498,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-D-A",
+        "zone_id":  "435c1113caaa6d93ae304d9393ce75e3",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  8.391344689,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-2-D-B",
+        "zone_id":  "4490299081b2fac986816f36e22023c6",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  6.941344371,
+        "y_correction":  -1.98562803
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-A-A",
+        "zone_id":  "492e7cb9c180fc69b47560466889e12d",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  17.09134354,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-A-B",
+        "zone_id":  "404e9e813370e95593ecef2df09b3d46",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  15.64134183,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-B-A",
+        "zone_id":  "4a2b4433d8256f20ba0707404b5990ec",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  14.19134393,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-B-B",
+        "zone_id":  "4ef8683d4a5eb57691fcfd263064c4f0",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  12.7413434,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-C-A",
+        "zone_id":  "4e320c93ad95256daa895850ea852f42",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  11.29134431,
+        "y_correction":  -1.985627324
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-C-B",
+        "zone_id":  "43cd8322fdbf2575b13006f0a3fd7fce",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  9.841344498,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-D-A",
+        "zone_id":  "47118eeb62308153bbba30319c52dd1d",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  8.391344689,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-3-D-B",
+        "zone_id":  "4bf31a20a0d0c1288976cb7f42941352",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  6.941344371,
+        "y_correction":  -1.98562803
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-A-A",
+        "zone_id":  "40c93d4c58c06c8faac3284a3a97d337",
+        "x_abs_uncorrected":  14160206.3,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  17.09134354,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-A-B",
+        "zone_id":  "4261d3962ed43e6cb99521a50561a123",
+        "x_abs_uncorrected":  14160204.85,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  15.64134183,
+        "y_correction":  -1.985626609
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-B-A",
+        "zone_id":  "4e254fcee1162b0c8a5881fd5e591355",
+        "x_abs_uncorrected":  14160203.4,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  14.19134393,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-B-B",
+        "zone_id":  "4dd64821bcb2432eab2d622c533541c9",
+        "x_abs_uncorrected":  14160201.95,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  12.7413434,
+        "y_correction":  -1.985626847
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-C-A",
+        "zone_id":  "420b5e31a889d9d5b9b5a49f52e76807",
+        "x_abs_uncorrected":  14160200.5,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  11.29134431,
+        "y_correction":  -1.985627324
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-C-B",
+        "zone_id":  "4c0460c207b5168797a9028d1a820d2c",
+        "x_abs_uncorrected":  14160199.05,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  9.841344498,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-D-A",
+        "zone_id":  "47ec9bb65764b6beb16e1d6333e3a799",
+        "x_abs_uncorrected":  14160197.6,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  8.391344689,
+        "y_correction":  -1.985627563
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C1-4-D-B",
+        "zone_id":  "40632418598f4e84953d4a243f0d2127",
+        "x_abs_uncorrected":  14160196.15,
+        "y_abs_uncorrected":  4491952.49,
+        "x_correction":  6.941344371,
+        "y_correction":  -1.98562803
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-A-A",
+        "zone_id":  "49fe56c6898a27f88c8abf28da34e400",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491952.504,
+        "x_correction":  2.25656102,
+        "y_correction":  -1.970734431
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-A-B",
+        "zone_id":  "47bec26a51a5c817902a5f9bcc3ab56d",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  0.8065611552,
+        "y_correction":  -1.970342227
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-B-A",
+        "zone_id":  "44b851094f4361bcbacc1ecbc2a822cb",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  -0.643438654,
+        "y_correction":  -1.969950088
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-B-B",
+        "zone_id":  "4aa9485d00a3c3e6985d23c1ed3ea722",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -2.093438942,
+        "y_correction":  -1.969557916
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-C-A",
+        "zone_id":  "4658383e0ab93939a09e46ff28c104b2",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -3.543438751,
+        "y_correction":  -1.969165917
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-C-B",
+        "zone_id":  "402bf1b25afa0079948498f4e7ed023a",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -4.993438557,
+        "y_correction":  -1.968773738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-1-D-A",
+        "zone_id":  "492d000bac7496e7a3630d18fe7af15e",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491952.507,
+        "x_correction":  -6.443437414,
+        "y_correction":  -1.968381646
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-A-A",
+        "zone_id":  "425fa738f37206f89b2afd0140c1e4a8",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491952.504,
+        "x_correction":  2.25656102,
+        "y_correction":  -1.970734431
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-A-B",
+        "zone_id":  "4106bc2b7e58da15aed846bd131c0f67",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  0.8065611552,
+        "y_correction":  -1.970342227
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-B-A",
+        "zone_id":  "44c66499e4ae958cbe525c58c4b6260a",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  -0.643438654,
+        "y_correction":  -1.969950088
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-B-B",
+        "zone_id":  "444d1828bf86d45891c6aff33677bef4",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -2.093438942,
+        "y_correction":  -1.969557916
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-C-A",
+        "zone_id":  "4e10a0d80239195197413ae5fd2c561a",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -3.543438751,
+        "y_correction":  -1.969165917
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-C-B",
+        "zone_id":  "48dcb7a395e4fa2da029a80a56c43b01",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -4.993438557,
+        "y_correction":  -1.968773738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-2-D-A",
+        "zone_id":  "45ad26d37400dcd1b31ab4a26c96cf1c",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491952.507,
+        "x_correction":  -6.443437414,
+        "y_correction":  -1.968381646
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-A-A",
+        "zone_id":  "46c9a36cacd0e749a5d56848f2fb643f",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491952.504,
+        "x_correction":  2.25656102,
+        "y_correction":  -1.970734431
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-A-B",
+        "zone_id":  "4c7d7f31be24cb9ca5ffeb5afe5e916c",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  0.8065611552,
+        "y_correction":  -1.970342227
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-B-A",
+        "zone_id":  "41977e547de5972695b823aaccdb2e88",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  -0.643438654,
+        "y_correction":  -1.969950088
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-B-B",
+        "zone_id":  "44c19d1fa045ec04be0ff5b63b1014bd",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -2.093438942,
+        "y_correction":  -1.969557916
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-C-A",
+        "zone_id":  "415f84fa94b889ddab62fc8e383a9399",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -3.543438751,
+        "y_correction":  -1.969165917
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-C-B",
+        "zone_id":  "4104db769cd0cad6bbb0e4d081c5d01f",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -4.993438557,
+        "y_correction":  -1.968773738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-3-D-A",
+        "zone_id":  "4ba9b0f3474f8828a704c6c491f5de08",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491952.507,
+        "x_correction":  -6.443437414,
+        "y_correction":  -1.968381646
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-A-A",
+        "zone_id":  "4d855bff8b2eaf6ebd2d4aa89d013bd7",
+        "x_abs_uncorrected":  14160191.47,
+        "y_abs_uncorrected":  4491952.504,
+        "x_correction":  2.25656102,
+        "y_correction":  -1.970734431
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-A-B",
+        "zone_id":  "401af269703c360eaaa12c0b2c3f2549",
+        "x_abs_uncorrected":  14160190.02,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  0.8065611552,
+        "y_correction":  -1.970342227
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-B-A",
+        "zone_id":  "4318757313c75a749b9d10a0e6e1754e",
+        "x_abs_uncorrected":  14160188.57,
+        "y_abs_uncorrected":  4491952.505,
+        "x_correction":  -0.643438654,
+        "y_correction":  -1.969950088
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-B-B",
+        "zone_id":  "496b1719648f3c29a09cd9983fd9fc3f",
+        "x_abs_uncorrected":  14160187.12,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -2.093438942,
+        "y_correction":  -1.969557916
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-C-A",
+        "zone_id":  "488ae6109382ca73bc1869cbce03f7ea",
+        "x_abs_uncorrected":  14160185.67,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -3.543438751,
+        "y_correction":  -1.969165917
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-C-B",
+        "zone_id":  "4ede8e6b7cc340c397f9a1624863ba60",
+        "x_abs_uncorrected":  14160184.22,
+        "y_abs_uncorrected":  4491952.506,
+        "x_correction":  -4.993438557,
+        "y_correction":  -1.968773738
+    },
+    {
+        "geofence_sub_type":  "RACK",
+        "zone_name":  "RCH-C2-4-D-A",
+        "zone_id":  "45440976cf1d53dea0c9d5e2393037c1",
+        "x_abs_uncorrected":  14160182.77,
+        "y_abs_uncorrected":  4491952.507,
+        "x_correction":  -6.443437414,
+        "y_correction":  -1.968381646
+    }
+]
