@@ -30,6 +30,9 @@ using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.NAVSensor;
 using System.Threading.Tasks;
+using WATA.LIS.Core.Model.BackEnd;
+using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace WATA.LIS
 {
@@ -46,8 +49,30 @@ namespace WATA.LIS
     private DistanceRepository _distanceRepo;
     private RfidAggregateRepository _rfidAggRepo;
     private NavRepository _navRepo;
+    private ActionEventRepository _actionEventRepo;
+    private ActionPoseRepository _actionPoseRepo;
+    private ActionSensorBundleRepository _actionBundleRepo;
     private IEventAggregator _eventAggregator;
     private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
+
+    // latest sensor snapshot cache (thread-safe via _snapshotLock)
+    private readonly object _snapshotLock = new object();
+    private long? _lastNavX, _lastNavY, _lastNavT;
+    private string _lastZoneId, _lastZoneName, _lastProjectId, _lastMappingId, _lastMapId, _lastVehicleId;
+    private int? _lastGross, _lastRight, _lastLeft;
+    private int? _lastDistanceMm;
+    private int? _lastRfidCount, _lastRfidAvgRssi;
+
+    // smoothing windows (short rolling average)
+    private const int WeightWindowSize = 5;
+    private const int RfidWindowSize = 5;
+    private readonly Queue<int> _grossQueue = new Queue<int>();
+    private readonly Queue<int> _rightQueue = new Queue<int>();
+    private readonly Queue<int> _leftQueue = new Queue<int>();
+    private int _grossSum = 0, _rightSum = 0, _leftSum = 0;
+    private readonly Queue<int> _rfidCountQueue = new Queue<int>();
+    private readonly Queue<int> _rfidRssiQueue = new Queue<int>();
+    private int _rfidCountSum = 0, _rfidRssiSum = 0;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -165,6 +190,16 @@ namespace WATA.LIS
                                     model.OverLoad,
                                     model.OutOfTolerance
                                 );
+                                lock (_snapshotLock)
+                                {
+                                    // push to smoothing queues
+                                    PushAndAverage(_grossQueue, ref _grossSum, model.GrossWeight, WeightWindowSize, out int grossAvg);
+                                    PushAndAverage(_rightQueue, ref _rightSum, model.RightWeight, WeightWindowSize, out int rightAvg);
+                                    PushAndAverage(_leftQueue, ref _leftSum, model.LeftWeight, WeightWindowSize, out int leftAvg);
+                                    _lastGross = grossAvg;
+                                    _lastRight = rightAvg;
+                                    _lastLeft = leftAvg;
+                                }
                             }
                             catch { }
                         }, ThreadOption.BackgroundThread, true);
@@ -179,6 +214,10 @@ namespace WATA.LIS
                         try
                         {
                             await _distanceRepo.InsertAsync(GlobalValue.SessionId, model.Distance_mm, model.connected);
+                            lock (_snapshotLock)
+                            {
+                                _lastDistanceMm = model.Distance_mm;
+                            }
                         }
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
@@ -196,6 +235,30 @@ namespace WATA.LIS
                             {
                                 await _rfidAggRepo.Insert2chAsync(GlobalValue.SessionId, item.EPC, item.RSSI, item.READCNT);
                             }
+                // update simple RFID snapshot (count and avg rssi) with short-window smoothing
+                            try
+                            {
+                                int count = 0;
+                                int avg = 0;
+                                var valid = list;
+                                if (valid != null && valid.Count > 0)
+                                {
+                                    count = valid.Count;
+                                    long sum = 0;
+                                    foreach (var it in valid) sum += it.RSSI;
+                                    avg = count > 0 ? (int)Math.Round(sum / (double)count) : 0;
+                                }
+                                lock (_snapshotLock)
+                                {
+                    // smooth over last few batches
+                    PushAndAverage(_rfidCountQueue, ref _rfidCountSum, count, RfidWindowSize, out int rfidCntAvg);
+                    // when there is no tag in a batch, treat rssi as 0 but keep null if all zeros
+                    PushAndAverage(_rfidRssiQueue, ref _rfidRssiSum, count > 0 ? avg : 0, RfidWindowSize, out int rssiAvg);
+                    _lastRfidCount = rfidCntAvg;
+                    _lastRfidAvgRssi = (rfidCntAvg > 0 && rssiAvg != 0) ? rssiAvg : (int?)null;
+                                }
+                            }
+                            catch { }
                         }
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
@@ -203,6 +266,10 @@ namespace WATA.LIS
                 // NAV pose 기록
                 _navRepo = new NavRepository(cs);
                 await _navRepo.EnsureTableAsync();
+                _actionPoseRepo = new ActionPoseRepository(cs);
+                await _actionPoseRepo.EnsureTableAsync();
+                _actionBundleRepo = new ActionSensorBundleRepository(cs);
+                await _actionBundleRepo.EnsureTableAsync();
                 _eventAggregator?.GetEvent<NAVSensorEvent>()
                     .Subscribe(async nav =>
                     {
@@ -221,9 +288,97 @@ namespace WATA.LIS
                                 nav.result,
                                 nav.vehicleId
                             );
+                            lock (_snapshotLock)
+                            {
+                                _lastNavX = nav.naviX;
+                                _lastNavY = nav.naviY;
+                                _lastNavT = nav.naviT;
+                                _lastZoneId = nav.zoneId;
+                                _lastZoneName = nav.zoneName;
+                                _lastProjectId = nav.projectId;
+                                _lastMappingId = nav.mappingId;
+                                _lastMapId = nav.mapId;
+                                _lastVehicleId = nav.vehicleId;
+                            }
                         }
                         catch { }
                     }, ThreadOption.BackgroundThread, true);
+
+                // 액션 이벤트 캡처: 백엔드로 전송되는 액션 요청을 저장
+                _actionEventRepo = new ActionEventRepository(cs);
+                await _actionEventRepo.EnsureTableAsync();
+                void HandleActionPost(RestClientPostModel post)
+                {
+                    try
+                    {
+                        if (post == null) return;
+                        if (post.type != WATA.LIS.Core.Common.eMessageType.BackEndAction) return;
+                        string action = null;
+                        string workLocationId = null;
+                        string loadId = null;
+                        string epc = null;
+                        string cepc = null;
+                        try
+                        {
+                            if (!string.IsNullOrWhiteSpace(post.body))
+                            {
+                                var j = JObject.Parse(post.body);
+                                action = (string)j["action"] ?? (string)j["type"];
+                                workLocationId = (string)j["workLocationId"] ?? (string)j["work_location_id"];
+                                loadId = (string)j["loadId"] ?? (string)j["load_id"];
+                                epc = (string)j["epc"];
+                                cepc = (string)j["cepc"];
+                            }
+                        }
+                        catch { }
+                        _ = _actionEventRepo.InsertAsync(
+                            GlobalValue.SessionId,
+                            action,
+                            workLocationId,
+                            loadId,
+                            epc,
+                            cepc,
+                            post.url,
+                            post.body,
+                            "RestClientPost"
+                        );
+                        // 동시에 포즈/센서 스냅샷 한 건 저장 (최근 캐시 사용)
+                        long x = 0, y = 0, t = 0;
+                        string zoneId = null, zoneName = null, projectId = null, mappingId = null, mapId = null, vehicleId = null;
+                        int? gross = null, right = null, left = null, dist = null, rfidCnt = null, rfidAvg = null;
+                        lock (_snapshotLock)
+                        {
+                            if (_lastNavX.HasValue) x = _lastNavX.Value;
+                            if (_lastNavY.HasValue) y = _lastNavY.Value;
+                            if (_lastNavT.HasValue) t = _lastNavT.Value;
+                            zoneId = _lastZoneId;
+                            zoneName = _lastZoneName;
+                            projectId = _lastProjectId;
+                            mappingId = _lastMappingId;
+                            mapId = _lastMapId;
+                            vehicleId = _lastVehicleId;
+                            gross = _lastGross;
+                            right = _lastRight;
+                            left = _lastLeft;
+                            dist = _lastDistanceMm;
+                            rfidCnt = _lastRfidCount;
+                            rfidAvg = _lastRfidAvgRssi;
+                        }
+                        _ = _actionPoseRepo.InsertAsync(
+                            GlobalValue.SessionId,
+                            x, y, t,
+                            zoneId, zoneName, projectId, mappingId, mapId, vehicleId,
+                            action
+                        );
+                        _ = _actionBundleRepo.InsertAsync(
+                            GlobalValue.SessionId,
+                            gross, right, left, dist, rfidCnt, rfidAvg
+                        );
+                    }
+                    catch { }
+                }
+                _eventAggregator?.GetEvent<RestClientPostEvent>().Subscribe(HandleActionPost, ThreadOption.BackgroundThread, true);
+                _eventAggregator?.GetEvent<RestClientPostEvent_dev>().Subscribe(HandleActionPost, ThreadOption.BackgroundThread, true);
             }
             catch
             {
@@ -371,6 +526,19 @@ namespace WATA.LIS
             moduleCatalog.AddModule<NAVModule>();
             moduleCatalog.AddModule<CAMModule>();
             moduleCatalog.AddModule<LIVOXModule>();
+        }
+
+        // helpers: rolling average maintenance (FIFO queue bounded to windowSize)
+        private static void PushAndAverage(Queue<int> q, ref int sum, int value, int windowSize, out int avg)
+        {
+            sum += value;
+            q.Enqueue(value);
+            if (q.Count > windowSize)
+            {
+                sum -= q.Dequeue();
+            }
+            int denom = q.Count;
+            avg = denom > 0 ? (int)Math.Round(sum / (double)denom) : value;
         }
     }
 }
