@@ -14,208 +14,182 @@
         <DataTemplate x:Key="DataTemplate1">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="170"></ColumnDefinition>
-                    <ColumnDefinition Width="150"></ColumnDefinition>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" Text="{Binding DateTime}"></TextBlock>
-                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Method}"></TextBlock>
-                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="14" Text="{Binding Content}"></TextBlock>
+                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" Text="{Binding DateTime}"/>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Method}"/>
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="14" Text="{Binding Content}"/>
             </Grid>
         </DataTemplate>
     </UserControl.Resources>
 
     <Grid Background="#FFDADADA">
         <Grid.RowDefinitions>
-            <RowDefinition Height="50"></RowDefinition>
-            <RowDefinition Height="1.*"></RowDefinition>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
+        <!-- Header -->
         <Grid Grid.Row="0">
-            <Label Content="Main" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"></Label>
+            <Label Content="Overview" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"/>
         </Grid>
+
+        <!-- Content -->
         <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions >
-                <ColumnDefinition Width="0.15*"></ColumnDefinition>
-                <ColumnDefinition Width="1.*"></ColumnDefinition>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.15*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
+
+            <!-- Right side: 2x2 sections (System/Backend/Action/Indicator) -->
             <Grid Grid.Column="1">
-
-                <Grid.ColumnDefinitions >
-                    <ColumnDefinition Width="0.5*"></ColumnDefinition>
-                    <ColumnDefinition Width="0.5*"></ColumnDefinition>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.5*"/>
+                    <ColumnDefinition Width="0.5*"/>
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.5*"/>
+                    <RowDefinition Height="0.5*"/>
+                </Grid.RowDefinitions>
 
-                <Grid Grid.Column="0">
-                    <Grid.RowDefinitions >
-                        <RowDefinition Height="0.5*"></RowDefinition>
-                        <RowDefinition Height="0.5*"></RowDefinition>
-                    </Grid.RowDefinitions>
+                <!-- System Log -->
+                <Border Grid.Row="0" Grid.Column="0" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="System Log" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <ListBox Grid.Row="1" FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                    </Grid>
+                </Border>
 
-                    <Grid Grid.Row="0">
-                        <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
-                            <TabControl.Background>
-                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="Black"/>
-                                    <GradientStop Color="#FF0C0202" Offset="1"/>
-                                </LinearGradientBrush>
-                            </TabControl.Background>
-                            <TabItem Header="System Log" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
-                                </ListBox>
-                            </TabItem>
-                        </TabControl>
+                <!-- Platform (Back End) -->
+                <Border Grid.Row="1" Grid.Column="0" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Platform (Back End)" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                     </Grid>
-                    
-                    <Grid Grid.Row="1">
-                        <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
-                            <TabControl.Background>
-                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="Black"/>
-                                    <GradientStop Color="#FF0C0202" Offset="1"/>
-                                </LinearGradientBrush>
-                            </TabControl.Background>
-                            <TabItem Header="Platform (Back End)" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" >
-                                </ListBox>
-                            </TabItem>
-                        </TabControl>
-                    </Grid>
-                </Grid>
-                
-                
-                <Grid Grid.Column="1">
-                    <Grid.RowDefinitions >
-                        <RowDefinition Height="0.5*"></RowDefinition>
-                        <RowDefinition Height="0.5*"></RowDefinition>
-                    </Grid.RowDefinitions>
+                </Border>
 
-                    <Grid Grid.Row="0">
-                        <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
-                            <TabControl.Background>
-                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="Black"/>
-                                    <GradientStop Color="#FF0C0202" Offset="1"/>
-                                </LinearGradientBrush>
-                            </TabControl.Background>
-                            <TabItem Header="Action Info" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox Background="DarkGray" ItemsSource="{Binding ListActionLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5" >
-                                </ListBox>
-                            </TabItem>
-                        </TabControl>
+                <!-- Action Info -->
+                <Border Grid.Row="0" Grid.Column="1" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Action Info" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListActionLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5"/>
                     </Grid>
+                </Border>
 
-                    <Grid Grid.Row="1">
-                        <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
-                            <TabControl.Background>
-                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                    <GradientStop Color="Black"/>
-                                    <GradientStop Color="#FF0C0202" Offset="1"/>
-                                </LinearGradientBrush>
-                            </TabControl.Background>
-                            <TabItem Header="Indicator" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                                <ListBox Background="DarkGray" ItemsSource="{Binding ListIndicatortLog}" ItemTemplate="{DynamicResource DataTemplate1}"  lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5" >
-                                </ListBox>
-                            </TabItem>
-                        </TabControl>
+                <!-- Indicator -->
+                <Border Grid.Row="1" Grid.Column="1" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Indicator" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListIndicatortLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5"/>
                     </Grid>
-                </Grid>
+                </Border>
             </Grid>
+
+            <!-- Left side: status numbers + VisionCam preview -->
             <Grid Grid.Column="0" RenderTransformOrigin="0.513,0.422">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="1.*"></RowDefinition>
-                    <RowDefinition Height="5.*"></RowDefinition>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.*"></ColumnDefinition>
-                </Grid.ColumnDefinitions>
 
-                <Grid Grid.Row="0" Grid.Column="0" Margin="5">
+                <Grid Grid.Row="0" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"></ColumnDefinition>
-                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Height(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
+                    <Label Content="Height(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
                 </Grid>
 
-                <Grid Grid.Row="1" Grid.Column="0" Margin="5">
+                <Grid Grid.Row="1" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="70"></ColumnDefinition>
-                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="70"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Weight(kg)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"></Label>
+                    <Label Content="Weight(kg)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
                 </Grid>
 
-                <Grid Grid.Row="5" Grid.Column="0" Margin="5">
+                <Grid Grid.Row="5" Margin="5">
+                    <Label Content="Vision Depth" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                </Grid>
+
+                <Grid Grid.Row="6" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"></ColumnDefinition>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="30"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Vision Depth" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
+                    <Label Content="{Binding TL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="{Binding TR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
                 </Grid>
 
-                <Grid Grid.Row="6" Grid.Column="0" Margin="5">
+                <Grid Grid.Row="7" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="0.1*"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="30"></ColumnDefinition>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="20"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="{Binding TL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding TR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
+                    <Label Content="{Binding ML_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="{Binding MR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
                 </Grid>
 
-                <Grid Grid.Row="7" Grid.Column="0" Margin="5">
+                <Grid Grid.Row="8" Margin="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="0.1*"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="20"></ColumnDefinition>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="10"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="{Binding ML_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding MR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
+                    <Label Content="{Binding BL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="{Binding BR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
                 </Grid>
 
-                <Grid Grid.Row="8" Grid.Column="0" Margin="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="10"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="0.1*"></ColumnDefinition>
-                        <ColumnDefinition Width="2*"></ColumnDefinition>
-                        <ColumnDefinition Width="10"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="{Binding BL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                    <Label Content="{Binding BR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"></Label>
-                </Grid>
-                
-                <Grid Grid.Row="9">
-                    <TabControl BorderBrush="White" BorderThickness="1" FontSize="16" FontWeight="Bold" FontFamily="맑은고딕" Margin="5">
-                        <TabControl.Background>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="Black"/>
-                                <GradientStop Color="#FF0C0202" Offset="1"/>
-                            </LinearGradientBrush>
-                        </TabControl.Background>
-                        <TabItem Header="VisionCam" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#00000000">
-                            <Grid Background="DarkGray">
-                                <Image Source="{Binding CurrentFrame}" Stretch="Uniform" />
-                            </Grid>
-                        </TabItem>
-                    </TabControl>
-                </Grid>
-
-
+                <!-- VisionCam Preview -->
+                <Border Grid.Row="9" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="VisionCam" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <Grid Grid.Row="1" Background="DarkGray">
+                            <Image Source="{Binding CurrentFrame}" Stretch="Uniform"/>
+                        </Grid>
+                    </Grid>
+                </Border>
             </Grid>
         </Grid>
     </Grid>
-</UserControl> 
+</UserControl>

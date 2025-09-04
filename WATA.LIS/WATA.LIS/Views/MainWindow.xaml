@@ -7,9 +7,8 @@
         Title="WATA LIS" Height="780" Topmost="False" Width="1700" WindowStyle="ToolWindow"   Left="900" Top="100">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.1*"></RowDefinition>
-            <RowDefinition Height="1.0*"></RowDefinition>
-            <RowDefinition Height="0.1*"></RowDefinition>
+            <RowDefinition Height="0.1*"/>
+            <RowDefinition Height="1.0*"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
@@ -20,11 +19,5 @@
             <!--<ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.Content_Main}" /> -->
             <ContentControl prism:RegionManager.RegionName="{Binding MainRegionName}" />
         </Border>
-
-        <Border Grid.Row="2" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
-            <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.BottomUIRegion}" />
-        </Border>
-
-
     </Grid>
 </Window>

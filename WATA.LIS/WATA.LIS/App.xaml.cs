@@ -2,26 +2,6 @@
 using Prism.Modularity;
 using System;
 using System.Windows;
-using WATA.LIS.Core.Interfaces;
-using WATA.LIS.Core.Model.RFID;
-using WATA.LIS.Core.Model.SystemConfig;
-using WATA.LIS.Core.Parser;
-using WATA.LIS.Core.Services;
-using WATA.LIS.IF.BE;
-using WATA.LIS.INDICATOR.DISPLAY;
-using WATA.LIS.INDICATOR.LED;
-using WATA.LIS.Main;
-using WATA.LIS.SENSOR.Distance;
-using WATA.LIS.SENSOR.NAV;
-using WATA.LIS.SENSOR.UHF_RFID;
-using WATA.LIS.SENSOR.WEIGHT;
-using WATA.LIS.Views;
-using WATA.LIS.VISION.CAM;
-using WATA.LIS.SENSOR.LIVOX;
-using WATA.LIS.Core.Services.ServiceImpl;
-using WATA.LIS.Heartbeat.Services;
-using Microsoft.Extensions.Logging;
-using WATA.LIS.DB;
 using WATA.LIS.Core.Common;
 using Prism.Events;
 using WATA.LIS.Core.Events.WeightSensor;
@@ -35,6 +15,26 @@ using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Npgsql;
+using WATA.LIS.Heartbeat.Services;
+using Microsoft.Extensions.Logging;
+using WATA.LIS.DB;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.Core.Parser;
+using WATA.LIS.Core.Services;
+using WATA.LIS.Core.Services.ServiceImpl;
+using WATA.LIS.IF.BE;
+using WATA.LIS.INDICATOR.DISPLAY;
+using WATA.LIS.INDICATOR.LED;
+using WATA.LIS.Main;
+using WATA.LIS.SENSOR.Distance;
+using WATA.LIS.SENSOR.NAV;
+using WATA.LIS.SENSOR.UHF_RFID;
+using WATA.LIS.SENSOR.WEIGHT;
+using WATA.LIS.VISION.CAM;
+using WATA.LIS.SENSOR.LIVOX;
+using WATA.LIS.Views;
+using WATA.LIS.Core.Model.RFID;
 
 namespace WATA.LIS
 {
@@ -697,11 +697,11 @@ namespace WATA.LIS
         protected override Window CreateShell()
         {
             var mainWindow = Container.Resolve<MainWindow>();
-            mainWindow.WindowState = WindowState.Maximized;
-            mainWindow.ResizeMode = ResizeMode.CanMinimize;
-            mainWindow.ResizeMode = WindowStyle.None == WindowStyle.None ? System.Windows.ResizeMode.CanResize : System.Windows.ResizeMode.CanResize; // keep same
-            mainWindow.WindowStyle = WindowStyle.None;
-            return Container.Resolve<MainWindow>();
+            // Respect taskbar: use bordered window (not None) and normal state; size to WorkArea in MainWindow_Loaded
+            mainWindow.WindowStyle = WindowStyle.SingleBorderWindow;
+            mainWindow.ResizeMode = System.Windows.ResizeMode.CanResize;
+            mainWindow.Topmost = false;
+            return mainWindow;
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)

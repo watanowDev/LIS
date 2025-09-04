@@ -21,32 +21,15 @@ namespace WATA.LIS.Views
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // 작업표시줄 위에 창을 표시하도록 설정
-            this.WindowState = WindowState.Normal;
+            // 최대화로 시작하며 작업표시줄은 침범하지 않음
+            this.WindowState = WindowState.Maximized;
             this.ResizeMode = ResizeMode.CanResize;
-            //this.Topmost = true;
-
-            // 화면 크기로 창 크기 설정
-            var screen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(this).Handle);
-            this.Left = screen.WorkingArea.Left;
-            this.Top = screen.WorkingArea.Top;
-            this.Width = screen.WorkingArea.Width;
-            this.Height = screen.WorkingArea.Height;
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // 닫기 버튼을 클릭했을 때 수행할 동작
             Environment.Exit(0);
-            //if (MessageBox.Show("Do you want to exit the program?", "Program", MessageBoxButton.YesNo, MessageBoxImage.Asterisk) == MessageBoxResult.Yes)
-            //{
-            //    Environment.Exit(0);
-            //}
-            //else
-            //{
-            //    // 창 닫기를 취소합니다.
-            //    e.Cancel = true;
-            //}
         }
     }
 }

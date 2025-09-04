@@ -16,27 +16,23 @@ namespace WATA.LIS.Main
         public MainModule(IRegionManager regionManager)
         {
             _regionManager = regionManager;
-
-
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
         {
-
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-
             _regionManager.RegisterViewWithRegion(RegionNames.TopStatusBar, typeof(TopBarUI));
 
             containerRegistry.RegisterForNavigation<MainUI>();
             _regionManager.RequestNavigate(RegionNames.Content_Main, "MainUI");
             containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_Main);
 
-
-            containerRegistry.RegisterForNavigation<BottomBarUI>();
-            _regionManager.RequestNavigate(RegionNames.BottomUIRegion, "BottomBarUI");
+            // Bottom bar removed per request
+            //containerRegistry.RegisterForNavigation<BottomBarUI>();
+            //_regionManager.RequestNavigate(RegionNames.BottomUIRegion, "BottomBarUI");
         }
     }
 }

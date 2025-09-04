@@ -30,10 +30,6 @@ CREATE TABLE IF NOT EXISTS action_event (
 -- 기본 시간 인덱스(정렬/범위)
 CREATE INDEX IF NOT EXISTS idx_action_event_time ON action_event(time DESC);
 
--- 표현식 인덱스(일/월 집계 최적화) - 테이블 스키마 변경 없이 동작
-CREATE INDEX IF NOT EXISTS idx_action_event_day_expr ON action_event ((time::date));
-CREATE INDEX IF NOT EXISTS idx_action_event_month_expr ON action_event (((date_trunc('month', time))::date));
-
 -- 대용량 대비 BRIN(시간축 순차적 삽입에 유리)
 CREATE INDEX IF NOT EXISTS idx_action_event_time_brin ON action_event USING BRIN (time);
 ";
