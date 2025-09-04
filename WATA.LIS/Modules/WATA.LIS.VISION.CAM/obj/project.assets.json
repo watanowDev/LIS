@@ -3976,11 +3976,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Source\\Repos\\LIS\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
       "projectName": "WATA.LIS.VISION.CAM",
-      "projectPath": "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
+      "projectPath": "C:\\Users\\Admin\\Source\\Repos\\LIS\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\WATA.LIS.VISION.CAM.csproj",
       "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
+      "outputPath": "C:\\Users\\Admin\\Source\\Repos\\LIS\\WATA.LIS\\Modules\\WATA.LIS.VISION.CAM\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4002,8 +4002,8 @@
         "net8.0-windows10.0.18362": {
           "targetAlias": "net8.0-windows10.0.18362.0",
           "projectReferences": {
-            "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
-              "projectPath": "C:\\Users\\Admin\\source\\repos\\LIS-Forklift-IoT\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
+            "C:\\Users\\Admin\\Source\\Repos\\LIS\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj": {
+              "projectPath": "C:\\Users\\Admin\\Source\\Repos\\LIS\\WATA.LIS\\WATA.LIS.Core\\WATA.LIS.Core.csproj"
             }
           }
         }

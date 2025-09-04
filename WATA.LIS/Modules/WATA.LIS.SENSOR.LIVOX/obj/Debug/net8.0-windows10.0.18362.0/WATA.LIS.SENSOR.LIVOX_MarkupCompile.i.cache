@@ -4,7 +4,7 @@
 library
 C#
 .cs
-C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.SENSOR.LIVOX\obj\Debug\net8.0-windows10.0.18362.0\
+C:\Users\Admin\Source\Repos\LIS\WATA.LIS\Modules\WATA.LIS.SENSOR.LIVOX\obj\Debug\net8.0-windows10.0.18362.0\
 WATA.LIS.SENSOR.LIVOX
 none
 false
@@ -13,8 +13,8 @@ TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS10_0_18362_0;NET5_0_OR_GREATER;
 1-255015040
 
 7-1878658867
-2221351635087
+222-327028469
 Views\ViewA.xaml;
 
-True
+False
 

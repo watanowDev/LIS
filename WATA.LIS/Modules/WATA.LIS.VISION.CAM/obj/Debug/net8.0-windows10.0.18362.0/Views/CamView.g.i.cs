@@ -61,7 +61,7 @@ namespace WATA.LIS.VISION.CAM.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WATA.LIS.VISION.CAM;component/views/camview.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WATA.LIS.VISION.CAM;V1.0.0.0;component/views/camview.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\CamView.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

@@ -53,7 +53,7 @@ namespace WATA.LIS.SENSOR.NAV.Views {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/WATA.LIS.SENSOR.NAV;component/views/nav_view.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/WATA.LIS.SENSOR.NAV;V1.0.0.0;component/views/nav_view.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\..\Views\NAV_View.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);
