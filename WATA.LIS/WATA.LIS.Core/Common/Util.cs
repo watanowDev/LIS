@@ -8,7 +8,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using WATA.LIS.Core.Model.DPS;
 using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.Core.Common

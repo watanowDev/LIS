@@ -5,7 +5,6 @@ using System;
 using System.Collections.ObjectModel;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.Indicator;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.Indicator;
 using WATA.LIS.Core.Model.VISION;
 

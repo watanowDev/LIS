@@ -710,7 +710,7 @@ namespace WATA.LIS
 
             (IWeightModel weight, IDistanceModel distance,
                 IRFIDModel rfid, IMainModel main, ILedBuzzertModel LedBuzzer,
-                IDPSModel dpsmodel, INAVModel navmodel, IVisionCamModel visioncammodel,
+                INAVModel navmodel, IVisionCamModel visioncammodel,
                 ILivoxModel livoxmodel, IDisplayModel displaymodel) = parser.LoadJsonfile();
 
             containerRegistry.RegisterSingleton<IWeightModel>(x => weight);
@@ -718,7 +718,6 @@ namespace WATA.LIS
             containerRegistry.RegisterSingleton<IRFIDModel>(x => rfid);
             containerRegistry.RegisterSingleton<IMainModel>(x => main);
             containerRegistry.RegisterSingleton<ILedBuzzertModel>(x => LedBuzzer);
-            containerRegistry.RegisterSingleton<IDPSModel>(x => dpsmodel);
             containerRegistry.RegisterSingleton<INAVModel>(x => navmodel);
             containerRegistry.RegisterSingleton<IVisionCamModel>(x => visioncammodel);
             containerRegistry.RegisterSingleton<ILivoxModel>(x => livoxmodel);
@@ -730,9 +729,6 @@ namespace WATA.LIS
             if (!containerRegistry.IsRegistered<IDistanceModel>())
                 containerRegistry.RegisterSingleton<IDistanceModel, DistanceConfigModel>();
 
-            if (!containerRegistry.IsRegistered<IVisionModel>())
-                containerRegistry.RegisterSingleton<IVisionModel, VisionConfigModel>();
-
             if (!containerRegistry.IsRegistered<IRFIDModel>())
                 containerRegistry.RegisterSingleton<IRFIDModel, RFIDConfigModel>();
 
@@ -741,9 +737,6 @@ namespace WATA.LIS
 
             if (!containerRegistry.IsRegistered<ILedBuzzertModel>())
                 containerRegistry.RegisterSingleton<ILedBuzzertModel, Led_Buzzer_ConfigModel>();
-
-            if (!containerRegistry.IsRegistered<IDPSModel>())
-                containerRegistry.RegisterSingleton<IDPSModel, DPSConfigModel>();
 
             if (!containerRegistry.IsRegistered<INAVModel>())
                 containerRegistry.RegisterSingleton<INAVModel, NAVConfigModel>();
@@ -762,56 +755,7 @@ namespace WATA.LIS
 
             MainConfigModel mainobj = (MainConfigModel)main;
 
-            if (mainobj.device_type == "fork_lift_v1")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_V1>();
-            }
-            else if (mainobj.device_type == "pantos")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Pantos>();
-            }
-            else if (mainobj.device_type == "calt")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_CALT>();
-
-            }
-            else if (mainobj.device_type == "gate_checker")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_GateChecker>();
-            }
-            else if (mainobj.device_type == "DPS")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_DPS>();
-            }
-            else if (mainobj.device_type == "NXDPOC")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_NXDPOC>();
-            }
-            else if (mainobj.device_type == "WIS_KINTEX")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_WIS_KINTEX>();
-            }
-            else if (mainobj.device_type == "CTR")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_CTR>();
-            }
-            else if (mainobj.device_type == "Singapore")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Singapore>();
-            }
-            else if (mainobj.device_type == "Clark")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Clark>();
-            }
-            else if (mainobj.device_type == "Japan")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_Japan>();
-            }
-            else if (mainobj.device_type == "DHL_KOREA")
-            {
-                containerRegistry.RegisterSingleton<IStatusService, StatusService_DHL_KOREA>();
-            }
-            else if (mainobj.device_type == "WATA")
+            if (mainobj.device_type == "WATA")
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_WATA>();
             }

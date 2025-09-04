@@ -18,7 +18,6 @@ using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Events.RFID;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.VISION;
@@ -189,43 +188,12 @@ namespace WATA.LIS.IF.BE.ViewModels
                 sim_start.IS_SIMULATION = true;
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
             }
-            else if (_jobcnt1 == 10)
-            {
-                VISON_Model pickup_vision = new VISON_Model();
-                pickup_vision.area = 100;
-                pickup_vision.width = 100;
-                pickup_vision.height = 100;
-                pickup_vision.depth = 100;
-                pickup_vision.qr = "watad7d7a690ecbb4b3090102f88605f9b5e";
-                pickup_vision.status = "pickup";
-                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                pickup_vision.matrix = matrix_temp;
-                pickup_vision.has_roof = false;
-                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
-            }
             else if (_jobcnt1 == 20)
             {
                 sim_start.EPC = "DC4353495520008203224731";
                 sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
                 sim_start.IS_SIMULATION = true;
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
-
-            }
-            else if (_jobcnt1 == 30)
-            {
-
-                VISON_Model drop_vision = new VISON_Model();
-                drop_vision.area = 100;
-                drop_vision.width = 100;
-                drop_vision.height = 100;
-                drop_vision.depth = 100;
-                drop_vision.qr = "watad7d7a690ecbb4b3090102f88605f9b5e";
-                drop_vision.status = "drop";
-                byte[] matrix_temp1 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                drop_vision.matrix = matrix_temp1;
-                drop_vision.has_roof = false;
-                _eventAggregator.GetEvent<VISION_Event>().Publish(drop_vision);
-
 
             }
             else if (_jobcnt1 == 40)
@@ -257,20 +225,6 @@ namespace WATA.LIS.IF.BE.ViewModels
                 sim_start.IS_SIMULATION = true;
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
             }
-            else if (_jobcnt2 == 10)
-            {
-                VISON_Model pickup_vision = new VISON_Model();
-                pickup_vision.area = 100;
-                pickup_vision.width = 100;
-                pickup_vision.height = 100;
-                pickup_vision.depth = 100;
-                pickup_vision.qr = "NA";
-                pickup_vision.status = "pickup";
-                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                pickup_vision.matrix = matrix_temp;
-                pickup_vision.has_roof = false;
-                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
-            }
             else if (_jobcnt2 == 20)
             {
                 sim_start.IS_SIMULATION = false;
@@ -297,20 +251,6 @@ namespace WATA.LIS.IF.BE.ViewModels
                 sim_start.QR = "error_qr_data";
                 sim_start.IS_SIMULATION = true;
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
-            }
-            else if (_jobcnt3 == 10)
-            {
-                VISON_Model pickup_vision = new VISON_Model();
-                pickup_vision.area = 100;
-                pickup_vision.width = 100;
-                pickup_vision.height = 100;
-                pickup_vision.depth = 100;
-                pickup_vision.qr = "error_qr_data";
-                pickup_vision.status = "pickup";
-                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                pickup_vision.matrix = matrix_temp;
-                pickup_vision.has_roof = false;
-                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
             }
             else if (_jobcnt3 == 20)
             {
@@ -346,20 +286,6 @@ namespace WATA.LIS.IF.BE.ViewModels
                 sim_start.QR = "watad7d7a690ecbb4b3090102f88605f9b5e";
                 sim_start.IS_SIMULATION = true;
                 _eventAggregator.GetEvent<SimulModeEvent>().Publish(sim_start);
-            }
-            else if (_jobcnt4 == 10)
-            {
-                VISON_Model pickup_vision = new VISON_Model();
-                pickup_vision.area = 100;
-                pickup_vision.width = 100;
-                pickup_vision.height = 100;
-                pickup_vision.depth = 100;
-                pickup_vision.qr = "NA";
-                pickup_vision.status = "pickup";
-                byte[] matrix_temp = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                pickup_vision.matrix = matrix_temp;
-                pickup_vision.has_roof = false;
-                _eventAggregator.GetEvent<VISION_Event>().Publish(pickup_vision);
             }
             else if (_jobcnt4 == 20)
             {
@@ -512,79 +438,6 @@ namespace WATA.LIS.IF.BE.ViewModels
 
                     case "GateOUT":
                         GateAction(eGateActionType.OUT);
-                        break;
-
-
-                    case "ActionIN": //4.
-
-                        VISON_Model visionModel4 = new VISON_Model();
-                        visionModel4.area = 100;
-                        visionModel4.width = 100;
-                        visionModel4.height = 100;
-                        visionModel4.depth = 100;
-                        visionModel4.qr = "NA";
-                        visionModel4.status = "drop";
-                        byte[] _LoadMatrix4 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                        visionModel4.matrix = _LoadMatrix4;
-                        visionModel4.simulation_status = "IN";
-                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel4);
-
-                        break;
-
-                    case "ActionOUT": //3.
-
-
-
-                        VISON_Model visionModel3 = new VISON_Model();
-                        visionModel3.area = 100;
-                        visionModel3.width = 100;
-                        visionModel3.height = 100;
-                        visionModel3.depth = 100;
-                        visionModel3.qr = "NA";
-                        visionModel3.status = "pickup";
-                        byte[] _LoadMatrix3 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                        visionModel3.matrix = _LoadMatrix3;
-                        visionModel3.has_roof = false;
-                        visionModel3.simulation_status = "OUT";
-                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel3);
-
-                        break;
-
-                    case "F_IN":  //2.
-
-                        VISON_Model visionModel2 = new VISON_Model();
-                        visionModel2.area = 100;
-                        visionModel2.width = 100;
-                        visionModel2.height = 100;
-                        visionModel2.depth = 100;
-                        visionModel2.qr = "NA";
-                        visionModel2.status = "drop";
-                        byte[] _LoadMatrix2 = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                        visionModel2.matrix = _LoadMatrix2;
-                        visionModel2.has_roof = false;
-                        visionModel2.simulation_status = "F_IN"; ;
-                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel2);
-
-
-                        break;
-
-                    case "F_OUT": //1.
-
-
-
-                        VISON_Model visionModel = new VISON_Model();
-                        visionModel.area = 100;
-                        visionModel.width = 100;
-                        visionModel.height = 100;
-                        visionModel.depth = 100;
-                        visionModel.qr = "NA";
-                        visionModel.status = "pickup";
-                        byte[] _LoadMatrix = new byte[10] { 9, 10, 10, 10, 10, 10, 10, 10, 10, 9 };
-                        visionModel.matrix = _LoadMatrix;
-                        visionModel.has_roof = false;
-                        visionModel.simulation_status = "F_OUT";
-                        _eventAggregator.GetEvent<VISION_Event>().Publish(visionModel);
-
                         break;
 
                     case "Location":

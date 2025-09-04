@@ -38,7 +38,7 @@ class Program
             {
                 Console.WriteLine("[Smoke] Config parse start...");
                 var parser = new SystemJsonConfigParser();
-                var (weight, distance, rfid, main, led, dps, nav, vision, livox, display) = parser.LoadJsonfile();
+                var (weight, distance, rfid, main, led, nav, vision, livox, display) = parser.LoadJsonfile();
                 mainCfg = main as MainConfigModel;
                 Console.WriteLine($"[Smoke] Config OK. device_type={main?.device_type}");
             }
@@ -54,7 +54,7 @@ class Program
                         if (mainCfg == null)
                         {
                             var parser = new SystemJsonConfigParser();
-                            var (_, _, _, main, _, _, _, _, _, _) = parser.LoadJsonfile();
+                            var (_, _, _, main, _, _, _, _, _) = parser.LoadJsonfile();
                             mainCfg = main as MainConfigModel;
                         }
                         string host = mainCfg?.db_host ?? "localhost";

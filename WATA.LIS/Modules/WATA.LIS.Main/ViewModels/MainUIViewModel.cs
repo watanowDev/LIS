@@ -4,25 +4,28 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Windows;
+using System.Windows.Media.Imaging;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
-using WATA.LIS.Core.Events.VisionCam;
+using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
-using WATA.LIS.Core.Events.VISON;
-using WATA.LIS.Core.Model.DistanceSensor;
-using WATA.LIS.Core.Model.VisionCam;
-using WATA.LIS.Core.Model.RFID;
-using WATA.LIS.Core.Model.VISION;
-using WATA.LIS.Core.Services;
-using System.Windows;
-using System.IO;
-using System.Windows.Media.Imaging;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.DistanceSensor;
+using WATA.LIS.Core.Model.NAV;
+using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
-using System.Diagnostics;
+using WATA.LIS.Core.Model.VISION;
+using WATA.LIS.Core.Model.VisionCam;
+using WATA.LIS.Core.Services;
+using Prism.Regions;
+using WATA.LIS.Core;
 
 namespace WATA.LIS.Main.ViewModels
 {
@@ -37,6 +40,9 @@ namespace WATA.LIS.Main.ViewModels
         public ObservableCollection<Log> ListIndicatortLog { get; set; }
         public ObservableCollection<Log> ListActionLog { get; set; }
 
+        // Navigation
+        private readonly IRegionManager _regionManager;
+        public DelegateCommand<string> NavigateCommand { get; }
 
         // Config 데이터 클래스
         private DistanceConfigModel m_distanceConfig;
@@ -45,27 +51,6 @@ namespace WATA.LIS.Main.ViewModels
         //CamStream
         private BitmapImage _currentFrame;
         public BitmapImage CurrentFrame { get { return _currentFrame; } set { SetProperty(ref _currentFrame, value); } }
-
-
-        //Elips
-        //private string _Weight_Active;
-        //public string Weight_Active { get { return _Weight_Active; } set { SetProperty(ref _Weight_Active, value); } }
-
-
-        //private string _Distance_Active;
-        //public string Distance_Active { get { return _Distance_Active; } set { SetProperty(ref _Distance_Active, value); } }
-
-
-        //private string _RFID_Active;
-        //public string RFID_Active { get { return _RFID_Active; } set { SetProperty(ref _RFID_Active, value); } }
-
-
-        //private string _VISION_Active;
-        //public string VISIONCAM_Active { get { return _VISION_Active; } set { SetProperty(ref _VISION_Active, value); } }
-
-
-        //private string _BACKEND_Active;
-        //public string BACKEND_Active { get { return _BACKEND_Active; } set { SetProperty(ref _BACKEND_Active, value); } }
 
 
         //Text
@@ -87,6 +72,10 @@ namespace WATA.LIS.Main.ViewModels
 
         private string _RFID_Value;
         public string RFID_Value { get { return _RFID_Value; } set { SetProperty(ref _RFID_Value, value); } }
+
+
+        private string _CoordinatesValue;
+        public string CoordinatesValue { get { return _CoordinatesValue; } set { SetProperty(ref _CoordinatesValue, value); } }
 
 
         private string _BACKEND_Value;
@@ -128,14 +117,10 @@ namespace WATA.LIS.Main.ViewModels
         private VisionCamModel _VisionCam_Frame;
         public VisionCamModel VisionCam_Frame { get { return _VisionCam_Frame; } set { SetProperty(ref _VisionCam_Frame, value); } }
 
-
-        private string Active = "#FF5DF705";//light Green color
-        private string Disable = "DimGray";
-        private string Disconnect = "Red";
-
         IEventAggregator _eventAggregator;
-        public MainUIViewModel(IStatusService mainStatusModel, IEventAggregator eventAggregator, IDistanceModel distanceModel)
+        public MainUIViewModel(IStatusService mainStatusModel, IEventAggregator eventAggregator, IDistanceModel distanceModel, IRegionManager regionManager)
         {
+            _regionManager = regionManager;
             _eventAggregator = eventAggregator;
             ListSystemLog = Tools.logInfo.ListSystemLog;
             ListVisonCamLog = Tools.logInfo.ListVisionCamLog;
@@ -146,6 +131,8 @@ namespace WATA.LIS.Main.ViewModels
             ListIndicatortLog = Tools.logInfo.ListDisplayLog;
             ListActionLog = Tools.logInfo.ListActionLog;
 
+            NavigateCommand = new DelegateCommand<string>(NavigateTo);
+
             m_distanceConfig = (DistanceConfigModel)distanceModel;
 
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.SystemLog);
@@ -155,24 +142,30 @@ namespace WATA.LIS.Main.ViewModels
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.DistanceLog);
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.RFIDLog);
             Tools.Log($"Init MainUIViewModel", Tools.ELogType.DisplayLog);
-            //Tools.Log($"Init MainUIViewModel", Tools.ELogType.VisionLog);
 
             _eventAggregator.GetEvent<WeightSensorEvent>().Subscribe(OnWeightSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DistanceSensorEvent>().Subscribe(OnDistanceSensorData, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<RackProcess_Event>().Subscribe(OnRFIDSensorData, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVisionCamStreaming, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<BackEndStatusEvent>().Subscribe(OnBackEndStatus, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<CoordinatesEvent>().Subscribe(OnNavSensorEvent, ThreadOption.BackgroundThread, true);
+        }
 
-
-            //Weight_Active = Disable;
-            //Distance_Active = Disable;
-            //RFID_Active = Disable;
-            //VISIONCAM_Active = Disable;
-            //BACKEND_Active = Disable;
+        private void NavigateTo(string target)
+        {
+            if (string.IsNullOrWhiteSpace(target)) return;
+            try
+            {
+                // DPS 제외 환경이므로 기본 메인 컨텐츠 영역으로 네비게이트
+                _regionManager.RequestNavigate(RegionNames.Content_Main, target);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"Navigate failed: {ex.Message}", Tools.ELogType.SystemLog);
+            }
         }
 
         /// <summary>
-        /// WeightSensorData
+        /// Sensor Current Value
         /// </summary>
         /// <param name="model"></param>
         private void OnWeightSensorData(WeightSensorModel model)
@@ -190,10 +183,29 @@ namespace WATA.LIS.Main.ViewModels
             }
         }
 
-        /// <summary>
-        /// VisionCamStream
-        /// </summary>
-        /// <param name="model"></param>
+        public void OnDistanceSensorData(DistanceSensorModel obj)
+        {
+            if (obj.connected == false)
+            {
+                //Distance_Active = Disconnect;
+            }
+            else if (obj.connected == true)
+            {
+                //Distance_Active = Active;
+            }
+
+            Distance_Value = $"RAW:{obj.Distance_mm}mm, {(obj.Distance_mm - m_distanceConfig.pick_up_distance_threshold)}mm";
+        }
+
+        private void OnNavSensorEvent(CoordinatesModel model)
+        {
+            if (model == null) return;
+            if (model.status != "1") return;
+            if (model.action != "positioning") return;
+
+            CoordinatesValue = $"X: {model.naviX}, Y: {model.naviY}, T: {model.naviT}";
+        }
+
         private void OnVisionCamStreaming(VisionCamModel model)
         {
             if (model?.connected == true)
@@ -257,34 +269,5 @@ namespace WATA.LIS.Main.ViewModels
         /// DistanceLog
         /// </summary>
         /// <param name="obj"></param>
-        public void OnDistanceSensorData(DistanceSensorModel obj)
-        {
-            if (obj.connected == false)
-            {
-                //Distance_Active = Disconnect;
-            }
-            else if (obj.connected == true)
-            {
-                //Distance_Active = Active;
-            }
-
-            Distance_Value = $"RAW:{obj.Distance_mm}mm, {(obj.Distance_mm - m_distanceConfig.pick_up_distance_threshold)}mm";
-        }
-
-        public void OnRFIDSensorData(RackRFIDEventModel obj)
-        {
-            if (obj.EPC == "NA")
-            {
-                //RFID_Active = Disable;
-            }
-            else
-            {
-
-                //RFID_Active = Active;
-            }
-
-
-            RFID_Value = obj.EPC;
-        }
     }
 }

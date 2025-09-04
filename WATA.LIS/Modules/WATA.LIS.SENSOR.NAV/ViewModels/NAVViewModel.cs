@@ -12,7 +12,6 @@ using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.Indicator;
 using WATA.LIS.Core.Events.RFID;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.VISION;

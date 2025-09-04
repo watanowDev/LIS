@@ -18,7 +18,7 @@ namespace WATA.LIS.Core.Parser
     {
         public (WeightConfigModel, DistanceConfigModel,
                 RFIDConfigModel, MainConfigModel, Led_Buzzer_ConfigModel, 
-                DPSConfigModel, NAVConfigModel, VisionCamConfigModel, 
+                NAVConfigModel, VisionCamConfigModel, 
                 LIVOXConfigModel, DisplayConfigModel) LoadJsonfile()
         {
             WeightConfigModel weight = new WeightConfigModel();
@@ -26,7 +26,6 @@ namespace WATA.LIS.Core.Parser
             MainConfigModel main = new MainConfigModel();
             RFIDConfigModel rfid = new RFIDConfigModel();
             Led_Buzzer_ConfigModel LedBuzzer = new Led_Buzzer_ConfigModel();
-            DPSConfigModel dps = new DPSConfigModel();
             NAVConfigModel nav = new NAVConfigModel();
             VisionCamConfigModel visioncam = new VisionCamConfigModel();
             LIVOXConfigModel livox = new LIVOXConfigModel();
@@ -133,11 +132,6 @@ namespace WATA.LIS.Core.Parser
                     rfid.front_ant_port = S(rfidJ["front_ant_port"], rfid.front_ant_port);
                     rfid.ip = S(rfidJ["ip"], rfid.ip);
 
-                    // DPS
-                    var dpsJ = json["DPS"] as JObject ?? new JObject();
-                    dps.IP = S(dpsJ["IP"], dps.IP);
-                    dps.PORT = I(dpsJ["PORT"], dps.PORT);
-
                     // NAV
                     var navJ = json["NAV"] as JObject ?? new JObject();
                     nav.NAV_Enable = I(navJ["NAV_Enable"], nav.NAV_Enable);
@@ -174,7 +168,7 @@ namespace WATA.LIS.Core.Parser
                 MessageBox.Show("Config File Failed");
             }
 
-            return (weight, distance, rfid, main, LedBuzzer, dps, nav, visioncam, livox, display);
+            return (weight, distance, rfid, main, LedBuzzer, nav, visioncam, livox, display);
         }
     }
 }

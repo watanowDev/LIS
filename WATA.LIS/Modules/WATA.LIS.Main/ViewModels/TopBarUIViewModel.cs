@@ -14,7 +14,6 @@ using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.VisionCam;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.LIVOX;
@@ -44,10 +43,6 @@ namespace WATA.LIS.Main.ViewModels
         public string LivingTime { get { return _LivingTime; } set { SetProperty(ref _LivingTime, value); } }
 
 
-        private string _VisionCamNationEvent;
-        public string VisionCamNationEvent { get { return _VisionCamNationEvent; } set { SetProperty(ref _VisionCamNationEvent, value); } }
-
-
         private string _VisionCamQREvent;
         public string VisionCamQREvent { get { return _VisionCamQREvent; } set { SetProperty(ref _VisionCamQREvent, value); } }
 
@@ -60,23 +55,25 @@ namespace WATA.LIS.Main.ViewModels
         public string RFIDEvent { get { return _RFIDEvent; } set { SetProperty(ref _RFIDEvent, value); } }
 
 
-        private string _NAVEvent;
-        public string NAVEvent { get { return _NAVEvent; } set { SetProperty(ref _NAVEvent, value); } }
+        private string _CoordinatesEvent;
+        public string CoordinatesEvent { get { return _CoordinatesEvent; } set { SetProperty(ref _CoordinatesEvent, value); } }
 
         public DelegateCommand<string> ButtonFunc { get; set; }
         IEventAggregator _eventAggregator;
+
+        // 프로세스 시작 시각을 기준으로 업타임 계산
+        private readonly DateTime _processStartLocal = Process.GetCurrentProcess().StartTime;
+
         public TopBarUIViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
             VersionContext = "(LIS)" + GlobalValue.SystemVersion;
 
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
-            //_eventAggregator.GetEvent<VisionCamEvent>().Subscribe(OnVISIONEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HittingNationEvent>().Subscribe(OnCurrentNationEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNavSensorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<CoordinatesEvent>().Subscribe(OnNavSensorEvent, ThreadOption.BackgroundThread, true);
 
             DispatcherTimer DateTimer = new DispatcherTimer();
             DateTimer.Interval = new TimeSpan(0, 0, 0, 0, 1000);
@@ -89,14 +86,13 @@ namespace WATA.LIS.Main.ViewModels
             RFIDEvent = "None";
         }
 
-        private void OnCurrentNationEvent(string obj)
+        private void OnNavSensorEvent(CoordinatesModel model)
         {
-            VisionCamNationEvent = obj;
-        }
+            if (model == null) return;
+            if (model.status != "1") return;
+            if (model.action != "pickdrop") return;
 
-        private void OnNavSensorEvent(NAVSensorModel model)
-        {
-            NAVEvent = $"X: {model.naviX}, Y: {model.naviY}, T: {model.naviT}, Result: {model.result}";
+            CoordinatesEvent = $"X: {model.naviX}, Y: {model.naviY}, T: {model.naviT}, Action: {model.action}";
         }
 
         private void OnCurrentSizeEvent(LIVOXModel obj)
@@ -120,8 +116,19 @@ namespace WATA.LIS.Main.ViewModels
         {
             Date = DateTime.Now.ToString("yyyy-MM-dd");
             Time = DateTime.Now.ToString("HH:mm:ss");
-            //LivingTime = LivingCount.ToString();
-            //LivingCount++;
+
+            // 앱 가동 경과(업타임) HH:mm:ss 표시
+            try
+            {
+                var uptime = DateTime.Now - _processStartLocal;
+                if (uptime < TimeSpan.Zero) uptime = TimeSpan.Zero;
+                LivingTime = uptime.ToString(@"hh\:mm\:ss");
+            }
+            catch
+            {
+                // Fallback: 단순 카운트
+                LivingTime = (LivingCount++).ToString();
+            }
         }
 
         private void ButtonFuncClick(string command)

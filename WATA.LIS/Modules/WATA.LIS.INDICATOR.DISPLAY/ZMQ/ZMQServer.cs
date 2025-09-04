@@ -16,7 +16,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Model.VISION;
 
 namespace WATA.LIS.ZMQ

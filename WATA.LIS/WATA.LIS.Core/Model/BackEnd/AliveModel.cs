@@ -9,10 +9,10 @@ namespace WATA.LIS.Core.Model.BackEnd
 {
     public class AliveModel
     {
-        public alive alive = new alive();
+        public Alive alive = new Alive();
     }
 
-    public class alive
+    public class Alive
     {
         public string workLocationId { get; set; }
         public string vehicleId { get; set; }

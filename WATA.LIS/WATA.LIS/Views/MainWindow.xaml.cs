@@ -28,7 +28,15 @@ namespace WATA.LIS.Views
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // 닫기 버튼을 클릭했을 때 수행할 동작
+            // 닫기 버튼(X) 클릭 시에도 종료 확인 모달을 표시
+            var result = MessageBox.Show(" Do you want to exit the program? ", "Program", MessageBoxButton.YesNo, MessageBoxImage.Asterisk);
+            if (result != MessageBoxResult.Yes)
+            {
+                e.Cancel = true; // 사용자가 No를 선택하면 닫기 취소
+                return;
+            }
+
+            // 확인 시 기존 동작 유지
             Environment.Exit(0);
         }
     }

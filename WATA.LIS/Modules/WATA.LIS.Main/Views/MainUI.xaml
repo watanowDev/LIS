@@ -11,6 +11,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="1080" d:DesignWidth="1920">
     <UserControl.Resources>
+        <Thickness x:Key="AppOuterMargin">8,6,8,6</Thickness>
+        <CornerRadius x:Key="AppCornerRadius">10</CornerRadius>
+
         <DataTemplate x:Key="DataTemplate1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -18,33 +21,60 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" Text="{Binding DateTime}"/>
-                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Method}"/>
-                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="14" Text="{Binding Content}"/>
+                <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" Text="{Binding DateTime}" Foreground="Black"/>
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="14" Text="{Binding Method}" Foreground="Black"/>
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontSize="14" Text="{Binding Content}" TextWrapping="Wrap" Foreground="Black"/>
             </Grid>
         </DataTemplate>
+        <!-- Popup menu style -->
+        <Style x:Key="HoverMenuButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#f0f0f0"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Card style for main panels -->
+        <Style x:Key="MainCard" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="{StaticResource AppOuterMargin}"/>
+            <Setter Property="Background" Value="#3B77ED"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.08"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
-    <Grid Background="#FFDADADA">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Header -->
-        <Grid Grid.Row="0">
-            <Label Content="Overview" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold"/>
-        </Grid>
-
-        <!-- Content -->
-        <Grid Grid.Row="1">
+    <!-- Single rounded card background for whole main area -->
+    <Border CornerRadius="10" Background="#FFFFFF" Padding="8" >
+        <Grid Background="Transparent" >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.15*"/>
+                <ColumnDefinition Width="0.2*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Right side: 2x2 sections (System/Backend/Action/Indicator) -->
-            <Grid Grid.Column="1">
+            <!-- Right side: 2x2 sections (System/Backend/Action/Indicator) on the card -->
+            <Grid Grid.Column="1" Background="Transparent" Margin="{StaticResource AppOuterMargin}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="0.5*"/>
                     <ColumnDefinition Width="0.5*"/>
@@ -55,135 +85,104 @@
                 </Grid.RowDefinitions>
 
                 <!-- System Log -->
-                <Border Grid.Row="0" Grid.Column="0" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource MainCard}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="System Log" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
-                        <ListBox Grid.Row="1" FontSize="5" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                        <TextBlock Text="System Log" Margin="10" FontWeight="Bold" Foreground="#FFDADADA" Style="{StaticResource AutoFitTextBlock}"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListSystemLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                     </Grid>
                 </Border>
 
                 <!-- Platform (Back End) -->
-                <Border Grid.Row="1" Grid.Column="0" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource MainCard}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Platform (Back End)" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <TextBlock Text="Platform (Back End)" Margin="10" FontWeight="Bold" Foreground="#FFDADADA" Style="{StaticResource AutoFitTextBlock}"/>
                         <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListBackEndLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                     </Grid>
                 </Border>
 
                 <!-- Action Info -->
-                <Border Grid.Row="0" Grid.Column="1" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource MainCard}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Action Info" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
-                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListActionLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5"/>
+                        <TextBlock Text="Action Info" Margin="10" FontWeight="Bold" Foreground="#FFDADADA" Style="{StaticResource AutoFitTextBlock}"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListActionLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                     </Grid>
                 </Border>
 
                 <!-- Indicator -->
-                <Border Grid.Row="1" Grid.Column="1" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource MainCard}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Indicator" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
-                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListIndicatortLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" FontSize="5"/>
+                        <TextBlock Text="Indicator" Margin="10" FontWeight="Bold" Foreground="#FFDADADA" Style="{StaticResource AutoFitTextBlock}"/>
+                        <ListBox Grid.Row="1" Background="DarkGray" ItemsSource="{Binding ListIndicatortLog}" ItemTemplate="{DynamicResource DataTemplate1}" lb:ListBoxBehavior.ScrollOnNewItem="True" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                     </Grid>
                 </Border>
             </Grid>
 
-            <!-- Left side: status numbers + VisionCam preview -->
-            <Grid Grid.Column="0" RenderTransformOrigin="0.513,0.422">
+            <!-- Left side: status numbers + VisionCam preview on the card -->
+            <Grid Grid.Column="0" RenderTransformOrigin="0.513,0.422" Margin="{StaticResource AppOuterMargin}" Background="Transparent">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Margin="5">
+                <Grid Grid.Row="0" Margin="{StaticResource AppOuterMargin}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Height(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
+                    <Label Content="Height(mm)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding Distance_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource AutoFitLabel}"/>
                 </Grid>
 
-                <Grid Grid.Row="1" Margin="5">
+                <Grid Grid.Row="1" Margin="{StaticResource AppOuterMargin}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="Weight(kg)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10"/>
+                    <Label Content="Weight(kg)" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding Weight_Value}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource AutoFitLabel}"/>
                 </Grid>
 
-                <Grid Grid.Row="5" Margin="5">
-                    <Label Content="Vision Depth" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                </Grid>
-
-                <Grid Grid.Row="6" Margin="5">
+                <Grid Grid.Row="2" Margin="{StaticResource AppOuterMargin}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="30"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="0.1*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Label Content="{Binding TL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                    <Label Content="{Binding TR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                </Grid>
-
-                <Grid Grid.Row="7" Margin="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="0.1*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="20"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="{Binding ML_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                    <Label Content="{Binding MR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                </Grid>
-
-                <Grid Grid.Row="8" Margin="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="0.1*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="10"/>
-                    </Grid.ColumnDefinitions>
-                    <Label Content="{Binding BL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
-                    <Label Content="{Binding BR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"/>
+                    <Label Content="Coordinates" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding CoordinatesValue}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource AutoFitLabel}"/>
                 </Grid>
 
                 <!-- VisionCam Preview -->
-                <Border Grid.Row="9" BorderBrush="White" BorderThickness="1" Margin="5" Background="#FF75002A">
+                <Border Grid.Row="9" Style="{StaticResource MainCard}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="VisionCam" Margin="10" Foreground="#FFDADADA" FontWeight="Bold"/>
+                        <TextBlock Text="VisionCam" Margin="10" FontWeight="Bold" Foreground="#FFDADADA" Style="{StaticResource AutoFitTextBlock}"/>
                         <Grid Grid.Row="1" Background="DarkGray">
                             <Image Source="{Binding CurrentFrame}" Stretch="Uniform"/>
                         </Grid>
@@ -191,5 +190,5 @@
                 </Border>
             </Grid>
         </Grid>
-    </Grid>
+    </Border>
 </UserControl>

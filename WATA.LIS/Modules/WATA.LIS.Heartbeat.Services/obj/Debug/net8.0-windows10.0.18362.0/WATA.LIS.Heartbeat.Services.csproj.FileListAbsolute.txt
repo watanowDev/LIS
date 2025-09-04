@@ -76,3 +76,16 @@ C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.Heartbeat
 C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\refint\WATA.LIS.Heartbeat.Services.dll
 C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.pdb
 C:\Users\Admin\source\repos\LIS-Forklift-IoT\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\ref\WATA.LIS.Heartbeat.Services.dll
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\bin\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.deps.json
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\bin\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.dll
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\bin\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.pdb
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.csproj.AssemblyReference.cache
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.AssemblyInfoInputs.cache
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.AssemblyInfo.cs
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.csproj.CoreCompileInputs.cache
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.sourcelink.json
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.dll
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\refint\WATA.LIS.Heartbeat.Services.dll
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\WATA.LIS.Heartbeat.Services.pdb
+C:\Users\MSWON-DESKTOP\source\repos\LIS\WATA.LIS\Modules\WATA.LIS.Heartbeat.Services\obj\Debug\net8.0-windows10.0.18362.0\ref\WATA.LIS.Heartbeat.Services.dll

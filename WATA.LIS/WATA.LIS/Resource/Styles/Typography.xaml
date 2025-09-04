@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:behaviors="clr-namespace:WATA.LIS.Core.Behaviors;assembly=WATA.LIS.Core">
+  <!-- Global font family: Malgun Gothic -->
+  <FontFamily x:Key="AppFont">Malgun Gothic</FontFamily>
+
+  <!-- Text brushes -->
+  <SolidColorBrush x:Key="AppTextBrush" Color="#1E1E1E"/>
+  <SolidColorBrush x:Key="AppSecondaryTextBrush" Color="#6E6E6E"/>
+  <SolidColorBrush x:Key="AppInverseTextBrush" Color="#FFFFFF"/>
+
+  <!-- Implicit global styles -->
+  <Style TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+    <Setter Property="FontSize" Value="14"/>
+  </Style>
+
+  <Style TargetType="Label">
+    <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+    <Setter Property="Foreground" Value="{StaticResource AppTextBrush}"/>
+    <Setter Property="FontSize" Value="14"/>
+  </Style>
+
+  <!-- Headings and common variants -->
+  <Style x:Key="Heading1Text" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="FontSize" Value="34"/>
+    <Setter Property="FontWeight" Value="ExtraBold"/>
+  </Style>
+
+  <Style x:Key="Heading2Text" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="FontSize" Value="24"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+
+  <Style x:Key="SectionTitleText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="FontSize" Value="18"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+
+  <Style x:Key="ValueText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+  </Style>
+
+  <!-- Inverse text for dark surfaces (e.g., blue panels) -->
+  <Style x:Key="InverseText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="Foreground" Value="{StaticResource AppInverseTextBrush}"/>
+  </Style>
+
+  <!-- Label variants matching TextBlock styles -->
+  <Style x:Key="Heading1Label" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+    <Setter Property="FontSize" Value="34"/>
+    <Setter Property="FontWeight" Value="ExtraBold"/>
+  </Style>
+
+  <Style x:Key="Heading2Label" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+    <Setter Property="FontSize" Value="24"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+
+  <Style x:Key="SectionTitleLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+    <Setter Property="FontSize" Value="18"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+  </Style>
+
+  <Style x:Key="InverseLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+    <Setter Property="Foreground" Value="{StaticResource AppInverseTextBrush}"/>
+  </Style>
+
+  <!-- Auto-fit style: scales label content down to fit available space -->
+  <Style x:Key="AutoFitLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Label">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  Padding="{TemplateBinding Padding}">
+            <Viewbox StretchDirection="DownOnly" Stretch="Uniform">
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+            </Viewbox>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Auto-fit for TextBlock: enable measurement-based shrink via attached behavior -->
+  <Style x:Key="AutoFitTextBlock" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+    <Setter Property="behaviors:AutoFontSizeBehavior.IsEnabled" Value="True"/>
+    <Setter Property="behaviors:AutoFontSizeBehavior.MinFontSize" Value="10"/>
+  </Style>
+</ResourceDictionary>

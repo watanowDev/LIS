@@ -1,11 +1,8 @@
 ﻿using Prism.Ioc;
 using Prism.Modularity;
 using Prism.Regions;
-using System;
-using System.Diagnostics;
 using WATA.LIS.Core;
 using WATA.LIS.Main.Views;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace WATA.LIS.Main
 {
@@ -30,9 +27,8 @@ namespace WATA.LIS.Main
             _regionManager.RequestNavigate(RegionNames.Content_Main, "MainUI");
             containerRegistry.RegisterForNavigation<MainUI>(RegionNames.Content_Main);
 
-            // Bottom bar removed per request
-            //containerRegistry.RegisterForNavigation<BottomBarUI>();
-            //_regionManager.RequestNavigate(RegionNames.BottomUIRegion, "BottomBarUI");
+            // Register persistent NavigationBarUI into BottomUIRegion (reuse as secondary top bar)
+            _regionManager.RegisterViewWithRegion(RegionNames.BottomUIRegion, typeof(NavigationBarUI));
         }
     }
 }

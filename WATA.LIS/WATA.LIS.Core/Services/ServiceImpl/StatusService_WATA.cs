@@ -1,8 +1,12 @@
 ﻿using MaterialDesignThemes.Wpf;
 using Microsoft.Xaml.Behaviors.Layout;
+using Microsoft.Xaml.Behaviors.Media;
+using NetMQ;
+using NetMQ.Sockets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using OpenCvSharp;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -10,43 +14,39 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using NetMQ;
+using System.Net.Http;
+using System.Net.NetworkInformation;
+using System.Reflection.Metadata;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
-using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Events.BackEnd;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Events.Indicator;
+using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
-using WATA.LIS.Core.Events.VISON;
+using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.WeightSensor;
-using WATA.LIS.Core.Events.LIVOX;
+using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Model.ErrorCheck;
 using WATA.LIS.Core.Model.Indicator;
+using WATA.LIS.Core.Model.LIVOX;
 using WATA.LIS.Core.Model.NAV;
-using WATA.LIS.Core.Model.VisionCam;
 using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
-using WATA.LIS.Core.Model.LIVOX;
+using WATA.LIS.Core.Model.VisionCam;
 using static WATA.LIS.Core.Common.Tools;
-using NetMQ.Sockets;
-using System.Threading.Tasks;
-using WATA.LIS.Core.Events.VisionCam;
-using Microsoft.Xaml.Behaviors.Media;
-using System.Net.NetworkInformation;
-using OpenCvSharp;
-using System.Net.Http;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
@@ -1542,167 +1542,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         }
 
-        //private (long newX, long newY) AdjustCoordinates(long x, long y, int angle, string action)
-        //{
-        //    if(m_navConfig.Type == "NAV")
-        //    {
-        //        // 각도를 라디안으로 변환
-        //        angle = (angle) % 3600;
-        //        double radians = (angle / 10) * (Math.PI / 180.0);
-
-        //        long newX = 0;
-        //        long newY = 0;
-
-        //        if (action == "pickdrop")
-        //        {
-        //            // 센서에서 물류 픽드롭 위치만큼 보정한 좌표 계산
-        //            newX = x + (long)(m_navConfig.AdjustingPickdrop * Math.Cos(radians));
-        //            newY = y + (long)(m_navConfig.AdjustingPickdrop * Math.Sin(radians));
-        //        }
-        //        else if (action == "positioning")
-        //        {
-        //            // 센서에서 지게차 중심축 위치만큼 보정한 좌표 계산
-        //            newX = x + (long)(m_navConfig.AdjustingPosition * Math.Cos(radians));
-        //            newY = y + (long)(m_navConfig.AdjustingPosition * Math.Sin(radians));
-        //        }
-
-        //        return (newX, newY);
-        //    }
-        //    else
-        //    {
-        //        long newX = x;
-        //        long newY = y;
-
-        //        return (newX, newY);
-        //    }
-        //}
-
-        //private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
-        //{
-        //    const int requiredCount = 7;
-        //    int count = 0;
-
-        //    // 현재 헤딩 값에서 +- 60도 영역을 계산
-        //    double lowerBound = (naviT - 600 + 3600) % 3600;
-        //    double upperBound = (naviT + 600) % 3600;
-
-        //    foreach (var item in list)
-        //    {
-        //        double deltaX = item.naviX - naviX;
-        //        double deltaY = item.naviY - naviY;
-        //        double angleToItem = Math.Atan2(deltaY, deltaX) * (180.0 / Math.PI) * 10;
-        //        angleToItem = (angleToItem + 3600) % 3600; // 0 ~ 3600 범위로 변환
-
-        //        // 후진 중인지 확인
-        //        if (lowerBound < upperBound)
-        //        {
-        //            if (angleToItem >= lowerBound && angleToItem <= upperBound)
-        //            {
-        //                count++;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (angleToItem >= lowerBound || angleToItem <= upperBound)
-        //            {
-        //                count++;
-        //            }
-        //        }
-
-        //        if (count >= requiredCount)
-        //        {
-        //            //Debug.WriteLine($"{count}, Backward");
-        //            return false; // 후진
-        //        }
-        //    }
-
-        //    //Debug.WriteLine($"{count}, Forward");
-        //    return true; // 전진
-        //}
-
-        //private bool CheckIsForward(long naviX, long naviY, long naviT, List<NAVSensorModel> list)
-        //{
-        //    const int requiredCount = 7;
-        //    const double thresholdDistance = 100; // 10cm를 mm로 변환
-        //    int count = 0;
-
-        //    // 현재 헤딩 값에서 +- 60도 영역을 계산
-        //    double lowerBound = (naviT - 600 + 3600) % 3600;
-        //    double upperBound = (naviT + 600) % 3600;
-
-        //    foreach (var item in list)
-        //    {
-        //        double deltaX = item.naviX - naviX;
-        //        double deltaY = item.naviY - naviY;
-        //        double angleToItem = Math.Atan2(deltaY, deltaX) * (180.0 / Math.PI) * 10;
-        //        angleToItem = (angleToItem + 3600) % 3600; // 0 ~ 3600 범위로 변환
-
-        //        // 후진 중인지 확인
-        //        if (lowerBound < upperBound)
-        //        {
-        //            if (angleToItem >= lowerBound && angleToItem <= upperBound)
-        //            {
-        //                count++;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            if (angleToItem >= lowerBound || angleToItem <= upperBound)
-        //            {
-        //                count++;
-        //            }
-        //        }
-
-        //        // 가장 최근 naviX, naviY 값과의 거리 계산
-        //        double distance = Math.Sqrt(deltaX * deltaX + deltaY * deltaY);
-        //        if (distance < thresholdDistance)
-        //        {
-        //            Debug.WriteLine($"{count}, Under Threshold");
-        //            return true; // 임계값 미만일 경우 전진으로 반환
-        //        }
-
-        //        if (count >= requiredCount)
-        //        {
-        //            Debug.WriteLine($"{count}, Backward");
-        //            return false; // 후진
-        //        }
-        //    }
-
-        //    Debug.WriteLine($"{count}, Forward");
-        //    return true; // 전진
-        //}
-
-        //// 험프리스 버전 함수
-        //private (long newX, long newY) AdjustCoordinates(long x, long y, int angle, string action)
-        //{
-        //    if (m_navConfig.NAV_Enable == 0)
-        //    {
-        //        return (0, 0);
-        //    }
-
-        //    // 각도를 라디안으로 변환
-        //    angle = (angle + 3600) % 3600; // 각도를 0 ~ 3600 범위로 변환
-        //    double radians = (angle / 10.0) * (Math.PI / 180.0);
-
-        //    long newX = 0;
-        //    long newY = 0;
-
-        //    if (action == "pickdrop")
-        //    {
-        //        // 센서에서 물류 픽드롭 위치만큼 보정한 좌표 계산
-        //        newX = x + (long)(m_navConfig.AdjustingPickdrop * Math.Sin(radians));
-        //        newY = y + (long)(m_navConfig.AdjustingPickdrop * Math.Cos(radians));
-        //    }
-        //    else if (action == "positioning")
-        //    {
-        //        // 센서에서 지게차 중심축 위치만큼 보정한 좌표 계산
-        //        newX = x + (long)(m_navConfig.AdjustingPosition * Math.Sin(radians));
-        //        newY = y + (long)(m_navConfig.AdjustingPosition * Math.Cos(radians));
-        //    }
-
-        //    return (newX, newY);
-        //}
-
         private (long newX, long newY) AdjustCoordinates(long x, long y, int angle, string action)
         {
             // 각도를 라디안으로 변환
@@ -1724,6 +1563,15 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 newX = x + (long)(m_navConfig.AdjustingPosition * Math.Cos(radians));
                 newY = y + (long)(m_navConfig.AdjustingPosition * Math.Sin(radians));
             }
+
+
+            CoordinatesModel m_coordinatesModel = new CoordinatesModel();
+            m_coordinatesModel.naviX = newX;
+            m_coordinatesModel.naviY = newY;
+            m_coordinatesModel.naviT = m_navModel.naviT;
+            m_coordinatesModel.status = m_navModel.result;
+            m_coordinatesModel.action = action;
+            _eventAggregator.GetEvent<CoordinatesEvent>().Publish(m_coordinatesModel);
 
             return (newX, newY);
         }

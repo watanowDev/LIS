@@ -5,7 +5,6 @@ using Prism.Events;
 using System.Threading;
 using System.Windows.Threading;
 using WATA.LIS.Core.Common;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.NAV;

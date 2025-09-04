@@ -26,7 +26,6 @@ using WATA.LIS.Core.Events.Indicator;
 using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
-using WATA.LIS.Core.Events.VISON;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Model.BackEnd;

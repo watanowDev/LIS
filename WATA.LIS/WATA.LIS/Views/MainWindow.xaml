@@ -5,18 +5,27 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         xmlns:core="clr-namespace:WATA.LIS.Core;assembly=WATA.LIS.Core"
         Title="WATA LIS" Height="780" Topmost="False" Width="1700" WindowStyle="ToolWindow"   Left="900" Top="100">
-    <Grid>
+    <Grid Background="#EDF1F2">
         <Grid.RowDefinitions>
-            <RowDefinition Height="0.1*"/>
-            <RowDefinition Height="1.0*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" BorderBrush="#FFDADADA" BorderThickness="0,1,0,1">
+        <Border Grid.Row="0" BorderBrush="#00000000" BorderThickness="0">
             <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.TopStatusBar}" />
         </Border>
 
-        <Border Grid.Row="1" BorderBrush="#FFDADADA" BorderThickness="0,0,0,1">
-            <!--<ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.Content_Main}" /> -->
+        <!-- Persistent navigation bar (using BottomUIRegion) -->
+        <Border Grid.Row="1" BorderBrush="#00000000" BorderThickness="0">
+            <ContentControl prism:RegionManager.RegionName="{x:Static core:RegionNames.BottomUIRegion}" />
+        </Border>
+
+        <!-- Main content region with rounded container -->
+        <Border Grid.Row="2" CornerRadius="10" Background="#FFFFFF" Margin="8,6,8,6" Padding="8,6,8,6">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" Direction="270" ShadowDepth="2" Opacity="0.08"/>
+            </Border.Effect>
             <ContentControl prism:RegionManager.RegionName="{Binding MainRegionName}" />
         </Border>
     </Grid>
