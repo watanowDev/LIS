@@ -136,16 +136,16 @@
             <!-- Left side: status numbers + VisionCam preview on the card -->
             <Grid Grid.Column="0" RenderTransformOrigin="0.513,0.422" Margin="{StaticResource AppOuterMargin}" Background="Transparent">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="5*"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0" Margin="{StaticResource AppOuterMargin}">
@@ -168,11 +168,51 @@
 
                 <Grid Grid.Row="2" Margin="{StaticResource AppOuterMargin}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Label Content="Coordinates" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
                     <Label Content="{Binding CoordinatesValue}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Style="{StaticResource AutoFitLabel}"/>
+                </Grid>
+
+                <Grid Grid.Row="5" Margin="{StaticResource AppOuterMargin}">
+                    <Label Content="Vision Depth" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                </Grid>
+
+                <Grid Grid.Row="6" Margin="{StaticResource AppOuterMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{Binding TL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding TR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                </Grid>
+
+                <Grid Grid.Row="7" Margin="{StaticResource AppOuterMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{Binding ML_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding MR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                </Grid>
+
+                <Grid Grid.Row="8" Margin="{StaticResource AppOuterMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.1*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="{Binding BL_DEPTH}" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
+                    <Label Content="{Binding BR_DEPTH}" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="Bold" Style="{StaticResource AutoFitLabel}"/>
                 </Grid>
 
                 <!-- VisionCam Preview -->
