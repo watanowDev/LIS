@@ -41,6 +41,7 @@ namespace WATA.LIS.Core.Common
 
 
         public static string LiDar2DConnErr = "0701";
+        public static string LiDar2DFreeze = "0702";
 
         public static string LiDar3DConnErr = "0801";
 

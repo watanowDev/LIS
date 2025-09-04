@@ -172,6 +172,13 @@ namespace WATA.LIS.SENSOR.NAV
                         // [NAV FREEZE CHECK] 일정 횟수 이상 변화 없으면 프로그램 셧다운
                         if (navFreezeCount >= navFreezeThreshold)
                         {
+                            // 1) 내부 알람 상태 갱신(주기 타이머가 alarm_raise를 DB에 기록)
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+
+                            // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
+                            Thread.Sleep(400);
+
+                            // 3) 종료
                             Tools.Log("NAV SENSOR FREEZE DETECTED. PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
                             System.Windows.Application.Current.Shutdown();
                             return;

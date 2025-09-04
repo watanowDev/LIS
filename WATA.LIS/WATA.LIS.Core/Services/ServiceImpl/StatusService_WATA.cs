@@ -76,7 +76,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         // 중량센서 데이터 클래스
         private WeightSensorModel m_weightModel;
         private List<WeightSensorModel> m_weight_list;
-        private readonly int m_weight_sample_size = 8;
+        private readonly int m_weight_sample_size = 4; // 8
         private int m_event_weight = 0;
         private int m_get_weightCnt = 0;
         private bool m_isWeightPickup = false;
