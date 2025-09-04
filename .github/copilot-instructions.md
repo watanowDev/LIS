@@ -7,6 +7,14 @@
 - GitHub 커밋 메시지는 한국어를 사용하되 자연스러운 영어 단어 혼용을 허용합니다. 예: "feat: Display TCPServer init", "fix: RestAPI timeout 처리".
 - 커밋 전 반드시 전체 빌드를 먼저 수행하고 오류가 없을 때만 커밋합니다(솔루션 기준 빌드 성공 필수). 경고는 검토 후 필요 시 수정·커밋.
 
+## PowerShell 명령 실행 정책(중요)
+- 이 워크스페이스의 터미널은 PowerShell 환경입니다. 명령 체이닝 연산자 '&&' 사용 시 "InvalidEndOfLine" 오류가 발생할 수 있습니다.
+- 따라서 명령은 한 번에 하나씩 순차 실행하세요. 예:
+  - 잘못된 예: git add -A && git commit -m "msg"
+  - 올바른 예: (1) git add -A  (2) git commit -m "msg"  (3) git push origin master
+- 도구 사용 규칙: run_command_in_terminal를 여러 번 호출해 각 명령을 분리 실행합니다. 한 호출에 여러 명령을 넣지 않습니다.
+- 필요 시 PowerShell의 세미콜론(;)도 사용할 수 있으나, 본 프로젝트 자동화 도구에서는 명령 분리를 권장합니다.
+
 ## 전체 구조
 - Shell 앱: `WATA.LIS/WATA.LIS` (TargetFramework: `net8.0-windows10.0.18362.0`, Prism.DryIoc WPF)
 - Core 라이브러리: `WATA.LIS/WATA.LIS.Core` (이벤트, 인터페이스, 모델, 로깅, 파서, MVVM 기반, Region 이름)
