@@ -1,3 +1,0 @@
-2024-09-26 21:23:38,319 [1] StartProcess(109) > Start Process Disable
-2024-09-26 21:23:38,320 [24] ZMQReceiveInit(163) > InitZMQ
-2024-09-26 21:23:38,756 [1] .ctor(74) > Init MainUIViewModel

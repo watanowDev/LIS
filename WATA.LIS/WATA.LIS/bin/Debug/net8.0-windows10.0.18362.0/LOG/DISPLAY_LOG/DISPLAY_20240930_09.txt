@@ -1,2 +1,0 @@
-2024-09-30 09:37:55,114 [1] initAsync(90) > ServerStart
-2024-09-30 09:44:20,630 [1] initAsync(90) > ServerStart

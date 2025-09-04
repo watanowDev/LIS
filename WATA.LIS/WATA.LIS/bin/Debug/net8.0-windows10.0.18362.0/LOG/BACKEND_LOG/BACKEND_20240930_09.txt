@@ -1,6 +1,0 @@
-2024-09-30 09:37:49,357 [1] GetCellListFromPlatform(195) > REST Get Client url: https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?mapId=16b5d99e366b4f7585c49b8a4fbbc318&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&projectId=7aca5f6e8bcc4a68a5784c68a42a3a58
-2024-09-30 09:37:49,796 [1] GetBasicInfoFromBackEnd(245) > REST Get BasicInfo url: https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?projectId=7aca5f6e8bcc4a68a5784c68a42a3a58&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&mapId=16b5d99e366b4f7585c49b8a4fbbc318&vehicleId=fork_lift007
-2024-09-30 09:37:49,817 [1] .ctor(78) > Init MainUIViewModel
-2024-09-30 09:44:14,860 [1] GetCellListFromPlatform(195) > REST Get Client url: https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?mapId=16b5d99e366b4f7585c49b8a4fbbc318&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&projectId=7aca5f6e8bcc4a68a5784c68a42a3a58
-2024-09-30 09:44:15,189 [1] GetBasicInfoFromBackEnd(245) > REST Get BasicInfo url: https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?projectId=7aca5f6e8bcc4a68a5784c68a42a3a58&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&mapId=16b5d99e366b4f7585c49b8a4fbbc318&vehicleId=fork_lift007
-2024-09-30 09:44:15,203 [1] .ctor(78) > Init MainUIViewModel

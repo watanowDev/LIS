@@ -1,0 +1,36 @@
+# Visual Studio / .NET build outputs
+[Bb]in/
+[Oo]bj/
+
+# VS / Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Test & Artifacts
+TestResults/
+artifacts/
+
+# Packages
+packages/
+*.nupkg
+*.snupkg
+
+# Logs
+*.log
+LOG/
+Logs/
+
+# Others
+_ReSharper*/
+*.DotSettings.user
+x64/
+x86/
+.vscode/
+Publish/
+Debug/
+Release/

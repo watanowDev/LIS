@@ -1,8 +1,0 @@
-2024-09-26 21:23:38,389 [1] GetCellListFromPlatform(1492) > REST Get Client url: https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/plane-groups?mapId=16b5d99e366b4f7585c49b8a4fbbc318&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&projectId=7aca5f6e8bcc4a68a5784c68a42a3a58
-2024-09-26 21:23:38,740 [1] GetCellListFromPlatform(1533) > REST Get Client Response Error: System.ArgumentNullException: Value cannot be null. (Parameter 'input')
-   at System.Text.RegularExpressions.ThrowHelper.ThrowArgumentNullException(ExceptionArgument arg)
-   at System.Text.RegularExpressions.Regex.Match(String input)
-   at System.Text.RegularExpressions.Regex.Match(String input, String pattern)
-   at WATA.LIS.Core.Services.StatusService_Singapore.GetCellListFromPlatform() in C:\Users\wata_iot_dev\source\repos\LIS-ForkLift_mswon\WATA.LIS\WATA.LIS.Core\Services\ServiceImpl\StatusService_Singapore.cs:line 1514
-2024-09-26 21:23:38,741 [1] GetBasicInfoFromBackEnd(1622) > REST Get BasicInfo url: https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/init?projectId=7aca5f6e8bcc4a68a5784c68a42a3a58&mappingId=75dcbb56f4674fae8f91d9b1c03f0ca5&mapId=16b5d99e366b4f7585c49b8a4fbbc318&vehicleId=fork_lift007
-2024-09-26 21:23:38,756 [1] .ctor(73) > Init MainUIViewModel

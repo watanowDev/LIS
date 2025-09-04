@@ -1,6 +1,0 @@
-2024-09-19 14:48:08,413 [1] .ctor(72) > Init MainUIViewModel
-2024-09-19 14:49:11,867 [1] .ctor(72) > Init MainUIViewModel
-2024-09-19 14:52:03,908 [1] .ctor(72) > Init MainUIViewModel
-2024-09-19 14:52:58,632 [1] .ctor(72) > Init MainUIViewModel
-2024-09-19 14:54:57,694 [1] .ctor(72) > Init MainUIViewModel
-2024-09-19 14:58:39,321 [1] .ctor(72) > Init MainUIViewModel

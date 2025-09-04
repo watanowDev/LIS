@@ -1,6 +1,0 @@
-2024-09-26 11:45:50,391 [1] GetMostContainerEPC(724) > EPC List Empty
-2024-09-26 11:45:50,392 [1] GetMostDockEPC(796) > EPC List Empty
-2024-09-26 11:45:51,398 [1] GetMostContainerEPC(724) > EPC List Empty
-2024-09-26 11:45:51,399 [1] GetMostDockEPC(796) > EPC List Empty
-2024-09-26 11:45:52,409 [1] GetMostContainerEPC(724) > EPC List Empty
-2024-09-26 11:45:52,409 [1] GetMostDockEPC(796) > EPC List Empty

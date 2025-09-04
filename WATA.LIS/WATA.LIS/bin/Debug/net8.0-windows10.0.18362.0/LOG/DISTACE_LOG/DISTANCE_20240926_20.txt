@@ -1,8 +1,0 @@
-2024-09-26 20:30:32,224 [1] SerialInit(49) > Init Wait
-2024-09-26 20:30:34,268 [1] SerialThreadInit(79) > Serial Port Exception !!!
-2024-09-26 20:31:47,802 [1] SerialInit(49) > Init Wait
-2024-09-26 20:31:49,840 [1] SerialThreadInit(79) > Serial Port Exception !!!
-2024-09-26 20:34:41,578 [1] LoadJsonfile(106) > Exception !!!
-2024-09-26 20:34:44,564 [1] SerialInit(49) > Init Wait
-2024-09-26 20:35:14,333 [1] SerialInit(49) > Init Wait
-2024-09-26 20:35:16,370 [1] SerialThreadInit(79) > Serial Port Exception !!!

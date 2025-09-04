@@ -1,6 +1,0 @@
-2024-09-26 20:30:34,275 [1] .ctor(28) > TJ
-2024-09-26 20:30:34,292 [1] SerialThreadInit(84) > Serial Port Exception !!!
-2024-09-26 20:31:49,846 [1] .ctor(28) > TJ
-2024-09-26 20:31:49,862 [1] SerialThreadInit(84) > Serial Port Exception !!!
-2024-09-26 20:35:16,377 [1] .ctor(28) > TJ
-2024-09-26 20:35:16,395 [1] SerialThreadInit(84) > Serial Port Exception !!!

@@ -1,4 +1,0 @@
-2024-09-30 09:37:49,816 [1] .ctor(77) > Init MainUIViewModel
-2024-09-30 09:37:55,095 [1] RfidReaderInit(96) > [RfidReaderInit] Exception !!! : 세마포 제한 시간이 만료되었습니다. : 'COM6'
-2024-09-30 09:44:15,203 [1] .ctor(77) > Init MainUIViewModel
-2024-09-30 09:44:20,616 [1] RfidReaderInit(96) > [RfidReaderInit] Exception !!! : 세마포 제한 시간이 만료되었습니다. : 'COM6'

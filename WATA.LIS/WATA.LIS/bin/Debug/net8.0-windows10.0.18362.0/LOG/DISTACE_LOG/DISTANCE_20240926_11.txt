@@ -1,2 +1,0 @@
-2024-09-26 11:45:46,774 [1] SerialInit(49) > Init Wait
-2024-09-26 11:45:48,819 [1] SerialThreadInit(79) > Serial Port Exception !!!
