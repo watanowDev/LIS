@@ -30,28 +30,13 @@ CREATE TABLE IF NOT EXISTS action_event (
 -- 기본 시간 인덱스(정렬/범위)
 CREATE INDEX IF NOT EXISTS idx_action_event_time ON action_event(time DESC);
 
--- 날짜/월 시작일: 생성 컬럼(12+)
-ALTER TABLE action_event
-  ADD COLUMN IF NOT EXISTS date_day date GENERATED ALWAYS AS (time::date) STORED;
+-- 표현식 인덱스(일/월 집계 최적화) - 테이블 스키마 변경 없이 동작
+CREATE INDEX IF NOT EXISTS idx_action_event_day_expr ON action_event ((time::date));
+CREATE INDEX IF NOT EXISTS idx_action_event_month_expr ON action_event (((date_trunc('month', time))::date));
 
-ALTER TABLE action_event
-  ADD COLUMN IF NOT EXISTS month_start date GENERATED ALWAYS AS ((date_trunc('month', time))::date) STORED;
-
--- 조회 패턴에 맞는 인덱스
-CREATE INDEX IF NOT EXISTS idx_action_event_date_day ON action_event(date_day);
-CREATE INDEX IF NOT EXISTS idx_action_event_month_start ON action_event(month_start);
-
--- 대용량 대비 BRIN(시간축 순차적 삽입에 유리, btree와 병행 가능)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_indexes 
-    WHERE schemaname = current_schema() 
-      AND indexname = 'idx_action_event_time_brin'
-  ) THEN
-    EXECUTE 'CREATE INDEX idx_action_event_time_brin ON action_event USING BRIN (time)';
-  END IF;
-END$$;";
+-- 대용량 대비 BRIN(시간축 순차적 삽입에 유리)
+CREATE INDEX IF NOT EXISTS idx_action_event_time_brin ON action_event USING BRIN (time);
+";
             await using var conn = new NpgsqlConnection(_cs);
             await conn.OpenAsync(ct);
             await using var cmd = new NpgsqlCommand(sql, conn);
