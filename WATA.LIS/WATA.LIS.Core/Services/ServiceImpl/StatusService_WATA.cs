@@ -1402,6 +1402,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 return;
             }
 
+            // 쓰레기 값(0,0,0) 무시
+            if (navSensorModel == null || (navSensorModel.naviX == 0 && navSensorModel.naviY == 0 && navSensorModel.naviT == 0))
+            {
+                return;
+            }
+
             if (navSensorModel.result != "1")
             {
                 // 1이 아닌 값은 신뢰성이 떨어지는 데이터임.

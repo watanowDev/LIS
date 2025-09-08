@@ -56,6 +56,13 @@ namespace WATA.LIS.SENSOR.NAV
         private static int positionErrCount = 0;
         private static int positionNavCount = 0;
 
+        // NAV pose filtering state
+        private static readonly int PoseWarmupFrames = 1; // 워밍업 프레임 수
+        private static long lastGoodX = 0;
+        private static long lastGoodY = 0;
+        private static long lastGoodT = 0; // 단위: 입력과 동일(0~360 또는 0~3600)
+        private static bool hasLastGood = false;
+
         public bool nav350_socket_open = false;
         bool nav350_socket_open_once = false;
         Thread nav350TransThread;
@@ -70,7 +77,7 @@ namespace WATA.LIS.SENSOR.NAV
         private static bool isReconnecting = false;
         private static DateTime reconnectStartTime;
         private static int postReconnectFreezeCount = 0;
-        private const int postReconnectThreshold = 100; // 30초 (100ms * 100)
+        private const int postReconnectThreshold = 100; // 10초 (100ms * 100)
 
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
@@ -97,7 +104,7 @@ namespace WATA.LIS.SENSOR.NAV
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            const int navFreezeThreshold = 300; // 100ms * 300 = 30초
+            const int navFreezeThreshold = 30; // 100ms * 30 = 3초
 
             while (true)
             {
@@ -181,7 +188,7 @@ namespace WATA.LIS.SENSOR.NAV
                             if (!isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                             {
                                 Tools.Log("NAV SENSOR: Unknown error + freeze detected. Attempting socket reconnection...", Tools.ELogType.NAVLog);
-
+                                
                                 // DB 로그(시도): LiDar2DConnErr 추가
                                 SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
                                 
@@ -607,20 +614,9 @@ namespace WATA.LIS.SENSOR.NAV
                     return;
                 }
 
-                if (positionNavCount > 10 && cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode] == "1")
-                {
-                    Globals.nav_x = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
-                    Globals.nav_y = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
-                    Globals.nav_phi = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100;
-                    Globals.nav_dev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
-                }
-
                 // Position Mode
                 ErrCode = (byte)NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mInfoState]);
                 navMode = cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode];
-
-                //Tools.Log("Mode: "+ cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode] + " ErrCode: " + ErrCode, Tools.ELogType.BackEndLog);
-
 
                 if ((ErrCode > 1))
                     positionErrCount++;
@@ -633,24 +629,77 @@ namespace WATA.LIS.SENSOR.NAV
                 }
                 else
                 {
-                    // Unknown 에러가 해제된 경우 재연결 상태도 리셋
-                    if (isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
+                    // 후보 값 계산
+                    int candX = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
+                    int candY = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
+                    int candT = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100; // 기존 로직 유지
+                    int meanDev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
+
+                    bool accept = true;
+
+                    // 0) 항상 무시할 고정 쓰레기 패턴 차단
+                    if (candX == 1900 && candY == 0 && candT == 0)
                     {
-                        Tools.Log("NAV SENSOR: Unknown error resolved during reconnection. Reconnection successful.", Tools.ELogType.NAVLog);
-                        isReconnecting = false;
-                        postReconnectFreezeCount = 0;
+                        accept = false;
                     }
-                    
+
+                    // 1) navMode == "1"만 수용 (이미 외부에서 체크하지만 명시적으로 한 번 더)
+                    if (accept && navMode != "1")
+                    {
+                        accept = false;
+                    }
+
+                    // 2) 품질 기반 차단: MeanDev > 200
+                    if (accept && meanDev > 200)
+                    {
+                        accept = false;
+                    }
+
+                    // 3) 동작 일관성 검사: 비현실적인 점프 차단
+                    if (accept && hasLastGood)
+                    {
+                        long deltaPos = Math.Abs(candX - lastGoodX) + Math.Abs(candY - lastGoodY);
+                        int range = (candT > 360 || lastGoodT > 360) ? 3600 : 360;
+                        int angleThreshold = (range == 3600) ? 900 : 9; // 9도
+                        int dRaw = Math.Abs(candT - (int)lastGoodT);
+                        int deltaT = Math.Min(dRaw, range - dRaw);
+
+                        if (deltaPos > 2000 || deltaT > angleThreshold)
+                        {
+                            accept = false;
+                        }
+                    }
+
+                    // 유효 수신/처리 상태 업데이트 (수용 여부와 무관하게 통신 상태는 정상)
                     gNAVstate = (byte)NAV350_STATE.NAV_STATE_GET_POS;
                     gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
                     Globals.system_error = Alarms.ALARM_NONE;
                     gTranscheck = 0;
+
+                    // 최종 수용 시에만 전역 Pose 업데이트
+                    if (accept && positionNavCount > 10 && navMode == "1")
+                    {
+                        Globals.nav_x = candX;
+                        Globals.nav_y = candY;
+                        Globals.nav_phi = candT;
+                        Globals.nav_dev = meanDev;
+
+                        lastGoodX = candX;
+                        lastGoodY = candY;
+                        lastGoodT = candT;
+                        hasLastGood = true;
+                    }
                 }
                 positionNavCount++;
                 if (positionNavCount > 65533)
                     positionNavCount = 9;
             }
 
+        }
+
+        private static bool IsAllMultiplesOf10(int x, int y, int t)
+        {
+            return (x % 10 == 0) && (y % 10 == 0) && (t % 10 == 0);
         }
 
         static bool NAV_CopyRcvBuffer(out string[] cmd, string rcvData, int length)
@@ -763,6 +812,8 @@ namespace WATA.LIS.SENSOR.NAV
             gCopyBufferNavCmd = 0;
             positionErrCount = 0;
             positionNavCount = 0;
+            hasLastGood = false;
+            lastGoodX = lastGoodY = lastGoodT = 0;
             Globals.system_error = Alarms.ALARM_NAV350_RESET;
         }
 
