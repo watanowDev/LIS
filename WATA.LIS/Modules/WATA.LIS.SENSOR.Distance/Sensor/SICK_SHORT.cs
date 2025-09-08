@@ -31,6 +31,10 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
         private readonly string _apiUrlStatus = "http://192.168.10.1/iolink/v1/openapi";
         private readonly string _apiUrlData = "http://192.168.10.1/iolink/v1/devices/master1port1/processdata/value";
 
+        // 로그 스로틀링 상태(1초 간격)
+        private static DateTime _lastDistanceLogUtc = DateTime.MinValue;
+        private static int _distanceLogSuppressed = 0;
+
         public SICK_SHORT(IEventAggregator eventAggregator, IDistanceModel distancemodel)
         {
             _eventAggregator = eventAggregator;
@@ -65,7 +69,7 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             }
             catch (Exception ex)
             {
-                Tools.Log($"SerialThreadInit Error: {ex.Message}", Tools.ELogType.SystemLog);
+                LogThrottled($"SerialThreadInit Error: {ex.Message}");
                 System.Windows.Application.Current.Shutdown();
             }
         }
@@ -101,7 +105,29 @@ namespace WATA.LIS.SENSOR.Distance.Sensor
             }
             catch (Exception ex)
             {
-                Tools.Log($"ReceiveTimerEvent Error: {ex.Message}", Tools.ELogType.SystemLog);
+                LogThrottled($"ReceiveTimerEvent Error: {ex.Message}");
+            }
+        }
+
+        private static void LogThrottled(string message)
+        {
+            var nowUtc = DateTime.UtcNow;
+            if (_lastDistanceLogUtc == DateTime.MinValue || (nowUtc - _lastDistanceLogUtc) >= TimeSpan.FromSeconds(1))
+            {
+                if (_distanceLogSuppressed > 0)
+                {
+                    Tools.Log($"{message} (+{_distanceLogSuppressed} suppressed)", Tools.ELogType.SystemLog);
+                }
+                else
+                {
+                    Tools.Log(message, Tools.ELogType.SystemLog);
+                }
+                _lastDistanceLogUtc = nowUtc;
+                _distanceLogSuppressed = 0;
+            }
+            else
+            {
+                _distanceLogSuppressed++;
             }
         }
     }

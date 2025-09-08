@@ -33,6 +33,10 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         private bool log_enable = true;
 
+        // 로그 스로틀링 상태(1초 간격)
+        private static DateTime _lastWeightLogUtc = DateTime.MinValue;
+        private static int _weightLogSuppressed = 0;
+
         public LatchLoadCell(IEventAggregator eventAggregator, IWeightModel weightmodel)
         {
             _eventAggregator = eventAggregator;
@@ -88,7 +92,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 m_receiveTimer.Stop();
-                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
+                LogThrottled($"Weight Port Exception !!!");
                 //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -116,7 +120,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             catch
             {
-                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
+                LogThrottled($"[DataRecive] Exception !!!");
                 //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -147,7 +151,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 _port = null;
                 m_receiveTimer.Stop();
-                Tools.Log($"Weight Port Exception !!!", Tools.ELogType.SystemLog);
+                LogThrottled($"Weight Port Exception !!!");
                 //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -175,7 +179,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             catch
             {
-                Tools.Log($"[DataRecive] Exception !!!", Tools.ELogType.WeightLog);
+                LogThrottled($"[DataRecive] Exception !!!");
                 //SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
             }
         }
@@ -273,7 +277,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             catch
             {
-                Tools.Log($"Weight ParseData Exception !!!", Tools.ELogType.SystemLog);
+                LogThrottled($"Weight ParseData Exception !!!");
             }
         }
 
@@ -285,7 +289,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             }
             catch (Exception ex)
             {
-                Tools.Log($"[onSendData] Exception: {ex.Message}", Tools.ELogType.WeightLog);
+                LogThrottled($"[onSendData] Exception: {ex.Message}");
             }
         }
 
@@ -301,18 +305,40 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             {
                 strData += String.Format("0x{0:x2} ", HexData[i]);
             }
-            Tools.Log($"LEN : {HexData.Length} RAW : {strData}", Tools.ELogType.WeightLog);
+            LogThrottled($"LEN : {HexData.Length} RAW : {strData}");
         }
 
-        //1.The data transmission order is to send high bytes first																	
-        //2.Length field: The number of bytes of data following this length field																	
-        //3.The battery is a percentage of 0-100;																	
-        //4.Charging state：0:Uncharged  1:Charging																	
-        //5.Online status：0:Online；1：Offline；2：Hardware failure																	
-        //6.Gross and net weight mark：0:Gross weight；1：Net weight																	
-        //7.Overload mark：0:Not overloaded；1：Overload																	
-        //8.Out of tolerance mark：0:Not out of tolerance；1：Left out of tolerance   2：Right out of tolerance																	
-        //9.Communication interface：RS485, 9600， 8N1;																	
+        //1.The data transmission order is to send high bytes first																																					
+        //2.Length field: The number of bytes of data following this length field																																					
+        //3.The battery is a percentage of 0-100;																																					
+        //4.Charging state：0:Uncharged  1:Charging																																					
+        //5.Online status：0:Online；1：Offline；2：Hardware failure																																					
+        //6.Gross and net weight mark：0:Gross weight；1：Net weight																																					
+        //7.Overload mark：0:Not overloaded；1：Overload																																					
+        //8.Out of tolerance mark：0:Not out of tolerance；1：Left out of tolerance   2：Right out of tolerance																																					
+        //9.Communication interface：RS485, 9600， 8N1;																																					
         //10.Return status: 0 indicates normal; Non 0 is an exception
+
+        private static void LogThrottled(string message)
+        {
+            var nowUtc = DateTime.UtcNow;
+            if (_lastWeightLogUtc == DateTime.MinValue || (nowUtc - _lastWeightLogUtc) >= TimeSpan.FromSeconds(1))
+            {
+                if (_weightLogSuppressed > 0)
+                {
+                    Tools.Log($"{message} (+{_weightLogSuppressed} suppressed)", Tools.ELogType.WeightLog);
+                }
+                else
+                {
+                    Tools.Log(message, Tools.ELogType.WeightLog);
+                }
+                _lastWeightLogUtc = nowUtc;
+                _weightLogSuppressed = 0;
+            }
+            else
+            {
+                _weightLogSuppressed++;
+            }
+        }
     }
 }

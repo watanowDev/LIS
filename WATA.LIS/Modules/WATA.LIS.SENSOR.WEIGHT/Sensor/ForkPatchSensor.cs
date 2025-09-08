@@ -30,6 +30,9 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
         WeightConfigModel _weightConfig;
 
+        // 로그 스로틀링 상태(1초 간격)
+        private static DateTime _lastWeightLogUtc = DateTime.MinValue;
+        private static int _weightLogSuppressed = 0;
 
         //DistanceConfigModel _distaceConfig;
 
@@ -91,12 +94,32 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
             try
             {
                 string recv_str = _port.ReadLine();
-                Tools.Log($"[DataRecive] {recv_str} ", Tools.ELogType.WeightLog);
+
+                // 로그 스로틀링: 최초 1회 즉시, 1초 내 반복은 집계 후 1초마다 한 줄만 출력
+                var nowUtc = DateTime.UtcNow;
+                if (_lastWeightLogUtc == DateTime.MinValue || (nowUtc - _lastWeightLogUtc) >= TimeSpan.FromSeconds(1))
+                {
+                    if (_weightLogSuppressed > 0)
+                    {
+                        Tools.Log($"[DataRecive] {recv_str} (+{_weightLogSuppressed} suppressed)", Tools.ELogType.WeightLog);
+                    }
+                    else
+                    {
+                        Tools.Log($"[DataRecive] {recv_str} ", Tools.ELogType.WeightLog);
+                    }
+                    _lastWeightLogUtc = nowUtc;
+                    _weightLogSuppressed = 0;
+                }
+                else
+                {
+                    _weightLogSuppressed++;
+                }
+
                 WeightSensorModel model = new WeightSensorModel();
                 model.GrossWeight = model.GrossWeight;
 
                 _eventAggregator.GetEvent<WeightSensorEvent>().Publish(model);
-                Tools.Log($"m_only_weight {m_only_weight}", Tools.ELogType.WeightLog);
+
                 if (m_only_weight == true)
                 {
 
@@ -117,13 +140,7 @@ namespace WATA.LIS.SENSOR.WEIGHT.Sensor
 
     private void Process_Event(string recv_str)
     {
-            Tools.Log($"event_trigger {event_trigger}", Tools.ELogType.WeightLog);
-            Tools.Log($"refernce_value {refernce_value}", Tools.ELogType.WeightLog);
-
             float data = float.Parse(recv_str);
-            Tools.Log($"data {data}", Tools.ELogType.WeightLog);
- 
-
 
             if (data <= refernce_value)
             {

@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -29,6 +28,10 @@ namespace WATA.LIS.TCPSocket
         TcpClient _client;
 
         private readonly IEventAggregator _eventAggregator;
+
+        // 로그 스로틀링 상태(1초 간격)
+        private static DateTime _lastDisplayLogUtc = DateTime.MinValue;
+        private static int _displayLogSuppressed = 0;
 
         public TcpServerSimple(IEventAggregator eventAggregator)
         {
@@ -87,14 +90,14 @@ namespace WATA.LIS.TCPSocket
                 // 클라이언트 연결 대기
                 server.Start();
 
-                Tools.Log($"ServerStart", Tools.ELogType.DisplayLog);
+                LogThrottled($"ServerStart");
 
                 while (true)
                 {
                     // 클라이언트 연결을 받아들이기
                     _client = await server.AcceptTcpClientAsync();
 
-                    Tools.Log($"Server Connected", Tools.ELogType.DisplayLog);
+                    LogThrottled($"Server Connected");
 
                     // 연결된 클라이언트를 처리하는 메서드 호출
                     _ = HandleClientAsync();
@@ -103,7 +106,7 @@ namespace WATA.LIS.TCPSocket
             }
             catch (Exception ex)
             {
-                Tools.Log($"Error: {ex.Message}", Tools.ELogType.DisplayLog);
+                LogThrottled($"Error: {ex.Message}");
             }
             finally
             {
@@ -131,8 +134,6 @@ namespace WATA.LIS.TCPSocket
 
 
 
-
-
                     JObject jObject = JObject.Parse(receivedMessage);
 
                     if (jObject.ContainsKey("set_work") == true)
@@ -151,7 +152,7 @@ namespace WATA.LIS.TCPSocket
             }
             catch (Exception ex)
             {
-                Tools.Log($"Error: {ex.Message}", Tools.ELogType.DisplayLog);
+                LogThrottled($"Error: {ex.Message}");
             }
             finally
             {
@@ -159,6 +160,27 @@ namespace WATA.LIS.TCPSocket
             }
         }
 
+        private static void LogThrottled(string message)
+        {
+            var nowUtc = DateTime.UtcNow;
+            if (_lastDisplayLogUtc == DateTime.MinValue || (nowUtc - _lastDisplayLogUtc) >= TimeSpan.FromSeconds(1))
+            {
+                if (_displayLogSuppressed > 0)
+                {
+                    Tools.Log($"{message} (+{_displayLogSuppressed} suppressed)", Tools.ELogType.DisplayLog);
+                }
+                else
+                {
+                    Tools.Log(message, Tools.ELogType.DisplayLog);
+                }
+                _lastDisplayLogUtc = nowUtc;
+                _displayLogSuppressed = 0;
+            }
+            else
+            {
+                _displayLogSuppressed++;
+            }
+        }
 
     }
 

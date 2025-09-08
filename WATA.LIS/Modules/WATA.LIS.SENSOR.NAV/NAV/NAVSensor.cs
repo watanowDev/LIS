@@ -66,6 +66,18 @@ namespace WATA.LIS.SENSOR.NAV
         private static string gIP = "169.254.4.63";
         private static string gPORT = "2111";
 
+        // 최근 유효 포즈(navMode=="1") 수신 시각
+        private static DateTime _lastValidPoseUtc = DateTime.MinValue;
+        private static readonly TimeSpan FreezeTimeout = TimeSpan.FromSeconds(10); // 기존 10초 유지
+
+        // 2단계 Freeze 완화용 상태
+        private static DateTime _freezeFirstDetectedUtc = DateTime.MinValue;
+        private static bool _freezeReconnectIssued = false;
+
+        // NAV alarm 로그 스로틀링 상태(1초 간격)
+        private static DateTime _lastAlarmLogUtc = DateTime.MinValue;
+        private static int _alarmLogSuppressed = 0;
+
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
             _eventAggregator = eventAggregator;
@@ -91,7 +103,7 @@ namespace WATA.LIS.SENSOR.NAV
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            const int navFreezeThreshold = 30; // 100ms * 30 = 3초
+            const int navFreezeThreshold = 100; // 100ms * 100 = 10초
 
             while (true)
             {
@@ -109,13 +121,11 @@ namespace WATA.LIS.SENSOR.NAV
                     {
                         if (nav350_socket_open_once == true)
                         {
-                            //nav350TransThread.Abort();
-                            //nav350RcvThread.Abort();
                             nav350_socket_open_once = false;
                         }
 
-                        NAVSensor.socketSend.Close();
-                        NAVSensor.socketSend.Dispose();
+                        try { NAVSensor.socketSend.Close(); } catch { }
+                        try { NAVSensor.socketSend.Dispose(); } catch { }
                         NAVSensor.NAV_SoftWareReset();
 
                         Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
@@ -143,13 +153,6 @@ namespace WATA.LIS.SENSOR.NAV
                             navSensorModel.naviY = Globals.nav_y;
                             navSensorModel.naviT = Globals.nav_phi;
 
-                            //navSensorModel.naviX = Globals.nav_y;
-                            //navSensorModel.naviY = Globals.nav_x * -1;
-                            //long adjustedT = Globals.nav_phi - 1800;
-                            //adjustedT = -adjustedT;
-                            //long normalizedT = (adjustedT + 3600) % 3600;
-                            //navSensorModel.naviT = normalizedT;
-
                             navSensorModel.result = navMode;
                             //ZoneID Send
                             _eventAggregator.GetEvent<NAVSensorEvent>().Publish(navSensorModel);
@@ -168,19 +171,83 @@ namespace WATA.LIS.SENSOR.NAV
                             prevNavT = Globals.nav_phi;
                         }
 
-                        // [NAV FREEZE CHECK] 일정 횟수 이상 변화 없으면 프로그램 셧다운
-                        if (navFreezeCount >= navFreezeThreshold)
+                        // [2단계 완화] Unknown + 좌표 정지 시 우선 소켓 재연결 시도(앱 종료 금지)
+                        bool isCoordsFrozen = navFreezeCount >= navFreezeThreshold;
+                        bool isUnknown = navMode != "1"; // "1"만 유효 포즈
+                        if (isUnknown && isCoordsFrozen && !_freezeReconnectIssued)
                         {
-                            // 1) 내부 알람 상태 갱신(주기 타이머가 alarm_raise를 DB에 기록)
+                            // 1단계: 핫로드(소켓 재연결)
                             SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+                            Tools.Log("NAV FREEZE (unknown+frozen) detected. Reconnecting NAV socket...", Tools.ELogType.NAVLog);
 
-                            // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
-                            Thread.Sleep(400);
+                            if (nav350_socket_open_once == true)
+                            {
+                                nav350_socket_open_once = false;
+                            }
 
-                            // 3) 종료
-                            Tools.Log("NAV SENSOR FREEZE DETECTED. PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
-                            System.Windows.Application.Current.Shutdown();
-                            return;
+                            try { NAVSensor.socketSend.Close(); } catch { }
+                            try { NAVSensor.socketSend.Dispose(); } catch { }
+                            NAVSensor.NAV_SoftWareReset();
+                            nav350_socket_open = false; // 다음 루프에서 재연결 흐름으로 진입
+
+                            _freezeReconnectIssued = true;
+                            _freezeFirstDetectedUtc = DateTime.UtcNow;
+                        }
+
+                        // Freeze 감지: 최근 유효 포즈(navMode=="1") 수신 시각 기준 → 우선 재연결
+                        if (_lastValidPoseUtc != DateTime.MinValue)
+                        {
+                            var elapsed = DateTime.UtcNow - _lastValidPoseUtc;
+                            if (elapsed >= FreezeTimeout)
+                            {
+                                // 1) 알람 상태 갱신
+                                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+
+                                // 2) NAV 소켓만 재연결 시도(앱 종료 금지)
+                                Tools.Log($"NAV SENSOR FREEZE DETECTED (no valid pose for {elapsed.TotalSeconds:F1}s). Reconnecting NAV socket...", Tools.ELogType.NAVLog);
+
+                                if (nav350_socket_open_once == true)
+                                {
+                                    nav350_socket_open_once = false;
+                                }
+
+                                try { NAVSensor.socketSend.Close(); } catch { }
+                                try { NAVSensor.socketSend.Dispose(); } catch { }
+                                NAVSensor.NAV_SoftWareReset();
+                                nav350_socket_open = false; // 다음 루프에서 재연결 흐름으로 진입
+
+                                // 2단계 타이머 시작(중복 재연결 방지 및 에스컬레이션 판단)
+                                _freezeReconnectIssued = true;
+                                _freezeFirstDetectedUtc = DateTime.UtcNow;
+
+                                // freeze 타이머 초기화(중복 재연결 방지)
+                                _lastValidPoseUtc = DateTime.UtcNow; // 짧게 리스펀스 시간 제공
+                            }
+                        }
+
+                        // 2단계: 재연결 이후에도 10초간 유효 포즈 미수신 또는 좌표 정지 지속 시 최종 셧다운
+                        if (_freezeReconnectIssued)
+                        {
+                            var since = DateTime.UtcNow - _freezeFirstDetectedUtc;
+                            if (since >= FreezeTimeout)
+                            {
+                                bool stillUnknown = navMode != "1";
+                                bool stillFrozen = navFreezeCount >= navFreezeThreshold;
+                                if (stillUnknown || stillFrozen)
+                                {
+                                    // 최종 셧다운
+                                    Tools.Log("NAV SENSOR FREEZE PERSISTED AFTER RECONNECT. PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
+                                    System.Windows.Application.Current.Shutdown();
+                                    return;
+                                }
+                                else
+                                {
+                                    // 회복됨 → 상태 초기화
+                                    _freezeReconnectIssued = false;
+                                    _freezeFirstDetectedUtc = DateTime.MinValue;
+                                    SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DFreeze);
+                                }
+                            }
                         }
                     }
                 }
@@ -194,7 +261,26 @@ namespace WATA.LIS.SENSOR.NAV
                         nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
                     }
                 }
-                Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.NAVLog);
+                // alarm 로그 스로틀링: 최초 1회는 즉시, 이후 1초 내 반복은 집계 후 1초마다 한 줄만 출력
+                var nowUtc = DateTime.UtcNow;
+                if (_lastAlarmLogUtc == DateTime.MinValue || (nowUtc - _lastAlarmLogUtc) >= TimeSpan.FromSeconds(1))
+                {
+                    if (_alarmLogSuppressed > 0)
+                    {
+                        Tools.Log($"alarm : {Globals.system_error} (+{_alarmLogSuppressed} suppressed)", Tools.ELogType.NAVLog);
+                    }
+                    else
+                    {
+                        Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.NAVLog);
+                    }
+                    _lastAlarmLogUtc = nowUtc;
+                    _alarmLogSuppressed = 0;
+                }
+                else
+                {
+                    _alarmLogSuppressed++;
+                }
+
                 Thread.Sleep(100);
             }
         }
@@ -256,7 +342,7 @@ namespace WATA.LIS.SENSOR.NAV
 
         static void NAV_SendCMD_LogIn()
         {
-            gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 63 63 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
+            gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 43 43 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
             Tools.Log("SendLogIn", Tools.ELogType.NAVLog);
@@ -517,13 +603,41 @@ namespace WATA.LIS.SENSOR.NAV
 
                     switch (ErrCode)
                     {
-                        case 1: Globals.system_error = Alarms.ALARM_NAV350_POSE_WRONG_OP_MODE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //wrong operating mode
-                        case 2: Globals.system_error = Alarms.ALARM_NAV350_POSE_ASYNC_TERMINATED; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //asynchrony Method terminated
-                        case 3: Globals.system_error = Alarms.ALARM_NAV350_POSE_INVALID_DATA; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //invalid data
-                        case 4: Globals.system_error = Alarms.ALARM_NAV350_POSE_NO_POS_AVAILABLE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //no position available
-                        case 5: Globals.system_error = Alarms.ALARM_NAV350_POSE_TIMEOUT; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //timeout
-                        case 6: Globals.system_error = Alarms.ALARM_NAV350_POSE_METHOD_ALREADY_ACTIVE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //method already active
-                        case 7: Globals.system_error = Alarms.ALARM_NAV350_POSE_GENERAL_ERROR; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //general error
+                        case 1:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_WRONG_OP_MODE; // wrong operating mode
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DWrongOpMode);
+                            break;
+                        case 2:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_ASYNC_TERMINATED; // asynchrony Method terminated
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DAsyncTerminated);
+                            break;
+                        case 3:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_INVALID_DATA; // invalid data
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DInvalidData);
+                            break;
+                        case 4:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_NO_POS_AVAILABLE; // no position available
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DNoPosAvailable);
+                            break;
+                        case 5:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_TIMEOUT; // timeout
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DTimeout);
+                            break;
+                        case 6:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_METHOD_ALREADY_ACTIVE; // method already active
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DMethodAlreadyActive);
+                            break;
+                        case 7:
+                            Globals.system_error = Alarms.ALARM_NAV350_POSE_GENERAL_ERROR; // general error
+                            gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DGeneralError);
+                            break;
                     }
 
                     return;
@@ -552,12 +666,33 @@ namespace WATA.LIS.SENSOR.NAV
                 if (positionErrCount > 30)
                 {
                     Globals.system_error = Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR;
+                    SysAlarm.AddErrorCodes(SysAlarm.LiDar2DUnknownError);
                 }
                 else
                 {
                     gNAVstate = (byte)NAV350_STATE.NAV_STATE_GET_POS;
                     gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
                     Globals.system_error = Alarms.ALARM_NONE;
+                    // 정상 수신 시 Pose/Freeze 관련 에러 코드 제거 및 유효 포즈 수신 시각 갱신
+                    SysAlarm.RemoveErrorCodes(
+                        SysAlarm.LiDar2DWrongOpMode,
+                        SysAlarm.LiDar2DAsyncTerminated,
+                        SysAlarm.LiDar2DInvalidData,
+                        SysAlarm.LiDar2DNoPosAvailable,
+                        SysAlarm.LiDar2DTimeout,
+                        SysAlarm.LiDar2DMethodAlreadyActive,
+                        SysAlarm.LiDar2DGeneralError,
+                        SysAlarm.LiDar2DUnknownError,
+                        SysAlarm.LiDar2DFreeze
+                    );
+
+                    if (navMode == "1")
+                    {
+                        _lastValidPoseUtc = DateTime.UtcNow;
+                        // 회복된 경우 2단계 상태 초기화
+                        _freezeReconnectIssued = false;
+                        _freezeFirstDetectedUtc = DateTime.MinValue;
+                    }
                     gTranscheck = 0;
                 }
                 positionNavCount++;
@@ -571,12 +706,12 @@ namespace WATA.LIS.SENSOR.NAV
         {
             cmd = null;
             string rcvDataTemp = string.Empty;
-            if (rcvData[0] == '')
+            if (rcvData[0] == '\u0002')
             {
-                if (rcvData[length - 1] == '')
+                if (rcvData[length - 1] == '\u0003')
                 {
                     cmd = new string[length];
-                    rcvDataTemp = string.Join("", rcvData.Split('', ''));
+                    rcvDataTemp = string.Join("", rcvData.Split('\u0002', '\u0003'));
                     cmd = rcvDataTemp.Split(' ');
                     return true;
                 }

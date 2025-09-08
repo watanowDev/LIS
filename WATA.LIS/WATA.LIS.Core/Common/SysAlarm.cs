@@ -42,6 +42,15 @@ namespace WATA.LIS.Core.Common
 
         public static string LiDar2DConnErr = "0701";
         public static string LiDar2DFreeze = "0702";
+        public static string LiDar2DWrongOpMode = "0703";           // wrong operating mode
+        public static string LiDar2DAsyncTerminated = "0704";       // asynchrony Method terminated
+        public static string LiDar2DInvalidData = "0705";           // invalid data
+        public static string LiDar2DNoPosAvailable = "0706";        // no position available
+        public static string LiDar2DTimeout = "0707";               // timeout
+        public static string LiDar2DMethodAlreadyActive = "0708";   // method already active
+        public static string LiDar2DGeneralError = "0709";          // general error
+        public static string LiDar2DUnknownError = "0710";          // unknown error
+
 
         public static string LiDar3DConnErr = "0801";
 
