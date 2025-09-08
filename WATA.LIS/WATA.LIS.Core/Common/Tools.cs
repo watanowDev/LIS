@@ -7,50 +7,24 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.IO;
 using Newtonsoft.Json;
-using log4net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
-using log4net.Config;
 using Prism.Services.Dialogs;
+using System.Collections.ObjectModel;
 
 namespace WATA.LIS.Core.Common
 {
     public class Tools
     {
         static BrushConverter converter = new System.Windows.Media.BrushConverter();
-        static ILog SystemLog;
-        static ILog RFIDLog;
-        static ILog DistanceLog;
-        static ILog VisionLog;
-        static ILog BackEndLog;
-        static ILog BackEndCurrentELog;
-        static ILog ActionLog;
-        static ILog WeightLog;
-        static ILog DisplayLog;
-        static ILog DPSLog;
-        static ILog NAVLog;
-        static ILog VisionCamLog;
-        static ILog LIVOXLog;
 
+        // Removed file logging backends (log4net) to avoid file I/O overhead
         static public LogInfo logInfo { get; set; } = new LogInfo();
 
         static Tools()
         {
-            var ITEM = XmlConfigurator.Configure(new System.IO.FileInfo(@".\\Log4Net_WATA.xml"));
-            SystemLog = LogManager.GetLogger("SystemLogEx");
-            RFIDLog = LogManager.GetLogger("RFIDLogEx");
-            DistanceLog = LogManager.GetLogger("DistanceLogEx");
-            VisionLog = LogManager.GetLogger("VisionLogEx");
-            BackEndLog = LogManager.GetLogger("BackEndLogEx");
-            BackEndCurrentELog = LogManager.GetLogger("BackEndCurrentLogEx");
-            ActionLog = LogManager.GetLogger("ActionLogEx");
-            WeightLog = LogManager.GetLogger("WeightLogEx");
-            DisplayLog = LogManager.GetLogger("DisplayLogEx");
-            DPSLog = LogManager.GetLogger("DPSLogEx");
-            NAVLog = LogManager.GetLogger("NAVLogEx");
-            VisionCamLog = LogManager.GetLogger("VisionCamLogEx");
-            LIVOXLog = LogManager.GetLogger("LIVOXLogEx");
+            // No file logger initialization
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName name = assembly.GetName();
         }
@@ -60,361 +34,95 @@ namespace WATA.LIS.Core.Common
             return BitConverter.GetBytes(value);
         }
 
+        private static void AddUiLog(ObservableCollection<Log> list, string caller, string message)
+        {
+            if (list == null) return;
 
+            // Trim list to avoid unbounded growth
+            if (list.Count > 300)
+            {
+                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                {
+                    list.Clear();
+                }, DispatcherPriority.Normal);
+            }
+
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+            {
+                list.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));
+            }, DispatcherPriority.Normal);
+        }
+
+        // UI-only logging (no file writes)
         static public void Log(string message, ELogType logType,
             [CallerLineNumber] int lineNumber = 0,
             [CallerMemberName] string caller = null)
         {
             try
             {
+                if (logType == ELogType.None) return;
+
                 string msg = $"{caller}({lineNumber}) > {message}";
-                if (logType != ELogType.None)
+                switch (logType)
                 {
-                    switch (logType)
-                    {
-                        case ELogType.DPSLog:
-                            DPSLog.Info(msg);//Point
-                            if (logInfo.ListDPSLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDPSLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListDPSLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListDPSLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDPSLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-
-
-
-                        case ELogType.DisplayLog:
-                            DisplayLog.Info(msg);//Point
-                            if (logInfo.ListDisplayLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDisplayLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListDisplayLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListDisplayLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDisplayLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-
-
-                        case ELogType.WeightLog:
-                            WeightLog.Info(msg);//Point
-                            if (logInfo.ListWeightLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListWeightLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListWeightLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListWeightLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListWeightLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-
-
-                        case ELogType.ActionLog:
-                            ActionLog.Info(msg);//Point
-                            if (logInfo.ListActionLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListActionLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListActionLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListActionLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListActionLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-
-                        case ELogType.BackEndCurrentLog:
-                            BackEndCurrentELog.Info(msg);//Point
-                            if (logInfo.ListBackEndCurrentLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListBackEndCurrentLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListBackEndCurrentLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListBackEndCurrentLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListBackEndCurrentLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.SystemLog:
-                            SystemLog.Info(msg);//Point
-                            if (logInfo.ListSystemLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListSystemLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListSystemLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListSystemLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListSystemLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.RFIDLog:
-                            RFIDLog.Info(msg);//Point
-                            if (logInfo.ListRFIDLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListRFIDLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListRFIDLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListRFIDLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListRFIDLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.DistanceLog:
-                            DistanceLog.Info(msg);//Point
-                            if (logInfo.ListDistanceLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDistanceLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListDistanceLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListDistanceLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListDistanceLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.VisionLog:
-                            VisionLog.Info(msg);//Point
-                            if (logInfo.ListVisionLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListVisionLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListVisionLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListVisionLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListVisionLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.NAVLog:
-                            NAVLog.Info(msg);//Point
-                            if (logInfo.ListNAVLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListNAVLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListNAVLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListNAVLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListNAVLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.BackEndLog:
-                            BackEndLog.Info(msg);//Point
-                            if (logInfo.ListBackEndLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListBackEndLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListBackEndLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListBackEndLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListBackEndLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.VisionCamLog:
-                            VisionCamLog.Info(msg);//Point
-                            if (logInfo.ListVisionCamLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListVisionCamLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListVisionCamLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListVisionCamLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListVisionCamLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                        case ELogType.LIVOXLog:
-                            LIVOXLog.Info(msg);//Point
-                            if (logInfo.ListLIVOXLog.Count > 300)
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListLIVOXLog.Clear(); }
-                                , DispatcherPriority.Normal);
-                            }
-                            if (logInfo.ListLIVOXLog.Count > 0)//Point
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                {
-                                    logInfo.ListLIVOXLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));//Point
-                                }
-                                , DispatcherPriority.Normal);
-                            }
-                            else
-                            {
-                                System.Windows.Application.Current?.Dispatcher.Invoke(delegate
-                                { logInfo.ListLIVOXLog.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message)); }//Point
-                                , DispatcherPriority.Normal);
-                            }
-                            break;
-                        //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-                        default:
-                            break;
-                    }
+                    case ELogType.DPSLog:
+                        AddUiLog(logInfo.ListDPSLog, caller, message);
+                        break;
+                    case ELogType.DisplayLog:
+                        AddUiLog(logInfo.ListDisplayLog, caller, message);
+                        break;
+                    case ELogType.WeightLog:
+                        AddUiLog(logInfo.ListWeightLog, caller, message);
+                        break;
+                    case ELogType.ActionLog:
+                        AddUiLog(logInfo.ListActionLog, caller, message);
+                        break;
+                    case ELogType.BackEndCurrentLog:
+                        AddUiLog(logInfo.ListBackEndCurrentLog, caller, message);
+                        break;
+                    case ELogType.SystemLog:
+                        AddUiLog(logInfo.ListSystemLog, caller, message);
+                        break;
+                    case ELogType.RFIDLog:
+                        AddUiLog(logInfo.ListRFIDLog, caller, message);
+                        break;
+                    case ELogType.DistanceLog:
+                        AddUiLog(logInfo.ListDistanceLog, caller, message);
+                        break;
+                    case ELogType.VisionLog:
+                        AddUiLog(logInfo.ListVisionLog, caller, message);
+                        break;
+                    case ELogType.NAVLog:
+                        AddUiLog(logInfo.ListNAVLog, caller, message);
+                        break;
+                    case ELogType.BackEndLog:
+                        AddUiLog(logInfo.ListBackEndLog, caller, message);
+                        break;
+                    case ELogType.VisionCamLog:
+                        AddUiLog(logInfo.ListVisionCamLog, caller, message);
+                        break;
+                    case ELogType.LIVOXLog:
+                        AddUiLog(logInfo.ListLIVOXLog, caller, message);
+                        break;
+                    default:
+                        break;
                 }
             }
             catch (Exception ex)
             {
-                Tools.Log($"{ex.Message}", Tools.ELogType.SystemLog);
+                // Fallback to SystemLog UI list only
+                try
+                {
+                    AddUiLog(logInfo.ListSystemLog, nameof(Log), ex.Message);
+                }
+                catch { }
             }
         }
-
 
         static public void SaveJsons<T>(T json, string filename)
         {
             string jsonData = JsonConvert.SerializeObject(json);
-
             string Path = $@"{AppDomain.CurrentDomain.BaseDirectory}{filename}";
-
             File.WriteAllText(Path, jsonData);
         }
 
@@ -436,7 +144,6 @@ namespace WATA.LIS.Core.Common
             }
             return jsonData;
         }
-
 
         static public Brush Brush(EColor color)
         {
