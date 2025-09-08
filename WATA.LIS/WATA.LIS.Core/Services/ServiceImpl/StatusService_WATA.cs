@@ -1983,7 +1983,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($" Send Command : {m_Command}, weight:{m_weightModel.GrossWeight}, height:{m_event_height}", Tools.ELogType.DisplayLog);
             }
             Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
+            //Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
 

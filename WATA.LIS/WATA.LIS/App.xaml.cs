@@ -35,6 +35,7 @@ using WATA.LIS.VISION.CAM;
 using WATA.LIS.SENSOR.LIVOX;
 using WATA.LIS.Views;
 using WATA.LIS.Core.Model.RFID;
+using System.Threading;
 
 namespace WATA.LIS
 {
@@ -51,6 +52,7 @@ namespace WATA.LIS
         private ActionEventRepository _actionEventRepo;
         private ActionPoseRepository _actionPoseRepo;
         private ActionSensorBundleRepository _actionBundleRepo;
+        private AppLogRepository _appLogRepo;
         private IEventAggregator _eventAggregator;
         private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
@@ -92,6 +94,9 @@ namespace WATA.LIS
         private readonly ConcurrentDictionary<string, DateTimeOffset> _actionDedup = new ConcurrentDictionary<string, DateTimeOffset>();
         private TimeSpan _actionDedupWindow = TimeSpan.FromMilliseconds(300);
 
+        // app log flush progress per category
+        private readonly Dictionary<string, int> _logFlushIndex = new Dictionary<string, int>();
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -122,6 +127,9 @@ namespace WATA.LIS
                     _networkOkFromBackend = status != -1;
                     GlobalValue.IS_ERROR.backend = _networkOkFromBackend;
                 }, ThreadOption.BackgroundThread, true);
+
+            // Hook Tools.Log to DB app_logs via event
+            TryAttachLogSink();
         }
 
         private static string SanitizeSearchPath(string value)
@@ -155,6 +163,88 @@ namespace WATA.LIS
             {
                 return "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata2019;SearchPath=lis_core,public;Pooling=true;Include Error Detail=true";
             }
+        }
+
+        private void TryAttachLogSink()
+        {
+            try
+            {
+                if (WATA.LIS.Core.Common.Tools.logInfo == null) return;
+                var timer = new System.Windows.Threading.DispatcherTimer();
+                timer.Interval = TimeSpan.FromSeconds(5);
+                timer.Tick += async (_, __) =>
+                {
+                    try
+                    {
+                        if (_appLogRepo == null) return;
+                        var main = Container.Resolve<IMainModel>() as MainConfigModel;
+                        string vehicleId = main?.vehicleId;
+                        string workLoc = main?.workLocationId;
+                        string projectId = main?.projectId;
+                        string mappingId = main?.mappingId;
+                        string mapId = main?.mapId;
+                        string machine = Environment.MachineName;
+                        var now = DateTimeOffset.UtcNow;
+
+                        await FlushListAsync(Tools.logInfo.ListSystemLog, "SystemLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListNAVLog, "NAVLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListBackEndLog, "BackEndLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListVisionCamLog, "VisionCamLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListRFIDLog, "RFIDLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListDistanceLog, "DistanceLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListWeightLog, "WeightLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListDisplayLog, "DisplayLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListActionLog, "ActionLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListVisionLog, "VisionLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListLIVOXLog, "LIVOXLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListDPSLog, "DPSLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                        await FlushListAsync(Tools.logInfo.ListBackEndCurrentLog, "BackEndCurrentLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
+                    }
+                    catch { }
+                };
+                timer.Start();
+            }
+            catch { }
+        }
+
+        private async Task FlushListAsync(System.Collections.ObjectModel.ObservableCollection<Log> list, string category,
+            string vehicleId, string workLocationId, string projectId, string mappingId, string mapId, string machine, DateTimeOffset now)
+        {
+            if (list == null) return;
+            if (!_logFlushIndex.TryGetValue(category, out int start)) start = 0;
+            // handle list cleared scenario
+            if (start > list.Count) start = 0;
+            if (list.Count <= start) { _logFlushIndex[category] = start; return; }
+            for (int i = start; i < list.Count; i++)
+            {
+                try
+                {
+                    var item = list[i];
+                    DateTimeOffset ts = now;
+                    try { if (!string.IsNullOrWhiteSpace(item.DateTime)) ts = DateTimeOffset.Parse(item.DateTime); } catch { }
+                    await _appLogRepo.InsertAsync(
+                        ts,
+                        GlobalValue.SessionId,
+                        category,
+                        item.Content,
+                        item.Method,
+                        null,
+                        Thread.CurrentThread.ManagedThreadId,
+                        machine,
+                        vehicleId,
+                        workLocationId,
+                        projectId,
+                        mappingId,
+                        mapId,
+                        level: null,
+                        correlationId: null,
+                        contextJson: null,
+                        tags: null
+                    );
+                }
+                catch { }
+            }
+            _logFlushIndex[category] = list.Count;
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -212,6 +302,20 @@ namespace WATA.LIS
                 await _statusRepo.EnsureTableAsync();
                 var machine = Environment.MachineName;
                 await _sessionRepo.UpsertStartAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, GlobalValue.SystemVersion, machine);
+
+                _appLogRepo = new AppLogRepository(cs);
+                await _appLogRepo.EnsureTableAsync();
+                try
+                {
+                    await using (var verifyConn = new NpgsqlConnection(cs))
+                    {
+                        await verifyConn.OpenAsync();
+                        await using var verifyCmd = new NpgsqlCommand("select exists (select 1 from information_schema.tables where table_schema='lis_core' and table_name='app_logs')", verifyConn);
+                        var exists = (bool)await verifyCmd.ExecuteScalarAsync();
+                        Tools.Log($"DB check: lis_core.app_logs exists = {exists}", Tools.ELogType.SystemLog);
+                    }
+                }
+                catch { }
 
                 _statusTimer = new System.Windows.Threading.DispatcherTimer();
                 _statusTimer.Interval = TimeSpan.FromSeconds(1);
