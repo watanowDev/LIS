@@ -1,21 +1,16 @@
 ﻿using NetMQ.Sockets;
 using Prism.Events;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-using WATA.LIS.Core.Interfaces;
-using WATA.LIS.Core.Model.SystemConfig;
-using NetMQ;
-using WATA.LIS.Core.Common;
-using Newtonsoft.Json.Linq;
-using System.Threading;
-using WATA.LIS.Core.Model;
-using WATA.LIS.Core.Model.LIVOX;
-using WATA.LIS.Core.Events.LIVOX;
 using System.Diagnostics;
+using System.Threading;
+using System.Windows.Threading;
+using WATA.LIS.Core.Common;
+using WATA.LIS.Core.Events.LIVOX;
+using WATA.LIS.Core.Interfaces;
+using WATA.LIS.Core.Model.LIVOX;
+using WATA.LIS.Core.Model.SystemConfig;
+using Newtonsoft.Json.Linq;
+using NetMQ;
 using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.SENSOR.LIVOX.MQTT
@@ -28,12 +23,25 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
         LIVOXConfigModel livoxConfig;
 
         private DispatcherTimer mCheckConnTimer;
-        private DispatcherTimer mSubTimer;
         private bool mConnected = false;
-        private string mSubMsg = string.Empty;
 
         public PublisherSocket _publisherSocket;
         public SubscriberSocket _subscriberSocket;
+
+        private readonly object _sync = new object();
+        private volatile bool _reconnecting = false;
+
+        private const string PubEndpoint = "tcp://127.0.0.1:5002";
+        private const string SubEndpoint = "tcp://127.0.0.1:5001";
+        private static readonly TimeSpan RxTimeout = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan ResponseWindow = TimeSpan.FromSeconds(2); // 응답 기대 시간
+
+        private const int MaxErrorsBeforeReconnect = 3;
+
+        private int _consecutiveErrors = 0;
+        private DateTime _lastRxUtc = DateTime.MinValue;
+        private DateTime _lastTxUtc = DateTime.MinValue;
+        private volatile bool _awaitingResponse = false;
 
         Stopwatch m_stopwatch;
 
@@ -49,36 +57,124 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
         public void Init()
         {
             InitLivox();
+            StartHealthCheck();
         }
 
         private void InitLivox()
         {
+            lock (_sync)
+            {
+                try
+                {
+                    CloseSocketsNoThrow();
+
+                    _publisherSocket = new PublisherSocket();
+                    _publisherSocket.Options.SendHighWatermark = 1000;
+                    _publisherSocket.Bind(PubEndpoint);
+
+                    Tools.Log($"[LIVOX] Init publisher at {PubEndpoint}", Tools.ELogType.SystemLog);
+
+                    _subscriberSocket = new SubscriberSocket();
+                    _subscriberSocket.Options.ReceiveHighWatermark = 1000;
+                    _subscriberSocket.Connect(SubEndpoint);
+                    _subscriberSocket.Subscribe("MID360>LIS"); // subscribe once
+
+                    Tools.Log($"[LIVOX] Init subscriber at {SubEndpoint}", Tools.ELogType.SystemLog);
+
+                    _lastRxUtc = DateTime.UtcNow;
+                    _consecutiveErrors = 0;
+                    mConnected = true;
+                }
+                catch (Exception ex)
+                {
+                    Tools.Log($"[LIVOX] Failed InitLivox PubSub: {ex.Message}", Tools.ELogType.SystemLog);
+                    mConnected = false;
+                }
+            }
+        }
+
+        private void StartHealthCheck()
+        {
+            if (mCheckConnTimer != null) return;
+
+            mCheckConnTimer = new DispatcherTimer();
+            mCheckConnTimer.Interval = TimeSpan.FromSeconds(1);
+            mCheckConnTimer.Tick += (_, __) =>
+            {
+                try
+                {
+                    if (_reconnecting) return;
+
+                    bool needReconnect = false;
+                    lock (_sync)
+                    {
+                        if (_publisherSocket == null || _publisherSocket.IsDisposed ||
+                            _subscriberSocket == null || _subscriberSocket.IsDisposed)
+                        {
+                            needReconnect = true;
+                        }
+                        else if (_awaitingResponse)
+                        {
+                            // 요청을 보낸 상태에서 응답이 일정 시간 내 오지 않으면 재연결
+                            var now = DateTime.UtcNow;
+                            if ((now - _lastTxUtc) > ResponseWindow && (now - _lastRxUtc) > ResponseWindow)
+                                needReconnect = true;
+                        }
+                    }
+
+                    if (needReconnect)
+                    {
+                        ReconnectLivox("healthcheck awaiting-response timeout/disposed");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Tools.Log($"[LIVOX] HealthCheck error: {ex.Message}", Tools.ELogType.SystemLog);
+                }
+            };
+            mCheckConnTimer.Start();
+            Tools.Log($"[LIVOX] HealthCheck started (1s)", Tools.ELogType.SystemLog);
+        }
+
+        private void ReconnectLivox(string reason)
+        {
+            if (_reconnecting) return;
+            _reconnecting = true;
+
+            Tools.Log($"[LIVOX] Reconnecting due to: {reason}", Tools.ELogType.SystemLog);
             try
             {
-                _publisherSocket = new PublisherSocket();
-                // 퍼블리셔 소켓을 5555 포트에 바인딩합니다.
-                _publisherSocket.Bind("tcp://127.0.0.1:5002");
-
-                Tools.Log($"InitLivox", Tools.ELogType.SystemLog);
-
-                _subscriberSocket = new SubscriberSocket();
-                // 서브스크라이버 소켓을 5555 포트에 연결합니다.
-                _subscriberSocket.Connect("tcp://127.0.0.1:5001");
-
-                // 타임아웃 설정 (예: 30초)
-                _subscriberSocket.Options.HeartbeatTimeout = TimeSpan.FromSeconds(5);
+                lock (_sync)
+                {
+                    CloseSocketsNoThrow();
+                }
+                Thread.Sleep(150); // short cooldown
+                InitLivox();
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed InitLivox PubSub: {ex.Message}", Tools.ELogType.SystemLog);
+                Tools.Log($"[LIVOX] Reconnect failed: {ex.Message}", Tools.ELogType.SystemLog);
             }
+            finally
+            {
+                _reconnecting = false;
+            }
+        }
+
+        private void CloseSocketsNoThrow()
+        {
+            try { _publisherSocket?.Dispose(); } catch { }
+            try { _subscriberSocket?.Dispose(); } catch { }
+            _publisherSocket = null;
+            _subscriberSocket = null;
+            mConnected = false;
         }
 
         private void OnCallDataEvent()
         {
-            // 부피, 형상 리복스 데이터 요청
+            _awaitingResponse = true;
             m_stopwatch = new Stopwatch();
-            if (m_stopwatch != null) m_stopwatch.Start();
+            m_stopwatch.Start();
 
             bool isSendZero = false;
 
@@ -96,34 +192,40 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 Thread.Sleep(100);
             }
 
-            if(isSendZero == false)
+            if (isSendZero == false)
             {
                 SendToLivox(0);
             }
 
-            if (m_stopwatch != null)
-            {
-                m_stopwatch.Stop();
-                Tools.Log($"Size Measuring Time : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
-            }
+            m_stopwatch.Stop();
+            Tools.Log($"Size Measuring Time : {m_stopwatch.ElapsedMilliseconds}ms", ELogType.ActionLog);
+            _awaitingResponse = false;
         }
 
         public void SendToLivox(int commandNum)
         {
             try
             {
-                // 메시지를 퍼블리시합니다.
-                string message = $"LIS>MID360,{commandNum}"; // 1은 물류 부피 데이터 요청, 0은 수신완료 응답
+                string message = $"LIS>MID360,{commandNum}"; // 1: request, 0: ack
 
-                // 주제와 메시지를 결합하여 퍼블리시
-                _publisherSocket.SendFrame(message);
+                lock (_sync)
+                {
+                    if (_publisherSocket == null || _publisherSocket.IsDisposed)
+                        throw new InvalidOperationException("Publisher socket not available");
+                    _publisherSocket.SendFrame(message);
+                    _lastTxUtc = DateTime.UtcNow;
+                }
 
                 Tools.Log($"SendToLivox : {message}", Tools.ELogType.SystemLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
-                System.Windows.Application.Current.Shutdown();
+                Tools.Log($"[LIVOX] Failed SendToLivox : {ex.Message}", Tools.ELogType.SystemLog);
+                _consecutiveErrors++;
+                if (_consecutiveErrors >= MaxErrorsBeforeReconnect)
+                {
+                    ReconnectLivox("send failure threshold");
+                }
             }
         }
 
@@ -132,60 +234,84 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
             bool ret = false;
             try
             {
-                // 이벤트 모델 생성
-                LIVOXModel eventModel = new LIVOXModel();
+                string rcvStr = null;
+                bool got = false;
 
-                // "VISION" 주제를 구독합니다.
-                _subscriberSocket.Subscribe("MID360>LIS");
-
-                // 메시지를 수신합니다.
-                string RcvStr = _subscriberSocket.ReceiveFrameString();
-
-                // RcvStr이 null이거나 빈 문자열일 경우 ret을 false로 설정
-                if (string.IsNullOrEmpty(RcvStr))
+                var deadline = DateTime.UtcNow + RxTimeout;
+                lock (_sync)
                 {
-                    Tools.Log("Received message is null or empty", Tools.ELogType.SystemLog);
-                    return ret;
+                    if (_subscriberSocket == null || _subscriberSocket.IsDisposed)
+                        throw new InvalidOperationException("Subscriber socket not available");
+
+                    // poll for up to RxTimeout
+                    while (DateTime.UtcNow < deadline)
+                    {
+                        if (_subscriberSocket.TryReceiveFrameString(out rcvStr))
+                        {
+                            got = true;
+                            break;
+                        }
+                        Thread.Sleep(10);
+                    }
                 }
 
-                if (!RcvStr.Contains("MID360>LIS"))
+                if (!got)
                 {
-                    return ret;
+                    Tools.Log("[LIVOX] receive timeout", Tools.ELogType.SystemLog);
+                    _consecutiveErrors++;
+                    if (_consecutiveErrors >= MaxErrorsBeforeReconnect)
+                    {
+                        ReconnectLivox("receive timeout threshold");
+                    }
+                    return false;
                 }
 
-                if (RcvStr.Contains("height") && RcvStr.Contains("width") && RcvStr.Contains("length") && RcvStr.Contains("result"))
+                if (string.IsNullOrEmpty(rcvStr) || !rcvStr.Contains("MID360>LIS"))
                 {
-                    // JSON 문자열에서 데이터를 추출합니다.
-                    var jsonString = RcvStr.Substring(RcvStr.IndexOf("{"));
+                    // unexpected topic
+                    return false;
+                }
+
+                if (rcvStr.Contains("height") && rcvStr.Contains("width") && rcvStr.Contains("length") && rcvStr.Contains("result"))
+                {
+                    var jsonString = rcvStr.Substring(rcvStr.IndexOf("{"));
                     var jsonObject = JObject.Parse(jsonString);
 
-                    eventModel.topic = "MID360>LIS";
-                    eventModel.responseCode = 0;
-                    eventModel.width = (int)jsonObject["width"];
-                    eventModel.height = (int)jsonObject["height"];
-                    eventModel.length = (int)jsonObject["length"];
-                    eventModel.result = (int)jsonObject["result"]; // bool 값을 int로 변환
-                    eventModel.points = jsonObject["points"].ToString();
+                    LIVOXModel eventModel = new LIVOXModel
+                    {
+                        topic = "MID360>LIS",
+                        responseCode = 0,
+                        width = (int)jsonObject["width"],
+                        height = (int)jsonObject["height"],
+                        length = (int)jsonObject["length"],
+                        result = (int)jsonObject["result"],
+                        points = jsonObject["points"]?.ToString() ?? string.Empty
+                    };
 
                     _eventAggregator.GetEvent<LIVOXEvent>().Publish(eventModel);
                     Tools.Log($"height:{eventModel.height}, width:{eventModel.width}, depth:{eventModel.length}", Tools.ELogType.ActionLog);
 
-                    return ret = true;
+                    _lastRxUtc = DateTime.UtcNow;
+                    _consecutiveErrors = 0;
+                    ret = true;
                 }
                 else
                 {
-                    // 부피사이즈를 읽어오지 못했을 때 처리
-                    eventModel.width = -1;
-                    eventModel.height = -1;
-                    eventModel.length = -1;
-                    eventModel.points = "";
+                    _consecutiveErrors++;
+                    if (_consecutiveErrors >= MaxErrorsBeforeReconnect)
+                    {
+                        ReconnectLivox("invalid payload threshold");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // 예외 처리
-                Tools.Log($"Exception occurred: {ex.Message}", Tools.ELogType.SystemLog);
-                System.Windows.Application.Current.Shutdown();
+                Tools.Log($"[LIVOX] Receive exception: {ex.Message}", Tools.ELogType.SystemLog);
+                _consecutiveErrors++;
+                if (_consecutiveErrors >= MaxErrorsBeforeReconnect)
+                {
+                    ReconnectLivox("receive exception threshold");
+                }
             }
 
             return ret;

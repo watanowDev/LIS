@@ -65,7 +65,7 @@
     "AdjustingPosition": 1900 //1800
   },
   "LIVOX": {
-    "LIVOX_Enable": 0
+    "LIVOX_Enable": 1
   },
   "vision": {
     "vision_enable": 1,
