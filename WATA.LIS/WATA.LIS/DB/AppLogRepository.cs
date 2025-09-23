@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace WATA.LIS.DB
 {
@@ -89,12 +90,49 @@ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17::jsonb);";
             cmd.Parameters.AddWithValue((object?)mappingId ?? System.DBNull.Value);
             cmd.Parameters.AddWithValue((object?)mapId ?? System.DBNull.Value);
             cmd.Parameters.AddWithValue((object?)correlationId ?? System.DBNull.Value);
-            if (tags != null)
-                cmd.Parameters.AddWithValue(tags);
-            else
-                cmd.Parameters.AddWithValue(System.DBNull.Value);
-            cmd.Parameters.AddWithValue((object?)contextJson ?? System.DBNull.Value);
+
+            var pTags = new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Array | NpgsqlDbType.Text };
+            pTags.Value = (object?)tags ?? System.DBNull.Value;
+            cmd.Parameters.Add(pTags);
+
+            var pContext = new NpgsqlParameter { NpgsqlDbType = NpgsqlDbType.Jsonb };
+            pContext.Value = (object?)contextJson ?? System.DBNull.Value;
+            cmd.Parameters.Add(pContext);
+
             await cmd.ExecuteNonQueryAsync(ct);
+        }
+
+        public sealed class AppLogRow
+        {
+            public System.DateTimeOffset CreatedAt { get; set; }
+            public string? Category { get; set; }
+            public string? Message { get; set; }
+            public string? ContextJson { get; set; }
+        }
+
+        public async Task<AppLogRow?> GetLastByCategoryAsync(string category, CancellationToken ct = default)
+        {
+            string sql = $@"SELECT created_at, category, message, context
+FROM ""{Schema}"".app_logs
+WHERE category = $1
+ORDER BY created_at DESC
+LIMIT 1;";
+            await using var conn = new NpgsqlConnection(_cs);
+            await conn.OpenAsync(ct);
+            await using var cmd = new NpgsqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue(category);
+            await using var r = await cmd.ExecuteReaderAsync(ct);
+            if (await r.ReadAsync(ct))
+            {
+                return new AppLogRow
+                {
+                    CreatedAt = r.GetFieldValue<System.DateTimeOffset>(0),
+                    Category = r.IsDBNull(1) ? null : r.GetString(1),
+                    Message  = r.IsDBNull(2) ? null : r.GetString(2),
+                    ContextJson = r.IsDBNull(3) ? null : r.GetString(3),
+                };
+            }
+            return null;
         }
     }
 }

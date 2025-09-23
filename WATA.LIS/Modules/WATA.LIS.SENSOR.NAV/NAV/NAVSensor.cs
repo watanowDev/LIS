@@ -15,6 +15,7 @@ using WATA.LIS.SENSOR.NAV.NAV;
 using WATA.LIS.Core.Events.DistanceSensor;
 using WATA.LIS.Core.Model.DistanceSensor;
 using WATA.LIS.Core.Events.NAVSensor;
+using WATA.LIS.Core.Events.System;
 
 namespace WATA.LIS.SENSOR.NAV
 {
@@ -77,7 +78,7 @@ namespace WATA.LIS.SENSOR.NAV
         private static bool isReconnecting = false;
         private static DateTime reconnectStartTime;
         private static int postReconnectFreezeCount = 0;
-        private const int postReconnectThreshold = 100; // 10초 (100ms * 100)
+        private const int postReconnectThreshold = 150; // 15초 (100ms * 100)
 
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
@@ -104,7 +105,7 @@ namespace WATA.LIS.SENSOR.NAV
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            const int navFreezeThreshold = 30; // 100ms * 30 = 3초
+            const int navFreezeThreshold = 300; // 100ms * 100 = 15초
 
             while (true)
             {
@@ -198,10 +199,12 @@ namespace WATA.LIS.SENSOR.NAV
                                     nav350_socket_open_once = false;
                                 }
                                 
-                                NAVSensor.socketSend.Close();
-                                NAVSensor.socketSend.Dispose();
+                                //NAVSensor.socketSend.Close();
+                                //NAVSensor.socketSend.Dispose();
                                 NAVSensor.NAV_SoftWareReset();
-                                
+
+                                Thread.Sleep(1000); // 소켓 정리 대기
+
                                 nav350_socket_open = false;
                                 
                                 // 재연결 상태 설정
@@ -231,8 +234,8 @@ namespace WATA.LIS.SENSOR.NAV
                         // 재연결 후 상태 모니터링
                         if (isReconnecting)
                         {
-                            // 재연결 후 10초 경과 체크
-                            if ((DateTime.Now - reconnectStartTime).TotalSeconds > 10)
+                            // 재연결 후 3초 경과 체크
+                            if ((DateTime.Now - reconnectStartTime).TotalSeconds > 30)
                             {
                                 // 재연결 후에도 문제 지속 시 최종 셧다운
                                 if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
@@ -241,11 +244,14 @@ namespace WATA.LIS.SENSOR.NAV
                                     
                                     // 1) 내부 알람 상태 갱신
                                     SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
-                                    
-                                    // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
+
+                                    // 2) Shutdonw 이벤트 발행
+                                    _eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
+
+                                    // 3) 타이머가 DB에 기록할 수 있도록 짧게 대기
                                     Thread.Sleep(400);
                                     
-                                    // 3) 종료
+                                    // 4) 종료
                                     System.Windows.Application.Current.Shutdown();
                                     return;
                                 }
@@ -623,7 +629,7 @@ namespace WATA.LIS.SENSOR.NAV
                 else
                     positionErrCount = 0;
 
-                if (positionErrCount > 30)
+                if (positionErrCount > 5)
                 {
                     Globals.system_error = Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR;
                 }
@@ -747,7 +753,17 @@ namespace WATA.LIS.SENSOR.NAV
                     {
                         gNavRcvErrorCheck = true;
                     }
+
                     int cmd_length = cmd.Length;
+                    try
+                    {
+                        cmd_length = cmd.Length;
+                    }
+                    catch
+                    {
+                        // Catch
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
+                    }
 
 
                     if (cmd[0].Equals("sFA"))

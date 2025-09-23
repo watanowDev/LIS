@@ -33,6 +33,7 @@ using WATA.LIS.Core.Events.LIVOX;
 using WATA.LIS.Core.Events.NAVSensor;
 using WATA.LIS.Core.Events.RFID;
 using WATA.LIS.Core.Events.StatusLED;
+using WATA.LIS.Core.Events.System;
 using WATA.LIS.Core.Events.VisionCam;
 using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Interfaces;
@@ -46,6 +47,7 @@ using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Model.VisionCam;
+using System.Windows;
 using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
@@ -205,6 +207,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DetectionRcvEvent>().Subscribe(OnDetectionRcvEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<ShutdownEngineEvent>().Subscribe(OnShutdownEngineEvent, ThreadOption.BackgroundThread, true);
 
 
             m_weightConfig = (WeightConfigModel)weightmodel;
@@ -345,6 +348,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 string json = System.IO.File.ReadAllText(zonePath);
                 s_zoneListCache = JsonConvert.DeserializeObject<List<ZoneEntry>>(json);
             }
+            // 생성자 내 기존 구독들 바로 아래에 복원 이벤트 구독 추가
+            _eventAggregator.GetEvent<RestorePickupStateEvent>()
+                .Subscribe(RestoreFromSnapshot, ThreadOption.BackgroundThread, true);
         }
 
         private void SensorReadyTimerEvent(object sender, EventArgs e)
@@ -1983,7 +1989,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($" Send Command : {m_Command}, weight:{m_weightModel.GrossWeight}, height:{m_event_height}", Tools.ELogType.DisplayLog);
             }
             Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
-            //Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
+            Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -2465,6 +2471,97 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Shutdown Event 감지
+        /// </summary> 
+        private void OnShutdownEngineEvent()
+        {
+            try
+            {
+                var json = BuildShutdownSnapshotJson();
+                _eventAggregator.GetEvent<ShutdownSnapshotEvent>().Publish(json);
+                Tools.Log("[SNAPSHOT] published ShutdownSnapshotEvent", Tools.ELogType.SystemLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[SNAPSHOT] publish failed: {ex.Message}", Tools.ELogType.SystemLog);
+            }
+        }
+
+        // 스냅샷 JSON 구성(필드 추가 시 여기도 확장)
+        private string BuildShutdownSnapshotJson()
+        {
+            var o = new JObject
+            {
+                ["pickupStatus"] = m_pickupStatus,
+                ["event_weight"] = m_event_weight,
+                ["event_width"] = m_event_width,
+                ["event_height"] = m_event_height,
+                ["event_length"] = m_event_length,
+                ["event_points"] = m_event_points ?? string.Empty,
+                ["event_epc"] = m_event_epc ?? string.Empty,
+                ["event_qr"] = m_event_QRcode ?? string.Empty,
+                ["event_nation"] = m_event_NationCode ?? string.Empty,
+                ["event_distance"] = m_event_distance,
+                ["curr_distance"] = m_curr_distance,
+                ["zone_id"] = m_ActionZoneId ?? string.Empty,
+                ["zone_name"] = m_ActionZoneName ?? string.Empty,
+                ["set_item"] = m_set_item,
+                ["set_load"] = m_set_load,
+                ["set_unload"] = m_set_unload,
+                ["set_normal"] = m_set_normal,
+                ["set_measure"] = m_set_measure,
+                ["command"] = m_Command,
+                ["nav_x"] = m_navModel?.naviX,
+                ["nav_y"] = m_navModel?.naviY,
+                ["nav_t"] = m_navModel?.naviT,
+                ["ts_utc"] = DateTimeOffset.UtcNow
+            };
+            return o.ToString();
+        }
+
+        // 복원 처리(이벤트 트리거 없이 내부 상태만 세팅)
+        private void RestoreFromSnapshot(string json)
+        {
+            try
+            {
+                var o = JObject.Parse(json);
+                bool wasPickup = o.Value<bool?>("pickupStatus") ?? false;
+                if (!wasPickup) return;
+
+                m_event_weight = o.Value<int?>("event_weight") ?? m_event_weight;
+                m_event_width = (float)(o.Value<double?>("event_width") ?? m_event_width);
+                m_event_height = (float)(o.Value<double?>("event_height") ?? m_event_height);
+                m_event_length = (float)(o.Value<double?>("event_length") ?? m_event_length);
+                m_event_points = o.Value<string>("event_points") ?? m_event_points;
+                m_event_epc = o.Value<string>("event_epc") ?? m_event_epc;
+                m_event_QRcode = o.Value<string>("event_qr") ?? m_event_QRcode;
+                m_event_NationCode = o.Value<string>("event_nation") ?? m_event_NationCode;
+                m_event_distance = o.Value<int?>("event_distance") ?? m_event_distance;
+                m_curr_distance = o.Value<int?>("curr_distance") ?? m_curr_distance;
+                m_ActionZoneId = o.Value<string>("zone_id") ?? m_ActionZoneId;
+                m_ActionZoneName = o.Value<string>("zone_name") ?? m_ActionZoneName;
+                m_set_item = o.Value<bool?>("set_item") ?? m_set_item;
+                m_set_load = o.Value<bool?>("set_load") ?? m_set_load;
+                m_set_unload = o.Value<bool?>("set_unload") ?? m_set_unload;
+                m_set_normal = o.Value<bool?>("set_normal") ?? m_set_normal;
+                m_set_measure = o.Value<bool?>("set_measure") ?? m_set_measure;
+                m_Command = o.Value<int?>("command") ?? m_Command;
+
+                // 이벤트 재발생 없이 상태만 복원
+                m_pickupStatus = true;
+
+                // 인디케이터/UI 최신화
+                IndicatorSendTimerEvent(null, null);
+
+                Tools.Log("[SNAPSHOT] restored m_event state from ShutdownSnapshot", Tools.ELogType.SystemLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[SNAPSHOT] restore failed: {ex.Message}", Tools.ELogType.SystemLog);
+            }
         }
 
 

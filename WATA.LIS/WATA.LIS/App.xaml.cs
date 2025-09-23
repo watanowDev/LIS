@@ -35,7 +35,7 @@ using WATA.LIS.VISION.CAM;
 using WATA.LIS.SENSOR.LIVOX;
 using WATA.LIS.Views;
 using WATA.LIS.Core.Model.RFID;
-using System.Threading;
+using WATA.LIS.Core.Events.System;
 
 namespace WATA.LIS
 {
@@ -52,7 +52,6 @@ namespace WATA.LIS
         private ActionEventRepository _actionEventRepo;
         private ActionPoseRepository _actionPoseRepo;
         private ActionSensorBundleRepository _actionBundleRepo;
-        private AppLogRepository _appLogRepo;
         private IEventAggregator _eventAggregator;
         private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
@@ -94,8 +93,8 @@ namespace WATA.LIS
         private readonly ConcurrentDictionary<string, DateTimeOffset> _actionDedup = new ConcurrentDictionary<string, DateTimeOffset>();
         private TimeSpan _actionDedupWindow = TimeSpan.FromMilliseconds(300);
 
-        // app log flush progress per category
-        private readonly Dictionary<string, int> _logFlushIndex = new Dictionary<string, int>();
+        // 필드 추가
+        private AppLogRepository _appLogRepo;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -128,8 +127,14 @@ namespace WATA.LIS
                     GlobalValue.IS_ERROR.backend = _networkOkFromBackend;
                 }, ThreadOption.BackgroundThread, true);
 
-            // Hook Tools.Log to DB app_logs via event
-            TryAttachLogSink();
+            _eventAggregator.GetEvent<ShutdownSnapshotEvent>()
+                .Subscribe(async json => await HandleShutdownSnapshotAsync(json), ThreadOption.BackgroundThread, true);
+
+            // DB 준비 후 복원 시도(이미 유사 코드가 있다면 그걸 사용)
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                try { await TryRestoreShutdownSnapshotAsync(); } catch { }
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
         private static string SanitizeSearchPath(string value)
@@ -163,88 +168,6 @@ namespace WATA.LIS
             {
                 return "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata2019;SearchPath=lis_core,public;Pooling=true;Include Error Detail=true";
             }
-        }
-
-        private void TryAttachLogSink()
-        {
-            try
-            {
-                if (WATA.LIS.Core.Common.Tools.logInfo == null) return;
-                var timer = new System.Windows.Threading.DispatcherTimer();
-                timer.Interval = TimeSpan.FromSeconds(5);
-                timer.Tick += async (_, __) =>
-                {
-                    try
-                    {
-                        if (_appLogRepo == null) return;
-                        var main = Container.Resolve<IMainModel>() as MainConfigModel;
-                        string vehicleId = main?.vehicleId;
-                        string workLoc = main?.workLocationId;
-                        string projectId = main?.projectId;
-                        string mappingId = main?.mappingId;
-                        string mapId = main?.mapId;
-                        string machine = Environment.MachineName;
-                        var now = DateTimeOffset.UtcNow;
-
-                        await FlushListAsync(Tools.logInfo.ListSystemLog, "SystemLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListNAVLog, "NAVLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListBackEndLog, "BackEndLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListVisionCamLog, "VisionCamLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListRFIDLog, "RFIDLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListDistanceLog, "DistanceLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListWeightLog, "WeightLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListDisplayLog, "DisplayLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListActionLog, "ActionLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListVisionLog, "VisionLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListLIVOXLog, "LIVOXLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListDPSLog, "DPSLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                        await FlushListAsync(Tools.logInfo.ListBackEndCurrentLog, "BackEndCurrentLog", vehicleId, workLoc, projectId, mappingId, mapId, machine, now);
-                    }
-                    catch { }
-                };
-                timer.Start();
-            }
-            catch { }
-        }
-
-        private async Task FlushListAsync(System.Collections.ObjectModel.ObservableCollection<Log> list, string category,
-            string vehicleId, string workLocationId, string projectId, string mappingId, string mapId, string machine, DateTimeOffset now)
-        {
-            if (list == null) return;
-            if (!_logFlushIndex.TryGetValue(category, out int start)) start = 0;
-            // handle list cleared scenario
-            if (start > list.Count) start = 0;
-            if (list.Count <= start) { _logFlushIndex[category] = start; return; }
-            for (int i = start; i < list.Count; i++)
-            {
-                try
-                {
-                    var item = list[i];
-                    DateTimeOffset ts = now;
-                    try { if (!string.IsNullOrWhiteSpace(item.DateTime)) ts = DateTimeOffset.Parse(item.DateTime); } catch { }
-                    await _appLogRepo.InsertAsync(
-                        ts,
-                        GlobalValue.SessionId,
-                        category,
-                        item.Content,
-                        item.Method,
-                        null,
-                        Thread.CurrentThread.ManagedThreadId,
-                        machine,
-                        vehicleId,
-                        workLocationId,
-                        projectId,
-                        mappingId,
-                        mapId,
-                        level: null,
-                        correlationId: null,
-                        contextJson: null,
-                        tags: null
-                    );
-                }
-                catch { }
-            }
-            _logFlushIndex[category] = list.Count;
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -302,20 +225,6 @@ namespace WATA.LIS
                 await _statusRepo.EnsureTableAsync();
                 var machine = Environment.MachineName;
                 await _sessionRepo.UpsertStartAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, GlobalValue.SystemVersion, machine);
-
-                _appLogRepo = new AppLogRepository(cs);
-                await _appLogRepo.EnsureTableAsync();
-                try
-                {
-                    await using (var verifyConn = new NpgsqlConnection(cs))
-                    {
-                        await verifyConn.OpenAsync();
-                        await using var verifyCmd = new NpgsqlCommand("select exists (select 1 from information_schema.tables where table_schema='lis_core' and table_name='app_logs')", verifyConn);
-                        var exists = (bool)await verifyCmd.ExecuteScalarAsync();
-                        Tools.Log($"DB check: lis_core.app_logs exists = {exists}", Tools.ELogType.SystemLog);
-                    }
-                }
-                catch { }
 
                 _statusTimer = new System.Windows.Threading.DispatcherTimer();
                 _statusTimer.Interval = TimeSpan.FromSeconds(1);
@@ -893,6 +802,83 @@ namespace WATA.LIS
             }
             int denom = q.Count;
             avg = denom > 0 ? (int)Math.Round(sum / (double)denom) : value;
+        }
+
+        // 저장 핸들러
+        private async Task HandleShutdownSnapshotAsync(string json)
+        {
+            try
+            {
+                if (_appLogRepo == null)
+                {
+                    var cs = BuildConnectionStringFromConfigOrEnv();
+                    _appLogRepo = new AppLogRepository(cs);
+                    await _appLogRepo.EnsureTableAsync();
+                }
+
+                await _appLogRepo.InsertAsync(
+                    createdAt: DateTimeOffset.UtcNow,
+                    sessionId: GlobalValue.SessionId,
+                    category: "ShutdownSnapshot",
+                    message: "shutdown_snapshot",
+                    source: "App.xaml.cs",
+                    lineNumber: null,
+                    threadId: System.Threading.Thread.CurrentThread.ManagedThreadId,
+                    machineName: Environment.MachineName,
+                    vehicleId: Container.Resolve<IMainModel>() is MainConfigModel m ? m.vehicleId : null,
+                    workLocationId: (Container.Resolve<IMainModel>() as MainConfigModel)?.workLocationId,
+                    projectId: (Container.Resolve<IMainModel>() as MainConfigModel)?.projectId,
+                    mappingId: (Container.Resolve<IMainModel>() as MainConfigModel)?.mappingId,
+                    mapId: (Container.Resolve<IMainModel>() as MainConfigModel)?.mapId,
+                    level: "INFO",
+                    correlationId: null,
+                    contextJson: json,
+                    tags: new[] { "snapshot", "shutdown" }
+                );
+                Tools.Log("[SNAPSHOT] saved to app_logs", Tools.ELogType.SystemLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[SNAPSHOT] save failed: {ex.Message}", Tools.ELogType.SystemLog);
+            }
+            finally
+            {
+                // UI 스레드에서 안전 종료
+                var app = System.Windows.Application.Current;
+                if (app != null)
+                {
+                    if (app.Dispatcher.CheckAccess()) app.Shutdown();
+                    else app.Dispatcher.BeginInvoke(new Action(() => app.Shutdown()));
+                }
+            }
+        }
+
+        // 최근 30초 이내 스냅샷 복원
+        private async Task TryRestoreShutdownSnapshotAsync()
+        {
+            try
+            {
+                if (_appLogRepo == null)
+                {
+                    var cs = BuildConnectionStringFromConfigOrEnv();
+                    _appLogRepo = new AppLogRepository(cs);
+                    await _appLogRepo.EnsureTableAsync();
+                }
+
+                var row = await _appLogRepo.GetLastByCategoryAsync("ShutdownSnapshot");
+                if (row == null || string.IsNullOrWhiteSpace(row.ContextJson)) return;
+
+                var age = DateTimeOffset.UtcNow - row.CreatedAt;
+                if (age > TimeSpan.FromSeconds(30)) return;
+
+                // StatusService_WATA가 복원하도록 방송
+                _eventAggregator.GetEvent<RestorePickupStateEvent>().Publish(row.ContextJson);
+                Tools.Log($"[SNAPSHOT] broadcast restore (age={age.TotalSeconds:F1}s)", Tools.ELogType.SystemLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[SNAPSHOT] restore check failed: {ex.Message}", Tools.ELogType.SystemLog);
+            }
         }
     }
 }
