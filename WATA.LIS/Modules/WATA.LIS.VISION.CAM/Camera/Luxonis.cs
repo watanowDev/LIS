@@ -90,7 +90,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             fork_rightFrameSocket = InitializeSocket("tcp://localhost:5562");
             fork_depthFrameSocket = InitializeSocket("tcp://localhost:5563");
             fork_detectionDataSocket = InitializeSocket("tcp://localhost:5564");
-            fork_videoFrameSocket = InitializeSocket("tcp://localhost:5565");
+            fork_videoFrameSocket = InitializeSocket("tcp://localhost:5560");
 
             //front_leftFrameSocket = InitializeSocket("tcp://localhost:5571");
             //front_rightFrameSocket = InitializeSocket("tcp://localhost:5572");

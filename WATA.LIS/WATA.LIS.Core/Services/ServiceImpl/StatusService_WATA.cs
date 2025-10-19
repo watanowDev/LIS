@@ -118,6 +118,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private bool m_visionCamReady = false;
         private int _deepCaptureCooldown = 0; // 이미지 캡처 쿨다운
         private List<DectectionRcvModel> m_detectionRcvModelList = new List<DectectionRcvModel>();
+        private List<VisionCamModel> m_visionModelList = new List<VisionCamModel>();
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -1217,6 +1218,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             m_visionModel = model;
 
+            if (m_visionModelList.Count >= 100)
+            {
+                m_visionModelList.RemoveAt(0);
+            }
+            m_visionModelList.Add(model);
+
             if (m_displayConfig.display_type.Contains("Platform"))
             {
                 // wata 헤더 포함된 QR이 읽힐경우 할당
@@ -1384,6 +1391,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 return;
             }
+            if (model.Detections.Count == 0)
+            {
+                return;
+            }
 
             // DetectionModel Pickup State
             if (model.PickState == true && model.Detections.Count > 0)
@@ -1397,67 +1408,88 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_detectionDropCnt++;
             }
 
-            // 최근 20프레임 큐에 저장
-            m_detectionRcvModelList.Add(model);
-
-            if (m_detectionRcvModelList.Count > 20)
+            // 최근 20프레임 큐에 저장, Add 전에 공간 확보
+            if (m_detectionRcvModelList.Count >= 20)
             {
                 m_detectionRcvModelList.RemoveAt(0);
             }
+            m_detectionRcvModelList.Add(model);
         }
 
         private void PickDeepAnalysisImg()
         {
             // 2차분석 Publish
             DeepImgAnalysisPubModel model = new DeepImgAnalysisPubModel();
-
-            if (m_detectionRcvModelList.Count > 0)
+            try
             {
-                // 모든 DectectionRcvModel에서 "Pallet" 클래스의 DetectionItem 수집
-                var palletDetections = m_detectionRcvModelList
-                    .SelectMany((detection, index) => detection.Detections
-                        .Where(d => d.Class == "Pallet")
-                        .Select(d => new { Detection = detection, Item = d, Index = index }))
-                    .ToList();
+                model.ImageBytes = m_visionModelList[0].FRAME;
+                model.ProductID = "";
+                model.ZoneID = "446dc087cc57873da3cc2198077ca034";
+                //model.ZoneID = m_ActionZoneId;
+                model.OcrList = [];
+                //model.OcrList = targetDetection.Detection.OcrList;
+                model.QR = [];
+                model.Detections = [];
 
-                if (palletDetections.Count > 0)
+                _eventAggregator.GetEvent<DeepImgAnalysisPubEvent>().Publish(model);
+
+                if (m_detectionRcvModelList.Count > 0)
                 {
-                    // Box 면적이 50에 가장 가까운 항목 선택
-                    var targetDetection = palletDetections
-                        .Select(p => new {
-                            p.Detection,
-                            p.Item,
-                            p.Index,
-                            Area = CalculateBoxArea(p.Item.Box),
-                            PalletSize = Math.Abs(CalculateBoxArea(p.Item.Box) - 50)
-                        })
-                        .OrderBy(p => p.PalletSize)
-                        .FirstOrDefault();
+                    // 모든 DectectionRcvModel에서 "Pallet" 클래스의 DetectionItem 수집
+                    var palletDetections = m_detectionRcvModelList
+                        .SelectMany((detection, index) => detection.Detections
+                            .Where(d => d.Class == "Pallet")
+                            .Select(d => new { Detection = detection, Item = d, Index = index }))
+                        .ToList();
 
-                    if (targetDetection != null)
+                    if (palletDetections.Count > 0)
                     {
-                        model.ImageBytes = m_visionModel.FRAME;
-                        model.ProductID = "";
-                        model.ZoneID = m_ActionZoneId;
-                        model.OcrList = targetDetection.Detection.OcrList; 
-                        model.QR = targetDetection.Detection.QrList;
-                        model.Detections = targetDetection.Detection.Detections;
+                        // Box 면적이 n에 가장 가까운 항목 선택
+                        var targetDetection = palletDetections
+                            .Select(p => new
+                            {
+                                p.Detection,
+                                p.Item,
+                                p.Index,
+                                Area = CalculateBoxArea(p.Item.Box),
+                                PalletSize = Math.Abs(CalculateBoxArea(p.Item.Box) - 20000)
+                            })
+                            .OrderBy(p => p.PalletSize)
+                            .FirstOrDefault();
 
-                        Tools.Log($"Selected Pallet detection at index {targetDetection.Index} with area {targetDetection.Area} (distance from 50: {targetDetection.PalletSize})", ELogType.SystemLog);
+                        if (targetDetection != null)
+                        {
+                            model.ImageBytes = m_visionModelList[19].FRAME;
+                            model.ProductID = "";
+                            model.ZoneID = "446dc087cc57873da3cc2198077ca034";
+                            //model.ZoneID = m_ActionZoneId;
+                            model.OcrList = [];
+                            //model.OcrList = targetDetection.Detection.OcrList;
+                            model.QR = targetDetection.Detection.QrList;
+                            model.Detections = targetDetection.Detection.Detections;
+
+                            _eventAggregator.GetEvent<DeepImgAnalysisPubEvent>().Publish(model);
+                            Tools.Log($"DetectionList index : {targetDetection.Index}", ELogType.ActionLog);
+                            Tools.Log($"PalletSize : {targetDetection.PalletSize})", ELogType.ActionLog);
+                        }
+                        else
+                        {
+                            Tools.Log($"No valid Pallet detection found in m_detectionRcvModelList", ELogType.SystemLog);
+                        }
                     }
                     else
                     {
-                        Tools.Log($"No valid Pallet detection found in m_detectionRcvModelList", ELogType.SystemLog);
+                        Tools.Log($"No Pallet class detections found in m_detectionRcvModelList", ELogType.SystemLog);
                     }
                 }
                 else
                 {
-                    Tools.Log($"No Pallet class detections found in m_detectionRcvModelList", ELogType.SystemLog);
+                    Tools.Log($"m_detectionRcvModelList is empty", ELogType.SystemLog);
                 }
             }
-            else
+            catch
             {
-                Tools.Log($"m_detectionRcvModelList is empty", ELogType.SystemLog);
+                Tools.Log($"PickDeepAnalysisImg Error", ELogType.SystemLog);
             }
         }
 

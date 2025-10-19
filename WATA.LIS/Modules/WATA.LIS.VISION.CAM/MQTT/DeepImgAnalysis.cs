@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.VisionCam;
-using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Model.VisionCam;
 
 namespace WATA.LIS.VISION.CAM.MQTT
@@ -28,15 +27,17 @@ namespace WATA.LIS.VISION.CAM.MQTT
         private readonly CancellationTokenSource _cts = new();
         private readonly Task _listenTask;
 
+        private const string PubTopic = "LIS>RefineModel"; // 요청 발행 토픽
         private const string SubTopic = "RefineModel>LIS"; // 결과 구독 토픽
 
-        public DeepImgAnalysis(IEventAggregator eventAggregator, string pubEndpoint = "tcp://localhost:5003", string subEndpoint = "tcp://localhost:5004")
+        public DeepImgAnalysis(IEventAggregator eventAggregator, string pubEndpoint = "tcp://127.0.0.1:5003", string subEndpoint = "tcp://127.0.0.1:5004")
         {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
 
             _pubEndpoint = pubEndpoint;
             _pub = new PublisherSocket();
-            _pub.Connect(_pubEndpoint);
+            _pub.Bind(_pubEndpoint);
+            Thread.Sleep(500);
 
             _subEndpoint = subEndpoint;
             _sub = new SubscriberSocket();
@@ -60,26 +61,29 @@ namespace WATA.LIS.VISION.CAM.MQTT
             return new string(buffer);
         }
 
-        // 이미지와 JSON을 multipart로 발행 [image][json]
+        // ⭐ Single String Send 방식 (Python 테스트 코드와 동일)
         public void Publish(DeepImgAnalysisPubModel model)
         {
             if (model == null || model.ImageBytes == null || model.ImageBytes.Length == 0)
                 return;
 
             if (string.IsNullOrWhiteSpace(model.ProductID))
-                model.ProductID = NewProductId();
+                model.ProductID = "113";
+                //model.ProductID = NewProductId();
 
+            // ⭐ JSON 직렬화 (Image 필드에 Base64 자동 포함)
             string json = JsonConvert.SerializeObject(model, Formatting.None,
                 new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 
-            // multipart 메시지로 발행: [image][json]
-            _pub.SendMoreFrame(model.ImageBytes).SendFrame(json);
+            // ⭐ Python 방식: "토픽 JSON" (공백으로 구분)
+            string message = $"{PubTopic} {json}";
+            _pub.SendFrame(message);
 
-            Tools.Log($"Published to {_pubEndpoint} | ProductID: {model.ProductID} | QR: {model.QR?.Count ?? 0} | Detections: {model.Detections?.Count ?? 0} | OCRs: {model.OcrList?.Count ?? 0}",
+            Tools.Log($"Published to {_pubEndpoint} (topic='{PubTopic}') | ProductID: {model.ProductID} | Image: {model.ImageBytes.Length} bytes → Base64: {model.ImageBase64.Length} chars | QR: {model.QR?.Count ?? 0} | Detections: {model.Detections?.Count ?? 0}",
                 Tools.ELogType.ActionLog);
         }
 
-        // 5004 수신 루프
+        // 5004 수신 루프 (기존과 동일 - Python이 멀티파트로 보낼 수도 있으므로 호환 유지)
         private void ListenLoop(CancellationToken token)
         {
             Tools.Log($"DeepImgAnalysis result subscriber started on {_subEndpoint} (topic='{SubTopic}')", Tools.ELogType.ActionLog);
@@ -88,21 +92,33 @@ namespace WATA.LIS.VISION.CAM.MQTT
             {
                 try
                 {
-                    // 멀티파트/싱글파트 모두 호환: 마지막 프레임을 JSON으로 처리
                     NetMQMessage msg = new NetMQMessage();
                     if (_sub.TryReceiveMultipartMessage(TimeSpan.FromMilliseconds(250), ref msg))
                     {
                         if (msg.FrameCount == 0) continue;
 
-                        // 토픽 프레임이 있는 경우 확인
-                        if (msg.FrameCount >= 2)
+                        string json = string.Empty;
+
+                        // ⭐ Single frame 처리 (Python이 "토픽 JSON" 형식으로 보낼 경우)
+                        if (msg.FrameCount == 1)
+                        {
+                            string raw = msg[0].ConvertToString(Encoding.UTF8);
+                            // "RefineModel>LIS {JSON}" 형식 파싱
+                            var parts = raw.Split(new[] { ' ' }, 2);
+                            if (parts.Length == 2 && parts[0] == SubTopic)
+                            {
+                                json = parts[1];
+                            }
+                        }
+                        // ⭐ Multi frame 처리 (기존 방식 호환)
+                        else if (msg.FrameCount >= 2)
                         {
                             string topic = msg[0].ConvertToString(Encoding.UTF8);
                             if (!string.Equals(topic, SubTopic, StringComparison.Ordinal))
                                 continue;
+                            json = msg[msg.FrameCount - 1].ConvertToString(Encoding.UTF8);
                         }
 
-                        string json = msg[msg.FrameCount - 1].ConvertToString(Encoding.UTF8);
                         if (string.IsNullOrWhiteSpace(json)) continue;
 
                         var result = JsonConvert.DeserializeObject<DeepImgAnalysisSubModel>(json);

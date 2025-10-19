@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+ï»¿using Newtonsoft.Json;
 using System.Collections.Generic;
 using WATA.LIS.Core.Model.VisionCam;
 
@@ -6,11 +6,21 @@ namespace WATA.LIS.Core.Model.VisionCam
 {
     public class DeepImgAnalysisPubModel
     {
-
-        // ¿øº» ÀÌ¹ÌÁö ¹ÙÀÌ³Ê¸®´Â ¸Ş½ÃÁöÀÇ Ã¹ ¹øÂ° ÇÁ·¹ÀÓÀ¸·Î Àü¼Û (JSON¿¡´Â Æ÷ÇÔÇÏÁö ¾ÊÀ½)
+        // â­ ImageBytesëŠ” JSON ì§ë ¬í™” ì‹œ Base64ë¡œ ë³€í™˜ë¨
+        [JsonIgnore]
         public byte[] ImageBytes { get; set; }
 
-        // JSON µ¥ÀÌÅÍ ÇÊµå
+        // â­ JSONì— í¬í•¨ë  Base64 ì´ë¯¸ì§€ í•„ë“œ
+        [JsonProperty("Image")]
+        public string ImageBase64
+        {
+            get {
+                if (ImageBytes == null || ImageBytes.Length == 0)
+                    return string.Empty;
+                return System.Convert.ToBase64String(ImageBytes);
+            }
+        }
+
         [JsonProperty("ProductID")]
         public string ProductID { get; set; }
 
@@ -20,7 +30,7 @@ namespace WATA.LIS.Core.Model.VisionCam
         [JsonProperty("OcrList")]
         public List<string> OcrList { get; set; } = new List<string>();
 
-        [JsonProperty("QRList")]
+        [JsonProperty("QR")]
         public List<string> QR { get; set; } = new List<string>();
 
         [JsonProperty("detections")]
@@ -28,12 +38,15 @@ namespace WATA.LIS.Core.Model.VisionCam
     }
 
     /// <summary>
-    /// "Image" : ¿øº» ÀÌ¹ÌÁö (Àü¼ÛÀº multipart Ã¹ ÇÁ·¹ÀÓÀ¸·Î)
-    /// "ProductID": str # °á°ú È®ÀÎÀ» À§ÇÑ Å° °ª(6ÀÚ¸® ³­¼ö)
-    /// "zoneID" : str # Á¸ id : ex)446dc087cc57873da3cc2198077ca034
-    /// "OcrList" : list # ¸ğµ¨¿¡¼­ ocr_result ·Î ´øÀú ÁÖ´Â°Å 
-    /// "QRList": str # QR¸øÀĞÀ¸¸é ºó°ª, ¾Æ´Ï¸é QRÁ¤º¸
-    /// "detections" : list # ¸ğµ¨¿¡¼­ detections ·Î ´øÀú ÁÖ´Â°Å
-    /// 5003Àº ¹ßÇà, 5004´Â ±¸µ¶
+    /// Python í…ŒìŠ¤íŠ¸ ì½”ë“œ í˜¸í™˜ í¬ë§·:
+    /// {
+    ///   "Image": "base64_encoded_string",
+    ///   "ProductID": "6ìë¦¬ ë‚œìˆ˜",
+    ///   "zoneID": "446dc087cc57873da3cc2198077ca034",
+    ///   "OcrList": ["8430-01-536-5415"],
+    ///   "QRList": ["6a7d3cf20a4a4f4b994230fe380c7d6f"],
+    ///   "detections": [...]
+    /// }
+    /// ì „ì†¡ í˜•ì‹: "LIS>RefineModel {JSON}"
     /// </summary>
 }
