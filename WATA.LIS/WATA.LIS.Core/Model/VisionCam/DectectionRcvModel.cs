@@ -18,7 +18,10 @@ namespace WATA.LIS.Core.Model.VisionCam
         public string NationState { get; set; }
 
         [JsonProperty("qrcode")]
-        public List<string> QrCode { get; set; }
+        public List<string> QrList { get; set; }
+
+        [JsonProperty("ocr_result")]
+        public List<string> OcrList { get; set; }
     }
 
     /// <summary>

@@ -776,6 +776,10 @@ namespace WATA.LIS
             {
                 containerRegistry.RegisterSingleton<IStatusService, StatusService_PantosMTV>();
             }
+            else if (mainobj.device_type == "SDSA")
+            {
+                containerRegistry.RegisterSingleton<IStatusService, StatusService_SDSA>();
+            }
         }
 
         protected override void ConfigureModuleCatalog(IModuleCatalog moduleCatalog)

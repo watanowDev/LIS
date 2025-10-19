@@ -21,5 +21,10 @@ namespace WATA.LIS.Core.Model.VisionCam
 
         [JsonProperty("detections")]
         public List<DetectionItem> Detections { get; set; } = new List<DetectionItem>();
+
+        /// <summary>
+        /// 1차 분석 Topic 명 알아야함.
+        /// 2차 분석 Topic 명 알아야함.
+        /// </summary>
     }
 }

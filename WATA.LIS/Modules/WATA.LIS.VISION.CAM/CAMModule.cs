@@ -32,6 +32,7 @@ namespace WATA.LIS.VISION.CAM
             {
                 //v2detector = new V2Detector();
                 //DoV2Detector();
+                //DeepImgAnalysis deepImgAnalysis = new DeepImgAnalysis(_eventAggregator);
                 return;
             }
 

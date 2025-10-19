@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WATA.LIS.Core.Common;
 using WATA.LIS.Core.Events.VisionCam;
+using WATA.LIS.Core.Events.WeightSensor;
 using WATA.LIS.Core.Model.VisionCam;
 
 namespace WATA.LIS.VISION.CAM.MQTT
@@ -27,6 +28,8 @@ namespace WATA.LIS.VISION.CAM.MQTT
         private readonly CancellationTokenSource _cts = new();
         private readonly Task _listenTask;
 
+        private const string SubTopic = "RefineModel>LIS"; // 결과 구독 토픽
+
         public DeepImgAnalysis(IEventAggregator eventAggregator, string pubEndpoint = "tcp://localhost:5003", string subEndpoint = "tcp://localhost:5004")
         {
             _eventAggregator = eventAggregator ?? throw new ArgumentNullException(nameof(eventAggregator));
@@ -38,9 +41,11 @@ namespace WATA.LIS.VISION.CAM.MQTT
             _subEndpoint = subEndpoint;
             _sub = new SubscriberSocket();
             _sub.Connect(_subEndpoint);
-            _sub.Subscribe(""); // 모든 메시지 구독
+            _sub.Subscribe(SubTopic); // 지정 토픽만 구독
 
             _listenTask = Task.Run(() => ListenLoop(_cts.Token));
+
+            _eventAggregator.GetEvent<DeepImgAnalysisPubEvent>().Subscribe(Publish, ThreadOption.BackgroundThread, true);
         }
 
         // 6자리 난수 생성
@@ -77,7 +82,7 @@ namespace WATA.LIS.VISION.CAM.MQTT
         // 5004 수신 루프
         private void ListenLoop(CancellationToken token)
         {
-            Tools.Log($"DeepImgAnalysis result subscriber started on {_subEndpoint}", Tools.ELogType.ActionLog);
+            Tools.Log($"DeepImgAnalysis result subscriber started on {_subEndpoint} (topic='{SubTopic}')", Tools.ELogType.ActionLog);
 
             while (!token.IsCancellationRequested)
             {
@@ -88,6 +93,14 @@ namespace WATA.LIS.VISION.CAM.MQTT
                     if (_sub.TryReceiveMultipartMessage(TimeSpan.FromMilliseconds(250), ref msg))
                     {
                         if (msg.FrameCount == 0) continue;
+
+                        // 토픽 프레임이 있는 경우 확인
+                        if (msg.FrameCount >= 2)
+                        {
+                            string topic = msg[0].ConvertToString(Encoding.UTF8);
+                            if (!string.Equals(topic, SubTopic, StringComparison.Ordinal))
+                                continue;
+                        }
 
                         string json = msg[msg.FrameCount - 1].ConvertToString(Encoding.UTF8);
                         if (string.IsNullOrWhiteSpace(json)) continue;

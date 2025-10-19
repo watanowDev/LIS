@@ -52,7 +52,7 @@ using static WATA.LIS.Core.Common.Tools;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
-    public class StatusService_WATA : IStatusService
+    public class StatusService_SDSA : IStatusService
     {
         IEventAggregator _eventAggregator;
 
@@ -117,7 +117,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private int m_no_NationCodeCnt = 0;
         private bool m_visionCamReady = false;
         private int _deepCaptureCooldown = 0; // 이미지 캡처 쿨다운
-        private List<DectectionRcvModel> m_detectionRcvModelList = new List<DectectionRcvModel>();
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -193,7 +192,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
 
-        public StatusService_WATA(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
+        public StatusService_SDSA(IEventAggregator eventAggregator, IMainModel main, IRFIDModel rfidmodel,
                                     IVisionCamModel visioncCamModel, IWeightModel weightmodel, IDistanceModel distanceModel,
                                     INAVModel navModel, ILivoxModel livoxModel, IDisplayModel displayModel)
         {
@@ -1396,80 +1395,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_detectionPickupCnt = 0;
                 m_detectionDropCnt++;
             }
-
-            // 최근 20프레임 큐에 저장
-            m_detectionRcvModelList.Add(model);
-
-            if (m_detectionRcvModelList.Count > 20)
-            {
-                m_detectionRcvModelList.RemoveAt(0);
-            }
-        }
-
-        private void PickDeepAnalysisImg()
-        {
-            // 2차분석 Publish
-            DeepImgAnalysisPubModel model = new DeepImgAnalysisPubModel();
-
-            if (m_detectionRcvModelList.Count > 0)
-            {
-                // 모든 DectectionRcvModel에서 "Pallet" 클래스의 DetectionItem 수집
-                var palletDetections = m_detectionRcvModelList
-                    .SelectMany((detection, index) => detection.Detections
-                        .Where(d => d.Class == "Pallet")
-                        .Select(d => new { Detection = detection, Item = d, Index = index }))
-                    .ToList();
-
-                if (palletDetections.Count > 0)
-                {
-                    // Box 면적이 50에 가장 가까운 항목 선택
-                    var targetDetection = palletDetections
-                        .Select(p => new {
-                            p.Detection,
-                            p.Item,
-                            p.Index,
-                            Area = CalculateBoxArea(p.Item.Box),
-                            PalletSize = Math.Abs(CalculateBoxArea(p.Item.Box) - 50)
-                        })
-                        .OrderBy(p => p.PalletSize)
-                        .FirstOrDefault();
-
-                    if (targetDetection != null)
-                    {
-                        model.ImageBytes = m_visionModel.FRAME;
-                        model.ProductID = "";
-                        model.ZoneID = m_ActionZoneId;
-                        model.OcrList = targetDetection.Detection.OcrList; 
-                        model.QR = targetDetection.Detection.QrList;
-                        model.Detections = targetDetection.Detection.Detections;
-
-                        Tools.Log($"Selected Pallet detection at index {targetDetection.Index} with area {targetDetection.Area} (distance from 50: {targetDetection.PalletSize})", ELogType.SystemLog);
-                    }
-                    else
-                    {
-                        Tools.Log($"No valid Pallet detection found in m_detectionRcvModelList", ELogType.SystemLog);
-                    }
-                }
-                else
-                {
-                    Tools.Log($"No Pallet class detections found in m_detectionRcvModelList", ELogType.SystemLog);
-                }
-            }
-            else
-            {
-                Tools.Log($"m_detectionRcvModelList is empty", ELogType.SystemLog);
-            }
-        }
-
-        private double CalculateBoxArea(List<int> box)
-        {
-            if (box == null || box.Count < 4)
-                return 0;
-
-            // Box format: [x1, y1, x2, y2]
-            double width = Math.Abs(box[2] - box[0]);
-            double height = Math.Abs(box[3] - box[1]);
-            return width * height;
         }
 
         /// <summary>
@@ -2861,8 +2786,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_isWeightPickup = false;
 
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
-
-            PickDeepAnalysisImg();
             SendBackEndPickupAction();
 
             // m_stopwatchPickDrop.Reset();
