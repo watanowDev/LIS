@@ -90,7 +90,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             fork_rightFrameSocket = InitializeSocket("tcp://localhost:5562");
             fork_depthFrameSocket = InitializeSocket("tcp://localhost:5563");
             fork_detectionDataSocket = InitializeSocket("tcp://localhost:5564");
-            fork_videoFrameSocket = InitializeSocket("tcp://localhost:5560");
+            fork_videoFrameSocket = InitializeSocket("tcp://localhost:5565");
 
             //front_leftFrameSocket = InitializeSocket("tcp://localhost:5571");
             //front_rightFrameSocket = InitializeSocket("tcp://localhost:5572");
@@ -242,8 +242,24 @@ namespace WATA.LIS.VISION.CAM.Camera
                 processedFrameData = ms.ToArray();
             }
 
+            // 메타데이터에서 frameId 파싱
+            string frameId = string.Empty;
+            try
+            {
+                var jsonData = JsonConvert.DeserializeObject<Dictionary<string, string>>(metadata);
+                if (jsonData != null && jsonData.ContainsKey("frameId"))
+                {
+                    frameId = jsonData["frameId"];
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to parse frameId from metadata: {ex.Message}");
+            }
+
             // 이벤트 데이터 객체 생성
             VisionCamModel eventModels = new VisionCamModel();
+            eventModels.FRAME_ID = frameId; // 파싱한 frameId 할당
             eventModels.QR = qr;
             //eventModels.Objects = detectionDataList;
             eventModels.FRAME = frameData;

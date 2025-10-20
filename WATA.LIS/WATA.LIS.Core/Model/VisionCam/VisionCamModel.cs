@@ -13,7 +13,8 @@ namespace WATA.LIS.Core.Model.VisionCam
 {
     public class VisionCamModel
     {
-        public string QR = string.Empty;
+        public string FRAME_ID { get; set; } = string.Empty;
+        public string QR { get; set; } = string.Empty;
         public List<V2DetectionModel> Objects { get; set; } = new List<V2DetectionModel>();
         public int WIDTH { get; set; }
         public int HEIGHT { get; set; }

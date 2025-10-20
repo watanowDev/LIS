@@ -22,6 +22,12 @@ namespace WATA.LIS.Core.Model.VisionCam
 
         [JsonProperty("ocr_result")]
         public List<string> OcrList { get; set; }
+
+        [JsonProperty("frame_id")]
+        public string FrameId { get; set; }
+
+        [JsonProperty("pallet_area")]
+        public int PalletArea { get; set; }
     }
 
     /// <summary>

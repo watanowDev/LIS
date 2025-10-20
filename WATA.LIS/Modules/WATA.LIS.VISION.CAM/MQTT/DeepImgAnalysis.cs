@@ -68,7 +68,7 @@ namespace WATA.LIS.VISION.CAM.MQTT
                 return;
 
             if (string.IsNullOrWhiteSpace(model.ProductID))
-                model.ProductID = "113";
+                model.ProductID = "111";
                 //model.ProductID = NewProductId();
 
             // ⭐ JSON 직렬화 (Image 필드에 Base64 자동 포함)
