@@ -58,17 +58,23 @@
   },
   "NAV": {
     "NAV_Enable": 1,
-    "Type": "NAV", //NAV, VisionPos
+    "Type": "NAV",
     "IP": "192.168.10.200",
     "PORT": 2111,
-    "AdjustingPickdrop": 3100, //3100
-    "AdjustingPosition": 1900 //1800
+    "AdjustingPickdrop": 3100,
+    "AdjustingPosition": 1900,
+    "FreezeThreshold": 20, // 2초 (100ms × 20)
+    "TransTimeoutCount": 10, // 1.27초 (127ms × 10)
+    "TransRetryMax": 5, // 재시도 횟수
+    "ReconnectTimeoutSeconds": 2, // 2초
+    "SocketConnectTimeoutMs": 300, // 0.3초
+    "MaxReceiveBufferSize": 4096
   },
   "LIVOX": {
-    "LIVOX_Enable": 1
+    "LIVOX_Enable": 0
   },
   "vision": {
-    "vision_enable": 0,
+    "vision_enable": 1,
     "vision_name": "Luxonis", //HikVision, FemtoMega, Luxonis
     "vision_ip": "192.168.1.101",
     "vision_port": 8000,
@@ -76,7 +82,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }
