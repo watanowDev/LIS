@@ -87,6 +87,7 @@ namespace WATA.LIS.SENSOR.NAV
         private static DateTime reconnectStartTime;
         private static int postReconnectFreezeCount = 0;
         private const int postReconnectThreshold = 150;
+        private static DateTime _appStartTime = DateTime.MinValue;
 
         // 로그 중복 방지를 위한 변수
         private static int lastLoggedError = -1;
@@ -120,12 +121,14 @@ namespace WATA.LIS.SENSOR.NAV
 
             Tools.Log($"NAV Config loaded: Freeze={_freezeThreshold}, TransTimeout={_transTimeoutCount}, " +
                       $"RetryMax={_transRetryMax}, ReconnectTimeout={_reconnectTimeoutSeconds}s, " +
-                      $"SocketTimeout={_socketConnectTimeoutMs}ms, MaxBuffer={_maxReceiveBufferSize}", 
+                      $"SocketTimeout={_socketConnectTimeoutMs}ms, MaxBuffer={_maxReceiveBufferSize}",
                       Tools.ELogType.SystemLog);
 
             // CancellationTokenSource 초기화
             _cancellationTokenSource = new CancellationTokenSource();
             _cancellationToken = _cancellationTokenSource.Token;
+
+            _appStartTime = DateTime.Now;
         }
 
         public void Init()
@@ -257,8 +260,11 @@ namespace WATA.LIS.SENSOR.NAV
                                 // ⭐ 2회 연속 Freeze 확인 후에만 재연결 시도
                                 if (consecutiveFreezeCount >= minConsecutiveFreezes)
                                 {
+                                    // 최초 기동 후 30초 이내에는 freeze recovery 진입 금지
+                                    bool isStartupGracePeriod = (DateTime.Now - _appStartTime).TotalSeconds < 30;
+
                                     // 1단계: Unknown 에러 + Freeze 시 재연결 시도
-                                    if (!isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
+                                    if (!isReconnecting && !isStartupGracePeriod && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                                     {
                                         Tools.Log("NAV SENSOR: Unknown error + freeze detected (2 consecutive). Attempting socket reconnection...", Tools.ELogType.SystemLog);
 
@@ -284,7 +290,7 @@ namespace WATA.LIS.SENSOR.NAV
                                         Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
                                     }
                                     // 2단계: 일반 Freeze 상태에서도 재연결 시도
-                                    else if (!isReconnecting)
+                                    else if (!isReconnecting && !isStartupGracePeriod)
                                     {
                                         Tools.Log("NAV SENSOR FREEZE DETECTED (2 consecutive): Attempting socket reconnection before shutdown...", Tools.ELogType.SystemLog);
 
@@ -320,7 +326,7 @@ namespace WATA.LIS.SENSOR.NAV
 
                                         NAVSensor.NAV_SoftWareReset();
 
-                                        Thread.Sleep(500); // ⚡ 초기화 대기 시간 단축 (1000 → 500)
+                                        Thread.Sleep(500); // 초기화 대기 시간 (500)
 
                                         nav350_socket_open = false;
 
@@ -329,7 +335,7 @@ namespace WATA.LIS.SENSOR.NAV
                                         reconnectStartTime = DateTime.Now;
                                         postReconnectFreezeCount = 0;
                                         navFreezeCount = 0;
-                                        consecutiveFreezeCount = 0; // ⭐ 리셋
+                                        consecutiveFreezeCount = 0; // 리셋
 
                                         Tools.Log("NAV SENSOR: Freeze recovery - Socket reconnection initiated.", Tools.ELogType.SystemLog);
                                     }
@@ -344,8 +350,10 @@ namespace WATA.LIS.SENSOR.NAV
                             // 재연결 후 상태 모니터링
                             if (isReconnecting)
                             {
-                                // 재연결 후 설정된 시간 경과 체크
-                                if ((DateTime.Now - reconnectStartTime).TotalSeconds > _reconnectTimeoutSeconds)
+                                // 최초 기동 후 30초 이내에는 셧다운 분기 진입 금지
+                                bool isStartupGracePeriod = (DateTime.Now - _appStartTime).TotalSeconds < 30;
+
+                                if (!isStartupGracePeriod && isReconnecting && (DateTime.Now - reconnectStartTime).TotalSeconds > _reconnectTimeoutSeconds)
                                 {
                                     if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                                     {
@@ -353,25 +361,33 @@ namespace WATA.LIS.SENSOR.NAV
 
                                         SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
 
-                                        _eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
+                                        //_eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
 
-                                        Thread.Sleep(400);
+                                        //Thread.Sleep(400);
                                     }
                                     else
                                     {
                                         Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.SystemLog);
 
-                                        // ⭐ 재연결 성공 시 모든 상태 리셋
+                                        // 재연결 성공 시 모든 상태 리셋
                                         Globals.system_error = Alarms.ALARM_NONE;
                                         SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DFreeze);
                                         SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
 
                                         isReconnecting = false;
                                         postReconnectFreezeCount = 0;
-                                        consecutiveFreezeCount = 0; // ⭐ 리셋
+                                        consecutiveFreezeCount = 0;
                                     }
                                 }
                             }
+
+                            // 로그 중복 방지
+                            if (Globals.system_error != lastLoggedError)
+                            {
+                                lastLoggedError = Globals.system_error;
+                            }
+
+                            Thread.Sleep(100);
                         }
                     }
                     else

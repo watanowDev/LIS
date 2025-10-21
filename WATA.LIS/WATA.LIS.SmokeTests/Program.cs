@@ -61,13 +61,13 @@ class Program
                         int port = mainCfg?.db_port ?? 5432;
                         string database = !string.IsNullOrWhiteSpace(mainCfg?.db_database) ? mainCfg.db_database : "forkliftDB";
                         string username = !string.IsNullOrWhiteSpace(mainCfg?.db_username) ? mainCfg.db_username : "postgres";
-                        string password = !string.IsNullOrWhiteSpace(mainCfg?.db_password) ? mainCfg.db_password : "wata2019";
+                        string password = !string.IsNullOrWhiteSpace(mainCfg?.db_password) ? mainCfg.db_password : "wata20190430";
                         string searchPath = SanitizeSearchPath(!string.IsNullOrWhiteSpace(mainCfg?.db_search_path) ? mainCfg.db_search_path : "lis_core,public");
                         conn = $"Host={host};Port={port};Database={database};Username={username};Password={password};SearchPath={searchPath};Pooling=true;Include Error Detail=true";
                     }
                     catch
                     {
-                        conn = "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata2019;SearchPath=lis_core,public";
+                        conn = "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata20190430;SearchPath=lis_core,public";
                     }
                 }
 
