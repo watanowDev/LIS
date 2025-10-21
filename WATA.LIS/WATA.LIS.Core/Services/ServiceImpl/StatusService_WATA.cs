@@ -2585,6 +2585,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return result;
         }
 
+
         /// <summary>
         /// Shutdown Event 감지
         /// </summary> 
