@@ -91,7 +91,7 @@ namespace WATA.LIS.SENSOR.NAV
 
         public void Init()
         {
-            Tools.Log($"Init NAV", Tools.ELogType.NAVLog);
+            Tools.Log($"Init NAV", Tools.ELogType.SystemLog);
 
             mainProcess = new Thread(Main);
             mainProcess.Start();
@@ -188,17 +188,17 @@ namespace WATA.LIS.SENSOR.NAV
                             // 1단계: Unknown 에러 + Freeze 시 재연결 시도
                             if (!isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                             {
-                                Tools.Log("NAV SENSOR: Unknown error + freeze detected. Attempting socket reconnection...", Tools.ELogType.NAVLog);
-                                
+                                Tools.Log("NAV SENSOR: Unknown error + freeze detected. Attempting socket reconnection...", Tools.ELogType.SystemLog);
+
                                 // DB 로그(시도): LiDar2DConnErr 추가
                                 SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
-                                
+
                                 // 기존 소켓 정리
                                 if (nav350_socket_open_once == true)
                                 {
                                     nav350_socket_open_once = false;
                                 }
-                                
+
                                 //NAVSensor.socketSend.Close();
                                 //NAVSensor.socketSend.Dispose();
                                 NAVSensor.NAV_SoftWareReset();
@@ -206,14 +206,14 @@ namespace WATA.LIS.SENSOR.NAV
                                 Thread.Sleep(1000); // 소켓 정리 대기
 
                                 nav350_socket_open = false;
-                                
+
                                 // 재연결 상태 설정
                                 isReconnecting = true;
                                 reconnectStartTime = DateTime.Now;
                                 postReconnectFreezeCount = 0;
                                 navFreezeCount = 0; // Freeze 카운트 리셋
-                                
-                                Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.NAVLog);
+
+                                Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
                             }
                             // 2단계: 재연결 중이 아니고 Unknown 에러가 아닌 경우 즉시 셧다운
                             else if (!isReconnecting)
@@ -224,13 +224,13 @@ namespace WATA.LIS.SENSOR.NAV
                                 // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
                                 Thread.Sleep(400);
 
-                                // 3) 종료
-                                Tools.Log("NAV SENSOR FREEZE DETECTED (Non-recoverable). PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
-                                System.Windows.Application.Current.Shutdown();
-                                return;
+                                // 3) 종료 - 주석 처리됨
+                                Tools.Log("NAV SENSOR FREEZE DETECTED (Non-recoverable). PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
+                                // System.Windows.Application.Current.Shutdown();
+                                // return;
                             }
                         }
-                        
+
                         // 재연결 후 상태 모니터링
                         if (isReconnecting)
                         {
@@ -240,8 +240,8 @@ namespace WATA.LIS.SENSOR.NAV
                                 // 재연결 후에도 문제 지속 시 최종 셧다운
                                 if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                                 {
-                                    Tools.Log("NAV SENSOR: Reconnection failed. Post-reconnect issues persist. PROGRAM SHUTDOWN.", Tools.ELogType.NAVLog);
-                                    
+                                    Tools.Log("NAV SENSOR: Reconnection failed. Post-reconnect issues persist. PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
+
                                     // 1) 내부 알람 상태 갱신
                                     SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
 
@@ -250,15 +250,15 @@ namespace WATA.LIS.SENSOR.NAV
 
                                     // 3) 타이머가 DB에 기록할 수 있도록 짧게 대기
                                     Thread.Sleep(400);
-                                    
-                                    // 4) 종료
-                                    System.Windows.Application.Current.Shutdown();
-                                    return;
+
+                                    // 4) 종료 - 주석 처리됨
+                                    // System.Windows.Application.Current.Shutdown();
+                                    // return;
                                 }
                                 else
                                 {
                                     // 재연결 성공으로 판단
-                                    Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.NAVLog);
+                                    Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.SystemLog);
                                     isReconnecting = false;
                                     postReconnectFreezeCount = 0;
                                 }
@@ -274,15 +274,15 @@ namespace WATA.LIS.SENSOR.NAV
                         Globals.setTimerCounter(Globals.nav_rcv);
                         nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
                         nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
-                        
+
                         // 재연결 상태에서 소켓 연결 성공 시 로그 출력
                         if (isReconnecting)
                         {
-                            Tools.Log("NAV SENSOR: Socket reconnection established successfully.", Tools.ELogType.NAVLog);
+                            Tools.Log("NAV SENSOR: Socket reconnection established successfully.", Tools.ELogType.SystemLog);
                         }
                     }
                 }
-                Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.NAVLog);
+                Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.SystemLog);
                 Thread.Sleep(100);
             }
         }
@@ -302,7 +302,7 @@ namespace WATA.LIS.SENSOR.NAV
                 {
                     socketSend.EndConnect(result);
                     output = true;
-                    Tools.Log("Connected NAV350 to TCP", Tools.ELogType.NAVLog);
+                    Tools.Log("Connected NAV350 to TCP", Tools.ELogType.SystemLog);
                     Globals.system_error = Alarms.ALARM_NONE;
 
                     // DB 로그(성공): LiDar2DConnErr 해제
@@ -320,7 +320,7 @@ namespace WATA.LIS.SENSOR.NAV
             }
             catch (Exception ex)
             {
-                Tools.Log(ex.ToString(), Tools.ELogType.NAVLog);
+                Tools.Log(ex.ToString(), Tools.ELogType.SystemLog);
             }
 
             return output;
@@ -350,7 +350,7 @@ namespace WATA.LIS.SENSOR.NAV
             gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 63 63 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
-            Tools.Log("SendLogIn", Tools.ELogType.NAVLog);
+            //Tools.Log("SendLogIn", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_SetDataFormat
@@ -361,7 +361,7 @@ namespace WATA.LIS.SENSOR.NAV
             gNAVTranBuff = "02 73 57 4E 20 4E 50 4F 53 50 6F 73 65 44 61 74 61 46 6F 72 6D 61 74 20 31 20 31 03 ";
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
-            Tools.Log("SetDataFormat", Tools.ELogType.NAVLog);
+            //Tools.Log("SetDataFormat", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_Mode
@@ -371,7 +371,7 @@ namespace WATA.LIS.SENSOR.NAV
             gNAVTranBuff = "02 73 4D 4E 20 6D 4E 45 56 41 43 68 61 6E 67 65 53 74 61 74 65 20 " + Globals.byteToString(mode) + " 03 ";
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
-            Tools.Log("SendMode", Tools.ELogType.NAVLog);
+            //Tools.Log("SendMode", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_SetLayer
@@ -381,7 +381,7 @@ namespace WATA.LIS.SENSOR.NAV
             gNAVTranBuff = "02 73 57 4E 20 4E 45 56 41 43 75 72 72 4C 61 79 65 72 20 " + Globals.byteToString(layer) + " 03 ";
             byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
             socketSend.Send(buffer);
-            Tools.Log("SetLayer", Tools.ELogType.NAVLog);
+            //Tools.Log("SetLayer", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_GetPosition
@@ -447,7 +447,7 @@ namespace WATA.LIS.SENSOR.NAV
                         gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
                     }
 
-                    Tools.Log("gNAVCommand : " + gNAVCommand, Tools.ELogType.NAVLog);
+                    //Tools.Log("gNAVCommand : " + gNAVCommand, Tools.ELogType.NAVLog);
                     if (gNAVCommand != (byte)NAV350_TRANSIT_CMD.CMD_NONE)
                     {
                         NAV_TransCMD(gNAVCommand);
@@ -469,14 +469,14 @@ namespace WATA.LIS.SENSOR.NAV
                                 if ((gNAVTransRetryCount % 5) == 0)  //  Transmit Command Retry 
                                 {
                                     NAV_TransCMD(gNAVCommand);
-                                    Tools.Log("Retry NAV ", Tools.ELogType.NAVLog);
+                                    Tools.Log("Retry NAV ", Tools.ELogType.SystemLog);
                                 }
 
                                 if (gNAVTransRetryCount >= 15) // NAV350 SoftWare Reset
                                 {
                                     //Globals.system_error = Alarms.ALARM_NAV350_TRANSMIT_ERROR;
                                     NAV_SoftWareReset();
-                                    Tools.Log("Reset NAV ", Tools.ELogType.NAVLog);
+                                    Tools.Log("Reset NAV ", Tools.ELogType.SystemLog);
                                 }
                             }
                         }
