@@ -74,12 +74,6 @@ namespace WATA.LIS.SENSOR.NAV
         private static string gIP = "169.254.4.63";
         private static string gPORT = "2111";
 
-        // 2단계 셧다운 정책을 위한 상태 추적 변수
-        private static bool isReconnecting = false;
-        private static DateTime reconnectStartTime;
-        private static int postReconnectFreezeCount = 0;
-        private const int postReconnectThreshold = 150; // 15초 (100ms * 100)
-
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
             _eventAggregator = eventAggregator;
@@ -105,7 +99,7 @@ namespace WATA.LIS.SENSOR.NAV
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            const int navFreezeThreshold = 300; // 100ms * 100 = 15초
+            const int navFreezeThreshold = 50; // ✅ 100ms * 50 = 5초로 단축 (기존 300 -> 50)
 
             while (true)
             {
@@ -128,8 +122,18 @@ namespace WATA.LIS.SENSOR.NAV
                             nav350_socket_open_once = false;
                         }
 
-                        NAVSensor.socketSend.Close();
-                        NAVSensor.socketSend.Dispose();
+                        // ✅ 소켓 안전 종료 개선
+                        try
+                        {
+                            if (NAVSensor.socketSend != null && NAVSensor.socketSend.Connected)
+                            {
+                                NAVSensor.socketSend.Shutdown(SocketShutdown.Both);
+                            }
+                        }
+                        catch { }
+                        try { NAVSensor.socketSend?.Close(); } catch { }
+                        try { NAVSensor.socketSend?.Dispose(); } catch { }
+
                         NAVSensor.NAV_SoftWareReset();
 
                         Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
@@ -184,88 +188,40 @@ namespace WATA.LIS.SENSOR.NAV
                             prevNavT = Globals.nav_phi;
                         }
 
-                        // [NAV FREEZE CHECK] 2단계 셧다운 정책
+                        // ✅ [NAV FREEZE CHECK] 5초 이내 감지 및 즉시 재연결
                         if (navFreezeCount >= navFreezeThreshold)
                         {
-                            // 1단계: Unknown 에러 + Freeze 시 재연결 시도
-                            if (!isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
+                            Tools.Log($"NAV SENSOR: Freeze detected ({navFreezeCount * 0.1}s). Attempting socket reconnection...", Tools.ELogType.SystemLog);
+
+                            // 소켓 재연결 시도
+                            if (nav350_socket_open_once == true)
                             {
-                                Tools.Log("NAV SENSOR: Unknown error + freeze detected. Attempting socket reconnection...", Tools.ELogType.SystemLog);
+                                nav350_socket_open_once = false;
+                            }
 
-                                // DB 로그(시도): LiDar2DConnErr 추가
-                                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
-
-                                // 기존 소켓 정리
-                                if (nav350_socket_open_once == true)
+                            // ✅ 소켓 안전 종료
+                            try
+                            {
+                                if (NAVSensor.socketSend != null && NAVSensor.socketSend.Connected)
                                 {
-                                    nav350_socket_open_once = false;
+                                    NAVSensor.socketSend.Shutdown(SocketShutdown.Both);
                                 }
-
-                                //NAVSensor.socketSend.Close();
-                                //NAVSensor.socketSend.Dispose();
-                                NAVSensor.NAV_SoftWareReset();
-
-                                Thread.Sleep(1000); // 소켓 정리 대기
-
-                                nav350_socket_open = false;
-
-                                // 재연결 상태 설정
-                                isReconnecting = true;
-                                reconnectStartTime = DateTime.Now;
-                                postReconnectFreezeCount = 0;
-                                navFreezeCount = 0; // Freeze 카운트 리셋
-
-                                Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
                             }
-                            // 2단계: 재연결 중이 아니고 Unknown 에러가 아닌 경우 즉시 셧다운
-                            else if (!isReconnecting)
-                            {
-                                // 1) 내부 알람 상태 갱신(주기 타이머가 alarm_raise를 DB에 기록)
-                                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+                            catch { }
+                            try { NAVSensor.socketSend?.Close(); } catch { }
+                            try { NAVSensor.socketSend?.Dispose(); } catch { }
 
-                                // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
-                                Thread.Sleep(400);
+                            NAVSensor.NAV_SoftWareReset();
 
-                                // 3) 종료 - 주석 처리됨
-                                Tools.Log("NAV SENSOR FREEZE DETECTED (Non-recoverable). PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
-                                // System.Windows.Application.Current.Shutdown();
-                                // return;
-                            }
+                            SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+
+                            nav350_socket_open = false;
+                            navFreezeCount = 0; // Freeze 카운트 리셋
+
+                            Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
                         }
 
-                        // 재연결 후 상태 모니터링
-                        if (isReconnecting)
-                        {
-                            // 재연결 후 3초 경과 체크
-                            if ((DateTime.Now - reconnectStartTime).TotalSeconds > 30)
-                            {
-                                // 재연결 후에도 문제 지속 시 최종 셧다운
-                                if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
-                                {
-                                    Tools.Log("NAV SENSOR: Reconnection failed. Post-reconnect issues persist. PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
-
-                                    // 1) 내부 알람 상태 갱신
-                                    SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
-
-                                    // 2) Shutdonw 이벤트 발행
-                                    //_eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
-
-                                    // 3) 타이머가 DB에 기록할 수 있도록 짧게 대기
-                                    Thread.Sleep(400);
-
-                                    // 4) 종료 - 주석 처리됨
-                                    // System.Windows.Application.Current.Shutdown();
-                                    // return;
-                                }
-                                else
-                                {
-                                    // 재연결 성공으로 판단
-                                    Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.SystemLog);
-                                    isReconnecting = false;
-                                    postReconnectFreezeCount = 0;
-                                }
-                            }
-                        }
+                        // ✅ 기존 2단계 셧다운 정책 제거 (즉시 재연결 정책으로 대체)
                     }
                 }
                 else
@@ -277,11 +233,7 @@ namespace WATA.LIS.SENSOR.NAV
                         nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
                         nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
 
-                        // 재연결 상태에서 소켓 연결 성공 시 로그 출력
-                        if (isReconnecting)
-                        {
-                            Tools.Log("NAV SENSOR: Socket reconnection established successfully.", Tools.ELogType.SystemLog);
-                        }
+                        Tools.Log("NAV SENSOR: Socket reconnection established successfully.", Tools.ELogType.SystemLog);
                     }
                 }
                 //Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.SystemLog);
@@ -296,6 +248,11 @@ namespace WATA.LIS.SENSOR.NAV
             try
             {
                 socketSend = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+                // ✅ 소켓 타임아웃 설정: TCP 교착 상태 방지
+                socketSend.SendTimeout = 2000; // 2초
+                socketSend.ReceiveTimeout = 2000; // 2초
+
                 IAsyncResult result = socketSend.BeginConnect(IP, Convert.ToInt16(PORT), null, null);
 
                 bool success = result.AsyncWaitHandle.WaitOne(1000, true);
@@ -744,11 +701,35 @@ namespace WATA.LIS.SENSOR.NAV
                 gNavRcvErrorCheck = false;
 
 
-                ReceiveDataSize = socketSend.Available;
+                // ✅ 소켓 예외 처리 추가
+                try
+                {
+                    ReceiveDataSize = socketSend.Available;
+                }
+                catch (SocketException)
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+                catch (ObjectDisposedException)
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
                 byte[] buffer = new byte[ReceiveDataSize];
                 if (ReceiveDataSize > 0)
                 {
-                    socketSend.Receive(buffer);
+                    try
+                    {
+                        socketSend.Receive(buffer);
+                    }
+                    catch (SocketException)
+                    {
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
                     ReceiveData = Encoding.UTF8.GetString(buffer, 0, ReceiveDataSize);
                     bool CopyError = NAV_CopyRcvBuffer(out cmd, ReceiveData, ReceiveDataSize);
                     if (!CopyError)
