@@ -34,12 +34,33 @@ namespace WATA.LIS.VISION.CAM.Camera
         // WeChatQRCode 모델 경로
         private WeChatQRCode _weChatQRCode;
         private readonly static string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        private readonly static string projectRootDirectory = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName).FullName).FullName).FullName;
-        private readonly static string modelDirectory = Path.Combine(projectRootDirectory, "Modules", "WATA.LIS.VISION.CAM", "Model");
+        
+        // Release publish와 Debug 환경 모두 지원하는 경로 계산
+        private readonly static string modelDirectory = GetModelDirectory();
         private readonly static string detectorPrototxtPath = Path.Combine(modelDirectory, "detect.prototxt");
         private readonly static string detectorCaffeModelPath = Path.Combine(modelDirectory, "detect.caffemodel");
         private readonly static string superResolutionPrototxtPath = Path.Combine(modelDirectory, "sr.prototxt");
         private readonly static string superResolutionCaffeModelPath = Path.Combine(modelDirectory, "sr.caffemodel");
+
+        private static string GetModelDirectory()
+        {
+            // Release publish: baseDirectory\Modules\WATA.LIS.VISION.CAM\Model
+            string publishPath = Path.Combine(baseDirectory, "Modules", "WATA.LIS.VISION.CAM", "Model");
+            if (Directory.Exists(publishPath))
+                return publishPath;
+
+            // Debug: 5단계 상위로 이동한 후 Modules 경로
+            try
+            {
+                string debugPath = Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName).FullName).FullName).FullName;
+                return Path.Combine(debugPath, "Modules", "WATA.LIS.VISION.CAM", "Model");
+            }
+            catch
+            {
+                // 실패 시 기본 경로 반환
+                return publishPath;
+            }
+        }
 
 
         // 소켓 관련
@@ -76,41 +97,46 @@ namespace WATA.LIS.VISION.CAM.Camera
         private ConcurrentQueue<(byte[] FrameData, string Metadata)> depthFrameQueue = new ConcurrentQueue<(byte[], string)>();
         private ConcurrentQueue<(byte[] FrameData, string Metadata)> detectionDataQueue = new ConcurrentQueue<(byte[], string)>();
 
+        // StreamingServer 블로킹 관련
+        private readonly object _blockingLock = new object();
+        private bool _isFrameReceived = false;
+        private bool _isBlocked = true;
+        private const int BLOCKING_TIMEOUT_MS = 40000; // 40초
+
         public Luxonis(IEventAggregator eventAggregator, IVisionCamModel visioncammodel)
         {
             _eventAggregator = eventAggregator;
             _visioncammodel = visioncammodel;
             visioncamConfig = (VisionCamConfigModel)_visioncammodel;
 
-            // WeChatQRCode 초기화
-            _weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
-
-            // 소켓 초기화 및 연결
+            // WeChatQRCode 초기화는 Init()에서 수행하도록 이동 (모델 파일 경로 문제로 인한 모듈 로딩 실패 방지)
+      
+       // 소켓 초기화 및 연결
             fork_leftFrameSocket = InitializeSocket("tcp://localhost:5561");
             fork_rightFrameSocket = InitializeSocket("tcp://localhost:5562");
             fork_depthFrameSocket = InitializeSocket("tcp://localhost:5563");
             fork_detectionDataSocket = InitializeSocket("tcp://localhost:5564");
             fork_videoFrameSocket = InitializeSocket("tcp://localhost:5565");
 
-            //front_leftFrameSocket = InitializeSocket("tcp://localhost:5571");
-            //front_rightFrameSocket = InitializeSocket("tcp://localhost:5572");
-            //front_depthFrameSocket = InitializeSocket("tcp://localhost:5573");
+     //front_leftFrameSocket = InitializeSocket("tcp://localhost:5571");
+      //front_rightFrameSocket = InitializeSocket("tcp://localhost:5572");
+   //front_depthFrameSocket = InitializeSocket("tcp://localhost:5573");
             //front_detectionDataSocket = InitializeSocket("tcp://localhost:5574");
             //front_videoFrameSocket = InitializeSocket("tcp://localhost:5575");
 
-            //rear_leftFrameSocket = InitializeSocket("tcp://localhost:5581");
+     //rear_leftFrameSocket = InitializeSocket("tcp://localhost:5581");
             //rear_rightFrameSocket = InitializeSocket("tcp://localhost:5582");
-            //rear_depthFrameSocket = InitializeSocket("tcp://localhost:5583");
-            //rear_detectionDataSocket = InitializeSocket("tcp://localhost:5584");
+     //rear_depthFrameSocket = InitializeSocket("tcp://localhost:5583");
+     //rear_detectionDataSocket = InitializeSocket("tcp://localhost:5584");
             //rear_videoFrameSocket = InitializeSocket("tcp://localhost:5585");
 
             //_v2Detector = new V2Detector();
 
-            //// 국가코드 검출 타이머 설정
+       //// 국가코드 검출 타이머 설정
             //m_receiveObjectsTimer = new DispatcherTimer();
-            //m_receiveObjectsTimer.Interval = new TimeSpan(0, 0, 0, 0, 333);
-            //m_receiveObjectsTimer.Tick += new EventHandler(ReceiveObjectsTimerEvent);
-        }
+    //m_receiveObjectsTimer.Interval = new TimeSpan(0, 0, 0, 0, 333);
+//m_receiveObjectsTimer.Tick += new EventHandler(ReceiveObjectsTimerEvent);
+      }
 
         private SubscriberSocket InitializeSocket(string address)
         {
@@ -123,12 +149,96 @@ namespace WATA.LIS.VISION.CAM.Camera
         public void Init()
         {
             if (visioncamConfig.vision_enable == 0)
+   {
+                Tools.Log("[VisionCam] Vision is disabled in config (vision_enable=0)", Tools.ELogType.SystemLog);
+     return;
+}
+
+            // WeChatQRCode 초기화 (파일 존재 여부 확인 후)
+            try
             {
-                return;
+                Tools.Log($"[VisionCam] Model directory: {modelDirectory}", Tools.ELogType.SystemLog);
+            
+              // 모델 파일 존재 여부 확인
+     if (!File.Exists(detectorPrototxtPath))
+ {
+     Tools.Log($"[VisionCam] Model file not found: {detectorPrototxtPath}", Tools.ELogType.SystemLog);
+Tools.Log("[VisionCam] QR detection will be disabled", Tools.ELogType.SystemLog);
+       }
+       else if (!File.Exists(detectorCaffeModelPath))
+       {
+   Tools.Log($"[VisionCam] Model file not found: {detectorCaffeModelPath}", Tools.ELogType.SystemLog);
+       Tools.Log("[VisionCam] QR detection will be disabled", Tools.ELogType.SystemLog);
+          }
+         else if (!File.Exists(superResolutionPrototxtPath))
+       {
+        Tools.Log($"[VisionCam] Model file not found: {superResolutionPrototxtPath}", Tools.ELogType.SystemLog);
+        Tools.Log("[VisionCam] QR detection will be disabled", Tools.ELogType.SystemLog);
+    }
+                else if (!File.Exists(superResolutionCaffeModelPath))
+    {
+        Tools.Log($"[VisionCam] Model file not found: {superResolutionCaffeModelPath}", Tools.ELogType.SystemLog);
+              Tools.Log("[VisionCam] QR detection will be disabled", Tools.ELogType.SystemLog);
+                }
+     else
+                {
+           Tools.Log("[VisionCam] Initializing WeChatQRCode with model files...", Tools.ELogType.SystemLog);
+   _weChatQRCode = WeChatQRCode.Create(detectorPrototxtPath, detectorCaffeModelPath, superResolutionPrototxtPath, superResolutionCaffeModelPath);
+        Tools.Log("[VisionCam] WeChatQRCode initialized successfully", Tools.ELogType.SystemLog);
+   }
             }
+    catch (Exception ex)
+     {
+    Tools.Log($"[VisionCam] Failed to initialize WeChatQRCode: {ex.Message}", Tools.ELogType.SystemLog);
+       Tools.Log("[VisionCam] QR detection will be disabled", Tools.ELogType.SystemLog);
+    }
 
             //LoadModel(1); // GPU 인덱스 뭘로 해야하는지??
-            InitializeMultiStream();
+    InitializeMultiStream();
+     
+  // StreamingServer 블로킹 대기를 백그라운드 Task로 이동하여 UI 스레드 차단 방지
+      Task.Run(() => WaitForFirstFrame());
+     }
+
+    private void WaitForFirstFrame()
+        {
+            Tools.Log("[StreamingServer] Waiting for camera frame from port 5565 (max 40 seconds)...", Tools.ELogType.SystemLog);
+   Tools.Log("[StreamingServer] Vision processing will be blocked until frame is received or timeout.", Tools.ELogType.SystemLog);
+
+     var stopwatch = Stopwatch.StartNew();
+      
+            while (!_isFrameReceived && stopwatch.ElapsedMilliseconds < BLOCKING_TIMEOUT_MS)
+    {
+      System.Threading.Thread.Sleep(100); // 100ms마다 체크
+  }
+
+        lock (_blockingLock)
+ {
+      _isBlocked = false;
+     
+    // 전역 블로킹 플래그 해제
+        lock (GlobalValue.VisionBlockLock)
+     {
+          GlobalValue.IsVisionStreamBlocked = false;
+      }
+       
+    if (_isFrameReceived)
+       {
+      Tools.Log($"[StreamingServer] Camera frame received after {stopwatch.ElapsedMilliseconds}ms. Vision processing unblocked.", Tools.ELogType.SystemLog);
+      }
+       else
+         {
+           Tools.Log($"[StreamingServer] Timeout after {BLOCKING_TIMEOUT_MS}ms. Vision processing unblocked without frame.", Tools.ELogType.SystemLog);
+   }
+     }
+}
+
+        public bool IsBlocked()
+        {
+            lock (_blockingLock)
+            {
+                return _isBlocked;
+            }
         }
 
         private void InitializeMultiStream()
@@ -150,7 +260,7 @@ namespace WATA.LIS.VISION.CAM.Camera
                 //Task.Factory.StartNew(() => ReceiveData(rear_videoFrameSocket, ProcessVideoFrame), tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
                 // 프레임 처리 작업 시작
-                ProcessRgbFrames();
+                ProcessVideoFrames();
                 ProcessDepthFrames();
                 //ProcessDetectionDataFrames();
                 //m_receiveObjectsTimer.Start();
@@ -171,6 +281,19 @@ namespace WATA.LIS.VISION.CAM.Camera
                     var message = subscriber.ReceiveMultipartMessage();
                     var frameData = message[0].Buffer;
                     var metadata = message[1].ConvertToString();
+
+                    // 5565 포트(fork_videoFrameSocket)에서 첫 프레임 수신 시 블로킹 해제
+                    if (subscriber == fork_videoFrameSocket && !_isFrameReceived)
+                    {
+                        lock (_blockingLock)
+                        {
+                            if (!_isFrameReceived)
+                            {
+                                _isFrameReceived = true;
+                                Tools.Log("[StreamingServer] First camera frame received from port 5565.", Tools.ELogType.SystemLog);
+                            }
+                        }
+                    }
 
                     // 큐에 프레임 추가 및 최대 프레임 수 제한
                     if (subscriber == fork_depthFrameSocket && depthFrameQueue.Count < 5)
@@ -304,7 +427,7 @@ namespace WATA.LIS.VISION.CAM.Camera
             });
         }
 
-        private void ProcessRgbFrames()
+        private void ProcessVideoFrames()
         {
             Task.Run(() => {
                 while (!tokenSource.Token.IsCancellationRequested)
@@ -320,49 +443,63 @@ namespace WATA.LIS.VISION.CAM.Camera
         // QR 코드 검출
         private string DetectQRCode(Mat frame)
         {
-            string result = string.Empty;
+   string result = string.Empty;
             int maxY = int.MinValue;
 
-            // WeChat QR 코드 인식
-            _weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
-
-            if (weChatResult != null && weChatResult.Length > 0)
-            {
-                for (int i = 0; i < weChatResult.Length; i++)
-                {
-                    var qrCode = weChatResult[i];
-                    var box = bbox[i];
-
-                    // QR 코드 위치에 사각형 그리기
-                    if (box.Total() >= 4)
-                    {
-                        var detectedQRpoints = new Point[4];
-                        for (int j = 0; j < 4; j++)
-                        {
-                            detectedQRpoints[j] = new Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
-                        }
-
-                        int minX = detectedQRpoints.Min(p => p.X);
-                        int minY = detectedQRpoints.Min(p => p.Y);
-                        int maxX = detectedQRpoints.Max(p => p.X);
-                        int currentMaxY = detectedQRpoints.Max(p => p.Y);
-
-                        var qrRect = new Rect(minX, minY, maxX - minX, currentMaxY - minY);
-                        Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), 3);
-
-                        // 가장 아래쪽에 있는 QR 코드를 선택
-                        if (currentMaxY > maxY)
-                        {
-                            maxY = currentMaxY;
-                            result = qrCode;
-                        }
-                    }
-                }
+     // WeChatQRCode가 초기화되지 않았으면 빈 문자열 반환
+      if (_weChatQRCode == null)
+          {
+      return result;
             }
-            return result;
+
+  try
+     {
+         // WeChat QR 코드 인식
+     _weChatQRCode.DetectAndDecode(frame, out Mat[] bbox, out string[] weChatResult);
+
+              if (weChatResult != null && weChatResult.Length > 0)
+         {
+      for (int i = 0; i < weChatResult.Length; i++)
+       {
+       var qrCode = weChatResult[i];
+         var box = bbox[i];
+
+  // QR 코드 위치에 사각형 그리기
+      if (box.Total() >= 4)
+      {
+         var detectedQRpoints = new Point[4];
+for (int j = 0; j < 4; j++)
+{
+                detectedQRpoints[j] = new Point((int)box.At<float>(j, 0), (int)box.At<float>(j, 1));
+  }
+
+                int minX = detectedQRpoints.Min(p => p.X);
+             int minY = detectedQRpoints.Min(p => p.Y);
+    int maxX = detectedQRpoints.Max(p => p.X);
+           int currentMaxY = detectedQRpoints.Max(p => p.Y);
+
+           var qrRect = new Rect(minX, minY, maxX - minX, currentMaxY - minY);
+              Cv2.Rectangle(frame, qrRect, new Scalar(0, 255, 0), 3);
+
+            // 가장 아래쪽에 있는 QR 코드를 선택
+     if (currentMaxY > maxY)
+          {
+         maxY = currentMaxY;
+               result = qrCode;
+            }
+        }
+               }
+        }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"[VisionCam] QR detection error: {ex.Message}", Tools.ELogType.SystemLog);
         }
 
-        // 국가코드 검출 쓰레드
+     return result;
+        }
+
+      // 국가코드 검출 쓰레드
         private void ReceiveObjectsTimerEvent(object sender, EventArgs e)
         {
             //// 테스트를 위해 이미지 파일을 로드

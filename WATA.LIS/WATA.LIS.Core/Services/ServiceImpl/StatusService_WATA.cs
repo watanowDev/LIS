@@ -112,14 +112,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private uint m_noDetectPersonCnt = 50;
         private DateTime lastAlertTime = DateTime.MinValue;
         private DispatcherTimer m_visionCamInitTimer;
-        private string m_curr_NationCode = "";
         private string m_event_NationCode = "";
-        private int m_no_NationCodeCnt = 0;
         private bool m_visionCamReady = false;
-        private int _deepCaptureCooldown = 0; // 이미지 캡처 쿨다운
         private List<DectectionRcvModel> m_detectionRcvModelList = new List<DectectionRcvModel>();
         private List<VisionCamModel> m_visionModelList = new List<VisionCamModel>();
         private readonly object m_visionLock = new object(); // Lock 객체 추가
+        private double m_currDepthSum = 0; // 최근 depth 값 총합 저장
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
@@ -180,6 +178,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         Stopwatch m_stopwatchWeight = new Stopwatch();
         //Stopwatch m_stopwatchPickDrop = new Stopwatch();
         const int m_timeoutPickDrop = 5000;
+        private CancellationTokenSource m_dropImageCaptureCts;
+        private readonly SemaphoreSlim m_dropImageSemaphore = new SemaphoreSlim(1, 1); // 동시 실행 제한
+        private CancellationTokenSource m_dropDepthMonitorCts; // Drop 후 depth 모니터링용
+        private bool m_dropDepthCaptured = false; // 이미 캡처했는지 플래그
 
         // Zone 캐시
         private static List<ZoneEntry> s_zoneListCache;
@@ -1010,6 +1012,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnWeightSensorEvent(WeightSensorModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             try
             {
                 if (model.RightOnline == true && model.LeftOnline == true)
@@ -1105,6 +1110,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnDistanceSensorEvent(DistanceSensorModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+            
             if (model == null) return;
 
             m_distanceModel = model;
@@ -1128,6 +1136,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="epcData"></param>
         private void OnRfidSensorEvent(List<Keonn2ch_Model> epcData)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (epcData != null && epcData.Count > 0)
             {
                 m_curr_epc = epcData[0].EPC;
@@ -1214,6 +1225,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="obj"></param>
         private void OnVisionEvent(VisionCamModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (model.connected == true) m_errCnt_visioncam = 0;
 
             SensorReady.Instance.VisionCam = true;
@@ -1249,51 +1263,51 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
-            if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
-            {
-                // ClassId 매핑
-                var classIdMapping = new Dictionary<int, string>
-                    {
-                        { 3, "3" }, // 검은색, 중국 청도
-                        { 4, "4" }, // 흰색, 중국 무석
-                        { 5, "5" }, // 초록색, 멕시코
-                        { 6, "6" }  // 노란색, 인도
-                    };
+            //// 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
+            //if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
+            //{
+            //    // ClassId 매핑
+            //    var classIdMapping = new Dictionary<int, string>
+            //        {
+            //            { 3, "3" }, // 검은색, 중국 청도
+            //            { 4, "4" }, // 흰색, 중국 무석
+            //            { 5, "5" }, // 초록색, 멕시코
+            //            { 6, "6" }  // 노란색, 인도
+            //        };
 
-                // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
-                float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
-                float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
+            //    // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
+            //    float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
+            //    float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
 
-                // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
-                var filteredObjects = m_visionModel.Objects
-                    .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
-                    .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
-                    .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
-                    .ToList();
+            //    // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
+            //    var filteredObjects = m_visionModel.Objects
+            //        .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
+            //        .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
+            //        .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
+            //        .ToList();
 
-                // ClassId 4 우선 처리
-                var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
-                if (class4Object != null)
-                {
-                    m_curr_NationCode = classIdMapping[class4Object.ClassId];
-                }
-                else
-                {
-                    // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
-                    var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
-                    if (class3Object != null)
-                    {
-                        m_curr_NationCode = classIdMapping[class3Object.ClassId];
-                    }
-                    else
-                    {
-                        // 다른 ClassId 처리
-                        var highestConfidenceObject = filteredObjects.FirstOrDefault();
-                        m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
-                    }
-                }
-            }
+            //    // ClassId 4 우선 처리
+            //    var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
+            //    if (class4Object != null)
+            //    {
+            //        m_curr_NationCode = classIdMapping[class4Object.ClassId];
+            //    }
+            //    else
+            //    {
+            //        // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
+            //        var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
+            //        if (class3Object != null)
+            //        {
+            //            m_curr_NationCode = classIdMapping[class3Object.ClassId];
+            //        }
+            //        else
+            //        {
+            //            // 다른 ClassId 처리
+            //            var highestConfidenceObject = filteredObjects.FirstOrDefault();
+            //            m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
+            //        }
+            //    }
+            //}
 
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
@@ -1305,6 +1319,37 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     model.TL_DEPTH,
                     model.TR_DEPTH
                 };
+
+            // Depth 값 총합 계산 및 저장
+            m_currDepthSum = depthValues.Sum();
+
+            // ⭐ Drop 모니터링 중일 때 depth 합 체크 → 즉시 현재 프레임으로 캡처
+            if (m_dropDepthMonitorCts != null && !m_dropDepthMonitorCts.IsCancellationRequested && !m_dropDepthCaptured)
+            {
+                if (m_currDepthSum >= 5000)
+                {
+                    m_dropDepthCaptured = true;
+                    Tools.Log($"Drop monitoring: Depth sum reached {m_currDepthSum} >= 5000, triggering image capture", ELogType.ActionLog);
+
+                    // ⭐ 현재 프레임을 직접 전달 (별도 로직 분리)
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            CaptureDropImage(); // 새로운 메서드 호출
+                            Tools.Log("Drop monitoring: Image capture completed", ELogType.ActionLog);
+                        }
+                        catch (Exception ex)
+                        {
+                            Tools.Log($"Drop monitoring: Image capture error: {ex.Message}", ELogType.SystemLog);
+                        }
+                        finally
+                        {
+                            m_dropDepthMonitorCts?.Cancel(); // 모니터링 종료
+                        }
+                    });
+                }
+            }
 
             // Threshold 값 미만인 값의 개수
             int closeCnt = depthValues.Count(value => value < 700 && value >= 0);
@@ -1425,11 +1470,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
         }
 
-        private void PickDeepAnalysisImg()
+        private void CapturePickupImage()
         {
             try
             {
-                // 리스트 복사본 생성 (lock 내에서)
                 List<DectectionRcvModel> detectionSnapshot;
                 List<VisionCamModel> visionSnapshot;
 
@@ -1438,7 +1482,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     if (m_detectionRcvModelList.Count == 0)
                     {
                         if (m_visionModelList.Count == 0) return;
-                        PublishDeepAnalysis(m_visionModelList[0].FRAME, [], [], []);
+                        PublishDeepAnalysis(m_visionModelList[0].FRAME, new List<string>(), new List<string>(), new List<DetectionItem>());
                         Tools.Log("m_detectionRcvModelList is empty", ELogType.SystemLog);
                         return;
                     }
@@ -1447,7 +1491,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     visionSnapshot = new List<VisionCamModel>(m_visionModelList);
                 }
 
-                // PalletArea가 8100에 가장 가까운 Pallet detection 찾기 (복사본 사용)
+                // PalletArea가 8100에 가장 가까운 Pallet detection 찾기
                 var targetDetection = detectionSnapshot
                     .SelectMany((detection, index) => detection.Detections
                         .Where(d => d.Class == "Pallet")
@@ -1457,41 +1501,79 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
                 if (targetDetection == null)
                 {
-                    Tools.Log("No Pallet class detections found", ELogType.SystemLog);
+                    // 파레트 없을 때: Pickup은 가장 오래된 프레임
+                    Tools.Log("No Pallet detected, using oldest frame for Pickup", ELogType.SystemLog);
+                    var oldestDetection = detectionSnapshot[0];
+                    var oldestVision = visionSnapshot.FirstOrDefault(v => v.FRAME_ID == oldestDetection.FrameId)
+                                     ?? visionSnapshot[0];
+
+                    PublishDeepAnalysis(
+                        oldestVision.FRAME,
+                        oldestDetection.QrList,
+                        oldestDetection.OcrList,
+                        oldestDetection.Detections
+                    );
                     return;
                 }
 
-                // frame_id로 매칭되는 VisionCam 프레임 찾기
-                string targetFrameId = targetDetection.Detection.FrameId;
-                var matchingFrame = visionSnapshot.FirstOrDefault(v => v.FRAME_ID == targetFrameId);
+                // 파레트 감지 시 해당 프레임 사용
+                string palletFrameId = targetDetection.Detection.FrameId;
+                var palletMatchingFrame = visionSnapshot.FirstOrDefault(v => v.FRAME_ID == palletFrameId);
 
-                byte[] imageBytes;
-                if (matchingFrame != null)
-                {
-                    imageBytes = matchingFrame.FRAME;
-                }
-                else
-                {
-                    Tools.Log($"No matching VisionCamModel found for frame_id: {targetFrameId}, using index fallback", ELogType.SystemLog);
-                    int frameIndex = Math.Min(targetDetection.Index, visionSnapshot.Count - 1);
-                    imageBytes = visionSnapshot[frameIndex].FRAME;
-                }
+                byte[] palletImageBytes = palletMatchingFrame != null
+                    ? palletMatchingFrame.FRAME
+                    : visionSnapshot[Math.Min(targetDetection.Index, visionSnapshot.Count - 1)].FRAME;
 
-                // 최종 데이터 전송
                 PublishDeepAnalysis(
-                    imageBytes,
+                    palletImageBytes,
                     targetDetection.Detection.QrList,
                     targetDetection.Detection.OcrList,
                     targetDetection.Detection.Detections
                 );
 
-                Tools.Log($"DetectionList index: {targetDetection.Index}", ELogType.ActionLog);
-                Tools.Log($"PalletArea: {targetDetection.Detection.PalletArea}", ELogType.ActionLog);
-                Tools.Log($"FrameId: {targetFrameId}", ELogType.ActionLog);
+                Tools.Log($"Pickup: PalletArea={targetDetection.Detection.PalletArea}, FrameId={palletFrameId}", ELogType.ActionLog);
             }
             catch (Exception ex)
             {
-                Tools.Log($"PickDeepAnalysisImg Error: {ex.Message}", ELogType.SystemLog);
+                Tools.Log($"CaptureDeepAnalysisImg Error: {ex.Message}", ELogType.SystemLog);
+            }
+        }
+
+        private void CaptureDropImage()
+        {
+            try
+            {
+                List<DectectionRcvModel> detectionSnapshot;
+                List<VisionCamModel> visionSnapshot;
+
+                lock (m_visionLock)
+                {
+                    if (m_detectionRcvModelList.Count == 0 || m_visionModelList.Count == 0)
+                    {
+                        Tools.Log("Drop capture: detection or vision list is empty", ELogType.SystemLog);
+                        return;
+                    }
+
+                    detectionSnapshot = new List<DectectionRcvModel>(m_detectionRcvModelList);
+                    visionSnapshot = new List<VisionCamModel>(m_visionModelList);
+                }
+
+                // ⭐ 가장 최근 Detection/Vision 프레임 사용 (depth >= 5000이 된 시점)
+                var latestDetection = detectionSnapshot.Last();
+                var latestVision = visionSnapshot.Last();
+
+                Tools.Log($"Drop capture: using latest frame (FrameId: {latestDetection.FrameId})", ELogType.ActionLog);
+
+                PublishDeepAnalysis(
+                    latestVision.FRAME,
+                    latestDetection.QrList,
+                    latestDetection.OcrList,
+                    latestDetection.Detections
+                );
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"CaptureDropImageDirectly Error: {ex.Message}", ELogType.SystemLog);
             }
         }
 
@@ -1517,6 +1599,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="navSensorModel"></param>
         private void OnNAVSensorEvent(NAVSensorModel navSensorModel)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (m_navConfig.NAV_Enable == 0)
             {
                 return;
@@ -2693,6 +2778,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
+                // 진행 중인 모니터링/캡처 취소
+                m_dropDepthMonitorCts?.Cancel();
+                m_dropDepthMonitorCts?.Dispose();
+                m_dropImageCaptureCts?.Cancel();
+                m_dropImageCaptureCts?.Dispose();
+
                 var json = BuildShutdownSnapshotJson();
                 _eventAggregator.GetEvent<ShutdownSnapshotEvent>().Publish(json);
                 Tools.Log("[SNAPSHOT] published ShutdownSnapshotEvent", Tools.ELogType.SystemLog);
@@ -3000,7 +3091,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
-            PickDeepAnalysisImg();
+            CapturePickupImage();
             SendBackEndPickupAction();
 
             // m_stopwatchPickDrop.Reset();
@@ -3057,11 +3148,41 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 백엔드 통신
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
-            PickDeepAnalysisImg();
-            SendBackEndDropAction();
 
-            // m_stopwatchPickDrop.Reset();
-            //m_stopwatchPickDrop.Start();
+            // ⭐ Drop 후 15초 동안 depth 모니터링 시작
+            m_dropDepthMonitorCts?.Cancel();
+            m_dropDepthMonitorCts?.Dispose();
+            m_dropDepthMonitorCts = new CancellationTokenSource();
+            m_dropDepthCaptured = false;
+
+            var monitorCts = m_dropDepthMonitorCts;
+            Tools.Log($"Drop Event: Starting 15-second depth monitoring (current sum: {m_currDepthSum})", ELogType.ActionLog);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // 15초 대기 (이 시간 동안 OnVisionEvent에서 depth를 체크)
+                    await Task.Delay(TimeSpan.FromSeconds(15), monitorCts.Token);
+
+                    // 타임아웃 - depth 합이 5000을 넘지 않음
+                    if (!m_dropDepthCaptured)
+                    {
+                        Tools.Log("Drop monitoring: Timeout (15s) - depth sum did not reach 5000", ELogType.ActionLog);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // 정상 종료 (depth 합이 5000 넘어서 캡처 완료)
+                    Tools.Log("Drop monitoring: Cancelled (depth threshold reached)", ELogType.ActionLog);
+                }
+                catch (Exception ex)
+                {
+                    Tools.Log($"Drop monitoring error: {ex.Message}", ELogType.SystemLog);
+                }
+            }, monitorCts.Token);
+
+            SendBackEndDropAction();
 
             // 물류 데이터 초기화
             m_ActionZoneId = "";

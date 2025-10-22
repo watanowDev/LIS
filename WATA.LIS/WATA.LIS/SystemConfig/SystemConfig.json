@@ -71,18 +71,18 @@
     "MaxReceiveBufferSize": 4096
   },
   "LIVOX": {
-    "LIVOX_Enable": 0
+    "LIVOX_Enable": 1
   },
   "vision": {
     "vision_enable": 1,
-    "vision_name": "Luxonis", //HikVision, FemtoMega, Luxonis
+    "vision_name": "Luxonis",
     "vision_ip": "192.168.1.101",
     "vision_port": 8000,
     "vision_id": "admin",
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 1,
+    "display_enable": 0,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

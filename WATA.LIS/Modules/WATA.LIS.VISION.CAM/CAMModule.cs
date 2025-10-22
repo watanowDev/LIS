@@ -11,6 +11,7 @@ using OpenCvSharp;
 using System.IO;
 using System;
 using WATA.LIS.VISION.CAM.MQTT;
+using WATA.LIS.Core.Common; // Tools 사용을 위해 추가
 
 namespace WATA.LIS.VISION.CAM
 {

@@ -61,6 +61,22 @@
 - 구성: `Debug`, `Release`, `Remote`
 - 최초 실행 전: NuGet 복원, 작업 디렉터리에 `SystemConfig/` 폴더와 `Log4Net_WATA.xml` 위치 확인
 
+### Publish 정책 (중요)
+- **공식 Publish 경로**: `C:\Users\USER\source\repos\LIS\WATA.LIS\WATA.LIS\bin\publish\OptimizedRelease`
+- **Publish 명령어**:
+  ```powershell
+  # 1. 기존 프로세스 종료 (필요시)
+  Stop-Process -Name "WATA.LIS" -Force -ErrorAction SilentlyContinue
+  
+  # 2. Release 빌드 및 Publish
+  dotnet publish .\WATA.LIS\WATA.LIS.csproj -c Release -o "C:\Users\USER\source\repos\LIS\WATA.LIS\WATA.LIS\bin\publish\OptimizedRelease"
+  
+  # 3. 필수 설정 파일 복사
+  Copy-Item -Path ".\WATA.LIS\SystemConfig" -Destination "C:\Users\USER\source\repos\LIS\WATA.LIS\WATA.LIS\bin\publish\OptimizedRelease\SystemConfig" -Recurse -Force
+  Copy-Item -Path ".\WATA.LIS.Core\Log4Net_WATA.xml" -Destination "C:\Users\USER\source\repos\LIS\WATA.LIS\WATA.LIS\bin\publish\OptimizedRelease\Log4Net_WATA.xml" -Force
+  ```
+- **주의**: 다른 경로로 publish하지 말 것! 반드시 위 경로 사용
+
 ### 빌드 체크 가이드 (커밋 전 필수)
 - Visual Studio
   - 솔루션 열기 → 상단 메뉴 Build > Build Solution(Ctrl+Shift+B)

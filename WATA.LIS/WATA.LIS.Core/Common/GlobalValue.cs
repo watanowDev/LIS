@@ -11,10 +11,11 @@ namespace WATA.LIS.Core.Common
     {
         public static string SystemVersion = "";
         public static DPSAllClear IS_ERROR = new DPSAllClear() ;
-    public static string SessionId = Guid.NewGuid().ToString();
+        public static string SessionId = Guid.NewGuid().ToString();
 
-
-
+        // StreamingServer 블로킹 플래그
+        public static volatile bool IsVisionStreamBlocked = true;
+        public static readonly object VisionBlockLock = new object();
     }
     
 }

@@ -33,7 +33,34 @@ namespace WATA.LIS.Core.Parser
 
             try
             {
-                string path = System.IO.Directory.GetCurrentDirectory() + "\\SystemConfig\\SystemConfig.json";
+                // Single-file publish 환경에서도 작동하도록 경로 계산
+                // 1. 실행 파일의 실제 위치 (단일 파일이 아닌 경우)
+                string exeLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                
+                // 2. 단일 파일 publish의 경우 Location이 비어있을 수 있으므로 BaseDirectory 사용
+                if (string.IsNullOrEmpty(exeLocation) || !File.Exists(exeLocation))
+                {
+                    exeLocation = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? baseDir;
+                }
+                
+                // 3. 실행 파일이 있는 디렉터리 기준으로 Config 경로 설정
+                string configDir = Path.GetDirectoryName(exeLocation);
+                if (string.IsNullOrEmpty(configDir))
+                {
+                    configDir = baseDir;
+                }
+                
+                string path = Path.Combine(configDir, "SystemConfig", "SystemConfig.json");
+                
+                Tools.Log($"Config path: {path}", Tools.ELogType.SystemLog);
+                Tools.Log($"Config exists: {File.Exists(path)}", Tools.ELogType.SystemLog);
+                
+                if (!File.Exists(path))
+                {
+                    throw new FileNotFoundException($"SystemConfig.json not found at: {path}");
+                }
+ 
                 using (StreamReader file = File.OpenText(path))
                 using (JsonTextReader reader = new JsonTextReader(file))
                 {

@@ -8,6 +8,57 @@
     <AssemblyVersion>9.4.4.7</AssemblyVersion>
     <FileVersion>9.0.0.7</FileVersion>
   </PropertyGroup>
+
+  <!-- Release 빌드 최적화 설정 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <!-- 디버그 심볼 최소화 (완전 제거하지 않음) -->
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    
+    <!-- 컴파일러 최적화 -->
+    <Optimize>true</Optimize>
+    
+    <!-- Tiered Compilation: 런타임 성능 최적화 -->
+    <TieredCompilation>true</TieredCompilation>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+  </PropertyGroup>
+
+  <!-- Publish 전용 최적화 설정 (dotnet publish 실행 시에만 적용) -->
+  <PropertyGroup Condition="'$(IsPublishing)' == 'true'">
+    <!-- Self-contained 배포 (닷넷 런타임 포함, 고객 PC에 .NET 불필요) -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    
+    <!-- 단일 파일 배포 (모든 DLL을 EXE에 포함) -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    
+    <!-- ⚠️ 설정 파일과 모델 파일은 단일 파일에서 제외 (별도 파일로 유지) -->
+    <IncludeAllContentForSelfExtract>false</IncludeAllContentForSelfExtract>
+    
+    <!-- ReadyToRun: 메모리 부족 문제로 비활성화 -->
+    <PublishReadyToRun>false</PublishReadyToRun>
+    
+    <!-- Trimming: WPF/Prism은 리플렉션 사용으로 비활성화 필수 -->
+    <PublishTrimmed>false</PublishTrimmed>
+    
+    <!-- 압축: 파일 크기 감소 -->
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+  
+  <!-- Publish 시 단일 파일에서 제외할 파일들 (실행 시 필요) -->
+  <ItemGroup>
+    <!-- SystemConfig 폴더는 별도 파일로 유지 -->
+    <Content Include="SystemConfig\**\*.*" CopyToPublishDirectory="PreserveNewest">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+    
+    <!-- Log4Net 설정 파일 -->
+    <Content Include="..\WATA.LIS.Core\Log4Net_WATA.xml" Link="Log4Net_WATA.xml" CopyToPublishDirectory="PreserveNewest">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="MaterialDesignColors" Version="5.2.1" />
@@ -41,6 +92,34 @@
     <Copy SourceFiles="$(ConfigSrc)\Log4Net_WATA.xml" DestinationFolder="$(OutDir)" Condition="Exists('$(ConfigSrc)\Log4Net_WATA.xml')" />
     <!-- If a SystemConfig folder exists next to the exe or in repository root, prefer repo root -->
     <Copy SourceFiles="@(SystemConfigFiles)" DestinationFolder="$(OutDir)SystemConfig" SkipUnchangedFiles="true" Condition="'%(SystemConfigFiles.Identity)' != ''" />
+  </Target>
+
+  <!-- Publish 후 설정 파일 복사 -->
+  <Target Name="PublishCopyConfigs" AfterTargets="Publish">
+    <PropertyGroup>
+      <PublishDir>$(PublishDir)</PublishDir>
+      <ConfigSrc>$(MSBuildProjectDirectory)\..\WATA.LIS.Core</ConfigSrc>
+      <VisionModelSrc>$(MSBuildProjectDirectory)\..\Modules\WATA.LIS.VISION.CAM\Model</VisionModelSrc>
+    </PropertyGroup>
+    
+    <!-- SystemConfig 폴더 생성 및 복사 -->
+    <MakeDir Directories="$(PublishDir)SystemConfig" Condition="!Exists('$(PublishDir)SystemConfig')" />
+    <Copy SourceFiles="$(ConfigSrc)\Log4Net_WATA.xml" DestinationFolder="$(PublishDir)" Condition="Exists('$(ConfigSrc)\Log4Net_WATA.xml')" />
+    <Copy SourceFiles="@(SystemConfigFiles)" DestinationFolder="$(PublishDir)SystemConfig" SkipUnchangedFiles="true" Condition="'%(SystemConfigFiles.Identity)' != ''" />
+    
+    <!-- Vision Model 파일들을 Modules 구조로 복사 -->
+    <MakeDir Directories="$(PublishDir)Modules\WATA.LIS.VISION.CAM\Model" Condition="!Exists('$(PublishDir)Modules\WATA.LIS.VISION.CAM\Model')" />
+    <ItemGroup>
+      <VisionModelFiles Include="$(VisionModelSrc)\*.prototxt" />
+      <VisionModelFiles Include="$(VisionModelSrc)\*.caffemodel" />
+      <VisionModelFiles Include="$(VisionModelSrc)\*.onnx" Condition="Exists('$(VisionModelSrc)\*.onnx')" />
+      <VisionModelFiles Include="$(VisionModelSrc)\*.dll" />
+      <VisionModelFiles Include="$(VisionModelSrc)\*.jpg" />
+    </ItemGroup>
+    <Copy SourceFiles="@(VisionModelFiles)" DestinationFolder="$(PublishDir)Modules\WATA.LIS.VISION.CAM\Model" SkipUnchangedFiles="true" />
+    
+    <Message Text="Configuration and model files copied to publish directory: $(PublishDir)" Importance="high" />
+    <Message Text="Vision models copied from: $(VisionModelSrc)" Importance="high" />
   </Target>
 
   <!-- Collect SystemConfig files from repository root if present -->

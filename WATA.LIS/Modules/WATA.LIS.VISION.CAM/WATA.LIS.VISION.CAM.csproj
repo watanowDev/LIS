@@ -36,5 +36,40 @@
     <None Update="Modules\WATA.LIS.VISION.CAM\Model\ob_csharp.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    
+    <!-- Vision Model 파일들 (QR 검출용) -->
+    <None Update="Model\detect.prototxt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Model\detect.caffemodel">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Model\sr.prototxt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Model\sr.caffemodel">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    
+    <!-- Orbbec SDK 관련 파일들 -->
+    <None Update="Model\depthengine_2_0.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Model\live555.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Model\ob_usb.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    
+    <!-- V2Detector ONNX 모델 (옵션, 파일이 있으면 복사) -->
+    <None Update="Model\small.onnx" Condition="Exists('Model\small.onnx')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    
+ <!-- 테스트 이미지 -->
+    <None Update="Model\NationTest.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

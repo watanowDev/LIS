@@ -18,9 +18,9 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.MahApps;component/Themes/MaterialDesignTheme.MahApps.Defaults.xaml"/>
 
                 <!-- App Resources -->
-                <ResourceDictionary Source="Resource/Styles/Common.xaml" />
-                <ResourceDictionary Source="Resource/Styles/ButtonStyle.xaml" />
-                <ResourceDictionary Source="Resource/Styles/Typography.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/WATA.LIS;component/Resource/Styles/Common.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/WATA.LIS;component/Resource/Styles/ButtonStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/WATA.LIS;component/Resource/Styles/Typography.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
 

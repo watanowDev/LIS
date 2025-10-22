@@ -19,20 +19,12 @@ using WATA.LIS.Core.Events.System;
 
 namespace WATA.LIS.SENSOR.NAV
 {
-    public class NAVSensor : IDisposable
+    public class NAVSensor
     {
         Thread RecvThread;
 
         private readonly IEventAggregator _eventAggregator;
         public static Socket socketSend;
-
-        // 스레드 안전성을 위한 lock 객체들
-        private static readonly object _socketLock = new object();
-        private static readonly object _stateLock = new object();
-
-        // 스레드 종료를 위한 CancellationToken
-        private static CancellationTokenSource _cancellationTokenSource;
-        private static CancellationToken _cancellationToken;
 
         const int ERROR_NAV_RESET_COUNT = 100;
 
@@ -66,10 +58,10 @@ namespace WATA.LIS.SENSOR.NAV
         private static int positionNavCount = 0;
 
         // NAV pose filtering state
-        private static readonly int PoseWarmupFrames = 1;
+        private static readonly int PoseWarmupFrames = 1; // 워밍업 프레임 수
         private static long lastGoodX = 0;
         private static long lastGoodY = 0;
-        private static long lastGoodT = 0;
+        private static long lastGoodT = 0; // 단위: 입력과 동일(0~360 또는 0~3600)
         private static bool hasLastGood = false;
 
         public bool nav350_socket_open = false;
@@ -86,22 +78,7 @@ namespace WATA.LIS.SENSOR.NAV
         private static bool isReconnecting = false;
         private static DateTime reconnectStartTime;
         private static int postReconnectFreezeCount = 0;
-        private const int postReconnectThreshold = 150;
-        private static DateTime _appStartTime = DateTime.MinValue;
-
-        // 로그 중복 방지를 위한 변수
-        private static int lastLoggedError = -1;
-
-        // Dispose 플래그
-        private bool _disposed = false;
-
-        // 설정 값들 (설정 파일에서 로드)
-        private static int _freezeThreshold = 300;
-        private static int _transTimeoutCount = 20;
-        private static int _transRetryMax = 15;
-        private static int _reconnectTimeoutSeconds = 5;
-        private static int _socketConnectTimeoutMs = 1000;
-        private static int _maxReceiveBufferSize = 4096;
+        private const int postReconnectThreshold = 150; // 15초 (100ms * 100)
 
         public NAVSensor(IEventAggregator eventAggregator, INAVModel navModel)
         {
@@ -109,26 +86,7 @@ namespace WATA.LIS.SENSOR.NAV
 
             NAVConfigModel _navConfig = (NAVConfigModel)navModel;
             gIP = _navConfig.IP;
-            gPORT = _navConfig.PORT.ToString();
-
-            // 설정 값 로드 (JSON에 값이 없으면 기본값 사용)
-            _freezeThreshold = _navConfig.FreezeThreshold;
-            _transTimeoutCount = _navConfig.TransTimeoutCount;
-            _transRetryMax = _navConfig.TransRetryMax;
-            _reconnectTimeoutSeconds = _navConfig.ReconnectTimeoutSeconds;
-            _socketConnectTimeoutMs = _navConfig.SocketConnectTimeoutMs;
-            _maxReceiveBufferSize = _navConfig.MaxReceiveBufferSize;
-
-            Tools.Log($"NAV Config loaded: Freeze={_freezeThreshold}, TransTimeout={_transTimeoutCount}, " +
-                      $"RetryMax={_transRetryMax}, ReconnectTimeout={_reconnectTimeoutSeconds}s, " +
-                      $"SocketTimeout={_socketConnectTimeoutMs}ms, MaxBuffer={_maxReceiveBufferSize}",
-                      Tools.ELogType.SystemLog);
-
-            // CancellationTokenSource 초기화
-            _cancellationTokenSource = new CancellationTokenSource();
-            _cancellationToken = _cancellationTokenSource.Token;
-
-            _appStartTime = DateTime.Now;
+            gPORT = _navConfig.PORT.ToString(); ;
         }
 
         public void Init()
@@ -136,98 +94,68 @@ namespace WATA.LIS.SENSOR.NAV
             Tools.Log($"Init NAV", Tools.ELogType.SystemLog);
 
             mainProcess = new Thread(Main);
-            mainProcess.IsBackground = true; // 백그라운드 스레드로 설정
             mainProcess.Start();
+
         }
 
         public void Main()
         {
+            // [NAV FREEZE CHECK] 이전 NAV 값과 변화 없는 횟수 저장 변수 추가
             long prevNavX = Globals.nav_x;
             long prevNavY = Globals.nav_y;
             long prevNavT = Globals.nav_phi;
             int navFreezeCount = 0;
-            int navFreezeThreshold = _freezeThreshold; // 설정 파일에서 로드된 값 사용
+            const int navFreezeThreshold = 300; // 100ms * 100 = 15초
 
-            // 오탐 방지를 위한 연속 Freeze 카운트
-            int consecutiveFreezeCount = 0;
-            const int minConsecutiveFreezes = 2; // 2회 연속 확인
-
-            try
+            while (true)
             {
-                while (!_cancellationToken.IsCancellationRequested)
+                if (nav350_socket_open == true)
                 {
-                    if (nav350_socket_open == true)
+                    if (nav350_socket_open_once == false)
                     {
-                        if (nav350_socket_open_once == false)
+                        nav350TransThread.Start();
+                        nav350RcvThread.Start();
+
+                        nav350_socket_open_once = true;
+                    }
+
+                    if (Globals.getTimerCounter(Globals.nav_rcv) == 0) // NAV350 통신 연결 상태 확인
+                    {
+                        if (nav350_socket_open_once == true)
+                        {
+                            //nav350TransThread.Abort();
+                            //nav350RcvThread.Abort();
+                            nav350_socket_open_once = false;
+                        }
+
+                        NAVSensor.socketSend.Close();
+                        NAVSensor.socketSend.Dispose();
+                        NAVSensor.NAV_SoftWareReset();
+
+                        Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
+
+                        nav350_socket_open = false;
+                    }
+                    else
+                    {
+                        if (!nav350TransThread.IsAlive)
                         {
                             nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
-                            nav350TransThread.IsBackground = true;
                             nav350TransThread.Start();
+                        }
 
+                        if (!nav350RcvThread.IsAlive)
+                        {
                             nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
-                            nav350RcvThread.IsBackground = true;
                             nav350RcvThread.Start();
-
-                            nav350_socket_open_once = true;
                         }
 
-                        if (Globals.getTimerCounter(Globals.nav_rcv) == 0) // NAV350 통신 연결 상태 확인
+                        if (nav350TransThread.IsAlive && nav350RcvThread.IsAlive)
                         {
-                            if (nav350_socket_open_once == true)
-                            {
-                                nav350_socket_open_once = false;
-                            }
-
-                            // 소켓 정리 시 lock 사용
-                            lock (_socketLock)
-                            {
-                                try
-                                {
-                                    if (socketSend != null)
-                                    {
-                                        if (socketSend.Connected)
-                                        {
-                                            socketSend.Shutdown(SocketShutdown.Both);
-                                        }
-                                        socketSend.Close();
-                                        socketSend.Dispose();
-                                        socketSend = null;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    Tools.Log($"Socket cleanup error: {ex.Message}", Tools.ELogType.SystemLog);
-                                }
-                            }
-
-                            NAVSensor.NAV_SoftWareReset();
-
-                            Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
-
-                            nav350_socket_open = false;
-                        }
-                        else
-                        {
-                            if (!nav350TransThread.IsAlive)
-                            {
-                                nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
-                                nav350TransThread.IsBackground = true;
-                                nav350TransThread.Start();
-                            }
-
-                            if (!nav350RcvThread.IsAlive)
-                            {
-                                nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
-                                nav350RcvThread.IsBackground = true;
-                                nav350RcvThread.Start();
-                            }
-
-                            if (nav350TransThread.IsAlive && nav350RcvThread.IsAlive)
-                            {
-                                NAVSensorModel navSensorModel = new NAVSensorModel();
-                                navSensorModel.naviX = Globals.nav_x;
-                                navSensorModel.naviY = Globals.nav_y;
-                                navSensorModel.naviT = Globals.nav_phi;
+                            NAVSensorModel navSensorModel = new NAVSensorModel();
+                            navSensorModel.naviX = Globals.nav_x;
+                            navSensorModel.naviY = Globals.nav_y;
+                            navSensorModel.naviT = Globals.nav_phi;
 
                             //navSensorModel.naviX = Globals.nav_y;
                             //navSensorModel.naviY = Globals.nav_x * -1;
@@ -239,174 +167,115 @@ namespace WATA.LIS.SENSOR.NAV
                             navSensorModel.result = navMode;
                             //ZoneID Send
                             _eventAggregator.GetEvent<NAVSensorEvent>().Publish(navSensorModel);
-
-
                             SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
                             SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DFreeze);
                         }
 
-                            // [NAV FREEZE CHECK] NAV 값이 변하지 않으면 카운트 증가, 변하면 리셋
-                            if (Globals.nav_x == prevNavX && Globals.nav_y == prevNavY && Globals.nav_phi == prevNavT)
-                            {
-                                navFreezeCount++;
-                            }
-                            else
-                            {
-                                navFreezeCount = 0;
-                                consecutiveFreezeCount = 0; // ⭐ 오탐 방지: 값이 변하면 연속 카운트 리셋
-                                prevNavX = Globals.nav_x;
-                                prevNavY = Globals.nav_y;
-                                prevNavT = Globals.nav_phi;
-                            }
+                        // [NAV FREEZE CHECK] NAV 값이 변하지 않으면 카운트 증가, 변하면 리셋
+                        if (Globals.nav_x == prevNavX && Globals.nav_y == prevNavY && Globals.nav_phi == prevNavT)
+                        {
+                            navFreezeCount++;
+                        }
+                        else
+                        {
+                            navFreezeCount = 0;
+                            prevNavX = Globals.nav_x;
+                            prevNavY = Globals.nav_y;
+                            prevNavT = Globals.nav_phi;
+                        }
 
-                            // [NAV FREEZE CHECK] Freeze 감지 (오탐 방지 로직 추가)
-                            if (navFreezeCount >= navFreezeThreshold)
+                        // [NAV FREEZE CHECK] 2단계 셧다운 정책
+                        if (navFreezeCount >= navFreezeThreshold)
+                        {
+                            // 1단계: Unknown 에러 + Freeze 시 재연결 시도
+                            if (!isReconnecting && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
                             {
-                                consecutiveFreezeCount++; // ⭐ Freeze 임계값 도달 시 연속 카운트 증가
+                                Tools.Log("NAV SENSOR: Unknown error + freeze detected. Attempting socket reconnection...", Tools.ELogType.SystemLog);
 
-                                // ⭐ 2회 연속 Freeze 확인 후에만 재연결 시도
-                                if (consecutiveFreezeCount >= minConsecutiveFreezes)
+                                // DB 로그(시도): LiDar2DConnErr 추가
+                                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
+
+                                // 기존 소켓 정리
+                                if (nav350_socket_open_once == true)
                                 {
-                                    // 최초 기동 후 30초 이내에는 freeze recovery 진입 금지
-                                    bool isStartupGracePeriod = (DateTime.Now - _appStartTime).TotalSeconds < 30;
+                                    nav350_socket_open_once = false;
+                                }
 
-                                    // 1단계: Unknown 에러 + Freeze 시 재연결 시도
-                                    if (!isReconnecting && !isStartupGracePeriod && Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
-                                    {
-                                        Tools.Log("NAV SENSOR: Unknown error + freeze detected (2 consecutive). Attempting socket reconnection...", Tools.ELogType.SystemLog);
+                                //NAVSensor.socketSend.Close();
+                                //NAVSensor.socketSend.Dispose();
+                                NAVSensor.NAV_SoftWareReset();
 
-                                        SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
+                                Thread.Sleep(1000); // 소켓 정리 대기
 
-                                        if (nav350_socket_open_once == true)
-                                        {
-                                            nav350_socket_open_once = false;
-                                        }
+                                nav350_socket_open = false;
 
-                                        NAVSensor.NAV_SoftWareReset();
+                                // 재연결 상태 설정
+                                isReconnecting = true;
+                                reconnectStartTime = DateTime.Now;
+                                postReconnectFreezeCount = 0;
+                                navFreezeCount = 0; // Freeze 카운트 리셋
 
-                                        Thread.Sleep(500); // ⚡ 초기화 대기 시간 단축 (1000 → 500)
+                                Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
+                            }
+                            // 2단계: 재연결 중이 아니고 Unknown 에러가 아닌 경우 즉시 셧다운
+                            else if (!isReconnecting)
+                            {
+                                // 1) 내부 알람 상태 갱신(주기 타이머가 alarm_raise를 DB에 기록)
+                                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
 
-                                        nav350_socket_open = false;
+                                // 2) 타이머가 DB에 기록할 수 있도록 짧게 대기
+                                Thread.Sleep(400);
 
-                                        isReconnecting = true;
-                                        reconnectStartTime = DateTime.Now;
-                                        postReconnectFreezeCount = 0;
-                                        navFreezeCount = 0;
-                                        consecutiveFreezeCount = 0; // ⭐ 리셋
+                                // 3) 종료 - 주석 처리됨
+                                Tools.Log("NAV SENSOR FREEZE DETECTED (Non-recoverable). PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
+                                // System.Windows.Application.Current.Shutdown();
+                                // return;
+                            }
+                        }
 
-                                        Tools.Log("NAV SENSOR: Socket reconnection initiated.", Tools.ELogType.SystemLog);
-                                    }
-                                    // 2단계: 일반 Freeze 상태에서도 재연결 시도
-                                    else if (!isReconnecting && !isStartupGracePeriod)
-                                    {
-                                        Tools.Log("NAV SENSOR FREEZE DETECTED (2 consecutive): Attempting socket reconnection before shutdown...", Tools.ELogType.SystemLog);
+                        // 재연결 후 상태 모니터링
+                        if (isReconnecting)
+                        {
+                            // 재연결 후 3초 경과 체크
+                            if ((DateTime.Now - reconnectStartTime).TotalSeconds > 30)
+                            {
+                                // 재연결 후에도 문제 지속 시 최종 셧다운
+                                if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
+                                {
+                                    Tools.Log("NAV SENSOR: Reconnection failed. Post-reconnect issues persist. PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
 
-                                        SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
+                                    // 1) 내부 알람 상태 갱신
+                                    SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
 
-                                        // 소켓 강제 재연결 시도
-                                        if (nav350_socket_open_once == true)
-                                        {
-                                            nav350_socket_open_once = false;
-                                        }
+                                    // 2) Shutdonw 이벤트 발행
+                                    //_eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
 
-                                        // 소켓 정리
-                                        lock (_socketLock)
-                                        {
-                                            try
-                                            {
-                                                if (socketSend != null)
-                                                {
-                                                    if (socketSend.Connected)
-                                                    {
-                                                        socketSend.Shutdown(SocketShutdown.Both);
-                                                    }
-                                                    socketSend.Close();
-                                                    socketSend.Dispose();
-                                                    socketSend = null;
-                                                }
-                                            }
-                                            catch (Exception ex)
-                                            {
-                                                Tools.Log($"Socket cleanup during freeze recovery: {ex.Message}", Tools.ELogType.SystemLog);
-                                            }
-                                        }
+                                    // 3) 타이머가 DB에 기록할 수 있도록 짧게 대기
+                                    Thread.Sleep(400);
 
-                                        NAVSensor.NAV_SoftWareReset();
-
-                                        Thread.Sleep(500); // 초기화 대기 시간 (500)
-
-                                        nav350_socket_open = false;
-
-                                        // 재연결 상태 설정
-                                        isReconnecting = true;
-                                        reconnectStartTime = DateTime.Now;
-                                        postReconnectFreezeCount = 0;
-                                        navFreezeCount = 0;
-                                        consecutiveFreezeCount = 0; // 리셋
-
-                                        Tools.Log("NAV SENSOR: Freeze recovery - Socket reconnection initiated.", Tools.ELogType.SystemLog);
-                                    }
+                                    // 4) 종료 - 주석 처리됨
+                                    // System.Windows.Application.Current.Shutdown();
+                                    // return;
+                                }
+                                else
+                                {
+                                    // 재연결 성공으로 판단
+                                    Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.SystemLog);
+                                    isReconnecting = false;
+                                    postReconnectFreezeCount = 0;
                                 }
                             }
-                            else
-                            {
-                                // ⭐ Freeze 임계값 미만이면 연속 카운트 리셋
-                                consecutiveFreezeCount = 0;
-                            }
-
-                            // 재연결 후 상태 모니터링
-                            if (isReconnecting)
-                            {
-                                // 최초 기동 후 30초 이내에는 셧다운 분기 진입 금지
-                                bool isStartupGracePeriod = (DateTime.Now - _appStartTime).TotalSeconds < 30;
-
-                                if (!isStartupGracePeriod && isReconnecting && (DateTime.Now - reconnectStartTime).TotalSeconds > _reconnectTimeoutSeconds)
-                                {
-                                    if (navFreezeCount > 0 || Globals.system_error == Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR)
-                                    {
-                                        Tools.Log("NAV SENSOR: Reconnection failed. Post-reconnect issues persist. PROGRAM SHUTDOWN - DISABLED.", Tools.ELogType.SystemLog);
-
-                                        SysAlarm.AddErrorCodes(SysAlarm.LiDar2DFreeze);
-
-                                        //_eventAggregator.GetEvent<ShutdownEngineEvent>().Publish();
-
-                                        //Thread.Sleep(400);
-                                    }
-                                    else
-                                    {
-                                        Tools.Log("NAV SENSOR: Reconnection successful. Normal operation resumed.", Tools.ELogType.SystemLog);
-
-                                        // 재연결 성공 시 모든 상태 리셋
-                                        Globals.system_error = Alarms.ALARM_NONE;
-                                        SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DFreeze);
-                                        SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
-
-                                        isReconnecting = false;
-                                        postReconnectFreezeCount = 0;
-                                        consecutiveFreezeCount = 0;
-                                    }
-                                }
-                            }
-
-                            // 로그 중복 방지
-                            if (Globals.system_error != lastLoggedError)
-                            {
-                                lastLoggedError = Globals.system_error;
-                            }
-
-                            Thread.Sleep(100);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    nav350_socket_open = NAVSensor.NAV_SockConn(gIP, gPORT);
+                    if (nav350_socket_open == true)
                     {
-                        nav350_socket_open = NAVSensor.NAV_SockConn(gIP, gPORT);
-                        if (nav350_socket_open == true)
-                        {
-                            Globals.setTimerCounter(Globals.nav_rcv);
-                            nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
-                            nav350TransThread.IsBackground = true;
-                            nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
-                            nav350RcvThread.IsBackground = true;
+                        Globals.setTimerCounter(Globals.nav_rcv);
+                        nav350TransThread = new Thread(NAVSensor.NAV_TransCheckThread);
+                        nav350RcvThread = new Thread(NAVSensor.NAV_RcvCheckThread);
 
                         // 재연결 상태에서 소켓 연결 성공 시 로그 출력
                         if (isReconnecting)
@@ -424,53 +293,36 @@ namespace WATA.LIS.SENSOR.NAV
         {
             bool output = false;
 
-            lock (_socketLock)
+            try
             {
-                try
-                {
-                    socketSend = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    IAsyncResult result = socketSend.BeginConnect(IP, Convert.ToInt16(PORT), null, null);
+                socketSend = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                IAsyncResult result = socketSend.BeginConnect(IP, Convert.ToInt16(PORT), null, null);
 
-                    // 설정된 타임아웃 사용 (기본 1000ms)
-                    bool success = result.AsyncWaitHandle.WaitOne(_socketConnectTimeoutMs, true);
+                bool success = result.AsyncWaitHandle.WaitOne(1000, true);
 
-                    if (socketSend.Connected)
-                    {
-                        socketSend.EndConnect(result);
-                        output = true;
-                        Tools.Log("Connected NAV350 to TCP", Tools.ELogType.SystemLog);
-                        Globals.system_error = Alarms.ALARM_NONE;
+                if (socketSend.Connected)
+                {
+                    socketSend.EndConnect(result);
+                    output = true;
+                    Tools.Log("Connected NAV350 to TCP", Tools.ELogType.SystemLog);
+                    Globals.system_error = Alarms.ALARM_NONE;
 
-                        SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
-                    }
-                    else
-                    {
-                        Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
-                        socketSend.Close();
-                        socketSend.Dispose();
-                        socketSend = null;
-                        output = false;
-                        throw new ApplicationException("Failed to connect NAV350.");
-                    }
+                    // DB 로그(성공): LiDar2DConnErr 해제
+                    SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
                 }
-                catch (SocketException sex)
+                else
                 {
-                    Tools.Log($"Socket connection failed: {sex.SocketErrorCode} - {sex.Message}", Tools.ELogType.SystemLog);
-                    if (socketSend != null)
-                    {
-                        try { socketSend.Dispose(); } catch { }
-                        socketSend = null;
-                    }
+                    // NOTE, MUST CLOSE THE SOCKET
+                    Globals.system_error = Alarms.ALARM_NAV350_CONNECTION_ERROR;
+                    socketSend.Close();
+                    socketSend.Dispose();
+                    output = false;
+                    throw new ApplicationException("Failed to connect NAV350.");
                 }
-                catch (Exception ex)
-                {
-                    Tools.Log($"Unexpected connection error: {ex.Message}", Tools.ELogType.SystemLog);
-                    if (socketSend != null)
-                    {
-                        try { socketSend.Dispose(); } catch { }
-                        socketSend = null;
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+                Tools.Log(ex.ToString(), Tools.ELogType.SystemLog);
             }
 
             return output;
@@ -497,222 +349,142 @@ namespace WATA.LIS.SENSOR.NAV
 
         static void NAV_SendCMD_LogIn()
         {
-            lock (_socketLock)
-            {
-                if (socketSend != null && socketSend.Connected)
-                {
-                    // 수정 전 (오타): 41 43 43 → ACC
-                    // gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 43 43 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
-
-                    // 수정 후 (올바름): 41 63 63 → Acc
-                    gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 63 63 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
-
-                    byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
-                    try
-                    {
-                        socketSend.Send(buffer);
-                        Tools.Log($"Sent Login Command: {gNAVTranBuff}", Tools.ELogType.SystemLog);
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"SendLogIn error: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-            }
+            gNAVTranBuff = "02 73 4D 4E 20 53 65 74 41 63 63 65 73 73 4D 6F 64 65 20 33 20 46 34 37 32 34 37 34 34 03  ";
+            byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
+            socketSend.Send(buffer);
+            //Tools.Log("SendLogIn", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_SetDataFormat
         static void NAV_SendCMD_SetDataFormat()
         {
-            lock (_socketLock)
-            {
-                if (socketSend != null && socketSend.Connected)
-                {
-                    gNAVTranBuff = "02 73 57 4E 20 4E 50 4F 53 50 6F 73 65 44 61 74 61 46 6F 72 6D 61 74 20 31 20 31 03 ";
-                    byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
-                    try
-                    {
-                        socketSend.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"SetDataFormat error: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-            }
+            //{STX}sWN NPOSPoseDataFormat 1 1{ETX}
+
+            gNAVTranBuff = "02 73 57 4E 20 4E 50 4F 53 50 6F 73 65 44 61 74 61 46 6F 72 6D 61 74 20 31 20 31 03 ";
+            byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
+            socketSend.Send(buffer);
+            //Tools.Log("SetDataFormat", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_Mode
         static void NAV_SendCMD_Mode(byte mode)
         {
-            lock (_socketLock)
-            {
-                if (socketSend != null && socketSend.Connected)
-                {
-                    gNAVTranBuff = "02 73 4D 4E 20 6D 4E 45 56 41 43 68 61 6E 67 65 53 74 61 74 65 20 " + Globals.byteToString(mode) + " 03 ";
-                    byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
-                    try
-                    {
-                        socketSend.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"SendMode error: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-            }
+            //{STX}sMN mNEVAChangeState {mode}{ETX}
+            gNAVTranBuff = "02 73 4D 4E 20 6D 4E 45 56 41 43 68 61 6E 67 65 53 74 61 74 65 20 " + Globals.byteToString(mode) + " 03 ";
+            byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
+            socketSend.Send(buffer);
+            //Tools.Log("SendMode", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_SetLayer
         static void NAV_SendCMD_SetLayer(byte layer)
         {
-            lock (_socketLock)
-            {
-                if (socketSend != null && socketSend.Connected)
-                {
-                    gNAVTranBuff = "02 73 57 4E 20 4E 45 56 41 43 75 72 72 4C 61 79 65 72 20 " + Globals.byteToString(layer) + " 03 ";
-                    byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
-                    try
-                    {
-                        socketSend.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"SetLayer error: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-            }
+            //{STX}sWN NEVACurrLayer {layer}{ETX}
+            gNAVTranBuff = "02 73 57 4E 20 4E 45 56 41 43 75 72 72 4C 61 79 65 72 20 " + Globals.byteToString(layer) + " 03 ";
+            byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
+            socketSend.Send(buffer);
+            //Tools.Log("SetLayer", Tools.ELogType.NAVLog);
         }
 
         // NAV_SendCMD_GetPosition
         static void NAV_SendCMD_GetPosition()
         {
-            lock (_socketLock)
-            {
-                if (socketSend != null && socketSend.Connected)
-                {
-                    gNAVTranBuff = "02 73 4d 4e 20 6d 4e 50 4f 53 47 65 74 50 6f 73 65 20 30 03  ";
-                    byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
-                    try
-                    {
-                        socketSend.Send(buffer);
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"GetPosition error: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-            }
+            //{STX}sMN mNPOSGetPose 1{ETX}
+            gNAVTranBuff = "02 73 4d 4e 20 6d 4e 50 4f 53 47 65 74 50 6f 73 65 20 30 03  ";
+            byte[] buffer = Globals.strToHexByte(gNAVTranBuff);
+            socketSend.Send(buffer);
         }
         public static void NAV_TransCheckThread()
         {
-            try
+            while (true)
             {
-                while (!_cancellationToken.IsCancellationRequested)
+                gNavTransErrorCheck = false;
+                if ((Globals.system_error >= 1 && Globals.system_error <= 23) && Globals.system_error != 12)
                 {
-                    gNavTransErrorCheck = false;
-                    if ((Globals.system_error >= 1 && Globals.system_error <= 23) && Globals.system_error != 12)
+                    if (gResetCount >= 30)
                     {
-                        if (gResetCount >= 30)
-                        {
-                            NAV_SoftWareReset();
-                            gResetCount = 0;
+                        NAV_SoftWareReset();
+                        gResetCount = 0;
 
-                            gNavTransErrorCheck = true;
-                        }
-                        else
-                        {
-                            gResetCount++;
-                        }
+                        gNavTransErrorCheck = true;
+                    }
+                    else
+                    {
+                        gResetCount++;
+                    }
+                    //gNavTransErrorCheck = true;
+                }
+
+                if (gNavTransErrorCheck == false)
+                {
+
+                    if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_NONE))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_SET_USER;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_SET_USER;
+                    }
+                    else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_LOGIN))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_MODE_STAND_BY;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_MODE_STAND_BY;
+                    }
+                    else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_CHANGE_STAND_BY))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_SET_LAYER;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_SET_LAYER;
+                    }
+                    else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_SET_LAYER))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_DATA_FORMAT;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_DATA_FORMAT;
+                    }
+                    else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_SET_DATA_FORMAT))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_MODE_NAVI;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_MODE_NAVI;
+                    }
+                    else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_CHANGE_NAVIGATION))
+                    {
+                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                        gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
                     }
 
-                    if (gNavTransErrorCheck == false)
+                    //Tools.Log("gNAVCommand : " + gNAVCommand, Tools.ELogType.NAVLog);
+                    if (gNAVCommand != (byte)NAV350_TRANSIT_CMD.CMD_NONE)
                     {
-                        lock (_stateLock)
+                        NAV_TransCMD(gNAVCommand);
+                    }
+
+                    else
+                    {
+                        if (gNAVTransTimeOutCount <= 20)
                         {
-                            if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_NONE))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_SET_USER;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_SET_USER;
-                            }
-                            else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_LOGIN))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_MODE_STAND_BY;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_MODE_STAND_BY;
-                            }
-                            else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_CHANGE_STAND_BY))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_SET_LAYER;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_SET_LAYER;
-                            }
-                            else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_SET_LAYER))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_DATA_FORMAT;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_DATA_FORMAT;
-                            }
-                            else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_SET_DATA_FORMAT))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_MODE_NAVI;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_MODE_NAVI;
-                            }
-                            else if (gNAVstate.Equals((byte)NAV350_STATE.NAV_STATE_CHANGE_NAVIGATION))
-                            {
-                                gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
-                                gCopyBufferNavCmd = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
-                            }
+                            gNAVTransTimeOutCount++;
                         }
-
-                        if (gNAVCommand != (byte)NAV350_TRANSIT_CMD.CMD_NONE)
+                        else  // (gNAVCommandNew == CMD_NONE) && (gNAVTransTimeOutCount > 20)
                         {
-                            NAV_TransCMD(gNAVCommand);
-                        }
-                        else
-                        {
-                            if (gNAVTransTimeOutCount <= _transTimeoutCount) // 설정 값 사용
-                            {
-                                gNAVTransTimeOutCount++;
-                            }
-                            else
-                            {
-                                gNAVTransTimeOutCount = 0;
-                                gNAVTransRetryCount++;
+                            gNAVTransTimeOutCount = 0;
+                            gNAVTransRetryCount++;
 
-                                if (gNAVTransRetryCount >= 250)
-                                {
-                                    Tools.Log("NAV TransRetryCount overflow prevention reset", Tools.ELogType.SystemLog);
-                                    gNAVTransRetryCount = (byte)_transRetryMax; // 설정 값으로 리셋
-                                }
-
-                                if (gNAVTransRetryCount >= _transRetryMax) // 설정 값 사용
-                                {
-                                    NAV_SoftWareReset();
-                                    Tools.Log("Reset NAV ", Tools.ELogType.SystemLog);
-                                    gNAVTransRetryCount = 0;
-                                }
-                                else if (gNAVTransRetryCount >= 5 && (gNAVTransRetryCount % 5) == 0)
+                            if (gNAVTransRetryCount >= 5)
+                            {
+                                if ((gNAVTransRetryCount % 5) == 0)  //  Transmit Command Retry 
                                 {
                                     NAV_TransCMD(gNAVCommand);
                                     Tools.Log("Retry NAV ", Tools.ELogType.SystemLog);
                                 }
+
+                                if (gNAVTransRetryCount >= 15) // NAV350 SoftWare Reset
+                                {
+                                    //Globals.system_error = Alarms.ALARM_NAV350_TRANSMIT_ERROR;
+                                    NAV_SoftWareReset();
+                                    Tools.Log("Reset NAV ", Tools.ELogType.SystemLog);
+                                }
                             }
                         }
                     }
-
-                    // CancellationToken을 지원하는 Sleep 사용
-                    _cancellationToken.WaitHandle.WaitOne(127);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Tools.Log("NAV TransCheckThread cancelled gracefully", Tools.ELogType.SystemLog);
-            }
-            catch (Exception ex)
-            {
-                Tools.Log($"TransCheckThread error: {ex.Message}", Tools.ELogType.SystemLog);
-            }
-            finally
-            {
-                Tools.Log("NAV TransCheckThread exiting", Tools.ELogType.SystemLog);
+                Thread.Sleep(127);
             }
         }
 
@@ -827,132 +599,110 @@ namespace WATA.LIS.SENSOR.NAV
         {
             navMode = "";
             byte ErrCode = 0;
-
-            try
+            if (cmd_type[NAV350_RCV_INDEX.pub_CmdType].Equals("sAN"))
             {
-                // 배열 길이 검증
-                if (cmd_type == null || cmd_type.Length < (int)NAV350_RCV_INDEX.nPosGet.mMeanDev + 1)
-                {
-                    Tools.Log($"Position command array too short: {cmd_type?.Length ?? 0}", Tools.ELogType.SystemLog);
+                gNAVPosCount++;
+
+                if (!cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mErrorCode].Equals("0"))
+                { // 0: no Error
+                    ErrCode = (byte)NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mErrorCode]);
+
+
+                    switch (ErrCode)
+                    {
+                        case 1: Globals.system_error = Alarms.ALARM_NAV350_POSE_WRONG_OP_MODE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //wrong operating mode
+                        case 2: Globals.system_error = Alarms.ALARM_NAV350_POSE_ASYNC_TERMINATED; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //asynchrony Method terminated
+                        case 3: Globals.system_error = Alarms.ALARM_NAV350_POSE_INVALID_DATA; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //invalid data
+                        case 4: Globals.system_error = Alarms.ALARM_NAV350_POSE_NO_POS_AVAILABLE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //no position available
+                        case 5: Globals.system_error = Alarms.ALARM_NAV350_POSE_TIMEOUT; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //timeout
+                        case 6: Globals.system_error = Alarms.ALARM_NAV350_POSE_METHOD_ALREADY_ACTIVE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //method already active
+                        case 7: Globals.system_error = Alarms.ALARM_NAV350_POSE_GENERAL_ERROR; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break; //general error
+                    }
+
                     return;
                 }
 
-                if (cmd_type[NAV350_RCV_INDEX.pub_CmdType].Equals("sAN"))
+                // Position Mode
+                ErrCode = (byte)NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mInfoState]);
+                navMode = cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode];
+
+                if ((ErrCode > 1))
+                    positionErrCount++;
+                else
+                    positionErrCount = 0;
+
+                if (positionErrCount > 5)
                 {
-                    gNAVPosCount++;
-
-                    if (!cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mErrorCode].Equals("0"))
-                    {
-                        ErrCode = (byte)NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mErrorCode]);
-
-                        switch (ErrCode)
-                        {
-                            case 1: Globals.system_error = Alarms.ALARM_NAV350_POSE_WRONG_OP_MODE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 2: Globals.system_error = Alarms.ALARM_NAV350_POSE_ASYNC_TERMINATED; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 3: Globals.system_error = Alarms.ALARM_NAV350_POSE_INVALID_DATA; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 4: Globals.system_error = Alarms.ALARM_NAV350_POSE_NO_POS_AVAILABLE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 5: Globals.system_error = Alarms.ALARM_NAV350_POSE_TIMEOUT; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 6: Globals.system_error = Alarms.ALARM_NAV350_POSE_METHOD_ALREADY_ACTIVE; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                            case 7: Globals.system_error = Alarms.ALARM_NAV350_POSE_GENERAL_ERROR; gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION; break;
-                        }
-
-                        return;
-                    }
-
-                    // Position Mode
-                    ErrCode = (byte)NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mInfoState]);
-                    navMode = cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mNavMode];
-
-                    if ((ErrCode > 1))
-                        positionErrCount++;
-                    else
-                        positionErrCount = 0;
-
-                    if (positionErrCount > 5)
-                    {
-                        Globals.system_error = Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR;
-                    }
-                    else
-                    {
-                        // 후보 값 계산 - 유효성 검증 추가
-                        if (string.IsNullOrEmpty(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]) ||
-                            string.IsNullOrEmpty(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]) ||
-                            string.IsNullOrEmpty(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]))
-                        {
-                            Tools.Log("Invalid position data received (empty fields)", Tools.ELogType.SystemLog);
-                            return;
-                        }
-
-                        int candX = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
-                        int candY = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
-                        int candT = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100;
-                        int meanDev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
-
-                        bool accept = true;
-
-                        // 0) 항상 무시할 고정 쓰레기 패턴 차단
-                        if (candX == 1900 && candY == 0 && candT == 0)
-                        {
-                            accept = false;
-                        }
-
-                        // 1) navMode == "1"만 수용
-                        if (accept && navMode != "1")
-                        {
-                            accept = false;
-                        }
-
-                        // 2) 품질 기반 차단: MeanDev > 200
-                        if (accept && meanDev > 200)
-                        {
-                            accept = false;
-                        }
-
-                        // 3) 동작 일관성 검사: 비현실적인 점프 차단
-                        if (accept && hasLastGood)
-                        {
-                            long deltaPos = Math.Abs(candX - lastGoodX) + Math.Abs(candY - lastGoodY);
-                            int range = (candT > 360 || lastGoodT > 360) ? 3600 : 360;
-                            int angleThreshold = (range == 3600) ? 900 : 9;
-                            int dRaw = Math.Abs(candT - (int)lastGoodT);
-                            int deltaT = Math.Min(dRaw, range - dRaw);
-
-                            if (deltaPos > 2000 || deltaT > angleThreshold)
-                            {
-                                accept = false;
-                            }
-                        }
-
-                        // 유효 수신/처리 상태 업데이트
-                        gNAVstate = (byte)NAV350_STATE.NAV_STATE_GET_POS;
-                        gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
-                        Globals.system_error = Alarms.ALARM_NONE;
-                        gTranscheck = 0;
-
-                        // 최종 수용 시에만 전역 Pose 업데이트
-                        if (accept && positionNavCount > 10)
-                        //if (accept && positionNavCount > 10 && navMode == "1")
-                        {
-                            Globals.nav_x = candX;
-                            Globals.nav_y = candY;
-                            Globals.nav_phi = candT;
-                            Globals.nav_dev = meanDev;
-
-                            lastGoodX = candX;
-                            lastGoodY = candY;
-                            lastGoodT = candT;
-                            hasLastGood = true;
-                        }
-                    }
-                    positionNavCount++;
-                    if (positionNavCount > 65533)
-                        positionNavCount = 9;
+                    Globals.system_error = Alarms.ALARM_NAV350_POSE_UNKNOWN_ERROR;
                 }
+                else
+                {
+                    // 후보 값 계산
+                    int candX = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mXPos]);
+                    int candY = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mYPos]);
+                    int candT = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mPhi]) / 100; // 기존 로직 유지
+                    int meanDev = NAV_StringToInt(cmd_type[(int)NAV350_RCV_INDEX.nPosGet.mMeanDev]);
+
+                    bool accept = true;
+
+                    // 0) 항상 무시할 고정 쓰레기 패턴 차단
+                    if (candX == 1900 && candY == 0 && candT == 0)
+                    {
+                        accept = false;
+                    }
+
+                    // 1) navMode == "1"만 수용 (이미 외부에서 체크하지만 명시적으로 한 번 더)
+                    if (accept && navMode != "1")
+                    {
+                        accept = false;
+                    }
+
+                    // 2) 품질 기반 차단: MeanDev > 200
+                    if (accept && meanDev > 200)
+                    {
+                        accept = false;
+                    }
+
+                    // 3) 동작 일관성 검사: 비현실적인 점프 차단
+                    if (accept && hasLastGood)
+                    {
+                        long deltaPos = Math.Abs(candX - lastGoodX) + Math.Abs(candY - lastGoodY);
+                        int range = (candT > 360 || lastGoodT > 360) ? 3600 : 360;
+                        int angleThreshold = (range == 3600) ? 900 : 9; // 9도
+                        int dRaw = Math.Abs(candT - (int)lastGoodT);
+                        int deltaT = Math.Min(dRaw, range - dRaw);
+
+                        if (deltaPos > 2000 || deltaT > angleThreshold)
+                        {
+                            accept = false;
+                        }
+                    }
+
+                    // 유효 수신/처리 상태 업데이트 (수용 여부와 무관하게 통신 상태는 정상)
+                    gNAVstate = (byte)NAV350_STATE.NAV_STATE_GET_POS;
+                    gNAVCommand = (byte)NAV350_TRANSIT_CMD.CMD_POSITION;
+                    Globals.system_error = Alarms.ALARM_NONE;
+                    gTranscheck = 0;
+
+                    // 최종 수용 시에만 전역 Pose 업데이트
+                    if (accept && positionNavCount > 10 && navMode == "1")
+                    {
+                        Globals.nav_x = candX;
+                        Globals.nav_y = candY;
+                        Globals.nav_phi = candT;
+                        Globals.nav_dev = meanDev;
+
+                        lastGoodX = candX;
+                        lastGoodY = candY;
+                        lastGoodT = candT;
+                        hasLastGood = true;
+                    }
+                }
+                positionNavCount++;
+                if (positionNavCount > 65533)
+                    positionNavCount = 9;
             }
-            catch (Exception ex)
-            {
-                Tools.Log($"NAV_RcvCMD_Position error: {ex.Message}", Tools.ELogType.SystemLog);
-            }
+
         }
 
         private static bool IsAllMultiplesOf10(int x, int y, int t)
@@ -964,47 +714,16 @@ namespace WATA.LIS.SENSOR.NAV
         {
             cmd = null;
             string rcvDataTemp = string.Empty;
-
-            try
+            if (rcvData[0] == '\u0002')
             {
-                // 기본 검증
-                if (string.IsNullOrEmpty(rcvData) || length <= 0)
+                if (rcvData[length - 1] == '\u0003')
                 {
-                    return false;
-                }
-
-                if (length > rcvData.Length)
-                {
-                    length = rcvData.Length;
-                }
-
-                if (rcvData[0] == '\u0002')
-                {
-                    if (rcvData[length - 1] == '\u0003')
-                    {
-                        rcvDataTemp = string.Join("", rcvData.Split('\u0002', '\u0003'));
-                        cmd = rcvDataTemp.Split(' ');
-
-                        // 최대 배열 크기 제한
-                        const int MAX_CMD_ARRAY_SIZE = 256;
-                        if (cmd.Length > MAX_CMD_ARRAY_SIZE)
-                        {
-                            Tools.Log($"Command array too large: {cmd.Length}", Tools.ELogType.SystemLog);
-                            cmd = null;
-                            return false;
-                        }
-
-                        return true;
-                    }
+                    cmd = new string[length];
+                    rcvDataTemp = string.Join("", rcvData.Split('\u0002', '\u0003'));
+                    cmd = rcvDataTemp.Split(' ');
+                    return true;
                 }
             }
-            catch (Exception ex)
-            {
-                Tools.Log($"CopyRcvBuffer error: {ex.Message}", Tools.ELogType.SystemLog);
-                cmd = null;
-                return false;
-            }
-
             return false;
         }
 
@@ -1017,130 +736,78 @@ namespace WATA.LIS.SENSOR.NAV
 
         public static void NAV_RcvCheckThread()
         {
-            try
+            while (true)
             {
-                while (!_cancellationToken.IsCancellationRequested)
+                int ReceiveDataSize = 0;
+                string ReceiveData = string.Empty;
+                string[] cmd = { };
+                gNavRcvErrorCheck = false;
+
+
+                ReceiveDataSize = socketSend.Available;
+                byte[] buffer = new byte[ReceiveDataSize];
+                if (ReceiveDataSize > 0)
                 {
-                    int ReceiveDataSize = 0;
-                    string ReceiveData = string.Empty;
-                    string[] cmd = null;
-                    gNavRcvErrorCheck = false;
-
-                    lock (_socketLock)
+                    socketSend.Receive(buffer);
+                    ReceiveData = Encoding.UTF8.GetString(buffer, 0, ReceiveDataSize);
+                    bool CopyError = NAV_CopyRcvBuffer(out cmd, ReceiveData, ReceiveDataSize);
+                    if (!CopyError)
                     {
-                        if (socketSend == null || !socketSend.Connected)
-                        {
-                            _cancellationToken.WaitHandle.WaitOne(100);
-                            continue;
-                        }
-
-                        ReceiveDataSize = socketSend.Available;
-                        if (ReceiveDataSize > 0)
-                        {
-                            // 설정된 버퍼 크기 제한 사용
-                            if (ReceiveDataSize > _maxReceiveBufferSize)
-                            {
-                                Tools.Log($"Receive buffer too large: {ReceiveDataSize}, limiting to {_maxReceiveBufferSize}", Tools.ELogType.SystemLog);
-                                ReceiveDataSize = _maxReceiveBufferSize;
-                            }
-
-                            byte[] buffer = new byte[ReceiveDataSize];
-                            socketSend.Receive(buffer);
-                            ReceiveData = Encoding.UTF8.GetString(buffer, 0, ReceiveDataSize);
-                        }
+                        gNavRcvErrorCheck = true;
                     }
 
-                    if (ReceiveDataSize > 0)
+                    int cmd_length = cmd.Length;
+                    try
                     {
-                        bool CopyError = NAV_CopyRcvBuffer(out cmd, ReceiveData, ReceiveDataSize);
-                        if (!CopyError || cmd == null || cmd.Length == 0)
-                        {
-                            gNavRcvErrorCheck = true;
-                            Tools.Log("Invalid command buffer received", Tools.ELogType.SystemLog);
-                            continue;
-                        }
-
-                        int cmd_length = cmd.Length;
-
-                        // 기본 유효성 검증
-                        if (cmd[0].Equals("sFA"))
-                        {
-                            Globals.system_error = Alarms.ALARM_NAV350_COMM_CMD_ERROR;
-                            NAV_ClearRcvBuffer(ref cmd, ref ReceiveData, ref ReceiveDataSize);
-                            gNavRcvErrorCheck = true;
-                            continue;
-                        }
-
-                        if (cmd_length < 2)
-                        {
-                            Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
-                            gNavRcvErrorCheck = true;
-                            continue;
-                        }
-
-                        if (gNavRcvErrorCheck == false)
-                        {
-                            // pub_Cmd 인덱스 검증
-                            if (cmd_length <= NAV350_RCV_INDEX.pub_Cmd)
-                            {
-                                Tools.Log($"Command array too short: {cmd_length}", Tools.ELogType.SystemLog);
-                                continue;
-                            }
-
-                            if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("SetAccessMode"))
-                            {
-                                NAV_RcvCMD_LogIn(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNEVAChangeState"))
-                            {
-                                NAV_RcvCMD_Mode(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NPOSPoseDataFormat"))
-                            {
-                                NAV_RcvCMD_Data_Format(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NEVACurrLayer"))
-                            {
-                                NAV_RcvCMD_Layer(cmd, cmd_length);
-                            }
-                            else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNPOSGetPose"))
-                            {
-                                Tools.Log("buffer: " + ReceiveData, Tools.ELogType.NAVLog);
-                                NAV_RcvCMD_Position(cmd, cmd_length);
-                            }
-                        }
-                        Globals.setTimerCounter(Globals.nav_rcv);
+                        cmd_length = cmd.Length;
                     }
-                    else
+                    catch
                     {
-                        // 데이터가 없을 때는 짧게 대기
-                        _cancellationToken.WaitHandle.WaitOne(10);
+                        // Catch
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
                     }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                Tools.Log("NAV RcvCheckThread cancelled gracefully", Tools.ELogType.SystemLog);
-            }
-            catch (SocketException sex)
-            {
-                if (!_cancellationToken.IsCancellationRequested)
-                {
-                    Tools.Log($"Socket receive error: {sex.SocketErrorCode}", Tools.ELogType.SystemLog);
-                    _cancellationToken.WaitHandle.WaitOne(100);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (!_cancellationToken.IsCancellationRequested)
-                {
-                    Tools.Log($"RcvCheckThread error: {ex.Message}", Tools.ELogType.SystemLog);
-                    _cancellationToken.WaitHandle.WaitOne(100);
-                }
-            }
-            finally
-            {
-                Tools.Log("NAV RcvCheckThread exiting", Tools.ELogType.SystemLog);
+
+
+                    if (cmd[0].Equals("sFA"))
+                    {
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_CMD_ERROR;
+                        NAV_ClearRcvBuffer(ref cmd, ref ReceiveData, ref ReceiveDataSize);
+                        gNavRcvErrorCheck = true;
+                    }
+                    if (cmd_length < 2)
+                    {
+                        Globals.system_error = Alarms.ALARM_NAV350_COMM_INDEX_ERROR;
+                        gNavRcvErrorCheck = true;
+                    }
+
+                    //gTranscheck = 0;
+                    if (gNavRcvErrorCheck == false)
+                    {
+                        if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("SetAccessMode"))
+                        {
+                            NAV_RcvCMD_LogIn(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNEVAChangeState"))
+                        {
+                            NAV_RcvCMD_Mode(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NPOSPoseDataFormat"))
+                        {
+                            NAV_RcvCMD_Data_Format(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("NEVACurrLayer"))
+                        {
+                            NAV_RcvCMD_Layer(cmd, cmd_length);
+                        }
+                        else if (cmd[NAV350_RCV_INDEX.pub_Cmd].Equals("mNPOSGetPose"))
+                        {
+                            Tools.Log("buffer: " + ReceiveData, Tools.ELogType.NAVLog);
+                            NAV_RcvCMD_Position(cmd, cmd_length);
+                        }
+                    }
+                    Globals.setTimerCounter(Globals.nav_rcv);
+                }// end ReceiveData Not NULL
+
             }
         }
 
@@ -1215,116 +882,6 @@ namespace WATA.LIS.SENSOR.NAV
                 num = num | (tmp << (j * 4));
             }
             return num;
-        }
-
-        // IDisposable 구현
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
-            {
-                Tools.Log("NAVSensor disposing...", Tools.ELogType.SystemLog);
-
-                // 스레드 종료 요청
-                try
-                {
-                    _cancellationTokenSource?.Cancel();
-                }
-                catch (Exception ex)
-                {
-                    Tools.Log($"Error cancelling threads: {ex.Message}", Tools.ELogType.SystemLog);
-                }
-
-                // 메인 스레드 종료 대기
-                try
-                {
-                    if (mainProcess != null && mainProcess.IsAlive)
-                    {
-                        if (!mainProcess.Join(TimeSpan.FromSeconds(5)))
-                        {
-                            Tools.Log("Main thread did not exit gracefully within timeout", Tools.ELogType.SystemLog);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Tools.Log($"Error waiting for main thread: {ex.Message}", Tools.ELogType.SystemLog);
-                }
-
-                // 작업 스레드 종료 대기
-                try
-                {
-                    if (nav350TransThread != null && nav350TransThread.IsAlive)
-                    {
-                        if (!nav350TransThread.Join(TimeSpan.FromSeconds(2)))
-                        {
-                            Tools.Log("Trans thread did not exit gracefully within timeout", Tools.ELogType.SystemLog);
-                        }
-                    }
-
-                    if (nav350RcvThread != null && nav350RcvThread.IsAlive)
-                    {
-                        if (!nav350RcvThread.Join(TimeSpan.FromSeconds(2)))
-                        {
-                            Tools.Log("Rcv thread did not exit gracefully within timeout", Tools.ELogType.SystemLog);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Tools.Log($"Error waiting for worker threads: {ex.Message}", Tools.ELogType.SystemLog);
-                }
-
-                // 소켓 정리
-                lock (_socketLock)
-                {
-                    try
-                    {
-                        if (socketSend != null)
-                        {
-                            if (socketSend.Connected)
-                            {
-                                socketSend.Shutdown(SocketShutdown.Both);
-                            }
-                            socketSend.Close();
-                            socketSend.Dispose();
-                            socketSend = null;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Tools.Log($"Error disposing socket: {ex.Message}", Tools.ELogType.SystemLog);
-                    }
-                }
-
-                // CancellationTokenSource 정리
-                try
-                {
-                    _cancellationTokenSource?.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Tools.Log($"Error disposing CancellationTokenSource: {ex.Message}", Tools.ELogType.SystemLog);
-                }
-
-                Tools.Log("NAVSensor disposed successfully", Tools.ELogType.SystemLog);
-            }
-
-            _disposed = true;
-        }
-
-        // 소멸자
-        ~NAVSensor()
-        {
-            Dispose(false);
         }
     }
 }
