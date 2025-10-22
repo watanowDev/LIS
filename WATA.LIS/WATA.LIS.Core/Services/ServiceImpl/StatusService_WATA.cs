@@ -192,6 +192,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             public double y_abs_uncorrected { get; set; }
             public double x_correction { get; set; }
             public double y_correction { get; set; }
+            public string epc { get; set; }
+            public int height { get; set; }
         }
 
 
@@ -1499,7 +1501,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 ImageBytes = imageBytes,
                 ProductID = "",
-                ZoneID = m_ActionZoneId,
+                ZoneID = m_DetectionZoneId,
                 OcrList = [],
                 //OcrList = ocrList,
                 QR = qrList,
@@ -1616,41 +1618,140 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 // zoneList.json 과 비교하여 가장 가까운 zoneId를 m_DetectionZoneId에 할당
+                // 우선순위: 1) EPC 매칭, 2) 위치 기반 매칭, 3) 높이 검증
                 try
                 {
                     if (s_zoneListCache != null && s_zoneListCache.Count > 0)
                     {
-                        long minDistZone = long.MaxValue;
-                        string nearestZoneId = "";
-                        string nearestZoneName = "";
+                        List<ZoneEntry> candidateZones = new List<ZoneEntry>();
+                        string matchMethod = "";
 
-                        foreach (var z in s_zoneListCache)
+                        // Phase 1: EPC 기반 매칭 (EPC 값이 있을 경우 우선 사용)
+                        if (!string.IsNullOrEmpty(m_event_epc))
                         {
-                            // 보정 적용 후(mm 변환)
-                            double zx_mm = Math.Truncate(z.x_correction * 1000.0);
-                            double zy_mm = Math.Truncate(z.y_correction * 1000.0);
-
-                            long d = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - zx_mm, 2) + Math.Pow(naviY - zy_mm, 2)));
-                            if (d < minDistZone)
+                            foreach (var z in s_zoneListCache)
                             {
-                                minDistZone = d;
-                                nearestZoneId = z.zone_id;
-                                nearestZoneName = z.zone_name;
+                                if (!string.IsNullOrEmpty(z.epc) && z.epc.Equals(m_event_epc, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    candidateZones.Add(z);
+                                }
+                            }
+
+                            if (candidateZones.Count > 0)
+                            {
+                                matchMethod = "EPC";
+                                Tools.Log($"[ZONE] EPC match found: {candidateZones.Count} candidates with EPC={m_event_epc}", Tools.ELogType.ActionLog);
                             }
                         }
 
-                        if (minDistZone < distance)
+                        // Phase 2: 위치 기반 매칭 (EPC 매칭이 없을 경우)
+                        if (candidateZones.Count == 0)
                         {
-                            m_DetectionZoneId = nearestZoneId;
-                            m_DetectionZoneName = nearestZoneName;
+                            long minDistZone = long.MaxValue;
+                            string nearestZoneId = "";
+                            string nearestZoneName = "";
+
+                            foreach (var z in s_zoneListCache)
+                            {
+                                // 보정 적용 후(mm 변환)
+                                double zx_mm = Math.Truncate(z.x_correction * 1000.0);
+                                double zy_mm = Math.Truncate(z.y_correction * 1000.0);
+
+                                long d = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - zx_mm, 2) + Math.Pow(naviY - zy_mm, 2)));
+                                if (d < minDistZone)
+                                {
+                                    minDistZone = d;
+                                    nearestZoneId = z.zone_id;
+                                    nearestZoneName = z.zone_name;
+                                }
+                            }
+
+                            if (minDistZone < distance)
+                            {
+                                var nearestZone = s_zoneListCache.FirstOrDefault(z => z.zone_id == nearestZoneId);
+                                if (nearestZone != null)
+                                {
+                                    candidateZones.Add(nearestZone);
+                                    matchMethod = "Coordinate";
+                                    Tools.Log($"[ZONE] Coordinate match: nearest zoneName={nearestZoneName}, zoneId={nearestZoneId}, dist={minDistZone}mm", Tools.ELogType.ActionLog);
+                                }
+                            }
+                        }
+
+                        // Phase 3: 높이 기반 층 구분 및 최종 Zone 선택
+                        if (candidateZones.Count > 0)
+                        {
+                            ZoneEntry finalZone = null;
+
+                            // 높이 값이 있으면 구간 기반으로 층 구분
+                            if (m_curr_distance > 0)
+                            {
+                                // 높이 값이 있는 후보들만 필터링하고 오름차순 정렬
+                                var zonesWithHeight = candidateZones
+                                    .Where(z => z.height > 0)
+                                    .OrderBy(z => z.height)
+                                    .ToList();
+
+                                if (zonesWithHeight.Count > 0)
+                                {
+                                    // m_curr_distance보다 큰 첫 번째 층을 선택 (구간 기반)
+                                    // 예: 1875mm → 3100mm(2층) 선택 (1500 ≤ 1875 < 3100 구간)
+                                    finalZone = zonesWithHeight
+                                        .Where(z => z.height > m_curr_distance)
+                                        .OrderBy(z => z.height)
+                                        .FirstOrDefault();
+
+                                    // 모든 층의 height가 현재 높이보다 작으면 가장 높은 층 선택
+                                    if (finalZone == null)
+                                    {
+                                        finalZone = zonesWithHeight.Last();
+                                        Tools.Log($"[ZONE] Current height({m_curr_distance}mm) exceeds all zones, selecting highest: zoneName={finalZone.zone_name}, height={finalZone.height}mm", Tools.ELogType.ActionLog);
+                                    }
+                                    else
+                                    {
+                                        Tools.Log($"[ZONE] Height-based floor selection: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}, zone_height={finalZone.height}mm, curr_distance={m_curr_distance}mm", Tools.ELogType.ActionLog);
+                                    }
+                                }
+                                else
+                                {
+                                    // 높이 정보가 없는 경우 후보가 1개면 사용
+                                    if (candidateZones.Count == 1)
+                                    {
+                                        finalZone = candidateZones[0];
+                                        Tools.Log($"[ZONE] No height info in candidates, using single candidate: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}", Tools.ELogType.ActionLog);
+                                    }
+                                    else
+                                    {
+                                        Tools.Log($"[ZONE] No height info available in {candidateZones.Count} candidates, curr_distance={m_curr_distance}mm", Tools.ELogType.ActionLog);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // 높이 값이 없으면 첫 번째 후보 사용
+                                finalZone = candidateZones[0];
+                                Tools.Log($"[ZONE] No height data, using first candidate: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}", Tools.ELogType.ActionLog);
+                            }
+
+                            // 최종 Zone 할당
+                            if (finalZone != null)
+                            {
+                                m_DetectionZoneId = finalZone.zone_id;
+                                m_DetectionZoneName = finalZone.zone_name;
+                                Tools.Log($"[ZONE] Final Detection (by {matchMethod}): zoneName={m_DetectionZoneName}, zoneId={m_DetectionZoneId}", Tools.ELogType.ActionLog);
+                            }
+                            else
+                            {
+                                m_DetectionZoneId = "";
+                                m_DetectionZoneName = "";
+                            }
                         }
                         else
                         {
                             m_DetectionZoneId = "";
                             m_DetectionZoneName = "";
+                            Tools.Log($"[ZONE] No zone matched (EPC={m_curr_epc}, NaviX={naviX}, NaviY={naviY})", Tools.ELogType.ActionLog);
                         }
-
-                        Tools.Log($"[ZONE] Detection nearest zoneName={nearestZoneName}, zoneId={m_DetectionZoneId}, dist={minDistZone}mm", Tools.ELogType.ActionLog);
                     }
                 }
                 catch (Exception zex)
@@ -1663,7 +1764,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"[ERROR] CalcDistanceAndGetZoneID : {ex.Message}", Tools.ELogType.SystemLog);
             }
-
         }
 
         private (long newX, long newY) AdjustCoordinates(long x, long y, int angle, string action)
@@ -2957,6 +3057,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 백엔드 통신
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
+            PickDeepAnalysisImg();
             SendBackEndDropAction();
 
             // m_stopwatchPickDrop.Reset();

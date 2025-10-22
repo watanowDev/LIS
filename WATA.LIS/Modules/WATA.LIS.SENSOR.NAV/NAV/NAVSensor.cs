@@ -167,6 +167,10 @@ namespace WATA.LIS.SENSOR.NAV
                             navSensorModel.result = navMode;
                             //ZoneID Send
                             _eventAggregator.GetEvent<NAVSensorEvent>().Publish(navSensorModel);
+
+
+                            SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
+                            SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DFreeze);
                         }
 
                         // [NAV FREEZE CHECK] NAV 값이 변하지 않으면 카운트 증가, 변하면 리셋
@@ -282,7 +286,7 @@ namespace WATA.LIS.SENSOR.NAV
                         }
                     }
                 }
-                Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.SystemLog);
+                //Tools.Log("alarm : " + Globals.system_error, Tools.ELogType.SystemLog);
                 Thread.Sleep(100);
             }
         }

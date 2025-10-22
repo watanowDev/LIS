@@ -158,7 +158,7 @@ namespace WATA.LIS
                 int port = main?.db_port ?? 5432;
                 string database = !string.IsNullOrWhiteSpace(main?.db_database) ? main.db_database : "forkliftDB";
                 string username = !string.IsNullOrWhiteSpace(main?.db_username) ? main.db_username : "postgres";
-                string password = !string.IsNullOrWhiteSpace(main?.db_password) ? main.db_password : "wata2019";
+                string password = !string.IsNullOrWhiteSpace(main?.db_password) ? main.db_password : "wata20190430";
                 string searchPathRaw = !string.IsNullOrWhiteSpace(main?.db_search_path) ? main.db_search_path : "lis_core,public";
                 string searchPath = SanitizeSearchPath(searchPathRaw);
                 var cs = $"Host={host};Port={port};Database={database};Username={username};Password={password};SearchPath={searchPath};Pooling=true;Include Error Detail=true";
@@ -166,7 +166,7 @@ namespace WATA.LIS
             }
             catch
             {
-                return "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata2019;SearchPath=lis_core,public;Pooling=true;Include Error Detail=true";
+                return "Host=localhost;Port=5432;Database=forkliftDB;Username=postgres;Password=wata20190430;SearchPath=lis_core,public;Pooling=true;Include Error Detail=true";
             }
         }
 

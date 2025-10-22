@@ -23,7 +23,7 @@ namespace WATA.LIS.Core.Model.SystemConfig
         public int? db_port { get; set; }   // default: 5432
         public string db_database { get; set; } // e.g., forkliftDB
         public string db_username { get; set; } // e.g., postgres
-        public string db_password { get; set; } // e.g., wata2019
+        public string db_password { get; set; } // e.g., wata20190430
         public string db_search_path { get; set; } // default: "lis_core,public"
     }
 }

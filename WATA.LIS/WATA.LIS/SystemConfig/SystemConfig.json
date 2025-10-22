@@ -12,7 +12,7 @@
       "port": 5432,
       "database": "forkliftDB",
       "username": "postgres",
-      "password": "wata2019",
+      "password": "wata20190430",
       "search_path": "\"lis_core\",public"
     }
   },
@@ -31,14 +31,14 @@
   },
   "weight_sensor": {
     "weight_enable": 1,
-    "comport": "COM7",
+    "comport": "COM4",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
   },
   "rfid_receiver": {
     "rfid_enable": 1,
     "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
-    "comport": "COM8",
+    "comport": "COM5",
     "SPP_MAC": "00:05:C4:C1:01:32",
     "radio_power": 28,
     "tx_on_time": 200,
@@ -68,7 +68,7 @@
     "LIVOX_Enable": 1
   },
   "vision": {
-    "vision_enable": 0,
+    "vision_enable": 1,
     "vision_name": "Luxonis", //HikVision, FemtoMega, Luxonis
     "vision_ip": "192.168.1.101",
     "vision_port": 8000,
@@ -76,7 +76,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }
