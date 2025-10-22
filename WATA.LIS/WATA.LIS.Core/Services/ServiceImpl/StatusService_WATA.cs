@@ -182,6 +182,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private readonly SemaphoreSlim m_dropImageSemaphore = new SemaphoreSlim(1, 1); // 동시 실행 제한
         private CancellationTokenSource m_dropDepthMonitorCts; // Drop 후 depth 모니터링용
         private bool m_dropDepthCaptured = false; // 이미 캡처했는지 플래그
+        private DateTime m_lastWeightErrorLog = DateTime.MinValue;
 
         // Zone 캐시
         private static List<ZoneEntry> s_zoneListCache;
@@ -925,71 +926,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
             }
 
-
-
-            if (m_weightConfig.weight_enable != 0 && m_errCnt_weight >= 10 && m_errCnt_weight % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_weight);
-                Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_distanceConfig.distance_enable != 0 && m_errCnt_distance >= 10 && m_errCnt_distance % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_distance);
-                Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_rfidConfig.rfid_enable != 0 && m_errCnt_rfid >= 10 && m_errCnt_rfid % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_rfid);
-                Tools.Log($"RFID disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_visionCamConfig.vision_enable != 0 && m_errCnt_visioncam >= 10 && m_errCnt_visioncam % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_visoncam);
-                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_navConfig.NAV_Enable != 0 && m_errCnt_lidar2d >= 10 && m_errCnt_lidar2d % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar2d);
-                Tools.Log($"2D LiDAR disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_errCnt_lidar3d >= 10 && m_errCnt_lidar3d % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.LiDar3DConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar3d);
-                Tools.Log($"3D LiDAR disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_errCnt_indicator >= 10 && m_errCnt_indicator % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.IndicatorConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_indicator);
-                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
-            }
-
             if (m_errCnt_weight < 10 &&
                 m_errCnt_distance < 10 &&
                 m_errCnt_rfid < 10 &&
@@ -1023,7 +959,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
                 else
                 {
-                    Tools.Log($"Weight Sensor Online disconnected!!!", ELogType.SystemLog);
+                    // 5초마다 한 번만 로그
+                    if ((DateTime.Now - m_lastWeightErrorLog).TotalSeconds >= 5)
+                    {
+                        Tools.Log($"Weight Sensor Online disconnected!!!", ELogType.SystemLog);
+                        m_lastWeightErrorLog = DateTime.Now;
+                    }
                     return;
                 }
 
@@ -1670,7 +1611,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     cellY = Math.Truncate(cellY * 1000);
 
                                     long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - cellX, 2) + Math.Pow(naviY - cellY, 2)));
-                                    Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{cellX}, Y:{cellY}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
+                                    //Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{cellX}, Y:{cellY}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
 
                                     if (calcDistance < minDistance)
                                     {
@@ -1679,6 +1620,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         closestZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
                                     }
                                 }
+                            }
+                            if (minDistance < distance)
+                            {
+                                Tools.Log($"[ZONE]: {closestZoneName} (dist: {minDistance}mm)", Tools.ELogType.ActionLog);
                             }
                         }
                     }
@@ -2016,25 +1961,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (totaldistance < thresholdDistance)
             {
-                Debug.WriteLine($"last heading state:{m_lastRotate}, Distance:{totaldistance}mm, X:{naviX}, Y:{naviY}  Under Threshold");
+                //Debug.WriteLine($"last heading state:{m_lastRotate}, Distance:{totaldistance}mm, X:{naviX}, Y:{naviY}  Under Threshold");
                 return m_lastRotate; // Last state return
             }
 
             if (backwardCnt > forwardCnt && backwardCnt >= requiredCount)
             {
-                Debug.WriteLine($"Backward, count:{backwardCnt}");
+                //Debug.WriteLine($"Backward, count:{backwardCnt}");
                 bf = false; // 후진
                 //bf = true; // 후진
             }
             else if (forwardCnt >= requiredCount)
             {
-                Debug.WriteLine($"Forward, count:{forwardCnt}");
+                //Debug.WriteLine($"Forward, count:{forwardCnt}");
                 bf = true; // 전진
                 //bf = false; // 후진
             }
             else
             {
-                Debug.WriteLine($"last State {m_lastRotate}");
+                //Debug.WriteLine($"last State {m_lastRotate}");
                 bf = m_lastRotate;
             }
 
@@ -2286,7 +2231,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($" Send Command : {m_Command}, weight:{m_weightModel.GrossWeight}, height:{m_event_height}", Tools.ELogType.DisplayLog);
             }
             Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
+            //Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
 

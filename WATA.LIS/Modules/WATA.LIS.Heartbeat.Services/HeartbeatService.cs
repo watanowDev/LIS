@@ -40,7 +40,7 @@ namespace WATA.LIS.Heartbeat.Services
                 bool isSent = await SendHeartbeatSignal();
                 if (!isSent)
                 {
-                    _logger.LogWarning("Failed to send heartbeat signal.");
+                    //_logger.LogWarning("Failed to send heartbeat signal.");
                 }
                 await Task.Delay(_heartbeatInterval, cancellationToken);
             }
@@ -56,7 +56,7 @@ namespace WATA.LIS.Heartbeat.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send heartbeat signal.");
+                //_logger.LogError(ex, "Failed to send heartbeat signal.");
                 return false;
             }
         }

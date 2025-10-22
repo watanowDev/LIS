@@ -55,6 +55,9 @@ namespace WATA.LIS
         private IEventAggregator _eventAggregator;
         private volatile bool _networkOkFromBackend = false; // updated via BackEndStatusEvent
 
+        // ✅ 배치 INSERT 서비스 추가
+     private BatchInsertService _batchInsertService;
+
         // latest sensor snapshot cache (thread-safe via _snapshotLock)
         private readonly object _snapshotLock = new object();
         private long? _lastNavX, _lastNavY, _lastNavT;
@@ -177,7 +180,11 @@ namespace WATA.LIS
                 try { if (_sessionRepo != null) await _sessionRepo.MarkEndAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId); }
                 catch { }
             });
-            base.OnExit(e);
+            
+    // ⚠️ 배치 서비스 비활성화로 인해 주석 처리
+ // try { _batchInsertService?.Dispose(); } catch { }
+            
+   base.OnExit(e);
         }
 
         private async Task InitializeDatabaseAsync(string cs)
@@ -220,6 +227,10 @@ namespace WATA.LIS
                 var migrator = new MigrationService(cs);
                 await migrator.EnsureSchemaAsync();
 
+            // ⚠️ 배치 서비스 임시 비활성화 (DB 에러로 인한 CPU 100% 문제)
+   // _batchInsertService = new BatchInsertService(cs);
+    // Tools.Log("[DB Batch] BatchInsertService initialized (5s interval, 100 batch size)", Tools.ELogType.SystemLog);
+
                 _sessionRepo = new SessionRepository(cs);
                 _statusRepo = new SystemStatusRepository(cs);
                 await _statusRepo.EnsureTableAsync();
@@ -253,93 +264,97 @@ namespace WATA.LIS
                         await _statusRepo.InsertAsync(DateTimeOffset.UtcNow, backendOk, networkOk, setAllReady, errorCode, message, GlobalValue.SessionId);
 
                         // Throttled 1 Hz inserts
-                        try
-                        {
-                            if (_weightRepo != null && _weightSnapshotInitialized)
-                            {
-                                int gross = _lastGross ?? 0;
-                                int right = _lastRight ?? 0;
-                                int left = _lastLeft ?? 0;
-                                await _weightRepo.InsertAsync(
-                                    DateTimeOffset.UtcNow,
-                                    GlobalValue.SessionId,
-                                    gross,
-                                    right,
-                                    left,
-                                    _lastRightBattery,
-                                    _lastLeftBattery,
-                                    _lastRightIsCharging,
-                                    _lastLeftIsCharging,
-                                    _lastRightOnline,
-                                    _lastLeftOnline,
-                                    _lastGrossNet,
-                                    _lastOverLoad,
-                                    _lastOutOfTolerance
-                                );
-                            }
-                        }
-                        catch { }
+                try
+        {
+        if (_weightRepo != null && _weightSnapshotInitialized)
+         {
+          int gross = _lastGross ?? 0;
+       int right = _lastRight ?? 0;
+     int left = _lastLeft ?? 0;
+              // ✅ 기존 방식으로 복원 (즉시 INSERT)
+    await _weightRepo.InsertAsync(
+      DateTimeOffset.UtcNow,
+   GlobalValue.SessionId,
+       gross,
+         right,
+         left,
+        _lastRightBattery,
+           _lastLeftBattery,
+       _lastRightIsCharging,
+      _lastLeftIsCharging,
+          _lastRightOnline,
+      _lastLeftOnline,
+        _lastGrossNet,
+               _lastOverLoad,
+     _lastOutOfTolerance
+     );
+ }
+        }
+          catch { }
 
-                        try
-                        {
-                            if (_distanceRepo != null && _distanceSnapshotInitialized)
-                            {
-                                int dist = _lastDistanceMm ?? 0;
-                                await _distanceRepo.InsertAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, dist, _lastDistanceConnected);
-                            }
-                        }
-                        catch { }
+           try
+       {
+  if (_distanceRepo != null && _distanceSnapshotInitialized)
+     {
+     int dist = _lastDistanceMm ?? 0;
+     // ✅ 기존 방식으로 복원 (즉시 INSERT)
+       await _distanceRepo.InsertAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, dist, _lastDistanceConnected);
+        }
+    }
+   catch { }
 
-                        try
-                        {
-                            if (_navRepo != null && _navSnapshotInitialized && _lastNavX.HasValue && _lastNavY.HasValue && _lastNavT.HasValue)
-                            {
-                                await _navRepo.InsertAsync(
-                                    DateTimeOffset.UtcNow,
-                                    GlobalValue.SessionId,
-                                    _lastNavX.Value,
-                                    _lastNavY.Value,
-                                    _lastNavT.Value,
-                                    _lastZoneId,
-                                    _lastZoneName,
-                                    _lastProjectId,
-                                    _lastMappingId,
-                                    _lastMapId,
-                                    null,
-                                    _lastVehicleId
-                                );
-                            }
-                        }
-                        catch { }
+          try
+              {
+        if (_navRepo != null && _navSnapshotInitialized && _lastNavX.HasValue && _lastNavY.HasValue && _lastNavT.HasValue)
+               {
+        // ✅ 기존 방식으로 복원 (즉시 INSERT)
+    await _navRepo.InsertAsync(
+         DateTimeOffset.UtcNow,
+               GlobalValue.SessionId,
+               _lastNavX.Value,
+           _lastNavY.Value,
+                _lastNavT.Value,
+        _lastZoneId,
+          _lastZoneName,
+           _lastProjectId,
+    _lastMappingId,
+     _lastMapId,
+        null,
+   _lastVehicleId
+   );
+      }
+     }
+   catch { }
 
-                        // Flush RFID aggregated readings (1 Hz)
-                        try
-                        {
-                            if (_rfidAggRepo != null)
-                            {
-                                List<(string epc, int rssi, int count)> batch;
-                                lock (_snapshotLock)
-                                {
-                                    batch = new List<(string, int, int)>(_rfidAggMap.Count);
-                                    foreach (var kv in _rfidAggMap)
-                                    {
-                                        var epc = kv.Key;
-                                        var (cnt, rssiSum) = kv.Value;
-                                        if (cnt > 0)
-                                        {
-                                            int avgRssi = (int)Math.Round(rssiSum / (double)cnt);
-                                            batch.Add((epc, avgRssi, cnt));
-                                        }
-                                    }
-                                    _rfidAggMap.Clear();
-                                }
-                                foreach (var rec in batch)
-                                {
-                                    await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, rec.epc, rec.rssi, rec.count);
-                                }
-                            }
-                        }
-                        catch { }
+            // Flush RFID aggregated readings (1 Hz)
+           try
+                {
+           if (_rfidAggRepo != null)
+           {
+   List<(string epc, int rssi, int count)> batch;
+             lock (_snapshotLock)
+  {
+          batch = new List<(string, int, int)>(_rfidAggMap.Count);
+         foreach (var kv in _rfidAggMap)
+  {
+    var epc = kv.Key;
+  var (cnt, rssiSum) = kv.Value;
+                 if (cnt > 0)
+           {
+   int avgRssi = (int)Math.Round(rssiSum / (double)cnt);
+    batch.Add((epc, avgRssi, cnt));
+   }
+           }
+             _rfidAggMap.Clear();
+            }
+       // ✅ 기존 방식으로 복원 (즉시 INSERT)
+          foreach (var rec in batch)
+   {
+     await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, rec.epc, rec.rssi, rec.count);
+          }
+       }
+      }
+    catch { }
 
                         // Detect SysAlarm changes and log as action events
                         try
@@ -470,12 +485,13 @@ namespace WATA.LIS
                                 {
                                     // Immediately log current batch (dominant + co-read EPCs)
                                     foreach (var item in list)
-                                    {
-                                        try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, item.EPC, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
-                                    }
-                                    loggedImmediateForBatch = true;
-                                }
-                            }
+  {
+        // ✅ 기존 방식으로 복원 (즉시 INSERT)
+  try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, item.EPC, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
+    }
+          loggedImmediateForBatch = true;
+       }
+   }
 
                             int count = 0;
                             long sumRssi = 0;
@@ -496,9 +512,10 @@ namespace WATA.LIS
                                     }
                                     if (firstSeen)
                                     {
-                                        try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, epc, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
-                                    }
-                                }
+                                        // ✅ 기존 방식으로 복원 (즉시 INSERT)
+   try { await _rfidAggRepo.Insert2chAsync(DateTimeOffset.UtcNow, GlobalValue.SessionId, epc, item.RSSI, Math.Max(1, item.READCNT)); } catch { }
+  }
+   }
 
                                 // Aggregate for 1 Hz flush
                                 lock (_snapshotLock)
