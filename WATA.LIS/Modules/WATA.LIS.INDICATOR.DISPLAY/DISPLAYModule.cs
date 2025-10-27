@@ -32,22 +32,31 @@ namespace WATA.LIS.INDICATOR.DISPLAY
 
             DisplayConfigModel _displayConfig = (DisplayConfigModel)_displaymodel;
 
+            // ✅ 디버깅: display_enable 값 확인 로그
+            Tools.Log($"[DISPLAY MODULE] display_enable = {_displayConfig.display_enable}", Tools.ELogType.SystemLog);
+            Tools.Log($"[DISPLAY MODULE] display_type = {_displayConfig.display_type ?? "null"}", Tools.ELogType.SystemLog);
+            Tools.Log($"[DISPLAY MODULE] IDisplayModel instance type = {_displaymodel?.GetType().FullName ?? "null"}", Tools.ELogType.SystemLog);
+
             if (_displayConfig.display_enable == 0)
             {
+                Tools.Log("[DISPLAY MODULE] display_enable is 0, TCP Server will NOT start", Tools.ELogType.SystemLog);
                 return;
             }
 
+            Tools.Log("[DISPLAY MODULE] Starting TcpServerSimple...", Tools.ELogType.SystemLog);
             TcpServerSimple _tcpServer = new TcpServerSimple(_eventAggregator);
             _tcpServer.initAsync();
+            Tools.Log("[DISPLAY MODULE] TcpServerSimple initiated", Tools.ELogType.SystemLog);
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
         {
-
+            Tools.Log("[DISPLAY MODULE] OnInitialized called", Tools.ELogType.SystemLog);
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            Tools.Log("[DISPLAY MODULE] RegisterTypes called", Tools.ELogType.SystemLog);
             containerRegistry.RegisterForNavigation<DisplayView>(RegionNames.Content_Indicator);
         }
     }

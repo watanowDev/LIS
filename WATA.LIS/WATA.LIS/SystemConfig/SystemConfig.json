@@ -82,7 +82,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

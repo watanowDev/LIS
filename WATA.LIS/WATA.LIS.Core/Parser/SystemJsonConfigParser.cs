@@ -186,6 +186,11 @@ namespace WATA.LIS.Core.Parser
                     display.display_enable = I(displayJ["display_enable"], display.display_enable);
                     display.display_type = S(displayJ["display_type"], display.display_type);
 
+                    // ✅ 디버깅: display 설정 파싱 결과 로그
+                    Tools.Log($"[CONFIG PARSER] display_enable parsed = {display.display_enable}", Tools.ELogType.SystemLog);
+                    Tools.Log($"[CONFIG PARSER] display_type parsed = {display.display_type ?? "null"}", Tools.ELogType.SystemLog);
+                    Tools.Log($"[CONFIG PARSER] display JSON section exists = {json["display"] != null}", Tools.ELogType.SystemLog);
+
                     Tools.Log($"Load SystemConfig OK", Tools.ELogType.SystemLog);
                 }
             }

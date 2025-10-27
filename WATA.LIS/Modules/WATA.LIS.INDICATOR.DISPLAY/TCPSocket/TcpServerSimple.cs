@@ -87,6 +87,8 @@ namespace WATA.LIS.TCPSocket
                 // TcpListener 인스턴스 생성
                 server = new TcpListener(ipAddress, port);
 
+                Tools.Log($"TCP Server Listening on Port {port}", Tools.ELogType.SystemLog);
+
                 // 클라이언트 연결 대기
                 server.Start();
 
@@ -98,6 +100,7 @@ namespace WATA.LIS.TCPSocket
                     _client = await server.AcceptTcpClientAsync();
 
                     LogThrottled($"Server Connected");
+                    Tools.Log($"TCP Server Connected", Tools.ELogType.SystemLog);
 
                     // 연결된 클라이언트를 처리하는 메서드 호출
                     _ = HandleClientAsync();

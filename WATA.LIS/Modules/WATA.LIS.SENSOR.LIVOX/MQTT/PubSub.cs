@@ -33,8 +33,8 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
 
         private const string PubEndpoint = "tcp://127.0.0.1:5002";
         private const string SubEndpoint = "tcp://127.0.0.1:5001";
-        private static readonly TimeSpan RxTimeout = TimeSpan.FromMilliseconds(500);
-        private static readonly TimeSpan ResponseWindow = TimeSpan.FromSeconds(2); // 응답 기대 시간
+        private static readonly TimeSpan RxTimeout = TimeSpan.FromMilliseconds(5000);
+        private static readonly TimeSpan ResponseWindow = TimeSpan.FromSeconds(7); // 응답 기대 시간
 
         private const int MaxErrorsBeforeReconnect = 3;
 
@@ -184,6 +184,7 @@ namespace WATA.LIS.SENSOR.LIVOX.MQTT
                 SendToLivox(1);
                 if (GetSizeData() == true)
                 {
+                    Thread.Sleep(500);
                     SendToLivox(0);
                     isSendZero = true;
                     break;
