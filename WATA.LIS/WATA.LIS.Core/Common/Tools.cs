@@ -38,17 +38,14 @@ namespace WATA.LIS.Core.Common
         {
             if (list == null) return;
 
-            // Trim list to avoid unbounded growth
-            if (list.Count > 300)
+            // BeginInvoke 사용으로 블로킹 방지 - 데드락 해결
+            System.Windows.Application.Current?.Dispatcher.BeginInvoke(() =>
             {
-                System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+                // Trim list to avoid unbounded growth
+                if (list.Count > 300)
                 {
                     list.Clear();
-                }, DispatcherPriority.Normal);
-            }
-
-            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
-            {
+                }
                 list.Add(new Log(DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString(), caller, message));
             }, DispatcherPriority.Normal);
         }

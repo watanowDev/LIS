@@ -112,14 +112,16 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private uint m_noDetectPersonCnt = 50;
         private DateTime lastAlertTime = DateTime.MinValue;
         private DispatcherTimer m_visionCamInitTimer;
-        private string m_curr_NationCode = "";
         private string m_event_NationCode = "";
-        private int m_no_NationCodeCnt = 0;
         private bool m_visionCamReady = false;
-        private int _deepCaptureCooldown = 0; // 이미지 캡처 쿨다운
+        private List<DectectionRcvModel> m_detectionRcvModelList = new List<DectectionRcvModel>();
+        private List<VisionCamModel> m_visionModelList = new List<VisionCamModel>();
+        private readonly object m_visionLock = new object(); // Lock 객체 추가
+        private double m_currDepthSum = 0; // 최근 depth 값 총합 저장
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
+        private PubSeyondModel m_seyondModel;
         private List<NAVSensorModel> m_nav_list = new List<NAVSensorModel>();
         private readonly int m_nav_sample_size = 10;
         private string m_ActionZoneId = "";
@@ -134,6 +136,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private float m_event_height = 0;
         private float m_event_length = 0;
         private string m_event_points = "";
+        private List<LIVOXModel> m_hummingbird_list;
+        private readonly int m_hummingbird_sample_size = 10;
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
@@ -177,6 +181,11 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         Stopwatch m_stopwatchWeight = new Stopwatch();
         //Stopwatch m_stopwatchPickDrop = new Stopwatch();
         const int m_timeoutPickDrop = 5000;
+        private CancellationTokenSource m_dropImageCaptureCts;
+        private readonly SemaphoreSlim m_dropImageSemaphore = new SemaphoreSlim(1, 1); // 동시 실행 제한
+        private CancellationTokenSource m_dropDepthMonitorCts; // Drop 후 depth 모니터링용
+        private bool m_dropDepthCaptured = false; // 이미 캡처했는지 플래그
+        private DateTime m_lastWeightErrorLog = DateTime.MinValue;
 
         // Zone 캐시
         private static List<ZoneEntry> s_zoneListCache;
@@ -189,6 +198,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             public double y_abs_uncorrected { get; set; }
             public double x_correction { get; set; }
             public double y_correction { get; set; }
+            public string epc { get; set; }
+            public int height { get; set; }
         }
 
 
@@ -204,7 +215,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<VisionDetectionEvent>().Subscribe(OnVisionDetectionEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VisionDetectionRearEvent>().Subscribe(OnVisionDetectionRearEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<PubSeyondEvent>().Subscribe(OnPubSeyondEvent, ThreadOption.BackgroundThread, true);
+            //_eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HummingbirdEvent>().Subscribe(OnHummingbirdEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DetectionRcvEvent>().Subscribe(OnDetectionRcvEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<ShutdownEngineEvent>().Subscribe(OnShutdownEngineEvent, ThreadOption.BackgroundThread, true);
@@ -317,6 +330,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_visionModel = new VisionCamModel();
             m_livoxModel = new LIVOXModel();
             m_indicatorModel = new IndicatorModel();
+            m_hummingbird_list = new List<LIVOXModel>();
 
             //InitGetPickupStatus();
             IndicatorSendTimerEvent(null, null);
@@ -918,71 +932,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
             }
 
-
-
-            if (m_weightConfig.weight_enable != 0 && m_errCnt_weight >= 10 && m_errCnt_weight % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.WeightConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_weight);
-                Tools.Log($"WeightSensor disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_distanceConfig.distance_enable != 0 && m_errCnt_distance >= 10 && m_errCnt_distance % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.DistanceConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_distance);
-                Tools.Log($"HeightSensor disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_rfidConfig.rfid_enable != 0 && m_errCnt_rfid >= 10 && m_errCnt_rfid % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.RFIDConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_rfid);
-                Tools.Log($"RFID disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_visionCamConfig.vision_enable != 0 && m_errCnt_visioncam >= 10 && m_errCnt_visioncam % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.VisionConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_visoncam);
-                Tools.Log($"VisionCam disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_navConfig.NAV_Enable != 0 && m_errCnt_lidar2d >= 10 && m_errCnt_lidar2d % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.LiDar2DConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar2d);
-                Tools.Log($"2D LiDAR disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_errCnt_lidar3d >= 10 && m_errCnt_lidar3d % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.LiDar3DConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_lidar3d);
-                Tools.Log($"3D LiDAR disconnected!!!", ELogType.SystemLog);
-            }
-
-            if (m_errCnt_indicator >= 10 && m_errCnt_indicator % 10 == 0)
-            {
-                m_isError = true;
-                SysAlarm.AddErrorCodes(SysAlarm.IndicatorConnErr);
-                Pattlite_Buzzer_LED(ePlayBuzzerLed.DEVICE_ERROR);
-                _eventAggregator.GetEvent<SpeakerInfoEvent>().Publish(ePlayInfoSpeaker.device_error_indicator);
-                Tools.Log($"Indicator disconnected!!!", ELogType.SystemLog);
-            }
-
             if (m_errCnt_weight < 10 &&
                 m_errCnt_distance < 10 &&
                 m_errCnt_rfid < 10 &&
@@ -1005,6 +954,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnWeightSensorEvent(WeightSensorModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             try
             {
                 if (model.RightOnline == true && model.LeftOnline == true)
@@ -1013,7 +965,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
                 else
                 {
-                    Tools.Log($"Weight Sensor Online disconnected!!!", ELogType.SystemLog);
+                    // 5초마다 한 번만 로그
+                    if ((DateTime.Now - m_lastWeightErrorLog).TotalSeconds >= 5)
+                    {
+                        Tools.Log($"Weight Sensor Online disconnected!!!", ELogType.SystemLog);
+                        m_lastWeightErrorLog = DateTime.Now;
+                    }
                     return;
                 }
 
@@ -1100,6 +1057,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="model"></param>
         private void OnDistanceSensorEvent(DistanceSensorModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (model == null) return;
 
             m_distanceModel = model;
@@ -1123,6 +1083,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="epcData"></param>
         private void OnRfidSensorEvent(List<Keonn2ch_Model> epcData)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (epcData != null && epcData.Count > 0)
             {
                 m_curr_epc = epcData[0].EPC;
@@ -1209,12 +1172,24 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="obj"></param>
         private void OnVisionEvent(VisionCamModel model)
         {
+            // StreamingServer 블로킹 체크
+            if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (model.connected == true) m_errCnt_visioncam = 0;
 
             SensorReady.Instance.VisionCam = true;
             SysAlarm.RemoveErrorCodes(SysAlarm.VisionConnErr);
 
             m_visionModel = model;
+
+            lock (m_visionLock)
+            {
+                if (m_visionModelList.Count >= 40)
+                {
+                    m_visionModelList.RemoveAt(0);
+                }
+                m_visionModelList.Add(model);
+            }
 
             if (m_displayConfig.display_type.Contains("Platform"))
             {
@@ -1235,51 +1210,51 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            // 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
-            if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
-            {
-                // ClassId 매핑
-                var classIdMapping = new Dictionary<int, string>
-                    {
-                        { 3, "3" }, // 검은색, 중국 청도
-                        { 4, "4" }, // 흰색, 중국 무석
-                        { 5, "5" }, // 초록색, 멕시코
-                        { 6, "6" }  // 노란색, 인도
-                    };
+            //// 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
+            //if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
+            //{
+            //    // ClassId 매핑
+            //    var classIdMapping = new Dictionary<int, string>
+            //        {
+            //            { 3, "3" }, // 검은색, 중국 청도
+            //            { 4, "4" }, // 흰색, 중국 무석
+            //            { 5, "5" }, // 초록색, 멕시코
+            //            { 6, "6" }  // 노란색, 인도
+            //        };
 
-                // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
-                float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
-                float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
+            //    // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
+            //    float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
+            //    float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
 
-                // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
-                var filteredObjects = m_visionModel.Objects
-                    .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
-                    .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
-                    .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
-                    .ToList();
+            //    // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
+            //    var filteredObjects = m_visionModel.Objects
+            //        .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
+            //        .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
+            //        .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
+            //        .ToList();
 
-                // ClassId 4 우선 처리
-                var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
-                if (class4Object != null)
-                {
-                    m_curr_NationCode = classIdMapping[class4Object.ClassId];
-                }
-                else
-                {
-                    // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
-                    var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
-                    if (class3Object != null)
-                    {
-                        m_curr_NationCode = classIdMapping[class3Object.ClassId];
-                    }
-                    else
-                    {
-                        // 다른 ClassId 처리
-                        var highestConfidenceObject = filteredObjects.FirstOrDefault();
-                        m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
-                    }
-                }
-            }
+            //    // ClassId 4 우선 처리
+            //    var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
+            //    if (class4Object != null)
+            //    {
+            //        m_curr_NationCode = classIdMapping[class4Object.ClassId];
+            //    }
+            //    else
+            //    {
+            //        // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
+            //        var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
+            //        if (class3Object != null)
+            //        {
+            //            m_curr_NationCode = classIdMapping[class3Object.ClassId];
+            //        }
+            //        else
+            //        {
+            //            // 다른 ClassId 처리
+            //            var highestConfidenceObject = filteredObjects.FirstOrDefault();
+            //            m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
+            //        }
+            //    }
+            //}
 
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
@@ -1291,6 +1266,37 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                     model.TL_DEPTH,
                     model.TR_DEPTH
                 };
+
+            // Depth 값 총합 계산 및 저장
+            m_currDepthSum = depthValues.Sum();
+
+            // ⭐ Drop 모니터링 중일 때 depth 합 체크 → 즉시 현재 프레임으로 캡처
+            if (m_dropDepthMonitorCts != null && !m_dropDepthMonitorCts.IsCancellationRequested && !m_dropDepthCaptured)
+            {
+                if (m_currDepthSum >= 5000)
+                {
+                    m_dropDepthCaptured = true;
+                    Tools.Log($"Drop monitoring: Depth sum reached {m_currDepthSum} >= 5000, triggering image capture", ELogType.ActionLog);
+
+                    // ⭐ 현재 프레임을 직접 전달 (별도 로직 분리)
+                    _ = Task.Run(() =>
+                    {
+                        try
+                        {
+                            CaptureDropImage(); // 새로운 메서드 호출
+                            Tools.Log("Drop monitoring: Image capture completed", ELogType.ActionLog);
+                        }
+                        catch (Exception ex)
+                        {
+                            Tools.Log($"Drop monitoring: Image capture error: {ex.Message}", ELogType.SystemLog);
+                        }
+                        finally
+                        {
+                            m_dropDepthMonitorCts?.Cancel(); // 모니터링 종료
+                        }
+                    });
+                }
+            }
 
             // Threshold 값 미만인 값의 개수
             int closeCnt = depthValues.Count(value => value < 700 && value >= 0);
@@ -1383,6 +1389,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 return;
             }
+            if (model.Detections.Count == 0)
+            {
+                return;
+            }
 
             // DetectionModel Pickup State
             if (model.PickState == true && model.Detections.Count > 0)
@@ -1395,6 +1405,139 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 m_detectionPickupCnt = 0;
                 m_detectionDropCnt++;
             }
+
+            // 최근 20프레임 큐에 저장, Add 전에 공간 확보
+            lock (m_visionLock)
+            {
+                if (m_detectionRcvModelList.Count >= 35)
+                {
+                    m_detectionRcvModelList.RemoveAt(0);
+                }
+                m_detectionRcvModelList.Add(model);
+            }
+        }
+
+        private void CapturePickupImage()
+        {
+            try
+            {
+                List<DectectionRcvModel> detectionSnapshot;
+                List<VisionCamModel> visionSnapshot;
+
+                lock (m_visionLock)
+                {
+                    if (m_detectionRcvModelList.Count == 0)
+                    {
+                        if (m_visionModelList.Count == 0) return;
+                        PublishDeepAnalysis(m_visionModelList[0].FRAME, new List<string>(), new List<string>(), new List<DetectionItem>());
+                        Tools.Log("m_detectionRcvModelList is empty", ELogType.SystemLog);
+                        return;
+                    }
+
+                    detectionSnapshot = new List<DectectionRcvModel>(m_detectionRcvModelList);
+                    visionSnapshot = new List<VisionCamModel>(m_visionModelList);
+                }
+
+                // PalletArea가 8100에 가장 가까운 Pallet detection 찾기
+                var targetDetection = detectionSnapshot
+                    .SelectMany((detection, index) => detection.Detections
+                        .Where(d => d.Class == "Pallet")
+                        .Select(d => new { Detection = detection, Index = index }))
+                    .OrderBy(p => Math.Abs(p.Detection.PalletArea - 8100))
+                    .FirstOrDefault();
+
+                if (targetDetection == null)
+                {
+                    // 파레트 없을 때: Pickup은 가장 오래된 프레임
+                    Tools.Log("No Pallet detected, using oldest frame for Pickup", ELogType.SystemLog);
+                    var oldestDetection = detectionSnapshot[0];
+                    var oldestVision = visionSnapshot.FirstOrDefault(v => v.FRAME_ID == oldestDetection.FrameId)
+                                     ?? visionSnapshot[0];
+
+                    PublishDeepAnalysis(
+                        oldestVision.FRAME,
+                        oldestDetection.QrList,
+                        oldestDetection.OcrList,
+                        oldestDetection.Detections
+                    );
+                    return;
+                }
+
+                // 파레트 감지 시 해당 프레임 사용
+                string palletFrameId = targetDetection.Detection.FrameId;
+                var palletMatchingFrame = visionSnapshot.FirstOrDefault(v => v.FRAME_ID == palletFrameId);
+
+                byte[] palletImageBytes = palletMatchingFrame != null
+                    ? palletMatchingFrame.FRAME
+                    : visionSnapshot[Math.Min(targetDetection.Index, visionSnapshot.Count - 1)].FRAME;
+
+                PublishDeepAnalysis(
+                    palletImageBytes,
+                    targetDetection.Detection.QrList,
+                    targetDetection.Detection.OcrList,
+                    targetDetection.Detection.Detections
+                );
+
+                Tools.Log($"Pickup: PalletArea={targetDetection.Detection.PalletArea}, FrameId={palletFrameId}", ELogType.ActionLog);
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"CaptureDeepAnalysisImg Error: {ex.Message}", ELogType.SystemLog);
+            }
+        }
+
+        private void CaptureDropImage()
+        {
+            try
+            {
+                List<DectectionRcvModel> detectionSnapshot;
+                List<VisionCamModel> visionSnapshot;
+
+                lock (m_visionLock)
+                {
+                    if (m_detectionRcvModelList.Count == 0 || m_visionModelList.Count == 0)
+                    {
+                        Tools.Log("Drop capture: detection or vision list is empty", ELogType.SystemLog);
+                        return;
+                    }
+
+                    detectionSnapshot = new List<DectectionRcvModel>(m_detectionRcvModelList);
+                    visionSnapshot = new List<VisionCamModel>(m_visionModelList);
+                }
+
+                // ⭐ 가장 최근 Detection/Vision 프레임 사용 (depth >= 5000이 된 시점)
+                var latestDetection = detectionSnapshot.Last();
+                var latestVision = visionSnapshot.Last();
+
+                Tools.Log($"Drop capture: using latest frame (FrameId: {latestDetection.FrameId})", ELogType.ActionLog);
+
+                PublishDeepAnalysis(
+                    latestVision.FRAME,
+                    latestDetection.QrList,
+                    latestDetection.OcrList,
+                    latestDetection.Detections
+                );
+            }
+            catch (Exception ex)
+            {
+                Tools.Log($"CaptureDropImageDirectly Error: {ex.Message}", ELogType.SystemLog);
+            }
+        }
+
+        private void PublishDeepAnalysis(byte[] imageBytes, List<string> qrList, List<string> ocrList, List<DetectionItem> detections)
+        {
+            var model = new DeepImgAnalysisPubModel
+            {
+                ImageBytes = imageBytes,
+                ProductID = "",
+                ZoneID = m_DetectionZoneId,
+                OcrList = [],
+                //OcrList = ocrList,
+                QR = qrList,
+                Detections = detections
+            };
+
+            _eventAggregator.GetEvent<DeepImgAnalysisPubEvent>().Publish(model);
         }
 
         /// <summary>
@@ -1403,6 +1546,9 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         /// <param name="navSensorModel"></param>
         private void OnNAVSensorEvent(NAVSensorModel navSensorModel)
         {
+            // StreamingServer 블로킹 체크
+            //if (GlobalValue.IsVisionStreamBlocked) return;
+
             if (m_navConfig.NAV_Enable == 0)
             {
                 return;
@@ -1471,7 +1617,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                     cellY = Math.Truncate(cellY * 1000);
 
                                     long calcDistance = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - cellX, 2) + Math.Pow(naviY - cellY, 2)));
-                                    Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{cellX}, Y:{cellY}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
+                                    //Tools.Log($"ZoneName:{m_cellInfoModel.data[i].targetGeofence[j].zoneName}, X:{cellX}, Y:{cellY}, Dist:{calcDistance}, navX:{naviX}, navY:{naviY}", Tools.ELogType.ActionLog);
 
                                     if (calcDistance < minDistance)
                                     {
@@ -1480,6 +1626,10 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                                         closestZoneName = m_cellInfoModel.data[i].targetGeofence[j].zoneName;
                                     }
                                 }
+                            }
+                            if (minDistance < distance)
+                            {
+                                Tools.Log($"[ZONE]: {closestZoneName} (dist: {minDistance}mm)", Tools.ELogType.ActionLog);
                             }
                         }
                     }
@@ -1504,41 +1654,140 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
 
                 // zoneList.json 과 비교하여 가장 가까운 zoneId를 m_DetectionZoneId에 할당
+                // 우선순위: 1) EPC 매칭, 2) 위치 기반 매칭, 3) 높이 검증
                 try
                 {
                     if (s_zoneListCache != null && s_zoneListCache.Count > 0)
                     {
-                        long minDistZone = long.MaxValue;
-                        string nearestZoneId = "";
-                        string nearestZoneName = "";
+                        List<ZoneEntry> candidateZones = new List<ZoneEntry>();
+                        string matchMethod = "";
 
-                        foreach (var z in s_zoneListCache)
+                        // Phase 1: EPC 기반 매칭 (EPC 값이 있을 경우 우선 사용)
+                        if (!string.IsNullOrEmpty(m_event_epc))
                         {
-                            // 보정 적용 후(mm 변환)
-                            double zx_mm = Math.Truncate(z.x_correction * 1000.0);
-                            double zy_mm = Math.Truncate(z.y_correction * 1000.0);
-
-                            long d = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - zx_mm, 2) + Math.Pow(naviY - zy_mm, 2)));
-                            if (d < minDistZone)
+                            foreach (var z in s_zoneListCache)
                             {
-                                minDistZone = d;
-                                nearestZoneId = z.zone_id;
-                                nearestZoneName = z.zone_name;
+                                if (!string.IsNullOrEmpty(z.epc) && z.epc.Equals(m_event_epc, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    candidateZones.Add(z);
+                                }
+                            }
+
+                            if (candidateZones.Count > 0)
+                            {
+                                matchMethod = "EPC";
+                                Tools.Log($"[ZONE] EPC match found: {candidateZones.Count} candidates with EPC={m_event_epc}", Tools.ELogType.ActionLog);
                             }
                         }
 
-                        if (minDistZone < distance)
+                        // Phase 2: 위치 기반 매칭 (EPC 매칭이 없을 경우)
+                        if (candidateZones.Count == 0)
                         {
-                            m_DetectionZoneId = nearestZoneId;
-                            m_DetectionZoneName = nearestZoneName;
+                            long minDistZone = long.MaxValue;
+                            string nearestZoneId = "";
+                            string nearestZoneName = "";
+
+                            foreach (var z in s_zoneListCache)
+                            {
+                                // 보정 적용 후(mm 변환)
+                                double zx_mm = Math.Truncate(z.x_correction * 1000.0);
+                                double zy_mm = Math.Truncate(z.y_correction * 1000.0);
+
+                                long d = Convert.ToInt64(Math.Sqrt(Math.Pow(naviX - zx_mm, 2) + Math.Pow(naviY - zy_mm, 2)));
+                                if (d < minDistZone)
+                                {
+                                    minDistZone = d;
+                                    nearestZoneId = z.zone_id;
+                                    nearestZoneName = z.zone_name;
+                                }
+                            }
+
+                            if (minDistZone < distance)
+                            {
+                                var nearestZone = s_zoneListCache.FirstOrDefault(z => z.zone_id == nearestZoneId);
+                                if (nearestZone != null)
+                                {
+                                    candidateZones.Add(nearestZone);
+                                    matchMethod = "Coordinate";
+                                    Tools.Log($"[ZONE] Coordinate match: nearest zoneName={nearestZoneName}, zoneId={nearestZoneId}, dist={minDistZone}mm", Tools.ELogType.ActionLog);
+                                }
+                            }
+                        }
+
+                        // Phase 3: 높이 기반 층 구분 및 최종 Zone 선택
+                        if (candidateZones.Count > 0)
+                        {
+                            ZoneEntry finalZone = null;
+
+                            // 높이 값이 있으면 구간 기반으로 층 구분
+                            if (m_curr_distance > 0)
+                            {
+                                // 높이 값이 있는 후보들만 필터링하고 오름차순 정렬
+                                var zonesWithHeight = candidateZones
+                                    .Where(z => z.height > 0)
+                                    .OrderBy(z => z.height)
+                                    .ToList();
+
+                                if (zonesWithHeight.Count > 0)
+                                {
+                                    // m_curr_distance보다 큰 첫 번째 층을 선택 (구간 기반)
+                                    // 예: 1875mm → 3100mm(2층) 선택 (1500 ≤ 1875 < 3100 구간)
+                                    finalZone = zonesWithHeight
+                                        .Where(z => z.height > m_curr_distance)
+                                        .OrderBy(z => z.height)
+                                        .FirstOrDefault();
+
+                                    // 모든 층의 height가 현재 높이보다 작으면 가장 높은 층 선택
+                                    if (finalZone == null)
+                                    {
+                                        finalZone = zonesWithHeight.Last();
+                                        Tools.Log($"[ZONE] Current height({m_curr_distance}mm) exceeds all zones, selecting highest: zoneName={finalZone.zone_name}, height={finalZone.height}mm", Tools.ELogType.ActionLog);
+                                    }
+                                    else
+                                    {
+                                        Tools.Log($"[ZONE] Height-based floor selection: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}, zone_height={finalZone.height}mm, curr_distance={m_curr_distance}mm", Tools.ELogType.ActionLog);
+                                    }
+                                }
+                                else
+                                {
+                                    // 높이 정보가 없는 경우 후보가 1개면 사용
+                                    if (candidateZones.Count == 1)
+                                    {
+                                        finalZone = candidateZones[0];
+                                        Tools.Log($"[ZONE] No height info in candidates, using single candidate: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}", Tools.ELogType.ActionLog);
+                                    }
+                                    else
+                                    {
+                                        Tools.Log($"[ZONE] No height info available in {candidateZones.Count} candidates, curr_distance={m_curr_distance}mm", Tools.ELogType.ActionLog);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // 높이 값이 없으면 첫 번째 후보 사용
+                                finalZone = candidateZones[0];
+                                Tools.Log($"[ZONE] No height data, using first candidate: zoneName={finalZone.zone_name}, zoneId={finalZone.zone_id}", Tools.ELogType.ActionLog);
+                            }
+
+                            // 최종 Zone 할당
+                            if (finalZone != null)
+                            {
+                                m_DetectionZoneId = finalZone.zone_id;
+                                m_DetectionZoneName = finalZone.zone_name;
+                                Tools.Log($"[ZONE] Final Detection (by {matchMethod}): zoneName={m_DetectionZoneName}, zoneId={m_DetectionZoneId}", Tools.ELogType.ActionLog);
+                            }
+                            else
+                            {
+                                m_DetectionZoneId = "";
+                                m_DetectionZoneName = "";
+                            }
                         }
                         else
                         {
                             m_DetectionZoneId = "";
                             m_DetectionZoneName = "";
+                            Tools.Log($"[ZONE] No zone matched (EPC={m_curr_epc}, NaviX={naviX}, NaviY={naviY})", Tools.ELogType.ActionLog);
                         }
-
-                        Tools.Log($"[ZONE] Detection nearest zoneName={nearestZoneName}, zoneId={m_DetectionZoneId}, dist={minDistZone}mm", Tools.ELogType.ActionLog);
                     }
                 }
                 catch (Exception zex)
@@ -1551,7 +1800,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"[ERROR] CalcDistanceAndGetZoneID : {ex.Message}", Tools.ELogType.SystemLog);
             }
-
         }
 
         private (long newX, long newY) AdjustCoordinates(long x, long y, int angle, string action)
@@ -1719,25 +1967,25 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             if (totaldistance < thresholdDistance)
             {
-                Debug.WriteLine($"last heading state:{m_lastRotate}, Distance:{totaldistance}mm, X:{naviX}, Y:{naviY}  Under Threshold");
+                //Debug.WriteLine($"last heading state:{m_lastRotate}, Distance:{totaldistance}mm, X:{naviX}, Y:{naviY}  Under Threshold");
                 return m_lastRotate; // Last state return
             }
 
             if (backwardCnt > forwardCnt && backwardCnt >= requiredCount)
             {
-                Debug.WriteLine($"Backward, count:{backwardCnt}");
+                //Debug.WriteLine($"Backward, count:{backwardCnt}");
                 bf = false; // 후진
                 //bf = true; // 후진
             }
             else if (forwardCnt >= requiredCount)
             {
-                Debug.WriteLine($"Forward, count:{forwardCnt}");
+                //Debug.WriteLine($"Forward, count:{forwardCnt}");
                 bf = true; // 전진
                 //bf = false; // 후진
             }
             else
             {
-                Debug.WriteLine($"last State {m_lastRotate}");
+                //Debug.WriteLine($"last State {m_lastRotate}");
                 bf = m_lastRotate;
             }
 
@@ -1767,6 +2015,18 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return avg >= 10;
         }
 
+        private void OnPubSeyondEvent(PubSeyondModel model)
+        {
+            if (m_navConfig.NAV_Enable == 0)
+            {
+                return;
+            }
+
+            m_seyondModel = model;
+
+            //SensorReady.Instance.Lidar2D = true;
+            //SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
+        }
 
         /// <summary>
         /// LiDAR 3D
@@ -1791,6 +2051,40 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             IndicatorSendTimerEvent(null, null);
+        }
+
+        private void OnHummingbirdEvent(LIVOXModel model)
+        {
+            if (model == null) return;
+
+            if (!m_event_epc.Contains("DA"))
+            {
+                // 리스트에 모델 추가
+                m_hummingbird_list.Add(model);
+
+                // 리스트 크기가 샘플 사이즈를 초과하면 가장 오래된 항목 제거
+                if (m_hummingbird_list.Count > m_hummingbird_sample_size)
+                {
+                    m_hummingbird_list.RemoveAt(0);
+                }
+
+                // height가 가장 높은 모델 찾기
+                var maxHeightModel = m_hummingbird_list
+                    .OrderByDescending(m => m.height)
+                    .FirstOrDefault();
+
+                if (maxHeightModel != null)
+                {
+                    //m_event_width = maxHeightModel.width;
+                    m_event_width = 800;
+                    m_event_height = maxHeightModel.height;
+                    //m_event_length = maxHeightModel.length;
+                    m_event_length = maxHeightModel.length;
+                    m_event_points = maxHeightModel.points;
+
+                    //Tools.Log($"Hummingbird Max Height: {m_event_height}mm (from {m_hummingbird_list.Count} samples)", ELogType.SystemLog);
+                }
+            }
         }
 
 
@@ -1989,7 +2283,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 Tools.Log($" Send Command : {m_Command}, weight:{m_weightModel.GrossWeight}, height:{m_event_height}", Tools.ELogType.DisplayLog);
             }
             Tools.Log($" Send Command : {m_Command}, QR Code:{m_event_QRcode}", Tools.ELogType.DisplayLog);
-            Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
+            //Tools.Log($" Send Command : {m_Command}", Tools.ELogType.DisplayLog);
         }
 
 
@@ -2059,6 +2353,71 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 prodDataModel.x = adjustedX;
                 prodDataModel.y = adjustedY;
                 prodDataModel.t = (int)m_navModel.naviT;
+                prodDataModel.rotate = CheckIsForward(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list);
+                prodDataModel.height = m_curr_distance;
+                prodDataModel.move = CheckIsMoving(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list) ? 1 : 0; // 0:Stop, 1:Moving 
+                prodDataModel.load = m_pickupStatus ? 1 : 0; // UnLoad : 0, Load : 1
+                prodDataModel.action = m_pickupStatus ? "pickup" : "drop";
+                prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
+                if (m_event_QRcode.Contains("wata")) prodDataModel.loadId = m_event_QRcode.Replace("wata", string.Empty);
+                prodDataModel.epc = "DP" + m_ActionZoneName + m_event_epc;
+                prodDataModel.errorCode = SysAlarm.CurrentErr;
+
+                string json_body = Util.ObjectToJson(prodDataModel);
+
+                RestClientPostModel post_obj = new RestClientPostModel();
+                post_obj.body = json_body;
+                // 이 포스트는 주기적 위치/상태 보고이므로 DB action_event에 기록하지 않도록 타입을 BackEndCurrent로 설정
+                post_obj.type = eMessageType.BackEndCurrent;
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+
+                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+            }
+            catch
+            {
+                Tools.Log($"Failed SendProdData to BackEnd", ELogType.BackEndLog);
+            }
+
+            // SLAM 검증 코드
+            SendProdDataToBackEnd_TEST(null, null);
+        }
+
+        private void SendProdDataToBackEnd_TEST(object sender, EventArgs e)
+        {
+            try
+            {
+                if (m_displayConfig.display_type.Contains("StandAlone"))
+                {
+                    return;
+                }
+
+                if (m_getBasicInfo == false)
+                {
+                    Tools.Log($"Failed Get BasicInfo", ELogType.BackEndLog);
+                    return;
+                }
+
+                if (m_basicInfoModel == null)
+                {
+                    return;
+                }
+
+                if (m_navModel == null)
+                {
+                    return;
+                }
+
+                (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "positioning");
+
+                ProdDataModel prodDataModel = new ProdDataModel();
+                prodDataModel.mapId = m_mainConfigModel.mapId;
+                prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
+                prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
+                prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
+                prodDataModel.vehicleId = "WTA_FORKLIFT_002";
+                if (m_seyondModel != null) prodDataModel.x = m_seyondModel.PosX;
+                if (m_seyondModel != null) prodDataModel.y = m_seyondModel.PosY;
+                if (m_seyondModel != null) prodDataModel.t = m_seyondModel.PosH;
                 prodDataModel.rotate = CheckIsForward(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list);
                 prodDataModel.height = m_curr_distance;
                 prodDataModel.move = CheckIsMoving(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list) ? 1 : 0; // 0:Stop, 1:Moving 
@@ -2473,6 +2832,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return result;
         }
 
+
         /// <summary>
         /// Shutdown Event 감지
         /// </summary> 
@@ -2480,6 +2840,12 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         {
             try
             {
+                // 진행 중인 모니터링/캡처 취소
+                m_dropDepthMonitorCts?.Cancel();
+                m_dropDepthMonitorCts?.Dispose();
+                m_dropImageCaptureCts?.Cancel();
+                m_dropImageCaptureCts?.Dispose();
+
                 var json = BuildShutdownSnapshotJson();
                 _eventAggregator.GetEvent<ShutdownSnapshotEvent>().Publish(json);
                 Tools.Log("[SNAPSHOT] published ShutdownSnapshotEvent", Tools.ELogType.SystemLog);
@@ -2786,6 +3152,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_isWeightPickup = false;
 
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
+
+            CapturePickupImage();
             SendBackEndPickupAction();
 
             // m_stopwatchPickDrop.Reset();
@@ -2842,10 +3210,41 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
             // 백엔드 통신
             CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, true);
-            SendBackEndDropAction();
 
-            // m_stopwatchPickDrop.Reset();
-            //m_stopwatchPickDrop.Start();
+            // ⭐ Drop 후 15초 동안 depth 모니터링 시작
+            m_dropDepthMonitorCts?.Cancel();
+            m_dropDepthMonitorCts?.Dispose();
+            m_dropDepthMonitorCts = new CancellationTokenSource();
+            m_dropDepthCaptured = false;
+
+            var monitorCts = m_dropDepthMonitorCts;
+            Tools.Log($"Drop Event: Starting 15-second depth monitoring (current sum: {m_currDepthSum})", ELogType.ActionLog);
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    // 15초 대기 (이 시간 동안 OnVisionEvent에서 depth를 체크)
+                    await Task.Delay(TimeSpan.FromSeconds(15), monitorCts.Token);
+
+                    // 타임아웃 - depth 합이 5000을 넘지 않음
+                    if (!m_dropDepthCaptured)
+                    {
+                        Tools.Log("Drop monitoring: Timeout (15s) - depth sum did not reach 5000", ELogType.ActionLog);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // 정상 종료 (depth 합이 5000 넘어서 캡처 완료)
+                    Tools.Log("Drop monitoring: Cancelled (depth threshold reached)", ELogType.ActionLog);
+                }
+                catch (Exception ex)
+                {
+                    Tools.Log($"Drop monitoring error: {ex.Message}", ELogType.SystemLog);
+                }
+            }, monitorCts.Token);
+
+            SendBackEndDropAction();
 
             // 물류 데이터 초기화
             m_ActionZoneId = "";

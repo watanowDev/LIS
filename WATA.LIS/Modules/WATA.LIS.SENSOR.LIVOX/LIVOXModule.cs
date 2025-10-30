@@ -26,9 +26,16 @@ namespace WATA.LIS.SENSOR.LIVOX
             {
                 return;
             }
-
-            PubSub pubsub = new PubSub(_eventAggregator, _livoxmodel);
-            pubsub.Init();
+            else if (livox_config.LIVOX_Enable == 2)
+            {
+                Hummingbird hummingbird = new Hummingbird(_eventAggregator, _livoxmodel);
+                hummingbird.Init();
+            }
+            else
+            {
+                PubSub pubsub = new PubSub(_eventAggregator, _livoxmodel);
+                pubsub.Init();
+            }
         }
 
         public void OnInitialized(IContainerProvider containerProvider)

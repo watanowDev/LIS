@@ -1,6 +1,6 @@
 {
   "main": {
-    "device_type": "WATA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, WATA, Pantos_MTV, SDSA
+    "device_type": "SDSA", //DPS, WIS_KINTEX , WIS_KINTEX, Singapore, Clark, Japan, DHL_KOREA, WATA, Pantos_MTV, SDSA
     "workLocationId": "WATA_KGWANGJU_1F",
     "projectId": "afbb58611535449780cdb27a615afeb2",
     "mappingId": "b7c41f86e38f44a1847a4d1af3b1acb1",
@@ -24,19 +24,19 @@
     "InfoLanguage": "KR" //KR, JP, EN
   },
   "distance_sensor": {
-    "distance_enable": 1,
+    "distance_enable": 0,
     "model_name": "SICK_SHORT", //Terrabee, TF_Mini, SICK_LONG, SICK_SHORT
     "comport": "COM3",
     "pick_up_distance_threshold": 240
   },
   "weight_sensor": {
-    "weight_enable": 1,
+    "weight_enable": 0,
     "comport": "COM4",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
   },
   "rfid_receiver": {
-    "rfid_enable": 1,
+    "rfid_enable": 0,
     "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
     "comport": "COM5",
     "SPP_MAC": "00:05:C4:C1:01:32",
@@ -71,7 +71,7 @@
     "MaxReceiveBufferSize": 4096
   },
   "LIVOX": {
-    "LIVOX_Enable": 1
+    "LIVOX_Enable": 2
   },
   "vision": {
     "vision_enable": 1,
@@ -82,7 +82,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 1,
+    "display_enable": 0,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

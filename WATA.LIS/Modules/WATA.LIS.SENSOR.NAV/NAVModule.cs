@@ -16,6 +16,7 @@ using WATA.LIS.Core.Interfaces;
 using WATA.LIS.Core.Model.BackEnd;
 using WATA.LIS.Core.Model.NAV;
 using WATA.LIS.Core.Model.SystemConfig;
+using WATA.LIS.SENSOR.NAV.NAV;
 using WATA.LIS.SENSOR.NAV.Views;
 using WATA.LIS.SENSOR.NAV.VisionPosMQTT;
 
@@ -50,6 +51,10 @@ namespace WATA.LIS.SENSOR.NAV
                 VisionPos visionPos = new VisionPos(_eventAggregator, _navModel);
                 visionPos.Init();
             }
+
+            SeyondSensor seyondSensor = new SeyondSensor(_eventAggregator);
+            seyondSensor.Init(@"C:\Users\USER\source\repos\Logs\SensorData");
+
         }
 
         public void OnInitialized(IContainerProvider containerProvider)
