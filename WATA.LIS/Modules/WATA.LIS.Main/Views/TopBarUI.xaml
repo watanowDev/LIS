@@ -232,6 +232,7 @@
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"></ColumnDefinition>
@@ -253,6 +254,7 @@
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -261,14 +263,17 @@
                 <Label  Grid.Row="0" Grid.Column="0" Content="QR Code :"  Style="{StaticResource TopBarKeyLabel}"/>
                 <Label  Grid.Row="0" Grid.Column="1" Content="{Binding VisionCamQREvent}" Style="{StaticResource TopBarValueLabel}"/>
 
-                <Label  Grid.Row="1" Grid.Column="0" Content="Item Size :" Style="{StaticResource TopBarKeyLabel}"/>
-                <Label  Grid.Row="1" Grid.Column="1" Content="{Binding VisionCamSizeEvent}" Style="{StaticResource TopBarValueLabel}"/>
+                <Label  Grid.Row="1" Grid.Column="0" Content="QR List :"  Style="{StaticResource TopBarKeyLabel}"/>
+                <Label  Grid.Row="1" Grid.Column="1" Content="{Binding VisionCamQRListEvent}" Style="{StaticResource TopBarValueLabel}"/>
 
-                <Label  Grid.Row="2" Grid.Column="0" Content="EPC Data :" Style="{StaticResource TopBarKeyLabel}"/>
-                <Label  Grid.Row="2" Grid.Column="1" Content="{Binding RFIDEvent}" Style="{StaticResource TopBarValueLabel}"/>
+                <Label  Grid.Row="2" Grid.Column="0" Content="Item Size :" Style="{StaticResource TopBarKeyLabel}"/>
+                <Label  Grid.Row="2" Grid.Column="1" Content="{Binding VisionCamSizeEvent}" Style="{StaticResource TopBarValueLabel}"/>
 
-                <Label  Grid.Row="3" Grid.Column="0" Content="Coordinates :" Style="{StaticResource TopBarKeyLabel}"/>
-                <Label  Grid.Row="3" Grid.Column="1" Content="{Binding CoordinatesEvent}" Style="{StaticResource TopBarValueLabel}"/>
+                <Label  Grid.Row="3" Grid.Column="0" Content="EPC Data :" Style="{StaticResource TopBarKeyLabel}"/>
+                <Label  Grid.Row="3" Grid.Column="1" Content="{Binding RFIDEvent}" Style="{StaticResource TopBarValueLabel}"/>
+
+                <Label  Grid.Row="4" Grid.Column="0" Content="Coordinates :" Style="{StaticResource TopBarKeyLabel}"/>
+                <Label  Grid.Row="4" Grid.Column="1" Content="{Binding CoordinatesEvent}" Style="{StaticResource TopBarValueLabel}"/>
             </Grid>
 
             <Grid Grid.Column="3" HorizontalAlignment="Right"/>

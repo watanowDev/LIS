@@ -24,19 +24,19 @@
     "InfoLanguage": "KR" //KR, JP, EN
   },
   "distance_sensor": {
-    "distance_enable": 0,
+    "distance_enable": 1,
     "model_name": "SICK_SHORT", //Terrabee, TF_Mini, SICK_LONG, SICK_SHORT
     "comport": "COM3",
     "pick_up_distance_threshold": 240
   },
   "weight_sensor": {
-    "weight_enable": 0,
+    "weight_enable": 1,
     "comport": "COM4",
     "loadweight_timeout": 3000,
     "sensor_value": "TJ" //TJ, TCP
   },
   "rfid_receiver": {
-    "rfid_enable": 0,
+    "rfid_enable": 1,
     "rfid_name": "Keonn2ch", //Keonn2ch, Keonn4ch, Apulse
     "comport": "COM5",
     "SPP_MAC": "00:05:C4:C1:01:32",
@@ -71,7 +71,7 @@
     "MaxReceiveBufferSize": 4096
   },
   "LIVOX": {
-    "LIVOX_Enable": 2
+    "LIVOX_Enable": 1
   },
   "vision": {
     "vision_enable": 1,
@@ -82,7 +82,7 @@
     "vision_pw": "wata2024"
   },
   "display": {
-    "display_enable": 0,
+    "display_enable": 1,
     "display_type": "Platform" //StandAlone, Platform"
   }
 }

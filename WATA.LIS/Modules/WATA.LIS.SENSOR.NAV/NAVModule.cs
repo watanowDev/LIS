@@ -52,8 +52,8 @@ namespace WATA.LIS.SENSOR.NAV
                 visionPos.Init();
             }
 
-            SeyondSensor seyondSensor = new SeyondSensor(_eventAggregator);
-            seyondSensor.Init(@"C:\Users\USER\source\repos\Logs\SensorData");
+            //SeyondSensor seyondSensor = new SeyondSensor(_eventAggregator);
+            //seyondSensor.Init(@"C:\Users\USER\source\repos\Logs\SensorData");
 
         }
 

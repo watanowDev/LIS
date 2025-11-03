@@ -47,6 +47,10 @@ namespace WATA.LIS.Main.ViewModels
         public string VisionCamQREvent { get { return _VisionCamQREvent; } set { SetProperty(ref _VisionCamQREvent, value); } }
 
 
+        private string _VisionCamQRListEvent;
+        public string VisionCamQRListEvent { get { return _VisionCamQRListEvent; } set { SetProperty(ref _VisionCamQRListEvent, value); } }
+
+
         private string _VisionCamSizeEvent;
         public string VisionCamSizeEvent { get { return _VisionCamSizeEvent; } set { SetProperty(ref _VisionCamSizeEvent, value); } }
 
@@ -71,6 +75,7 @@ namespace WATA.LIS.Main.ViewModels
             ButtonFunc = new DelegateCommand<string>(ButtonFuncClick);
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<HittingQR_Event>().Subscribe(OnCurrentQREvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<HittingQrList_Event>().Subscribe(OnCurrentQrListEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnCurrentSizeEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<HittingEPC_Event>().Subscribe(OnCurrentRFIDEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<CoordinatesEvent>().Subscribe(OnNavSensorEvent, ThreadOption.BackgroundThread, true);
@@ -108,6 +113,11 @@ namespace WATA.LIS.Main.ViewModels
         private void OnCurrentQREvent(string obj)
         {
             VisionCamQREvent = obj;
+        }
+
+        private void OnCurrentQrListEvent(List<string> list)
+        {
+            VisionCamQRListEvent = string.Join(", ", list);
         }
 
         private static int LivingCount = 0;

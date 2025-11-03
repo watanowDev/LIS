@@ -22,6 +22,7 @@ using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
@@ -47,8 +48,8 @@ using WATA.LIS.Core.Model.RFID;
 using WATA.LIS.Core.Model.SystemConfig;
 using WATA.LIS.Core.Model.VISION;
 using WATA.LIS.Core.Model.VisionCam;
-using System.Windows;
 using static WATA.LIS.Core.Common.Tools;
+using static WATA.LIS.Core.Model.BackEnd.actionInfoSDSA;
 
 namespace WATA.LIS.Core.Services.ServiceImpl
 {
@@ -118,10 +119,13 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private List<VisionCamModel> m_visionModelList = new List<VisionCamModel>();
         private readonly object m_visionLock = new object(); // Lock 객체 추가
         private double m_currDepthSum = 0; // 최근 depth 값 총합 저장
+        private List<string> m_curr_QRList = new List<string>();
+        private List<string> m_event_QRList = new List<string>();
+        private int m_no_QRListCnt = 0;
+
 
         // LiDAR_2D 데이터 클래스
         private NAVSensorModel m_navModel;
-        private PubSeyondModel m_seyondModel;
         private List<NAVSensorModel> m_nav_list = new List<NAVSensorModel>();
         private readonly int m_nav_sample_size = 10;
         private string m_ActionZoneId = "";
@@ -136,8 +140,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         private float m_event_height = 0;
         private float m_event_length = 0;
         private string m_event_points = "";
-        private List<LIVOXModel> m_hummingbird_list;
-        private readonly int m_hummingbird_sample_size = 10;
 
         // 인디케이터 데이터 클래스
         private IndicatorModel m_indicatorModel;
@@ -215,9 +217,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             _eventAggregator.GetEvent<VisionDetectionEvent>().Subscribe(OnVisionDetectionEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<VisionDetectionRearEvent>().Subscribe(OnVisionDetectionRearEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<NAVSensorEvent>().Subscribe(OnNAVSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<PubSeyondEvent>().Subscribe(OnPubSeyondEvent, ThreadOption.BackgroundThread, true);
-            //_eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
-            _eventAggregator.GetEvent<HummingbirdEvent>().Subscribe(OnHummingbirdEvent, ThreadOption.BackgroundThread, true);
+            _eventAggregator.GetEvent<LIVOXEvent>().Subscribe(OnLivoxSensorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<IndicatorRecvEvent>().Subscribe(OnIndicatorEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<DetectionRcvEvent>().Subscribe(OnDetectionRcvEvent, ThreadOption.BackgroundThread, true);
             _eventAggregator.GetEvent<ShutdownEngineEvent>().Subscribe(OnShutdownEngineEvent, ThreadOption.BackgroundThread, true);
@@ -309,7 +309,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             // VisionCam 에러 카운팅 초기화 타이머 설정
             m_visionCamInitTimer = new DispatcherTimer();
             m_visionCamInitTimer.Interval = TimeSpan.FromSeconds(40); // 40초 대기
-            m_visionCamInitTimer.Tick += (s, e) => {
+            m_visionCamInitTimer.Tick += (s, e) =>
+            {
                 m_visionCamReady = true; // 40초 후 VisionCam 카운트 활성화
                 m_visionCamInitTimer.Stop(); // 타이머 중지
             };
@@ -330,7 +331,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_visionModel = new VisionCamModel();
             m_livoxModel = new LIVOXModel();
             m_indicatorModel = new IndicatorModel();
-            m_hummingbird_list = new List<LIVOXModel>();
 
             //InitGetPickupStatus();
             IndicatorSendTimerEvent(null, null);
@@ -1210,52 +1210,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }
 
-            //// 국가 코드 읽기 (m_visionModel.Objects의 값 중에 int 3, 4, 5, 6이 포함되어 있을 경우)
-            //if (m_visionModel.Objects != null && m_visionModel.Objects.Count > 0)
-            //{
-            //    // ClassId 매핑
-            //    var classIdMapping = new Dictionary<int, string>
-            //        {
-            //            { 3, "3" }, // 검은색, 중국 청도
-            //            { 4, "4" }, // 흰색, 중국 무석
-            //            { 5, "5" }, // 초록색, 멕시코
-            //            { 6, "6" }  // 노란색, 인도
-            //        };
-
-            //    // ROI 설정 (640x640 기준, 가로축을 3등분하여 가운데 영역)
-            //    float roiStartX = 640 * 1 / 3; // 시작 X 좌표 (왼쪽 1/3 끝)
-            //    float roiEndX = 640 * 2 / 3; // 끝 X 좌표 (오른쪽 1/3 시작)
-
-            //    // Confidence가 가장 높은 객체 찾기 (ROI 안에 있는 객체만)
-            //    var filteredObjects = m_visionModel.Objects
-            //        .Where(obj => classIdMapping.ContainsKey(obj.ClassId)) // ClassId가 3, 4, 5, 6인 경우만 필터링
-            //        .Where(obj => obj.CenterX >= roiStartX && obj.CenterX <= roiEndX) // ROI 안에 있는 객체만 필터링
-            //        .OrderByDescending(obj => obj.Confidence) // Confidence 기준으로 내림차순 정렬
-            //        .ToList();
-
-            //    // ClassId 4 우선 처리
-            //    var class4Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 4 && obj.Confidence >= 0.45f);
-            //    if (class4Object != null)
-            //    {
-            //        m_curr_NationCode = classIdMapping[class4Object.ClassId];
-            //    }
-            //    else
-            //    {
-            //        // ClassId 3 처리 (Confidence가 0.6 이상일 경우만)
-            //        var class3Object = filteredObjects.FirstOrDefault(obj => obj.ClassId == 3 && obj.Confidence >= 0.6f);
-            //        if (class3Object != null)
-            //        {
-            //            m_curr_NationCode = classIdMapping[class3Object.ClassId];
-            //        }
-            //        else
-            //        {
-            //            // 다른 ClassId 처리
-            //            var highestConfidenceObject = filteredObjects.FirstOrDefault();
-            //            m_curr_NationCode = highestConfidenceObject != null ? classIdMapping[highestConfidenceObject.ClassId] : "";
-            //        }
-            //    }
-            //}
-
             // 깊이 값들을 리스트에 추가
             List<double> depthValues = new List<double>
                 {
@@ -1385,25 +1339,45 @@ namespace WATA.LIS.Core.Services.ServiceImpl
 
         private void OnDetectionRcvEvent(DectectionRcvModel model)
         {
-            if (model == null)
+            // QR List 할당
+            if (model.QrList != null && model.QrList.Count > 0)
             {
-                return;
-            }
-            if (model.Detections.Count == 0)
-            {
-                return;
-            }
-
-            // DetectionModel Pickup State
-            if (model.PickState == true && model.Detections.Count > 0)
-            {
-                m_detectionPickupCnt++;
-                m_detectionDropCnt = 0;
+                m_curr_QRList = model.QrList;
+                m_no_QRListCnt = 0;
             }
             else
             {
+                m_no_QRListCnt++;
+            }
+
+            if (m_curr_QRList.Count != 0)
+            {
+                m_event_QRList = m_curr_QRList;
+                _eventAggregator.GetEvent<HittingQrList_Event>().Publish(m_event_QRList);
+            }
+            else if (m_no_QRListCnt > 100)
+            {
+                m_event_QRList = new List<string>();
+                _eventAggregator.GetEvent<HittingQrList_Event>().Publish(m_event_QRList);
+            }
+
+            // Pick/Drop 관련 로직 Fork 개수 카운트
+            int forkPairCount = model.Detections.Count(d =>
+                d.Class == "Fork" &&
+                d.Confidence >= 0.85f
+            );
+
+            // Drop 조건
+            if (model.PickState == false && forkPairCount == 2)
+            {
                 m_detectionPickupCnt = 0;
                 m_detectionDropCnt++;
+            }
+            // Pickup 조건
+            else if (model.PickState == true && forkPairCount == 0)
+            {
+                m_detectionPickupCnt++;
+                m_detectionDropCnt = 0;
             }
 
             // 최근 20프레임 큐에 저장, Add 전에 공간 확보
@@ -1541,13 +1515,191 @@ namespace WATA.LIS.Core.Services.ServiceImpl
         }
 
         /// <summary>
+        /// Cargo 바운딩 박스를 분석하여 층(floor)과 위치(no) 자동 계산
+        /// SN/MN은 순서대로 매칭 (추후 공간 기반 매칭으로 업그레이드 가능)
+        /// </summary>
+        private List<LogisItem> AnalyzeCargoLayout(List<DetectionItem> detections, List<string> snList, List<string> mnList)
+        {
+            var logisItems = new List<LogisItem>();
+
+            // 1. Cargo 클래스만 필터링
+            var cargoDetections = detections
+                .Where(d => d.Class == "Cargo" && d.Confidence >= 0.7f)
+                .ToList();
+
+            if (cargoDetections.Count == 0)
+            {
+                Tools.Log("[CARGO] No Cargo detected", ELogType.SystemLog);
+                return logisItems;
+            }
+
+            // 2. Y 좌표(세로) 기준으로 층(floor) 그룹화
+            var floorGroups = GroupCargosByFloor(cargoDetections);
+
+            // 1층 물류 리스트 저장 (2층 이상의 기준점)
+            List<DetectionItem> firstFloorCargos = null;
+            if (floorGroups.ContainsKey(1))
+            {
+                firstFloorCargos = floorGroups[1].OrderBy(cargo => GetCenterX(cargo)).ToList();
+            }
+
+            int snIndex = 0;
+            int mnIndex = 0;
+
+            // 3. 각 층별로 처리
+            foreach (var floorGroup in floorGroups.OrderBy(g => g.Key))
+            {
+                int currentFloor = floorGroup.Key;
+
+                // 같은 층 내에서 X 좌표(좌우) 기준 정렬
+                var sortedCargos = floorGroup.Value.OrderBy(cargo => GetCenterX(cargo)).ToList();
+
+                for (int i = 0; i < sortedCargos.Count; i++)
+                {
+                    var cargo = sortedCargos[i];
+
+                    // 1층 기준 상대 위치 계산
+                    string positionNo = CalculatePositionNo(i, sortedCargos.Count, currentFloor, sortedCargos, firstFloorCargos);
+
+                    // 순서대로 SN/MN 할당
+                    string assignedSN = snIndex < snList.Count ? snList[snIndex++] : "";
+                    string assignedMN = mnIndex < mnList.Count ? mnList[mnIndex++] : "";
+
+                    logisItems.Add(new LogisItem
+                    {
+                        no = positionNo,
+                        floor = currentFloor,
+                        mn = assignedMN,
+                        sn = assignedSN
+                    });
+
+                    Tools.Log($"[CARGO] Floor={currentFloor}, No={positionNo}, X={GetCenterX(cargo):F1}, Box=[{string.Join(",", cargo.Box)}]", ELogType.ActionLog);
+                }
+            }
+
+            return logisItems;
+        }
+
+        /// <summary>
+        /// Y 좌표 기반으로 Cargo를 층(floor)으로 그룹화
+        /// </summary>
+        private Dictionary<int, List<DetectionItem>> GroupCargosByFloor(List<DetectionItem> cargos)
+        {
+            const float floorThreshold = 100.0f; // Y 좌표 차이 임계값 (픽셀 단위, 조정 가능)
+
+            var floorGroups = new Dictionary<int, List<DetectionItem>>();
+            var sortedCargos = cargos.OrderBy(c => GetCenterY(c)).ToList();
+
+            int currentFloor = 1;
+            float lastY = GetCenterY(sortedCargos[0]);
+
+            foreach (var cargo in sortedCargos)
+            {
+                float currentY = GetCenterY(cargo);
+
+                // Y 좌표 차이가 임계값을 넘으면 새로운 층
+                if (Math.Abs(currentY - lastY) > floorThreshold)
+                {
+                    currentFloor++;
+                    lastY = currentY;
+                }
+
+                if (!floorGroups.ContainsKey(currentFloor))
+                {
+                    floorGroups[currentFloor] = new List<DetectionItem>();
+                }
+
+                floorGroups[currentFloor].Add(cargo);
+            }
+
+            return floorGroups;
+        }
+
+        /// <summary>
+        /// 바운딩 박스의 중심 X 좌표 계산
+        /// </summary>
+        private float GetCenterX(DetectionItem detection)
+        {
+            // Box = [x1, y1, x2, y2]
+            return (detection.Box[0] + detection.Box[2]) / 2.0f;
+        }
+
+        /// <summary>
+        /// 바운딩 박스의 중심 Y 좌표 계산
+        /// </summary>
+        private float GetCenterY(DetectionItem detection)
+        {
+            // Box = [x1, y1, x2, y2]
+            return (detection.Box[1] + detection.Box[3]) / 2.0f;
+        }
+
+        /// <summary>
+        /// 좌우 위치 번호 계산
+        /// 1층: 1.0, 2.0, 3.0 (정수만)
+        /// 2층 이상: 1층 물류의 X 좌표를 기준으로 상대적 위치 계산 (소수점 1자리, 0.2 미만 차이는 동일 위치로 간주)
+        /// </summary>
+        private string CalculatePositionNo(int index, int totalCount, int floor, List<DetectionItem> currentFloorCargos, List<DetectionItem> firstFloorCargos)
+        {
+            // 1층: 무조건 정수 (1.0, 2.0, 3.0, ...)
+            if (floor == 1)
+            {
+                return $"{index + 1}.0";
+            }
+
+            // 2층 이상: 1층 물류의 X 좌표를 기준으로 상대 위치 계산
+            if (firstFloorCargos == null || firstFloorCargos.Count == 0)
+            {
+                // 1층 정보가 없으면 기본값 반환
+                return $"{index + 1}.0";
+            }
+
+            float currentCargoX = GetCenterX(currentFloorCargos[index]);
+
+            // 1층의 첫 번째와 마지막 물류의 X 좌표 범위
+            float firstFloorMinX = firstFloorCargos.Min(c => GetCenterX(c));
+            float firstFloorMaxX = firstFloorCargos.Max(c => GetCenterX(c));
+            int firstFloorCount = firstFloorCargos.Count;
+
+            // 1층 물류들의 평균 간격 계산
+            float firstFloorSpacing = firstFloorCount > 1
+                ? (firstFloorMaxX - firstFloorMinX) / (firstFloorCount - 1)
+                : 100.0f; // 기본값
+
+            // 현재 물류가 1층 기준으로 어느 위치에 있는지 계산
+            float relativePosition = (currentCargoX - firstFloorMinX) / firstFloorSpacing;
+
+            // 가장 가까운 정수 위치 찾기 (1, 2, 3, ...)
+            int nearestInteger = Math.Max(1, (int)Math.Round(relativePosition) + 1);
+
+            // 정수 위치와의 소수점 차이 계산
+            float offset = relativePosition + 1 - nearestInteger;
+
+            // 0.2 미만 차이는 동일 위치로 간주 (반올림)
+            if (Math.Abs(offset) < 0.2f)
+            {
+                return $"{nearestInteger}.0";
+            }
+
+            // 소수점 1자리로 반올림
+            float finalPosition = nearestInteger + (float)Math.Round(offset, 1);
+
+            // 음수 방지 (최소 0.5)
+            if (finalPosition < 0.5f)
+            {
+                finalPosition = 0.5f;
+            }
+
+            return finalPosition.ToString("F1");
+        }
+
+        /// <summary>
         /// LiDAR 2D
         /// </summary>
         /// <param name="navSensorModel"></param>
         private void OnNAVSensorEvent(NAVSensorModel navSensorModel)
         {
             // StreamingServer 블로킹 체크
-            //if (GlobalValue.IsVisionStreamBlocked) return;
+            if (GlobalValue.IsVisionStreamBlocked) return;
 
             if (m_navConfig.NAV_Enable == 0)
             {
@@ -2015,18 +2167,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             return avg >= 10;
         }
 
-        private void OnPubSeyondEvent(PubSeyondModel model)
-        {
-            if (m_navConfig.NAV_Enable == 0)
-            {
-                return;
-            }
-
-            m_seyondModel = model;
-
-            //SensorReady.Instance.Lidar2D = true;
-            //SysAlarm.RemoveErrorCodes(SysAlarm.LiDar2DConnErr);
-        }
 
         /// <summary>
         /// LiDAR 3D
@@ -2051,40 +2191,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             }
 
             IndicatorSendTimerEvent(null, null);
-        }
-
-        private void OnHummingbirdEvent(LIVOXModel model)
-        {
-            if (model == null) return;
-
-            if (!m_event_epc.Contains("DA"))
-            {
-                // 리스트에 모델 추가
-                m_hummingbird_list.Add(model);
-
-                // 리스트 크기가 샘플 사이즈를 초과하면 가장 오래된 항목 제거
-                if (m_hummingbird_list.Count > m_hummingbird_sample_size)
-                {
-                    m_hummingbird_list.RemoveAt(0);
-                }
-
-                // height가 가장 높은 모델 찾기
-                var maxHeightModel = m_hummingbird_list
-                    .OrderByDescending(m => m.height)
-                    .FirstOrDefault();
-
-                if (maxHeightModel != null)
-                {
-                    //m_event_width = maxHeightModel.width;
-                    m_event_width = 800;
-                    m_event_height = maxHeightModel.height;
-                    //m_event_length = maxHeightModel.length;
-                    m_event_length = maxHeightModel.length;
-                    m_event_points = maxHeightModel.points;
-
-                    //Tools.Log($"Hummingbird Max Height: {m_event_height}mm (from {m_hummingbird_list.Count} samples)", ELogType.SystemLog);
-                }
-            }
         }
 
 
@@ -2377,71 +2483,6 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             {
                 Tools.Log($"Failed SendProdData to BackEnd", ELogType.BackEndLog);
             }
-
-            // SLAM 검증 코드
-            SendProdDataToBackEnd_TEST(null, null);
-        }
-
-        private void SendProdDataToBackEnd_TEST(object sender, EventArgs e)
-        {
-            try
-            {
-                if (m_displayConfig.display_type.Contains("StandAlone"))
-                {
-                    return;
-                }
-
-                if (m_getBasicInfo == false)
-                {
-                    Tools.Log($"Failed Get BasicInfo", ELogType.BackEndLog);
-                    return;
-                }
-
-                if (m_basicInfoModel == null)
-                {
-                    return;
-                }
-
-                if (m_navModel == null)
-                {
-                    return;
-                }
-
-                (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "positioning");
-
-                ProdDataModel prodDataModel = new ProdDataModel();
-                prodDataModel.mapId = m_mainConfigModel.mapId;
-                prodDataModel.workLocationId = m_basicInfoModel.data[0].workLocationId;
-                prodDataModel.pidx = m_basicInfoModel.data[0].pidx;
-                prodDataModel.vidx = m_basicInfoModel.data[0].vidx;
-                prodDataModel.vehicleId = "WTA_FORKLIFT_002";
-                if (m_seyondModel != null) prodDataModel.x = m_seyondModel.PosX;
-                if (m_seyondModel != null) prodDataModel.y = m_seyondModel.PosY;
-                if (m_seyondModel != null) prodDataModel.t = m_seyondModel.PosH;
-                prodDataModel.rotate = CheckIsForward(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list);
-                prodDataModel.height = m_curr_distance;
-                prodDataModel.move = CheckIsMoving(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, m_nav_list) ? 1 : 0; // 0:Stop, 1:Moving 
-                prodDataModel.load = m_pickupStatus ? 1 : 0; // UnLoad : 0, Load : 1
-                prodDataModel.action = m_pickupStatus ? "pickup" : "drop";
-                prodDataModel.result = Convert.ToInt16(m_navModel.result); // 1 : Success, other : Fail
-                if (m_event_QRcode.Contains("wata")) prodDataModel.loadId = m_event_QRcode.Replace("wata", string.Empty);
-                prodDataModel.epc = "DP" + m_ActionZoneName + m_event_epc;
-                prodDataModel.errorCode = SysAlarm.CurrentErr;
-
-                string json_body = Util.ObjectToJson(prodDataModel);
-
-                RestClientPostModel post_obj = new RestClientPostModel();
-                post_obj.body = json_body;
-                // 이 포스트는 주기적 위치/상태 보고이므로 DB action_event에 기록하지 않도록 타입을 BackEndCurrent로 설정
-                post_obj.type = eMessageType.BackEndCurrent;
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
-
-                _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
-            }
-            catch
-            {
-                Tools.Log($"Failed SendProdData to BackEnd", ELogType.BackEndLog);
-            }
         }
 
         private void SendBackEndPickupAction()
@@ -2582,6 +2623,88 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             Tools.Log($"Pickup Action {json_body}", ELogType.ActionLog);
 
             //zone 초기화
+            m_ActionZoneId = "";
+            m_ActionZoneName = "";
+        }
+
+        private void SendBackEndPickupActionSDSA()
+        {
+            if (m_displayConfig.display_type.Contains("StandAlone"))
+            {
+                IndicatorSendTimerEvent(null, null);
+                Tools.Log($"Pickup Event!!! QR Code:{m_event_QRcode}, weight:{m_event_weight}kg, ForkHeight:{m_event_distance}, EPC:{m_event_epc}", ELogType.ActionLog);
+                Tools.Log($"Pickup Event!!! width:{m_event_width}, height:{m_event_height}, depth:{m_event_length}", ELogType.ActionLog);
+                return;
+            }
+
+            m_event_distance = m_curr_distance;
+            (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
+
+            ActionInfoSDSAModel ActionObj = new ActionInfoSDSAModel();
+            ActionObj.actionInfo.wcId = m_basicInfoModel.data[0].workLocationId;
+            ActionObj.actionInfo.pidx = "151";
+            ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
+            ActionObj.actionInfo.action = "pickup";
+            ActionObj.actionInfo.visionWidth = m_event_width;
+            ActionObj.actionInfo.visionHeight = m_event_height;
+            ActionObj.actionInfo.visionDepth = m_event_length;
+            ActionObj.actionInfo.height = m_event_distance.ToString();
+            ActionObj.actionInfo.x = adjustedX;
+            ActionObj.actionInfo.y = adjustedY;
+            ActionObj.actionInfo.t = (int)m_navModel.naviT;
+
+            // 최근 Detection에서 Cargo 분석
+            List<LogisItem> analyzedLogis = new List<LogisItem>();
+
+            lock (m_visionLock)
+            {
+                if (m_detectionRcvModelList.Count > 0)
+                {
+                    var latestDetection = m_detectionRcvModelList.Last();
+
+                    // SN, MN 분리
+                    var snList = (m_event_QRList ?? new List<string>()).Where(qr => qr.StartsWith("SN")).ToList();
+                    var mnList = (m_event_QRList ?? new List<string>()).Where(qr => qr.StartsWith("MN")).ToList();
+
+                    // Cargo 바운딩 박스 기반 분석
+                    analyzedLogis = AnalyzeCargoLayout(latestDetection.Detections, snList, mnList);
+                }
+            }
+
+            // 분석 결과를 logis에 할당
+            ActionObj.actionInfo.logis = analyzedLogis;
+            ActionObj.actionInfo.qty = analyzedLogis.Count;
+
+            // EPC 우선순위 설정
+            if (m_ActionZoneName != "")
+            {
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+            }
+            else if (m_event_epc.Contains("DA"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+            }
+            else if (m_event_epc.Contains("DC"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+            }
+            else
+            {
+                ActionObj.actionInfo.epc = "";
+            }
+
+            IndicatorSendTimerEvent(null, null);
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/iot/forklift/sds/action";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            Tools.Log($"Pickup Event!!! Cargo Count: {ActionObj.actionInfo.qty}, EPC: {ActionObj.actionInfo.epc}", ELogType.ActionLog);
+            Tools.Log($"Pickup Logis: {string.Join(", ", ActionObj.actionInfo.logis.Select(l => $"[{l.floor}층-{l.no}] SN:{l.sn}"))}", ELogType.ActionLog);
+
             m_ActionZoneId = "";
             m_ActionZoneName = "";
         }
@@ -2733,6 +2856,90 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             m_weight_list = new List<WeightSensorModel>();
             m_event_weight = 0;
             //m_event_epc = "";
+            m_ActionZoneId = "";
+            m_ActionZoneName = "";
+        }
+
+        private void SendBackEndDropActionSDSA()
+        {
+            if (m_displayConfig.display_type.Contains("StandAlone"))
+            {
+                // 앱 인디케이터에 event value 전달
+                IndicatorSendTimerEvent(null, null);
+                Tools.Log($"Drop Event!!! QR Code:{m_event_QRcode}, weight:{m_event_weight}kg, ForkHeight:{m_event_distance}, EPC:{m_event_epc}", ELogType.ActionLog);
+                Tools.Log($"Drop Event!!! width:{m_event_width}, height:{m_event_height}, depth:{m_event_length}", ELogType.ActionLog);
+
+                return;
+            }
+
+            m_event_distance = m_curr_distance;
+            (long adjustedX, long adjustedY) = AdjustCoordinates(m_navModel.naviX, m_navModel.naviY, (int)m_navModel.naviT, "pickdrop");
+
+            ActionInfoSDSAModel ActionObj = new ActionInfoSDSAModel();
+            ActionObj.actionInfo.wcId = m_basicInfoModel.data[0].workLocationId;
+            ActionObj.actionInfo.pidx = "151";
+            ActionObj.actionInfo.vehicleId = m_mainConfigModel.vehicleId;
+            ActionObj.actionInfo.action = "pickup";
+            ActionObj.actionInfo.visionWidth = m_event_width;
+            ActionObj.actionInfo.visionHeight = m_event_height;
+            ActionObj.actionInfo.visionDepth = m_event_length;
+            ActionObj.actionInfo.height = m_event_distance.ToString();
+            ActionObj.actionInfo.x = adjustedX;
+            ActionObj.actionInfo.y = adjustedY;
+            ActionObj.actionInfo.t = (int)m_navModel.naviT;
+
+            // 최근 Detection에서 Cargo 분석
+            List<LogisItem> analyzedLogis = new List<LogisItem>();
+
+            lock (m_visionLock)
+            {
+                if (m_detectionRcvModelList.Count > 0)
+                {
+                    var latestDetection = m_detectionRcvModelList.Last();
+
+                    // SN, MN 분리
+                    var snList = (m_event_QRList ?? new List<string>()).Where(qr => qr.StartsWith("SN")).ToList();
+                    var mnList = (m_event_QRList ?? new List<string>()).Where(qr => qr.StartsWith("MN")).ToList();
+
+                    // Cargo 바운딩 박스 기반 분석
+                    analyzedLogis = AnalyzeCargoLayout(latestDetection.Detections, snList, mnList);
+                }
+            }
+
+            // 분석 결과를 logis에 할당
+            ActionObj.actionInfo.logis = analyzedLogis;
+            ActionObj.actionInfo.qty = analyzedLogis.Count;
+
+            // EPC 우선순위 설정
+            if (m_ActionZoneName != "")
+            {
+                ActionObj.actionInfo.epc = "DP" + m_ActionZoneName;
+            }
+            else if (m_event_epc.Contains("DA"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+            }
+            else if (m_event_epc.Contains("DC"))
+            {
+                ActionObj.actionInfo.epc = m_event_epc;
+            }
+            else
+            {
+                ActionObj.actionInfo.epc = "";
+            }
+
+            IndicatorSendTimerEvent(null, null);
+
+            string json_body = Util.ObjectToJson(ActionObj);
+            RestClientPostModel post_obj = new RestClientPostModel();
+            post_obj.body = json_body;
+            post_obj.type = eMessageType.BackEndAction;
+            post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/iot/forklift/sds/action";
+            _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
+
+            Tools.Log($"Pickup Event!!! Cargo Count: {ActionObj.actionInfo.qty}, EPC: {ActionObj.actionInfo.epc}", ELogType.ActionLog);
+            Tools.Log($"Pickup Logis: {string.Join(", ", ActionObj.actionInfo.logis.Select(l => $"[{l.floor}층-{l.no}] SN:{l.sn}"))}", ELogType.ActionLog);
+
             m_ActionZoneId = "";
             m_ActionZoneName = "";
         }
@@ -3154,7 +3361,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
             //CalcDistanceAndGetZoneID(m_navModel.naviX, m_navModel.naviY, m_navModel.naviT, false);
 
             CapturePickupImage();
-            SendBackEndPickupAction();
+            //SendBackEndPickupAction();
+            SendBackEndPickupActionSDSA();
 
             // m_stopwatchPickDrop.Reset();
             //m_stopwatchPickDrop.Start();
@@ -3244,7 +3452,8 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 }
             }, monitorCts.Token);
 
-            SendBackEndDropAction();
+            //SendBackEndDropAction();
+            SendBackEndDropActionSDSA();
 
             // 물류 데이터 초기화
             m_ActionZoneId = "";
