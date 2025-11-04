@@ -2048,7 +2048,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 RestClientPostModel post_obj = new RestClientPostModel();
                 post_obj.body = json_body;
                 post_obj.type = eMessageType.BackEndAction;
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
             }

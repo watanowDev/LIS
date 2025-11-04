@@ -2475,7 +2475,7 @@ namespace WATA.LIS.Core.Services.ServiceImpl
                 post_obj.body = json_body;
                 // 이 포스트는 주기적 위치/상태 보고이므로 DB action_event에 기록하지 않도록 타입을 BackEndCurrent로 설정
                 post_obj.type = eMessageType.BackEndCurrent;
-                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/plane/plane-poc/heavy-equipment/location";
+                post_obj.url = "https://dev-lms-api.watalbs.com/monitoring/geofence/addition-info/logistics/heavy-equipment/location";
 
                 _eventAggregator.GetEvent<RestClientPostEvent_dev>().Publish(post_obj);
             }
