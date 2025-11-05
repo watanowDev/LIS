@@ -8,11 +8,6 @@ namespace WATA.LIS.Core.Model.BackEnd
 {
     public class ActionInfoSDSAModel
     {
-        public actionInfoSDSA actionInfo = new actionInfoSDSA();
-    }
-
-    public class actionInfoSDSA
-    {
         public string wcId { get; set; }
         public string pidx { get; set; }
         public string vehicleId { get; set; }
@@ -27,6 +22,7 @@ namespace WATA.LIS.Core.Model.BackEnd
         public long y { get; set; } //y좌표
         public int t { get; set; } //지게차 헤딩 방향 (range : 0~3600)
         public List<LogisItem> logis { get; set; } = new List<LogisItem>(); // 팔레트/물류 적재 정보
+
         public class LogisItem
         {
             public string no { get; set; } // 아래 예시 참고
